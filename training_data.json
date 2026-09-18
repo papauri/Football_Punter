@@ -172093,7 +172093,12 @@
     "awayScore": 0,
     "league": "English Carabao Cup",
     "date": "2026-09-16",
-    "timestamp": 1789516800000
+    "timestamp": 1789516800000,
+    "goals": {
+      "home": 1,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401914266",
@@ -172103,7 +172108,12 @@
     "awayScore": 0,
     "league": "English Carabao Cup",
     "date": "2026-09-16",
-    "timestamp": 1789516800000
+    "timestamp": 1789516800000,
+    "goals": {
+      "home": 1,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401882875",
@@ -172113,7 +172123,12 @@
     "awayScore": 0,
     "league": "LaLiga",
     "date": "2026-09-16",
-    "timestamp": 1789516800000
+    "timestamp": 1789516800000,
+    "goals": {
+      "home": 4,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401882873",
@@ -172123,7 +172138,12 @@
     "awayScore": 1,
     "league": "LaLiga",
     "date": "2026-09-16",
-    "timestamp": 1789516800000
+    "timestamp": 1789516800000,
+    "goals": {
+      "home": 0,
+      "away": 1
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401915594",
@@ -172133,7 +172153,12 @@
     "awayScore": 4,
     "league": "UEFA Europa League",
     "date": "2026-09-16",
-    "timestamp": 1789516800000
+    "timestamp": 1789516800000,
+    "goals": {
+      "home": 1,
+      "away": 4
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401915611",
@@ -172143,7 +172168,12 @@
     "awayScore": 0,
     "league": "UEFA Europa League",
     "date": "2026-09-16",
-    "timestamp": 1789516800000
+    "timestamp": 1789516800000,
+    "goals": {
+      "home": 1,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401874083",
@@ -172153,7 +172183,12 @@
     "awayScore": 1,
     "league": "Swedish Allsvenskan",
     "date": "2026-09-16",
-    "timestamp": 1789516800000
+    "timestamp": 1789516800000,
+    "goals": {
+      "home": 1,
+      "away": 1
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401915588",
@@ -172163,7 +172198,12 @@
     "awayScore": 1,
     "league": "UEFA Europa League",
     "date": "2026-09-16",
-    "timestamp": 1789516800000
+    "timestamp": 1789516800000,
+    "goals": {
+      "home": 2,
+      "away": 1
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401915592",
@@ -172173,7 +172213,12 @@
     "awayScore": 0,
     "league": "UEFA Europa League",
     "date": "2026-09-16",
-    "timestamp": 1789516800000
+    "timestamp": 1789516800000,
+    "goals": {
+      "home": 1,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401915590",
@@ -172183,7 +172228,12 @@
     "awayScore": 2,
     "league": "UEFA Europa League",
     "date": "2026-09-16",
-    "timestamp": 1789516800000
+    "timestamp": 1789516800000,
+    "goals": {
+      "home": 1,
+      "away": 2
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401915587",
@@ -172193,7 +172243,12 @@
     "awayScore": 0,
     "league": "UEFA Europa League",
     "date": "2026-09-16",
-    "timestamp": 1789516800000
+    "timestamp": 1789516800000,
+    "goals": {
+      "home": 2,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401914258",
@@ -172203,7 +172258,12 @@
     "awayScore": 3,
     "league": "English Carabao Cup",
     "date": "2026-09-16",
-    "timestamp": 1789516800000
+    "timestamp": 1789516800000,
+    "goals": {
+      "home": 1,
+      "away": 3
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401915589",
@@ -172213,7 +172273,12 @@
     "awayScore": 0,
     "league": "UEFA Europa League",
     "date": "2026-09-16",
-    "timestamp": 1789516800000
+    "timestamp": 1789516800000,
+    "goals": {
+      "home": 0,
+      "away": 0
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401914261",
@@ -172223,7 +172288,12 @@
     "awayScore": 3,
     "league": "English Carabao Cup",
     "date": "2026-09-16",
-    "timestamp": 1789516800000
+    "timestamp": 1789516800000,
+    "goals": {
+      "home": 2,
+      "away": 3
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401915586",
@@ -172233,6 +172303,111 @@
     "awayScore": 2,
     "league": "UEFA Europa League",
     "date": "2026-09-16",
-    "timestamp": 1789516800000
+    "timestamp": 1789516800000,
+    "goals": {
+      "home": 0,
+      "away": 2
+    },
+    "actualWinner": "AWAY"
+  },
+  {
+    "id": "401914260",
+    "home": "Manchester City",
+    "away": "Norwich City",
+    "homeScore": 5,
+    "awayScore": 0,
+    "league": "English Carabao Cup",
+    "date": "2026-09-17",
+    "timestamp": 1789603200000
+  },
+  {
+    "id": "401915584",
+    "home": "Levski Sofia",
+    "away": "RB Salzburg",
+    "homeScore": 0,
+    "awayScore": 1,
+    "league": "UEFA Europa League",
+    "date": "2026-09-17",
+    "timestamp": 1789603200000
+  },
+  {
+    "id": "401915585",
+    "home": "OFI CRETE",
+    "away": "TSG Hoffenheim",
+    "homeScore": 2,
+    "awayScore": 0,
+    "league": "UEFA Europa League",
+    "date": "2026-09-17",
+    "timestamp": 1789603200000
+  },
+  {
+    "id": "401915591",
+    "home": "Besiktas",
+    "away": "Marseille",
+    "homeScore": 4,
+    "awayScore": 1,
+    "league": "UEFA Europa League",
+    "date": "2026-09-17",
+    "timestamp": 1789603200000
+  },
+  {
+    "id": "401915581",
+    "home": "Celtic",
+    "away": "Ferencvaros",
+    "homeScore": 1,
+    "awayScore": 3,
+    "league": "UEFA Europa League",
+    "date": "2026-09-17",
+    "timestamp": 1789603200000
+  },
+  {
+    "id": "401915569",
+    "home": "Crystal Palace",
+    "away": "Lech Poznan",
+    "homeScore": 4,
+    "awayScore": 0,
+    "league": "UEFA Europa League",
+    "date": "2026-09-17",
+    "timestamp": 1789603200000
+  },
+  {
+    "id": "401915582",
+    "home": "Juventus",
+    "away": "NEC Nijmegen",
+    "homeScore": 5,
+    "awayScore": 0,
+    "league": "UEFA Europa League",
+    "date": "2026-09-17",
+    "timestamp": 1789603200000
+  },
+  {
+    "id": "401915570",
+    "home": "Lillestrom",
+    "away": "Torreense",
+    "homeScore": 1,
+    "awayScore": 2,
+    "league": "UEFA Europa League",
+    "date": "2026-09-17",
+    "timestamp": 1789603200000
+  },
+  {
+    "id": "401915583",
+    "home": "Real Sociedad",
+    "away": "AFC Bournemouth",
+    "homeScore": 1,
+    "awayScore": 2,
+    "league": "UEFA Europa League",
+    "date": "2026-09-17",
+    "timestamp": 1789603200000
+  },
+  {
+    "id": "401915580",
+    "home": "Viktoria Plzen",
+    "away": "Union St.-Gilloise",
+    "homeScore": 0,
+    "awayScore": 3,
+    "league": "UEFA Europa League",
+    "date": "2026-09-17",
+    "timestamp": 1789603200000
   }
 ]
