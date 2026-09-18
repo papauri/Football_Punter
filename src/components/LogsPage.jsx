@@ -124,11 +124,11 @@ export default function LogsPage({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none">
-                <th className="py-2.5 px-3 w-28">Timestamp</th>
-                <th className="py-2.5 px-3 w-20 text-center">Level</th>
-                <th className="py-2.5 px-3 w-36">Component / Agent</th>
-                <th className="py-2.5 px-3 min-w-[300px]">Message Details</th>
+              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-10">
+                <th className="py-1.5 px-2 w-28">Timestamp</th>
+                <th className="py-1.5 px-2 w-20 text-center">Level</th>
+                <th className="py-1.5 px-2 w-36">Component / Agent</th>
+                <th className="py-1.5 px-2 min-w-[300px]">Message Details</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-mono">
@@ -143,24 +143,24 @@ export default function LogsPage({
                   <tr key={idx} className={`hover:bg-indigo-50/20 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}>
                     
                     {/* Timestamp */}
-                    <td className="py-2 px-3 text-slate-500 text-[11px] whitespace-nowrap">
+                    <td className="py-1.5 px-2 text-slate-500 text-[11px] whitespace-nowrap">
                       {log.timestamp || log.time || 'Just now'}
                     </td>
 
                     {/* Level */}
-                    <td className="py-2 px-3 text-center">
+                    <td className="py-1.5 px-2 text-center">
                       <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold border ${getLevelBadge(log.level)}`}>
                         {log.level || 'INFO'}
                       </span>
                     </td>
 
                     {/* Source */}
-                    <td className="py-2 px-3 text-slate-700 font-semibold text-[11px] truncate max-w-[140px]">
+                    <td className="py-1.5 px-2 text-slate-700 font-semibold text-[11px] truncate max-w-[140px]">
                       {log.source || 'Engine'}
                     </td>
 
                     {/* Message */}
-                    <td className="py-2 px-3 text-slate-800 text-[11px] font-sans break-words">
+                    <td className="py-1.5 px-2 text-slate-800 text-[11px] font-sans break-words">
                       {log.message}
                     </td>
 

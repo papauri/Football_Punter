@@ -376,7 +376,7 @@ export default function BinaryPicksPage({
       </div>
 
       {/* Compact Binary Picks Table */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-visible">
+      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
         <div className="w-full">
           <table className="w-full text-left border-collapse text-xs">
             <thead className="hidden md:table-header-group">

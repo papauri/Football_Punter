@@ -247,67 +247,67 @@ export default function LeagueProfilesPage({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none">
-                <th className="py-2.5 px-3 w-12 text-center">Rank</th>
-                <th className="py-2.5 px-3 min-w-[200px]">Competition</th>
-                <th className="py-2.5 px-3 w-40 text-center">Predictability Tier</th>
-                <th className="py-2.5 px-3 w-32 text-center">Conviction Hit Rate</th>
-                <th className="py-2.5 px-3 w-36 text-center">DNB Staking Rule</th>
-                <th className="py-2.5 px-3 w-20 text-center">Draw Rate</th>
-                <th className="py-2.5 px-3 w-20 text-center">Avg Goals</th>
-                <th className="py-2.5 px-3 w-20 text-center">Pace Factor</th>
-                <th className="py-2.5 px-3 w-24 text-center">Index</th>
+              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-10">
+                <th className="py-1.5 px-2 w-12 text-center">Rank</th>
+                <th className="py-1.5 px-2 min-w-[200px]">Competition</th>
+                <th className="py-1.5 px-2 w-40 text-center">Predictability Tier</th>
+                <th className="py-1.5 px-2 w-32 text-center">Conviction Hit Rate</th>
+                <th className="py-1.5 px-2 w-36 text-center">DNB Staking Rule</th>
+                <th className="py-1.5 px-2 w-20 text-center">Draw Rate</th>
+                <th className="py-1.5 px-2 w-20 text-center">Avg Goals</th>
+                <th className="py-1.5 px-2 w-20 text-center">Pace Factor</th>
+                <th className="py-1.5 px-2 w-24 text-center">Index</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredLeagues.map((l, idx) => (
-                <tr key={l.name} className={`hover:bg-indigo-50/30 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}>
+                <tr key={l.name} className={`hover:bg-indigo-50/30 transition-colors md:h-12 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}>
                   
                   {/* Rank */}
-                  <td className="py-2.5 px-3 text-center font-bold text-slate-400">
+                  <td className="py-1.5 px-2 text-center font-bold text-slate-400">
                     {idx + 1}
                   </td>
 
                   {/* League / Country */}
-                  <td className="py-2.5 px-3">
+                  <td className="py-1.5 px-2">
                     <div className="font-semibold text-slate-900">{l.name}</div>
                     <div className="text-[10px] text-slate-400">{l.country} • {l.matchesSampled} Matches Analyzed</div>
                   </td>
 
                   {/* Tier Badge */}
-                  <td className="py-2.5 px-3 text-center">
+                  <td className="py-1.5 px-2 text-center">
                     <span className={`inline-block px-2.5 py-0.5 rounded text-[11px] font-bold border ${l.badgeStyle}`}>
                       {l.tierBadge}
                     </span>
                   </td>
 
                   {/* Expected Hit Rate */}
-                  <td className="py-2.5 px-3 text-center font-mono font-bold text-emerald-700">
+                  <td className="py-1.5 px-2 text-center font-mono font-bold text-emerald-700">
                     {l.expectedHitRate}
                   </td>
 
                   {/* DNB Rule */}
-                  <td className="py-2.5 px-3 text-center text-[11px] text-slate-600 font-medium">
+                  <td className="py-1.5 px-2 text-center text-[11px] text-slate-600 font-medium">
                     {l.dnbRec}
                   </td>
 
                   {/* Draw Rate */}
-                  <td className="py-2.5 px-3 text-center font-mono text-slate-700">
+                  <td className="py-1.5 px-2 text-center font-mono text-slate-700">
                     {safeToFixed(l.drawRate, 1)}%
                   </td>
 
                   {/* Avg Goals */}
-                  <td className="py-2.5 px-3 text-center font-mono text-slate-700">
+                  <td className="py-1.5 px-2 text-center font-mono text-slate-700">
                     {safeToFixed(l.avgGoals, 2)}
                   </td>
 
                   {/* Pace Factor */}
-                  <td className="py-2.5 px-3 text-center font-mono text-indigo-700 font-semibold">
+                  <td className="py-1.5 px-2 text-center font-mono text-indigo-700 font-semibold">
                     {safeToFixed(l.paceFactor, 2)}x
                   </td>
 
                   {/* Predictability Index */}
-                  <td className="py-2.5 px-3 text-center">
+                  <td className="py-1.5 px-2 text-center">
                     <div className="flex items-center justify-center gap-1.5">
                       <div className="w-10 h-1.5 bg-slate-200 rounded-full overflow-hidden">
                         <div 

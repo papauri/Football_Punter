@@ -488,16 +488,16 @@ export default function AISwarmCenter({
         </div>
 
         {/* Compact Table for Swarm Fixtures */}
-        <div className="overflow-x-auto border border-slate-200 rounded-lg">
+        <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none">
-                <th className="py-2.5 px-3 w-16 text-center">Score</th>
-                <th className="py-2.5 px-3 min-w-[190px]">Fixture</th>
-                <th className="py-2.5 px-3 w-28 text-center">Directive</th>
-                <th className="py-2.5 px-3 min-w-[150px] text-center">Agent Voting</th>
-                <th className="py-2.5 px-3 w-28 text-center">Debate</th>
-                <th className="py-2.5 px-2 w-16 text-center">Slip</th>
+              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-10">
+                <th className="py-1.5 px-2 w-16 text-center">Score</th>
+                <th className="py-1.5 px-2 min-w-[190px]">Fixture</th>
+                <th className="py-1.5 px-2 w-28 text-center">Directive</th>
+                <th className="py-1.5 px-2 min-w-[150px] text-center">Agent Voting</th>
+                <th className="py-1.5 px-2 w-28 text-center">Debate</th>
+                <th className="py-1.5 px-2 w-16 text-center">Slip</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -508,7 +508,7 @@ export default function AISwarmCenter({
                   </td>
                 </tr>
               ) : (
-                displayedMatches.map(m => {
+                displayedMatches.map((m, idx) => {
                   const swarmData = m.aiSwarm || m.imperialSwarm;
                   const isUnanimous = swarmData?.isTopValueLeg || swarmData?.isAntiFragileLeg;
                   const isTrap = swarmData?.isContrarianTrap;
@@ -516,10 +516,10 @@ export default function AISwarmCenter({
 
                   return (
                     <React.Fragment key={m.id}>
-                      <tr className={`hover:bg-indigo-50/30 transition-colors ${isExpanded ? 'bg-indigo-50/20' : ''}`}>
+                      <tr className={`hover:bg-indigo-50/30 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'} md:h-12 ${isExpanded ? 'bg-indigo-50/20' : ''}`}>
                         
                         {/* Score */}
-                        <td className="py-2 px-3 text-center">
+                        <td className="py-1.5 px-2 text-center">
                           <span className={`inline-block px-2 py-0.5 rounded font-black font-mono text-xs border ${
                             isUnanimous 
                               ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
@@ -532,7 +532,7 @@ export default function AISwarmCenter({
                         </td>
 
                         {/* Fixture */}
-                        <td className="py-2 px-3">
+                        <td className="py-1.5 px-2">
                           <div className="font-semibold text-slate-900 truncate">
                             {m.home} vs {m.away}
                           </div>
@@ -544,8 +544,8 @@ export default function AISwarmCenter({
                         </td>
 
                         {/* Directive */}
-                        <td className="py-2 px-3 text-center">
-                          <span className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold border ${
+                        <td className="py-1.5 px-2 text-center">
+                          <span className={`inline-block px-2.5 py-0.5 rounded text-[11px] font-bold border ${
                             isUnanimous
                               ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                               : isTrap
@@ -557,13 +557,13 @@ export default function AISwarmCenter({
                         </td>
 
                         {/* 6 mini agent votes */}
-                        <td className="py-2 px-3 text-center">
+                        <td className="py-1.5 px-2 text-center">
                           <div className="flex items-center justify-center gap-1 text-[10px] font-mono">
-                            {['TACT', 'xG', 'SQD', 'MKT', 'PHYS', 'LRN'].map((label, idx) => {
-                              const rawVote = swarmData?.agentVotes?.[idx]?.predictedWinner;
+                            {['TACT', 'xG', 'SQD', 'MKT', 'PHYS', 'LRN'].map((label, aIdx) => {
+                              const rawVote = swarmData?.agentVotes?.[aIdx]?.predictedWinner;
                               const shortVote = rawVote === 'HOME' ? 'H' : rawVote === 'AWAY' ? 'A' : rawVote === 'DRAW' ? 'D' : (rawVote || '-');
                               return (
-                                <span key={idx} className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-700 font-semibold" title={swarmData?.agentVotes?.[idx]?.name}>
+                                <span key={aIdx} className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-700 font-semibold" title={swarmData?.agentVotes?.[aIdx]?.name}>
                                   {label}:{shortVote}
                                 </span>
                               );
@@ -572,7 +572,7 @@ export default function AISwarmCenter({
                         </td>
 
                         {/* Debate toggle */}
-                        <td className="py-2 px-3 text-center">
+                        <td className="py-1.5 px-2 text-center">
                           <button
                             onClick={() => setExpandedDebateId(isExpanded ? null : m.id)}
                             className="px-2 py-1 rounded text-[11px] font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 inline-flex items-center gap-1 transition-colors cursor-pointer"
@@ -584,7 +584,7 @@ export default function AISwarmCenter({
                         </td>
 
                         {/* Acca action */}
-                        <td className="py-2 px-2 text-center">
+                        <td className="py-1.5 px-2 text-center">
                           {onAddToAcca && (
                             <button
                               onClick={() => {

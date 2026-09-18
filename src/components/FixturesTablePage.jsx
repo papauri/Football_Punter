@@ -455,31 +455,23 @@ export default function FixturesTablePage({
       </div>
 
       {/* Matches League Table */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-visible">
+      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
         <div className="w-full">
           <table className="w-full text-left border-collapse text-xs">
             <thead className="hidden md:table-header-group">
-              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-11">
+              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-10">
                 {/* Time */}
                 <th 
                   onClick={() => handleSort('time')}
                   className={`py-1.5 px-2 w-24 text-center cursor-pointer transition-colors group select-none ${
                     sortField === 'time' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
-                  title={`Click to sort by Kickoff Time (${sortField === 'time' ? (sortDirection === 'asc' ? 'Earliest first — click for Latest' : 'Latest first — click for Earliest') : 'Click to sort'})`}
+                  title="Click to sort by Kickoff Time"
                 >
                   <div className="inline-flex items-center justify-center gap-1">
                     <span className={sortField === 'time' ? 'text-indigo-600 font-bold' : ''}>Time</span>
                     {sortField === 'time' ? (
-                      sortDirection === 'asc' ? (
-                        <span className="inline-flex items-center text-indigo-600 gap-0.5 text-[10px] font-mono font-bold">
-                          <ArrowUp className="w-3 h-3" />
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center text-indigo-600 gap-0.5 text-[10px] font-mono font-bold">
-                          <ArrowDown className="w-3 h-3" />
-                        </span>
-                      )
+                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
                     ) : (
                       <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                     )}
@@ -492,7 +484,7 @@ export default function FixturesTablePage({
                   className={`py-1.5 px-2 min-w-[180px] cursor-pointer transition-colors group select-none ${
                     sortField === 'fixture' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
-                  title={`Click to sort by Teams / Competition (${sortField === 'fixture' ? (sortDirection === 'asc' ? 'A to Z — click for Z to A' : 'Z to A — click for A to Z') : 'Click to sort'})`}
+                  title="Click to sort by Teams / Competition"
                 >
                   <div className="inline-flex items-center gap-1">
                     <span className={sortField === 'fixture' ? 'text-indigo-600 font-bold' : ''}>Fixture</span>
@@ -510,7 +502,7 @@ export default function FixturesTablePage({
                   className={`py-1.5 px-2 w-20 text-center cursor-pointer transition-colors group select-none ${
                     sortField === 'lineup' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
-                  title={`Click to sort by Confirmed XI status (${sortField === 'lineup' ? (sortDirection === 'desc' ? 'Confirmed first' : 'Unconfirmed first') : 'Click to sort'})`}
+                  title="Click to sort by Confirmed XI status"
                 >
                   <div className="inline-flex items-center justify-center gap-1">
                     <span className={sortField === 'lineup' ? 'text-indigo-600 font-bold' : ''}>Lineup</span>
@@ -528,7 +520,7 @@ export default function FixturesTablePage({
                   className={`py-1.5 px-2 w-28 text-center cursor-pointer transition-colors group select-none ${
                     sortField === 'prediction' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
-                  title={`Click to sort by AI Pick Outcome (${sortField === 'prediction' ? (sortDirection === 'asc' ? 'Ascending' : 'Descending') : 'Click to sort'})`}
+                  title="Click to sort by AI Pick Outcome"
                 >
                   <div className="inline-flex items-center justify-center gap-1">
                     <span className={sortField === 'prediction' ? 'text-indigo-600 font-bold' : ''}>Prediction</span>
@@ -542,73 +534,19 @@ export default function FixturesTablePage({
 
                 {/* 1 | X | 2 Probs */}
                 <th 
-                  className={`py-1.5 px-3 w-40 text-center select-none transition-colors ${
-                    ['probs', 'home_prob', 'draw_prob', 'away_prob'].includes(sortField) ? 'bg-indigo-50/60' : ''
+                  onClick={() => handleSort('probs')}
+                  className={`py-1.5 px-2 w-36 text-center cursor-pointer transition-colors group select-none ${
+                    ['probs', 'home_prob', 'draw_prob', 'away_prob'].includes(sortField) ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
+                  title="Click to sort by Top Win Probability"
                 >
-                  <div className="flex flex-col items-center gap-0.5">
-                    <div 
-                      onClick={() => handleSort('probs')}
-                      className="inline-flex items-center justify-center gap-1 cursor-pointer hover:text-indigo-600 transition-colors group"
-                      title={`Click to sort by Top Win Probability (${sortField === 'probs' ? (sortDirection === 'asc' ? 'Lowest first — click for Highest' : 'Highest first — click for Lowest') : 'Click to sort'})`}
-                    >
-                      <InfoTooltip title="1 | X | 2 Probabilities" content="The model's calculated win probabilities for Home (1), Draw (X), and Away (2). Click 'Probs' or individual buttons below to sort.">
-                        <span className={sortField === 'probs' ? 'text-indigo-600 font-bold' : ''}>1 | X | 2 Probs</span>
-                      </InfoTooltip>
-                      {sortField === 'probs' ? (
-                        sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                      ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-
-                    {/* Sub-selectors for 1, X, 2 probabilities */}
-                    <div className="inline-flex items-center gap-0.5 bg-slate-200/70 p-0.5 rounded border border-slate-200 text-[9px] font-mono font-bold">
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); handleSort('probs'); }}
-                        title={`Sort by Overall Top Prob (${sortField === 'probs' && sortDirection === 'asc' ? 'Ascending' : 'Descending'})`}
-                        className={`px-1 py-0.2 rounded cursor-pointer transition-colors flex items-center gap-0.5 ${
-                          sortField === 'probs' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-300/60'
-                        }`}
-                      >
-                        <span>Top</span>
-                        {sortField === 'probs' && (sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5" /> : <ArrowDown className="w-2.5 h-2.5" />)}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); handleSort('home_prob'); }}
-                        title={`Sort by Home Win (1) % (${sortField === 'home_prob' && sortDirection === 'asc' ? 'Ascending' : 'Descending'})`}
-                        className={`px-1 py-0.2 rounded cursor-pointer transition-colors flex items-center gap-0.5 ${
-                          sortField === 'home_prob' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-300/60'
-                        }`}
-                      >
-                        <span>1</span>
-                        {sortField === 'home_prob' && (sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5" /> : <ArrowDown className="w-2.5 h-2.5" />)}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); handleSort('draw_prob'); }}
-                        title={`Sort by Draw (X) % (${sortField === 'draw_prob' && sortDirection === 'asc' ? 'Ascending' : 'Descending'})`}
-                        className={`px-1 py-0.2 rounded cursor-pointer transition-colors flex items-center gap-0.5 ${
-                          sortField === 'draw_prob' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-300/60'
-                        }`}
-                      >
-                        <span>X</span>
-                        {sortField === 'draw_prob' && (sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5" /> : <ArrowDown className="w-2.5 h-2.5" />)}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); handleSort('away_prob'); }}
-                        title={`Sort by Away Win (2) % (${sortField === 'away_prob' && sortDirection === 'asc' ? 'Ascending' : 'Descending'})`}
-                        className={`px-1 py-0.2 rounded cursor-pointer transition-colors flex items-center gap-0.5 ${
-                          sortField === 'away_prob' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-300/60'
-                        }`}
-                      >
-                        <span>2</span>
-                        {sortField === 'away_prob' && (sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5" /> : <ArrowDown className="w-2.5 h-2.5" />)}
-                      </button>
-                    </div>
+                  <div className="inline-flex items-center justify-center gap-1">
+                    <span className={['probs', 'home_prob', 'draw_prob', 'away_prob'].includes(sortField) ? 'text-indigo-600 font-bold' : ''}>1 | X | 2 Probs</span>
+                    {['probs', 'home_prob', 'draw_prob', 'away_prob'].includes(sortField) ? (
+                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    ) : (
+                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    )}
                   </div>
                 </th>
 
@@ -823,62 +761,26 @@ export default function FixturesTablePage({
 
                         {/* Fixture / Teams */}
                         <td className="hidden md:table-cell py-1.5 px-2">
-                          <div className="flex items-center gap-2">
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="font-semibold text-slate-900 truncate">
-                                  {m.home}
-                                </span>
-                                <span className="text-[10px] font-medium text-slate-400">vs</span>
-                                <span className="font-semibold text-slate-900 truncate">
-                                  {m.away}
-                                </span>
-                                {isUnanimous && (
-                                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded border border-amber-300 shadow-2xs" title="6-Agent Unanimous Selection (76.2% Empirical Win Rate)">
-                                    👑 Unanimous (76.2%)
-                                  </span>
-                                )}
-                                {leagueTierObj && (
-                                  <span 
-                                    className={`inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.2 rounded border shadow-2xs ${leagueTierObj.badgeStyle}`} 
-                                    title={`${leagueTierObj.label} (${leagueTierObj.expectedHighConvictionWinRate} conviction hit rate) • ${leagueTierObj.description}`}
-                                  >
-                                    {leagueTierObj.badge}
-                                  </span>
-                                )}
-                                {isDnbAdvised && (
-                                  <span 
-                                    className="inline-flex items-center gap-0.5 text-[9px] font-bold bg-indigo-50 text-indigo-700 px-1.5 py-0.2 rounded border border-indigo-200 shadow-2xs" 
-                                    title={`Draw risk ${safeToFixed(drawProb, 1)}% ≥ 24.0%. Calibrated Draw-No-Bet salvages stake with 69.5% non-loss rate.`}
-                                  >
-                                    🛡️ DNB Advised
-                                  </span>
-                                )}
-                                {isTrap && (
-                                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold bg-rose-100 text-rose-800 px-1.5 py-0.2 rounded border border-rose-300 shadow-2xs" title="Upset Potential Flagged by Council">
-                                    ⚠️ Upset Risk
-                                  </span>
-                                )}
-                                {isDerivative && (
-                                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold bg-emerald-50 text-emerald-700 px-1.5 py-0.2 rounded border border-emerald-200" title={`Smart Derivative: ${m.smartMarket?.pick}`}>
-                                    🛡️ {m.smartMarket?.pick}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="text-[10px] text-slate-500 flex items-center gap-2 mt-0.5">
-                                <span className="truncate max-w-[150px] font-medium">{m.league}</span>
-                                {m.formMomentum && (
-                                  <span className="text-[10px] font-mono text-slate-600 bg-slate-100 px-1 rounded" title={`Rolling 6-game form: Home (${m.formMomentum.home?.record || '—'}) vs Away (${m.formMomentum.away?.record || '—'})`}>
-                                    Form: {m.formMomentum.home?.record || '—'} vs {m.formMomentum.away?.record || '—'}
-                                  </span>
-                                )}
-                                {m.referee?.name && (
-                                  <span className="text-slate-400 hidden sm:inline truncate">
-                                    • Ref: {m.referee.name}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-slate-900 truncate">
+                              {m.home} vs {m.away}
+                            </span>
+                            {isUnanimous ? (
+                              <span className="inline-flex items-center text-[9px] font-bold bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded border border-amber-300 shrink-0" title="6-Agent Unanimous Selection (76.2% Empirical Win Rate)">
+                                👑 Unanimous
+                              </span>
+                            ) : isTrap ? (
+                              <span className="inline-flex items-center text-[9px] font-bold bg-rose-100 text-rose-800 px-1.5 py-0.2 rounded border border-rose-300 shrink-0" title="Upset Potential Flagged by Council">
+                                ⚠️ Risk
+                              </span>
+                            ) : isDnbAdvised ? (
+                              <span className="inline-flex items-center text-[9px] font-bold bg-indigo-50 text-indigo-700 px-1.5 py-0.2 rounded border border-indigo-200 shrink-0" title="Draw-No-Bet Protection Advised">
+                                🛡️ DNB
+                              </span>
+                            ) : null}
+                          </div>
+                          <div className="text-[10px] text-slate-500 truncate max-w-[170px]">
+                            {m.league}
                           </div>
                         </td>
 

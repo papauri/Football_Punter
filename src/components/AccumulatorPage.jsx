@@ -882,15 +882,15 @@ export default function AccumulatorPage({
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-100/70 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none">
+                <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-10">
                   <th className="py-1.5 px-2 w-10 text-center">#</th>
                   <th className="py-1.5 px-2 min-w-[80px]">Time</th>
                   <th className="py-1.5 px-2 min-w-[140px]">Fixture</th>
                   <th className="py-1.5 px-2 min-w-[130px]">Market Selection</th>
-                  <th className="py-2.5 px-2 w-20 text-center">Odds</th>
-                  <th className="py-2.5 px-2 w-24 text-center">Model Prob</th>
-                  <th className="py-2.5 px-2 w-24 text-center">Edge (EV)</th>
-                  <th className="py-2.5 px-2 w-16 text-center">Remove</th>
+                  <th className="py-1.5 px-2 w-20 text-center">Odds</th>
+                  <th className="py-1.5 px-2 w-24 text-center">Model Prob</th>
+                  <th className="py-1.5 px-2 w-24 text-center">Edge (EV)</th>
+                  <th className="py-1.5 px-2 w-16 text-center">Remove</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -900,7 +900,7 @@ export default function AccumulatorPage({
                   const isUnanLeg = legMatch && ((legMatch.aiSwarm || legMatch.imperialSwarm)?.isTopValueLeg || (legMatch.aiSwarm || legMatch.imperialSwarm)?.consensusTier === 'UNANIMOUS_DIRECTIVE');
 
                   return (
-                    <tr key={leg.pickId || leg.id || idx} className={`hover:bg-purple-50/20 transition-colors ${isLegTrap ? 'bg-rose-50/40' : ''}`}>
+                    <tr key={leg.pickId || leg.id || idx} className={`hover:bg-purple-50/20 transition-colors md:h-12 ${isLegTrap ? 'bg-rose-50/40' : idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}>
                       <td className="py-1.5 px-2 text-center font-bold text-slate-400">
                         {leg.legNum}
                       </td>
