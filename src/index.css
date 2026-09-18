@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3 {
+  @apply font-semibold text-slate-800 mb-2 mt-4 text-sm;
+}
+
+.markdown-body p {
+  @apply text-slate-600 leading-relaxed mb-4 text-xs;
+}
+
+.markdown-body strong {
+  @apply text-slate-900 font-semibold;
+}
+
+.markdown-body ul, .markdown-body ol {
+  @apply mb-4 pl-4 list-disc text-slate-600 text-xs leading-relaxed;
+}
+.markdown-body li {
+  @apply mb-1;
+}

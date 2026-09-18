@@ -1,0 +1,4 @@
+{
+  "primaryProvider": "mistral",
+  "primaryModel": "mistral-small-latest"
+}

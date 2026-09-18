@@ -1,0 +1,6 @@
+{
+  "name": "Live Match Scraper & AI Prediction Engine",
+  "description": "Autonomous imperial football prediction system running simultaneous multi-agent team swarms with automated miss-patching, tactical forensics, Poisson xG matrix, and real-time self-healing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
