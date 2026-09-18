@@ -79,7 +79,15 @@ export default function Dashboard() {
   const [betSlips, setBetSlips] = useState(() => {
     try {
       const savedSlips = localStorage.getItem('user_bet_slips');
-      if (savedSlips) return JSON.parse(savedSlips);
+      if (savedSlips) {
+        const parsed = JSON.parse(savedSlips);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          if (!parsed.some(s => s.id === 'props-slip')) {
+            parsed.push({ id: 'props-slip', name: 'Props Slip (LiveScore Bet)', picks: [] });
+          }
+          return parsed;
+        }
+      }
     } catch {}
     
     // Migration from old single slip
@@ -88,12 +96,18 @@ export default function Dashboard() {
       if (savedOld) {
         const parsed = JSON.parse(savedOld);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return [{ id: 'slip-1', name: 'Slip 1', picks: parsed }];
+          return [
+            { id: 'slip-1', name: 'Slip 1', picks: parsed },
+            { id: 'props-slip', name: 'Props Slip (LiveScore Bet)', picks: [] }
+          ];
         }
       }
     } catch {}
     
-    return [{ id: 'slip-1', name: 'Slip 1', picks: [] }];
+    return [
+      { id: 'slip-1', name: 'Slip 1', picks: [] },
+      { id: 'props-slip', name: 'Props Slip (LiveScore Bet)', picks: [] }
+    ];
   });
 
   const [activeSlipId, setActiveSlipId] = useState(() => {
@@ -215,10 +229,14 @@ export default function Dashboard() {
     }
   }, [historical30d, state, auditedDateResults]);
 
-  const handleToggleAccaPick = (match, customPick = null, customMarket = null, customOdds = null, customProb = null) => {
+  const handleToggleAccaPick = (match, customPick = null, customMarket = null, customOdds = null, customProb = null, targetSlipId = null) => {
+    const destinationSlipId = targetSlipId || activeSlipId;
     handleUpdateBetSlips(prevSlips => {
-      const slipIndex = prevSlips.findIndex(s => s.id === activeSlipId);
-      if (slipIndex === -1) return prevSlips;
+      let slipIndex = prevSlips.findIndex(s => s.id === destinationSlipId);
+      if (slipIndex === -1) {
+        slipIndex = prevSlips.findIndex(s => s.id === activeSlipId);
+        if (slipIndex === -1) return prevSlips;
+      }
       
       const currentSlip = prevSlips[slipIndex];
       // If no custom market provided, default to moneyline logic to ensure backwards compatibility
@@ -256,6 +274,11 @@ export default function Dashboard() {
       newSlips[slipIndex] = { ...currentSlip, picks: updatedPicks };
       return newSlips;
     });
+
+    if (targetSlipId && targetSlipId !== activeSlipId) {
+      setActiveSlipId(targetSlipId);
+      try { localStorage.setItem('active_slip_id', targetSlipId); } catch {}
+    }
   };
 
   const handleRemoveAccaPick = (idToRemove) => {
@@ -736,6 +759,11 @@ export default function Dashboard() {
                 accaPicks={accaPicks}
                 accaMatchIds={new Set((accaPicks || []).map(p => p.pickId || p.id))}
                 onOpenDeepResearch={handleOpenDeepResearch}
+                betSlips={betSlips}
+                activeSlipId={activeSlipId}
+                onSetActiveSlipId={setActiveSlipId}
+                onUpdateBetSlips={handleUpdateBetSlips}
+                onNavigate={(page) => setActivePage(page)}
               />
             )}
           </ErrorBoundary>

@@ -2,10 +2,12 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   Target, AlertCircle, RefreshCw, ChevronRight, Activity, Zap, 
   ShieldCheck, TrendingUp, SlidersHorizontal, Search, Check, Plus, 
-  Flame, Flag, Award, Sparkles, ChevronDown, ChevronUp, Clock
+  Flame, Flag, Award, Sparkles, ChevronDown, ChevronUp, Clock,
+  ExternalLink, Copy, CheckCircle2
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { formatRelativeDayTime } from '../utils/dateUtils';
+import PropsAccumulatorModal from './PropsAccumulatorModal';
 
 export default function PropsSpecialsPage({
   matches = [],
@@ -14,7 +16,12 @@ export default function PropsSpecialsPage({
   onAddToSlip,
   accaPicks = [],
   accaMatchIds = new Set(),
-  onOpenDeepResearch
+  onOpenDeepResearch,
+  betSlips = [],
+  activeSlipId = 'props-slip',
+  onSetActiveSlipId,
+  onUpdateBetSlips,
+  onNavigate
 }) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
@@ -24,6 +31,8 @@ export default function PropsSpecialsPage({
   const [searchQuery, setSearchQuery] = useState('');
   const [onlyDerbies, setOnlyDerbies] = useState(false);
   const [expandedInsights, setExpandedInsights] = useState(new Set());
+  const [isPropsAccaModalOpen, setIsPropsAccaModalOpen] = useState(false);
+  const [loadedNotice, setLoadedNotice] = useState(null);
   const abortControllerRef = useRef(null);
 
   const fetchProps = async (force = false) => {
@@ -79,10 +88,20 @@ export default function PropsSpecialsPage({
     });
   };
 
+  const propsSlip = betSlips?.find(s => s.id === 'props-slip');
+  const propsSlipPicks = propsSlip?.picks || [];
+
+  const isPropInPropsSlip = (matchId, propLabel) => {
+    return propsSlipPicks.some(p => 
+      (p.id === matchId || p.pickId?.includes(matchId)) && 
+      (p.pick === propLabel || p.market?.includes(propLabel))
+    );
+  };
+
   // Helper to check if a specific prop is already in slip
   const isPropInSlip = (matchId, propLabel) => {
     const pickKey = `${matchId}_${propLabel}`;
-    return accaMatchIds.has(pickKey) || (accaPicks && accaPicks.some(p => 
+    return isPropInPropsSlip(matchId, propLabel) || accaMatchIds.has(pickKey) || (accaPicks && accaPicks.some(p => 
       (p.id === matchId || p.pickId === pickKey || p.pickId?.startsWith(matchId)) && 
       (p.pick === propLabel || p.market?.includes(propLabel))
     ));
@@ -140,7 +159,7 @@ export default function PropsSpecialsPage({
       });
     });
     return list.sort((a, b) => b.prop.hitProbability - a.prop.hitProbability);
-  }, [data, matches, accaPicks, accaMatchIds]);
+  }, [data, matches, accaPicks, accaMatchIds, propsSlipPicks]);
 
   const handleAddTopAnchors = () => {
     if (!onAddToSlip || allEliteAnchors.length === 0) return;
@@ -148,12 +167,15 @@ export default function PropsSpecialsPage({
     available.forEach(item => {
       onAddToSlip(
         item.match,
-        `Props: ${item.prop.market}`,
         item.prop.label,
-        item.prop.estOdds,
-        item.prop.hitProbability
+        `Props: ${item.prop.market}`,
+        item.prop.livescoreBet?.odds || item.prop.estOdds,
+        item.prop.hitProbability,
+        'props-slip'
       );
     });
+    setLoadedNotice(`Loaded top ${available.length} elite anchor props into dedicated Props Slip (LiveScore Bet)!`);
+    setTimeout(() => setLoadedNotice(null), 4000);
   };
 
   const formatMatchKickoff = (insight) => {
@@ -240,6 +262,95 @@ export default function PropsSpecialsPage({
               <span>75% &ndash; 88%</span>
               <span className="text-[11px] font-normal text-slate-500">Safety Floor</span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Loaded Notification Banner */}
+      {loadedNotice && (
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 px-4 py-3 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 shadow-xs animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{loadedNotice}</span>
+          </div>
+          {onNavigate && (
+            <button
+              onClick={() => {
+                onSetActiveSlipId?.('props-slip');
+                onNavigate('acca');
+              }}
+              className="text-xs text-indigo-700 hover:text-indigo-900 font-bold underline cursor-pointer"
+            >
+              Open Props Slip &rarr;
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* LiveScore Bet Ireland 3-Leg Props Acca Quick Showcase */}
+      <div className="bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-emerald-500/10 border border-amber-300/80 rounded-2xl p-5 shadow-xs relative overflow-hidden">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="space-y-1.5 max-w-xl">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="bg-amber-600 text-white text-xs font-black px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-2xs">
+                <Zap className="w-3.5 h-3.5" /> ⚡ 3-Leg Props Acca
+              </span>
+              <span className="bg-white/90 text-amber-900 border border-amber-300 text-xs font-bold px-2.5 py-0.5 rounded-full shadow-2xs flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> LiveScore Bet Ireland Benchmark
+              </span>
+              <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold px-2.5 py-0.5 rounded-full">
+                ~2.20x Combined Odds &bull; &ge;80% Avg Hit Rate
+              </span>
+            </div>
+            <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">
+              Instant AI Props Accumulator &amp; Dedicated LiveScore Bet Slip
+            </h2>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Poisson quantitative distribution model automatically compiles 2 to 4 independent anchor legs across distinct fixtures, prices them directly against <strong>LiveScore Bet Ireland</strong>, and formats a 1-click bet slip with Kelly staking.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto shrink-0">
+            <button
+              onClick={() => setIsPropsAccaModalOpen(true)}
+              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4 text-indigo-200" />
+              <span>Generate AI Props Acca Slip</span>
+            </button>
+
+            {propsSlipPicks.length > 0 ? (
+              <button
+                onClick={() => {
+                  onSetActiveSlipId?.('props-slip');
+                  onNavigate?.('acca');
+                }}
+                className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Check className="w-4 h-4" />
+                <span>View Props Slip ({propsSlipPicks.length})</span>
+              </button>
+            ) : (
+              <button
+                onClick={handleAddTopAnchors}
+                disabled={allEliteAnchors.length === 0}
+                className="px-3.5 py-2.5 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
+              >
+                <Plus className="w-4 h-4 text-emerald-400" />
+                <span>Quick-Add Top 3 to Slip</span>
+              </button>
+            )}
+
+            <a
+              href="https://www.livescorebet.com/ie/sports/football"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1"
+              title="Open LiveScore Bet Ireland"
+            >
+              <span>LiveScore Bet IE</span>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+            </a>
           </div>
         </div>
       </div>
@@ -560,6 +671,31 @@ export default function PropsSpecialsPage({
                                   <div className="text-sm font-bold text-slate-900">
                                     {prop.label}
                                   </div>
+
+                                  {prop.livescoreBet && (
+                                    <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                                      <span className="text-[10px] font-bold text-slate-500 uppercase">LiveScore Bet IE:</span>
+                                      <span className="text-[11px] font-mono font-bold text-amber-900 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+                                        {prop.livescoreBet.odds}
+                                      </span>
+                                      <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
+                                        (prop.livescoreBet.evPercent || 0) > 0
+                                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                                          : 'bg-slate-100 text-slate-600 border border-slate-200'
+                                      }`}>
+                                        {(prop.livescoreBet.evPercent || 0) > 0 ? '+' : ''}{prop.livescoreBet.evPercent}% EV
+                                      </span>
+                                      <a
+                                        href={prop.livescoreBet.deepLink || 'https://www.livescorebet.com/ie/sports/football'}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="text-[10px] text-indigo-600 hover:text-indigo-800 font-semibold inline-flex items-center gap-0.5 hover:underline"
+                                        title="View prop on LiveScore Bet Ireland"
+                                      >
+                                        Live Odds <ExternalLink className="w-2.5 h-2.5" />
+                                      </a>
+                                    </div>
+                                  )}
                                 </div>
 
                                 <div className="flex items-center gap-2 shrink-0">
@@ -576,17 +712,18 @@ export default function PropsSpecialsPage({
                                     <button
                                       onClick={() => onAddToSlip(
                                         originalMatch,
-                                        `Props: ${prop.market}`,
                                         prop.label,
-                                        prop.estOdds,
-                                        prop.hitProbability
+                                        `Props: ${prop.market}`,
+                                        prop.livescoreBet?.odds || prop.estOdds,
+                                        prop.hitProbability,
+                                        'props-slip'
                                       )}
                                       className={`p-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1 transition-colors ${
                                         inSlip
                                           ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
                                           : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
                                       }`}
-                                      title={inSlip ? 'Remove from Bet Slip' : 'Add to Bet Slip'}
+                                      title={inSlip ? 'Remove from Bet Slip' : 'Add to Props Bet Slip'}
                                     >
                                       {inSlip ? (
                                         <>
@@ -648,6 +785,21 @@ export default function PropsSpecialsPage({
           })}
         </div>
       )}
+
+      {/* AI Props Accumulator Modal */}
+      <PropsAccumulatorModal
+        isOpen={isPropsAccaModalOpen}
+        onClose={() => setIsPropsAccaModalOpen(false)}
+        matches={(matches && matches.length > 0) ? matches : allMatches}
+        onAddToBetSlip={(m, pickVal, marketLabel, oddsVal, probVal, targetSlip) => {
+          onAddToSlip?.(m, pickVal, marketLabel, oddsVal, probVal, targetSlip || 'props-slip');
+        }}
+        onViewPropsSlip={() => {
+          setIsPropsAccaModalOpen(false);
+          onSetActiveSlipId?.('props-slip');
+          onNavigate?.('acca');
+        }}
+      />
     </div>
   );
 }

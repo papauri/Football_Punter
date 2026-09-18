@@ -192,6 +192,49 @@ app.get('/api/state', (req, res) => {
     }
   });
 
+  app.post('/api/props-accumulator', async (req, res) => {
+    try {
+      const { legs = 3, forceRefresh = false, matches } = req.body || {};
+      const cacheKey = `props_acc_${legs}_${(matches || []).length}`;
+      const now = Date.now();
+
+      if (!forceRefresh && propsSpecialsCache.has(cacheKey)) {
+        const cached = propsSpecialsCache.get(cacheKey);
+        if (now - cached.timestamp < 10 * 60 * 1000) {
+          return res.json({ success: true, result: cached.result, cached: true });
+        }
+      }
+
+      if (!engine.matches || engine.matches.length === 0) {
+        try {
+          await engine.scrapeESPNData();
+        } catch (e) {
+          console.warn('[PropsAcca] Pre-scrape warning:', e.message);
+        }
+      }
+
+      const result = await engine.generateOptimalPropsAccumulator({ legs, matches });
+      if (result.success && result.slip) {
+        propsSpecialsCache.set(cacheKey, { result, timestamp: now });
+      }
+
+      res.json({ success: true, result });
+    } catch (error) {
+      console.error('[PropsAcca] Generation error:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/props-accumulator', async (req, res) => {
+    try {
+      const legs = parseInt(req.query.legs || '3', 10);
+      const result = await engine.generateOptimalPropsAccumulator({ legs });
+      res.json({ success: true, result });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   app.post('/api/rollback-patch', (req, res) => {
     try {
       const { patchId } = req.body || {};
