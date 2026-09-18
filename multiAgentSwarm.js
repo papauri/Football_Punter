@@ -765,7 +765,7 @@ export class AISwarmOrchestrator {
       const avgConfidence = upcoming.length > 0 ? Math.round(totalConfidence / upcoming.length) : 0;
       const liveUnanimousPercentage = upcoming.length > 0 ? Math.round((unanimousCount / upcoming.length) * 100) : 0;
       const isSuperAgentOnline = Boolean(this.engine?.hasActiveAiKey && this.engine.hasActiveAiKey());
-      const previousHitRate = this.engine?.unanimousHitRate ? `${this.engine.unanimousHitRate.toFixed(1)}%` : (this.directives.telemetry?.unanimousHitRate || '84.4%');
+      const previousHitRate = this.engine?.unanimousHitRate ? `${this.engine.unanimousHitRate.toFixed(1)}%` : (this.directives.telemetry?.unanimousHitRate || '76.2%');
       const previousProof = this.directives.telemetry?.unanimousProof || null;
 
       this.directives = {
@@ -915,7 +915,7 @@ export class AISwarmOrchestrator {
     }
 
     const baselineAccuracy = totalSamples > 0 ? parseFloat(((baselineHits / totalSamples) * 100).toFixed(1)) : 0;
-    const empiricalUnanimousRate = unanimousCount > 0 ? parseFloat(((unanimousHits / unanimousCount) * 100).toFixed(1)) : 84.4;
+    const empiricalUnanimousRate = unanimousCount > 0 ? parseFloat(((unanimousHits / unanimousCount) * 100).toFixed(1)) : 76.2;
     const highConvictionRate = highConvictionCount > 0 ? parseFloat(((highConvictionHits / highConvictionCount) * 100).toFixed(1)) : 78.8;
     const precisionLift = parseFloat((empiricalUnanimousRate - baselineAccuracy).toFixed(1));
 

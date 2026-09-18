@@ -208,7 +208,7 @@ export default function HeaderBar({
           {/* Accuracy Badge */}
           {overallAccuracy && (
             <div className="hidden xl:flex items-center px-2 py-1 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono shadow-sm">
-              <span>Model Accuracy: {overallAccuracy > 30 ? overallAccuracy : (overallAccuracy + 50).toFixed(1)}%</span>
+              <span>Model Accuracy: {typeof overallAccuracy === 'number' ? `${overallAccuracy.toFixed(1)}%` : overallAccuracy.toString().includes('%') ? overallAccuracy : `${overallAccuracy}%`}</span>
             </div>
           )}
 

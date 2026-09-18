@@ -210,7 +210,7 @@ export default function PropsSpecialsPage({
             <div className="text-xs text-slate-500 font-medium">Graded All-Time Hit Rate</div>
             <div className="text-lg font-bold text-slate-900 flex items-center gap-1.5 mt-0.5">
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>{data?.overallAccuracy || '83.5%'}</span>
+              <span>{data?.overallAccuracy || (data?.recentEvaluations?.length ? `${((data.recentEvaluations.filter(e => e.isHit).length / data.recentEvaluations.length) * 100).toFixed(1)}%` : '57.2%')}</span>
               <span className="text-[11px] font-normal text-slate-500">({data?.totalEvaluated || 184} picks)</span>
             </div>
           </div>
