@@ -707,156 +707,225 @@ export default function FixturesTablePage({
   return (
     <div className="space-y-4">
       
-      {/* 👑 Daily AI Swarm Accumulator (Highest Win Rate & Longest Acca) Showcase Banner */}
+      {/* 👑 Daily AI Swarm Accumulator (Highest Win Rate Council Selections Table) */}
       {dailySwarmAcca && dailySwarmAcca.legs.length > 0 && (
-        <div className="bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-emerald-500/10 border border-amber-300/80 rounded-2xl p-4 sm:p-5 shadow-xs relative overflow-hidden">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-amber-200/60 pb-4">
-            <div className="space-y-1.5 max-w-2xl">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="bg-amber-600 text-white text-xs font-black px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-2xs">
-                  <Award className="w-3.5 h-3.5" /> 👑 Daily AI Swarm Accumulator
-                </span>
-                <span className="bg-indigo-600 text-white text-xs font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-2xs">
-                  <Zap className="w-3.5 h-3.5" /> Longest Acca ({dailySwarmAcca.legs.length} Legs)
-                </span>
-                <span className="bg-white/90 text-indigo-900 border border-indigo-200 text-xs font-black px-2.5 py-0.5 rounded-full font-mono shadow-2xs">
-                  {safeToFixed(dailySwarmAcca.combinedOdds, 2)}x Combined Odds
-                </span>
-                <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold px-2.5 py-0.5 rounded-full font-mono shadow-2xs">
-                  {safeToFixed(dailySwarmAcca.avgWinRate, 1)}% Avg Hit Rate
-                </span>
-                <span className="bg-slate-900 text-amber-300 text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
-                  <ShieldCheck className="w-3 h-3 text-emerald-400" /> LiveScore Bet Ireland Benchmark
-                </span>
+        <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+          {/* Header & Actions Bar */}
+          <div className="p-4 sm:p-5 border-b border-slate-200">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+              <div className="space-y-1.5 max-w-2xl">
+                <div className="flex items-center gap-2 flex-wrap text-xs">
+                  <span className="bg-slate-900 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-md flex items-center gap-1">
+                    <Award className="w-3.5 h-3.5 text-slate-300" /> Council Acca
+                  </span>
+                  <span className="bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-semibold px-2.5 py-0.5 rounded-md">
+                    {dailySwarmAcca.legs.length} Legs
+                  </span>
+                  <span className="bg-slate-100 text-slate-800 border border-slate-200 text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-md">
+                    {safeToFixed(dailySwarmAcca.combinedOdds, 2)}x Combined Odds
+                  </span>
+                  <span className="bg-slate-100 text-slate-800 border border-slate-200 text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-md">
+                    {safeToFixed(dailySwarmAcca.avgWinRate, 1)}% Avg Hit Rate
+                  </span>
+                  <span className="text-slate-400 text-[11px] font-medium hidden sm:inline">
+                    • LiveScore Bet Benchmark
+                  </span>
+                </div>
+
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                  <span>Highest Win Rate Council Selections</span>
+                  <span className="text-[11px] font-medium px-2 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded-md">
+                    100% Unanimous Straight Outrights
+                  </span>
+                </h2>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Synthesized across all 6 autonomous AI agents (Dixon-Coles Poisson, Elo Dominance, Trend Impulse, Contrarian Disruption, Parity, and Value). Straight outright wins only — compiled into the longest qualifying ticket from today's slate.
+                </p>
               </div>
-              <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                <span>Highest Win Rate Council Selections</span>
-                <span className="text-xs font-semibold px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md">
-                  100% Unanimous Straight Outrights
-                </span>
-              </h2>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Synthesized across all 6 autonomous AI agents (Dixon-Coles Poisson, Elo Dominance, Trend Impulse, Contrarian Disruption, Parity, and Value). Straight outright wins only — no Double Chance dilution, no negative EV traps. Compiled as the longest ticket possible from today's slate.
-              </p>
-            </div>
 
-            <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto shrink-0">
-              <button
-                type="button"
-                onClick={handleLoadDailyAccaToSlip}
-                className="flex-1 sm:flex-initial px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                {isAccaLoaded ? (
-                  <>
-                    <CheckCircle2 className="w-4 h-4 text-emerald-200" />
-                    <span>Loaded into Slip!</span>
-                  </>
-                ) : (
-                  <>
-                    <Zap className="w-4 h-4 text-emerald-200" />
-                    <span>Load All {dailySwarmAcca.legs.length} Legs to Slip</span>
-                  </>
-                )}
-              </button>
+              <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto shrink-0">
+                <button
+                  type="button"
+                  onClick={handleLoadDailyAccaToSlip}
+                  className="flex-1 sm:flex-initial px-3.5 py-2 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                >
+                  {isAccaLoaded ? (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Loaded to Slip!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Load All {dailySwarmAcca.legs.length} Legs</span>
+                    </>
+                  )}
+                </button>
 
-              <button
-                type="button"
-                onClick={handleCopyDailyAcca}
-                className="flex-1 sm:flex-initial px-3.5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
-                title="Copy formatted bet slip for LiveScore Bet"
-              >
-                {copiedAccaSlip ? (
-                  <>
-                    <Check className="w-4 h-4 text-emerald-600" />
-                    <span className="text-emerald-700">Copied!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4 text-slate-500" />
-                    <span>Copy Slip</span>
-                  </>
-                )}
-              </button>
+                <button
+                  type="button"
+                  onClick={handleCopyDailyAcca}
+                  className="flex-1 sm:flex-initial px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                  title="Copy formatted bet slip for LiveScore Bet"
+                >
+                  {copiedAccaSlip ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-slate-700" />
+                      <span>Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Copy Slip</span>
+                    </>
+                  )}
+                </button>
 
-              <button
-                type="button"
-                onClick={() => {
-                  if (onNavigate) onNavigate('acca');
-                  else if (onSelectMarketMode) onSelectMarketMode('acca');
-                }}
-                className="px-3.5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1 cursor-pointer"
-              >
-                <span>View Slip</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onNavigate) onNavigate('acca');
+                    else if (onSelectMarketMode) onSelectMarketMode('acca');
+                  }}
+                  className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                >
+                  <span>View Slip</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-500" />
+                </button>
 
-              <a
-                href="https://www.livescorebet.com/ie/sports/football"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-2.5 py-2.5 text-slate-500 hover:text-slate-800 bg-white/80 hover:bg-white border border-slate-200 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1"
-                title="Open LiveScore Bet Ireland"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+                <a
+                  href="https://www.livescorebet.com/ie/sports/football"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-2.5 py-2 text-slate-400 hover:text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center"
+                  title="Open LiveScore Bet Ireland"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
             </div>
           </div>
 
-          {/* Legs Cards Grid */}
-          <div className="pt-3">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center justify-between">
-              <span>Included Selections ({dailySwarmAcca.legs.length} Independent Fixtures)</span>
-              <span className="font-mono text-indigo-700 font-bold">
-                Joint Model Survival: {safeToFixed(dailySwarmAcca.jointProb, 1)}%
-              </span>
-            </div>
+          {/* Council Selections Table (replacing cards grid) */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider h-9">
+                  <th className="py-2 px-3 w-12 text-center">#</th>
+                  <th className="py-2 px-3 min-w-[200px]">Fixture</th>
+                  <th className="py-2 px-3 min-w-[130px]">League</th>
+                  <th className="py-2 px-3 w-24 text-center">Kickoff</th>
+                  <th className="py-2 px-3 min-w-[160px]">Council Pick</th>
+                  <th className="py-2 px-3 w-20 text-right">Odds</th>
+                  <th className="py-2 px-3 w-24 text-right">Win Rate</th>
+                  <th className="py-2 px-3 w-32 text-center">Consensus</th>
+                  <th className="py-2 px-3 w-24 text-center">Slip</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {dailySwarmAcca.legs.map((leg, idx) => {
+                  const inSlip = accaMatchIds.has(String(leg.id));
+                  const isHome = leg.pick === 'HOME';
+                  const pickTeam = isHome ? leg.home : leg.away;
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
-              {dailySwarmAcca.legs.map((leg, idx) => (
-                <div 
-                  key={leg.id || idx}
-                  className="bg-white/90 border border-slate-200/90 hover:border-indigo-300 rounded-xl p-3 shadow-2xs flex flex-col justify-between transition-all group"
-                >
-                  <div>
-                    <div className="flex items-center justify-between gap-1 text-[10px] text-slate-400 font-semibold mb-1">
-                      <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-mono font-bold">
-                        Leg #{idx + 1}
-                      </span>
-                      <span className="truncate max-w-[120px] text-slate-500">{leg.league}</span>
-                      <span className="font-mono">{leg.time || 'Upcoming'}</span>
-                    </div>
+                  return (
+                    <tr 
+                      key={leg.id || idx}
+                      className="hover:bg-slate-50/70 transition-colors"
+                    >
+                      {/* Leg Number */}
+                      <td className="py-2.5 px-3 text-center text-slate-400 font-mono text-[11px]">
+                        {idx + 1}
+                      </td>
 
-                    <div className="font-bold text-xs text-slate-900 leading-tight mb-2 truncate">
-                      {leg.home} <span className="text-slate-400 font-normal">vs</span> {leg.away}
-                    </div>
-                  </div>
+                      {/* Fixture */}
+                      <td className="py-2.5 px-3">
+                        <div className="font-semibold text-slate-900 text-xs">
+                          <span className={isHome ? 'font-bold text-slate-900' : 'text-slate-700'}>{leg.home}</span>
+                          <span className="text-slate-400 font-normal mx-1.5 text-[11px]">vs</span>
+                          <span className={!isHome ? 'font-bold text-slate-900' : 'text-slate-700'}>{leg.away}</span>
+                        </div>
+                      </td>
 
-                  <div className="space-y-2 pt-1 border-t border-slate-100">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md border ${
-                        leg.pick === 'HOME'
-                          ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                          : 'bg-blue-50 text-blue-800 border-blue-200'
-                      }`}>
-                        {leg.pick === 'HOME' ? leg.home : leg.away} Win
-                      </span>
-                      <span className="font-mono font-black text-xs text-indigo-700 bg-indigo-50/60 px-1.5 py-0.5 rounded border border-indigo-100">
+                      {/* League */}
+                      <td className="py-2.5 px-3 text-slate-500 text-[11px] truncate max-w-[150px]">
+                        {leg.league}
+                      </td>
+
+                      {/* Kickoff */}
+                      <td className="py-2.5 px-3 text-center text-slate-500 font-mono text-[11px] whitespace-nowrap">
+                        {leg.time || 'Upcoming'}
+                      </td>
+
+                      {/* Pick */}
+                      <td className="py-2.5 px-3">
+                        <div className="inline-flex items-center gap-1.5">
+                          <span className="font-semibold text-slate-900 text-xs">
+                            {pickTeam}
+                          </span>
+                          <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                            {isHome ? 'Home Win' : 'Away Win'}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* Odds */}
+                      <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 text-xs">
                         {safeToFixed(leg.odds, 2)}x
-                      </span>
-                    </div>
+                      </td>
 
-                    <div className="flex items-center justify-between text-[10px] text-slate-500">
-                      <span className="font-semibold text-emerald-700 flex items-center gap-1">
-                        <Check className="w-3 h-3 text-emerald-500" />
-                        {safeToFixed(leg.prob, 0)}% Win Rate
-                      </span>
-                      <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-50 text-amber-800 border border-amber-200">
-                        6/6 AI Unanimous
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                      {/* Win Rate */}
+                      <td className="py-2.5 px-3 text-right font-mono font-semibold text-slate-800 text-xs">
+                        {safeToFixed(leg.prob, 0)}%
+                      </td>
+
+                      {/* Consensus */}
+                      <td className="py-2.5 px-3 text-center">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                          <Check className="w-3 h-3 text-slate-400" />
+                          6/6 Unanimous
+                        </span>
+                      </td>
+
+                      {/* Slip Toggle */}
+                      <td className="py-2.5 px-3 text-center">
+                        {inSlip ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded border border-slate-200">
+                            <Check className="w-3 h-3 text-slate-400" />
+                            In Slip
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (onAddToSlip) {
+                                onAddToSlip(leg.match, leg.pick, leg.market, leg.odds, leg.prob);
+                              }
+                            }}
+                            className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 px-2 py-1 rounded border border-slate-300 shadow-2xs transition-colors cursor-pointer"
+                          >
+                            <Plus className="w-3 h-3 text-slate-400" />
+                            Add
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Table Summary Footer */}
+          <div className="px-4 py-3 bg-slate-50/60 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
+            <div className="flex items-center gap-4 flex-wrap">
+              <span>Total Legs: <strong className="text-slate-900">{dailySwarmAcca.legs.length}</strong></span>
+              <span>Combined Odds: <strong className="text-slate-900 font-mono">{safeToFixed(dailySwarmAcca.combinedOdds, 2)}x</strong></span>
+              <span>Average Win Rate: <strong className="text-slate-900 font-mono">{safeToFixed(dailySwarmAcca.avgWinRate, 1)}%</strong></span>
+              <span>Joint Survival: <strong className="text-slate-900 font-mono">{safeToFixed(dailySwarmAcca.jointProb, 1)}%</strong></span>
+            </div>
+            <div className="text-[11px] text-slate-400 font-medium">
+              Independent Fixture Verification • LiveScore Bet Ireland
             </div>
           </div>
         </div>
