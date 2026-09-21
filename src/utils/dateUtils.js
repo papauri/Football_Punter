@@ -1,9 +1,16 @@
 // Bulletproof Date & Time Formatter for Autonomous Patches, Post-Mortems, and Telemetry
 
 export function formatSafeDateTime(val, fallback = null, tzSettings = {}) {
-  const candidate = (val !== null && val !== undefined && val !== '') ? val : fallback;
+  // If val is an object (e.g. match object)
+  let candidate = val;
+  if (val && typeof val === 'object' && !(val instanceof Date)) {
+    candidate = val.timestamp || val.utcDate || (val.dateIso && val.time ? `${val.dateIso}T${val.time}` : null) || (val.date && val.time ? `${val.date} ${val.time}` : null) || val.dateIso || val.date || val.time || fallback;
+  } else {
+    candidate = (val !== null && val !== undefined && val !== '') ? val : fallback;
+  }
+
   if (!candidate || candidate === 'Invalid Date') {
-    return { date: 'Today', time: 'Recent', full: 'Recent' };
+    return { date: 'Today', day: 'Today', time: 'Recent', full: 'Recent' };
   }
 
   const tzZone = tzSettings?.zone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
@@ -11,22 +18,35 @@ export function formatSafeDateTime(val, fallback = null, tzSettings = {}) {
 
   const formatDate = (d) => {
     try {
+      const day = d.toLocaleDateString(undefined, { timeZone: tzZone, weekday: 'short' });
+      const date = d.toLocaleDateString(undefined, { timeZone: tzZone, month: 'short', day: 'numeric' });
+      const time = d.toLocaleTimeString([], { timeZone: tzZone, hour12, hour: '2-digit', minute: '2-digit' });
       return {
-        date: d.toLocaleDateString(undefined, { timeZone: tzZone, month: 'short', day: 'numeric' }),
-        time: d.toLocaleTimeString([], { timeZone: tzZone, hour12, hour: '2-digit', minute: '2-digit' }),
-        full: d.toLocaleString(undefined, { timeZone: tzZone, hour12, month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        day,
+        date,
+        time,
+        full: `${day}, ${date} • ${time}`,
         timestamp: d.getTime()
       };
     } catch {
       // Fallback if timezone is invalid
+      const day = d.toLocaleDateString(undefined, { weekday: 'short' });
+      const date = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      const time = d.toLocaleTimeString([], { hour12, hour: '2-digit', minute: '2-digit' });
       return {
-        date: d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
-        time: d.toLocaleTimeString([], { hour12, hour: '2-digit', minute: '2-digit' }),
-        full: d.toLocaleString(undefined, { hour12, month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        day,
+        date,
+        time,
+        full: `${day}, ${date} • ${time}`,
         timestamp: d.getTime()
       };
     }
   };
+
+  // If candidate is a Date instance
+  if (candidate instanceof Date && !isNaN(candidate.getTime())) {
+    return formatDate(candidate);
+  }
 
   // If candidate is a numeric timestamp
   if (typeof candidate === 'number' && !isNaN(candidate) && candidate > 0) {
@@ -39,7 +59,7 @@ export function formatSafeDateTime(val, fallback = null, tzSettings = {}) {
   if (typeof candidate === 'string') {
     const trimmed = candidate.trim();
     if (!trimmed || trimmed === 'Invalid Date' || trimmed === 'null' || trimmed === 'undefined') {
-      return { date: 'Today', time: 'Recent', full: 'Recent' };
+      return { date: 'Today', day: 'Today', time: 'Recent', full: 'Recent' };
     }
 
     // If candidate is a numeric string (epoch ms)
@@ -57,7 +77,7 @@ export function formatSafeDateTime(val, fallback = null, tzSettings = {}) {
     let d = new Date(trimmed);
     
     if (isNaN(d.getTime())) {
-      // If candidate is a time string (e.g., "8:02:52 PM" or "20:02:52")
+      // If candidate is a time string (e.g., "8:02:52 PM" or "20:02:52" or "19:45")
       if (trimmed.includes(':') || trimmed.includes('AM') || trimmed.includes('PM')) {
         const todayStr = new Date().toISOString().slice(0, 10);
         d = new Date(`${todayStr} ${trimmed}`);
@@ -79,13 +99,14 @@ export function formatSafeDateTime(val, fallback = null, tzSettings = {}) {
     // If it is already a clean string like "8:02:52 PM", use it safely
     return {
       date: 'Today',
+      day: 'Today',
       time: trimmed,
       full: trimmed,
       timestamp: Date.now()
     };
   }
 
-  return { date: 'Today', time: 'Recent', full: 'Recent', timestamp: Date.now() };
+  return { date: 'Today', day: 'Today', time: 'Recent', full: 'Recent', timestamp: Date.now() };
 }
 
 export function formatRelativeDayTime(val, tzSettings = {}) {
@@ -116,11 +137,22 @@ export function formatRelativeDayTime(val, tzSettings = {}) {
     diffDays = Math.round((target - today) / (1000 * 60 * 60 * 24));
   }
 
-  if (diffDays === 0) return `Today ${parsed.time}`;
-  if (diffDays === 1) return `Tomorrow ${parsed.time}`;
-  if (diffDays === -1) return `Yesterday ${parsed.time}`;
+  const dayLabel = parsed.day ? ` (${parsed.day})` : '';
+
+  if (diffDays === 0) return `Today${dayLabel} ${parsed.time}`;
+  if (diffDays === 1) return `Tomorrow${dayLabel} ${parsed.time}`;
+  if (diffDays === -1) return `Yesterday${dayLabel} ${parsed.time}`;
   
   return parsed.full;
+}
+
+export function formatMatchDateTime(val, tzSettings = {}) {
+  const parsed = formatSafeDateTime(val, null, tzSettings);
+  const relative = formatRelativeDayTime(val, tzSettings);
+  return {
+    ...parsed,
+    relative
+  };
 }
 
 export function getLocalizedDateKey(val, tzSettings = {}) {

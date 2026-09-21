@@ -17,6 +17,7 @@ import {
   Info
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { formatRelativeDayTime } from '../utils/dateUtils';
 
 export default function PropsAccumulatorModal({
   isOpen,
@@ -24,7 +25,8 @@ export default function PropsAccumulatorModal({
   initialSlip = null,
   onAddToBetSlip,
   matches = [],
-  onViewPropsSlip
+  onViewPropsSlip,
+  tzSettings
 }) {
   const [slip, setSlip] = useState(initialSlip);
   const [loading, setLoading] = useState(false);
@@ -226,6 +228,12 @@ export default function PropsAccumulatorModal({
                       <span className="text-[10px] font-semibold bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded border border-slate-200">
                         {leg.league}
                       </span>
+                      {(leg.kickoff || leg.date || leg.time) && (
+                        <span className="text-[10px] font-medium text-slate-500 flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-slate-400" />
+                          {formatRelativeDayTime(leg.date || leg.kickoff || leg.time, tzSettings)}
+                        </span>
+                      )}
                     </div>
 
                     <div className="text-right shrink-0">

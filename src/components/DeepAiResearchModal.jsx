@@ -11,12 +11,14 @@ import {
   ShieldCheck, 
   Layers, 
   ArrowRight,
-  RefreshCw
+  RefreshCw,
+  Clock
 } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { safeToFixed, safeParseFloat } from '../utils/numberUtils';
+import { formatRelativeDayTime } from '../utils/dateUtils';
 
-export default function DeepAiResearchModal({ match, onClose, onPatchSuccess }) {
+export default function DeepAiResearchModal({ match, onClose, onPatchSuccess, tzSettings }) {
   const [researchData, setResearchData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPatching, setIsPatching] = useState(false);
@@ -115,6 +117,12 @@ export default function DeepAiResearchModal({ match, onClose, onPatchSuccess }) 
                 <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-semibold">
                   Autonomous Tactical Research
                 </span>
+                {(match.date || match.time || match.utcDate || match.dateIso) && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                    <Clock className="w-3 h-3 text-emerald-400" />
+                    {formatRelativeDayTime(match, tzSettings)}
+                  </span>
+                )}
               </div>
               <h3 className="text-base sm:text-lg font-bold text-white mt-1">
                 {match.home} vs {match.away}

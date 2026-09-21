@@ -11,18 +11,21 @@ import {
   Sliders, 
   ArrowRight,
   ShieldCheck,
-  Activity
+  Activity,
+  Clock
 } from 'lucide-react';
 import Markdown from 'react-markdown';
 import UniformDropdown from './UniformDropdown';
 import { safeParseFloat, safeToFixed, formatScore } from '../utils/numberUtils';
+import { formatRelativeDayTime } from '../utils/dateUtils';
 
 export default function DeepResearchPage({
   matches = [],
   selectedMatch = null,
   onSelectMatch,
   onBackToFixtures,
-  onPatchSuccess
+  onPatchSuccess,
+  tzSettings
 }) {
   const [activeMatch, setActiveMatch] = useState(selectedMatch || matches[0] || null);
   const [researchData, setResearchData] = useState(null);
@@ -85,10 +88,13 @@ export default function DeepResearchPage({
     return () => { isMounted = false; };
   }, [activeMatch]);
 
-  const matchOptions = matches.map((m, idx) => ({
-    value: m.id || String(idx),
-    label: `${m.home} vs ${m.away} (${m.league?.split(' ')[0] || 'Match'})`
-  }));
+  const matchOptions = matches.map((m, idx) => {
+    const timeDisplay = formatRelativeDayTime(m, tzSettings);
+    return {
+      value: m.id || String(idx),
+      label: `${timeDisplay} | ${m.home} vs ${m.away} (${m.league?.split(' ')[0] || 'Match'})`
+    };
+  });
 
   const handleMatchChange = (matchId) => {
     const found = matches.find(m => (m.id || String(matches.indexOf(m))) === matchId);
@@ -172,10 +178,16 @@ export default function DeepResearchPage({
         <div className="flex flex-wrap items-center justify-between gap-4">
           
           <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-100">
-              {activeMatch?.league || 'Football Competition'}
-            </span>
-            <h2 className="text-lg font-black text-slate-900 mt-1.5">
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-100">
+                {activeMatch?.league || 'Football Competition'}
+              </span>
+              <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 flex items-center gap-1">
+                <Clock className="w-3 h-3 text-slate-400" />
+                {formatRelativeDayTime(activeMatch, tzSettings)}
+              </span>
+            </div>
+            <h2 className="text-lg font-black text-slate-900 mt-1">
               {activeMatch?.home} <span className="text-slate-400 font-normal">vs</span> {activeMatch?.away}
             </h2>
             <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">

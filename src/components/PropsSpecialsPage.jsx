@@ -6,8 +6,9 @@ import {
   ExternalLink, Copy, CheckCircle2
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { formatRelativeDayTime } from '../utils/dateUtils';
+import { formatRelativeDayTime, formatSafeDateTime } from '../utils/dateUtils';
 import PropsAccumulatorModal from './PropsAccumulatorModal';
+import UniformDropdown from './UniformDropdown';
 
 export default function PropsSpecialsPage({
   matches = [],
@@ -26,8 +27,9 @@ export default function PropsSpecialsPage({
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState('ALL'); // 'ALL' | 'CORNERS' | 'CARDS' | 'SPECIALS'
-  const [minHitRate, setMinHitRate] = useState(72); // 72, 75, 80
+  const [selectedCategory, setSelectedCategory] = useState('ALL'); // 'ALL' | 'BTTS' | 'CORNERS' | 'CARDS' | 'SPECIALS'
+  const [selectedLeague, setSelectedLeague] = useState('All');
+  const [minHitRate, setMinHitRate] = useState(60); // 60, 70, 75, 80
   const [searchQuery, setSearchQuery] = useState('');
   const [onlyDerbies, setOnlyDerbies] = useState(false);
   const [expandedInsights, setExpandedInsights] = useState(new Set());
@@ -107,20 +109,51 @@ export default function PropsSpecialsPage({
     ));
   };
 
+  // Extract unique leagues with counts for the dropdown
+  const leagueOptions = useMemo(() => {
+    if (!data?.insights) return [{ value: 'All', label: 'All Leagues' }];
+    const counts = {};
+    data.insights.forEach(ins => {
+      if (ins.league) {
+        counts[ins.league] = (counts[ins.league] || 0) + 1;
+      }
+    });
+    const sorted = Object.keys(counts).sort();
+    return [
+      { value: 'All', label: `All Leagues (${data.insights.length})` },
+      ...sorted.map(lg => ({ value: lg, label: `${lg} (${counts[lg]})` }))
+    ];
+  }, [data]);
+
   // Filtered insights according to user criteria
   const filteredInsights = useMemo(() => {
     if (!data?.insights) return [];
     return data.insights.filter(insight => {
-      // Search query
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchStr = `${insight.home} ${insight.away} ${insight.league}`.toLowerCase();
-        if (!matchStr.includes(q)) return false;
+      // League filter
+      if (selectedLeague !== 'All' && insight.league !== selectedLeague) {
+        return false;
       }
+
       // Derby filter
       if (onlyDerbies && !insight.scrapedContext?.isDerby) {
         return false;
       }
+
+      // Search query: match team names, league, referee, or prop labels
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const home = (insight.home || '').toLowerCase();
+        const away = (insight.away || '').toLowerCase();
+        const league = (insight.league || '').toLowerCase();
+        const referee = (insight.scrapedContext?.referee || '').toLowerCase();
+        const hasMatchingProp = (insight.structuredProps || []).some(p => 
+          (p.label || '').toLowerCase().includes(q) || (p.market || '').toLowerCase().includes(q)
+        );
+        if (!home.includes(q) && !away.includes(q) && !league.includes(q) && !referee.includes(q) && !hasMatchingProp) {
+          return false;
+        }
+      }
+
       // Props hit rate / category matching
       if (insight.structuredProps && insight.structuredProps.length > 0) {
         const matchingProps = insight.structuredProps.filter(p => {
@@ -132,7 +165,7 @@ export default function PropsSpecialsPage({
       }
       return true;
     });
-  }, [data, searchQuery, onlyDerbies, selectedCategory, minHitRate]);
+  }, [data, selectedLeague, searchQuery, onlyDerbies, selectedCategory, minHitRate]);
 
   // Extract all high-conviction props across filtered matches for the quick-add action
   const allEliteAnchors = useMemo(() => {
@@ -145,7 +178,10 @@ export default function PropsSpecialsPage({
         away: insight.away,
         league: insight.league,
         date: insight.date,
-        time: insight.time
+        time: insight.time,
+        timestamp: insight.timestamp,
+        utcDate: insight.utcDate,
+        dateIso: insight.dateIso
       };
 
       (insight.structuredProps || []).forEach(prop => {
@@ -189,9 +225,8 @@ export default function PropsSpecialsPage({
   };
 
   const formatMatchKickoff = (insight) => {
-    const timeVal = insight.date || insight.time;
-    if (timeVal) return formatRelativeDayTime(timeVal, tzSettings);
-    return 'Upcoming';
+    const res = formatRelativeDayTime(insight, tzSettings);
+    return res !== 'Upcoming' ? res : (insight.time || 'Upcoming');
   };
 
   return (
@@ -367,11 +402,12 @@ export default function PropsSpecialsPage({
 
       {/* Filter & Market Navigation Controls */}
       <div className="bg-white rounded-xl shadow-xs border border-slate-200 p-4 space-y-3">
-        <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3">
+        <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-3">
           {/* Category Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-hide">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-hide">
             {[
               { id: 'ALL', label: 'All Special Markets' },
+              { id: 'BTTS', label: 'BTTS (Both Teams To Score)' },
               { id: 'CORNERS', label: 'Corners (Lines & Teams)' },
               { id: 'CARDS', label: 'Cards & Discipline' },
               { id: 'SPECIALS', label: 'First Half & Goals' },
@@ -390,27 +426,37 @@ export default function PropsSpecialsPage({
             ))}
           </div>
 
-          {/* Search bar */}
-          <div className="relative min-w-[220px]">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search team or league..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-indigo-500"
+          {/* League Dropdown and Search Bar */}
+          <div className="flex flex-wrap items-center gap-2">
+            <UniformDropdown
+              label="League"
+              value={selectedLeague}
+              onChange={setSelectedLeague}
+              options={leagueOptions}
             />
+
+            <div className="relative min-w-[200px] flex-1 sm:w-56">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search team, league, prop..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-indigo-500"
+              />
+            </div>
           </div>
         </div>
 
         {/* Secondary filters */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100 text-xs">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-slate-500 font-medium">Confidence Floor:</span>
             {[
-              { rate: 72, label: 'All High Hits (≥72%)' },
-              { rate: 75, label: 'High Conviction (≥75%)' },
-              { rate: 80, label: '🛡️ Elite Anchors (≥80%)' },
+              { rate: 60, label: 'All Value (≥60%)' },
+              { rate: 70, label: 'High Conviction (≥70%)' },
+              { rate: 75, label: '🛡️ Elite Anchors (≥75%)' },
+              { rate: 80, label: '💎 Super Anchors (≥80%)' },
             ].map(lvl => (
               <button
                 key={lvl.rate}
@@ -426,7 +472,7 @@ export default function PropsSpecialsPage({
             ))}
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             <label className="flex items-center gap-2 cursor-pointer text-slate-700 select-none">
               <input
                 type="checkbox"
@@ -443,6 +489,23 @@ export default function PropsSpecialsPage({
             <span className="text-slate-500">
               Showing <strong className="text-slate-800">{filteredInsights.length}</strong> matches
             </span>
+            {(selectedLeague !== 'All' || searchQuery || selectedCategory !== 'ALL' || onlyDerbies || minHitRate !== 60) && (
+              <>
+                <span className="text-slate-400">|</span>
+                <button
+                  onClick={() => {
+                    setSelectedLeague('All');
+                    setSearchQuery('');
+                    setSelectedCategory('ALL');
+                    setOnlyDerbies(false);
+                    setMinHitRate(60);
+                  }}
+                  className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold underline cursor-pointer"
+                >
+                  Reset filters
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -485,10 +548,11 @@ export default function PropsSpecialsPage({
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-10">
                   <th className="py-1.5 px-2 w-16 text-center">Outcome</th>
-                  <th className="py-1.5 px-2 min-w-[180px]">Fixture</th>
-                  <th className="py-1.5 px-2 min-w-[200px]">Audited Prop Line</th>
+                  <th className="py-1.5 px-2 min-w-[170px]">Fixture</th>
+                  <th className="py-1.5 px-2 w-28 text-center">Date &amp; Kickoff</th>
+                  <th className="py-1.5 px-2 min-w-[190px]">Audited Prop Line</th>
                   <th className="py-1.5 px-2 w-20 text-center">Odds</th>
-                  <th className="py-1.5 px-2 min-w-[180px]">Actual Whistle Result</th>
+                  <th className="py-1.5 px-2 min-w-[170px]">Actual Whistle Result</th>
                   <th className="py-1.5 px-2 w-24 text-center">Expected Hit</th>
                 </tr>
               </thead>
@@ -511,6 +575,16 @@ export default function PropsSpecialsPage({
                     <td className="py-1.5 px-2">
                       <div className="font-semibold text-slate-900">{ev.home} vs {ev.away}</div>
                       {ev.league && <div className="text-[10px] text-slate-400">{ev.league}</div>}
+                    </td>
+
+                    {/* Date & Kickoff */}
+                    <td className="py-1.5 px-2 text-center whitespace-nowrap">
+                      <div className="font-semibold text-slate-800 font-mono text-[11px]">
+                        {formatSafeDateTime(ev, null, tzSettings).time}
+                      </div>
+                      <div className="text-[10px] text-slate-500 font-medium">
+                        {formatSafeDateTime(ev, null, tzSettings).day}, {formatSafeDateTime(ev, null, tzSettings).date}
+                      </div>
                     </td>
 
                     {/* Audited Prop Line */}
@@ -856,6 +930,7 @@ export default function PropsSpecialsPage({
           onSetActiveSlipId?.('props-slip');
           onNavigate?.('acca');
         }}
+        tzSettings={tzSettings}
       />
     </div>
   );

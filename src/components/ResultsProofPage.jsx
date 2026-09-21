@@ -17,13 +17,15 @@ import {
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
 import { safeToFixed, formatScore } from '../utils/numberUtils';
+import { formatSafeDateTime, formatRelativeDayTime } from '../utils/dateUtils';
 
 export default function ResultsProofPage({
   historicalResults = [],
   leaguePerformance = [],
   onOpenDeepResearch,
   onFetchDateResults,
-  isLoading = false
+  isLoading = false,
+  tzSettings
 }) {
   const getTodayIso = () => {
     const d = new Date();
@@ -305,14 +307,14 @@ export default function ResultsProofPage({
           <table className="w-full text-left border-collapse text-xs">
             <thead className="hidden md:table-header-group">
               <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-10">
-                {/* Time */}
+                {/* Date & Time */}
                 <th 
                   onClick={() => handleSort('time')}
-                  className="py-1.5 px-2 w-20 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
+                  className="py-1.5 px-2 w-28 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
                   title="Click to sort by Kickoff Time (Asc / Desc)"
                 >
                   <div className="inline-flex items-center justify-center gap-1">
-                    <span className={sortField === 'time' ? 'text-indigo-600 font-bold' : ''}>Time</span>
+                    <span className={sortField === 'time' ? 'text-indigo-600 font-bold' : ''}>Date &amp; Time</span>
                     {sortField === 'time' ? (
                       sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
                     ) : (
@@ -445,7 +447,7 @@ export default function ResultsProofPage({
                         <div className="flex justify-between items-start mb-2">
                           <div>
                             <span className="font-semibold text-slate-700 font-mono text-[10px] mr-2">
-                              {m.time || 'FT'}
+                              {formatRelativeDayTime(m, tzSettings)}
                             </span>
                             <span className="text-[10px] text-slate-400">
                               {m.league?.split(' ')[0] || 'Soccer'}
@@ -497,13 +499,13 @@ export default function ResultsProofPage({
                       </td>
 
                       {/* ---------------- DESKTOP CELLS ---------------- */}
-                      {/* Time */}
-                      <td className="hidden md:table-cell py-1.5 px-2 text-center">
+                      {/* Date & Time */}
+                      <td className="hidden md:table-cell py-1.5 px-2 text-center whitespace-nowrap">
                         <span className="font-semibold text-slate-700 font-mono text-xs block">
-                          {m.time || 'FT'}
+                          {formatSafeDateTime(m, null, tzSettings).time}
                         </span>
-                        <span className="text-[10px] text-slate-400 block truncate max-w-[65px] mx-auto">
-                          {m.league?.split(' ')[0] || 'Soccer'}
+                        <span className="text-[10px] text-slate-400 block truncate max-w-[85px] mx-auto font-medium">
+                          {formatSafeDateTime(m, null, tzSettings).day}, {formatSafeDateTime(m, null, tzSettings).date}
                         </span>
                       </td>
 

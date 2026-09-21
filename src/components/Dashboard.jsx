@@ -723,6 +723,7 @@ export default function Dashboard() {
                       : []
                 }
                 leaguePerformance={state.trainingStats?.leaguePerformance || []}
+                tzSettings={tzSettings}
                 onOpenDeepResearch={handleOpenDeepResearch}
                 onFetchDateResults={handleFetchDateResults}
                 isLoading={isLoadingDateResults}
