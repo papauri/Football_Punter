@@ -15,11 +15,21 @@ export const SOLID_LEAGUES = [
   { code: 'sco.1', name: 'Scottish Premiership', aliases: ['scottish premiership'] },
   { code: 'ita.1', name: 'Serie A', aliases: ['serie a', 'italian serie a'] },
 
-  // 2. High-Liquidity Secondary European Competitions
+  // 2. High-Liquidity Secondary European & Verified Expansion Competitions
   { code: 'bel.1', name: 'Belgian Pro League', aliases: ['belgian pro league', 'jupiler pro league'] },
+  { code: 'ksa.1', name: 'Saudi Pro League', aliases: ['saudi pro league', 'roshn saudi league', 'saudi professional league'] },
+  { code: 'gre.1', name: 'Greek Super League', aliases: ['greek super league', 'super league greece'] },
+  { code: 'irl.1', name: 'Irish Premier Division', aliases: ['irish premier division', 'league of ireland', 'league of ireland premier division', 'sse airtricity'] },
+  { code: 'tur.1', name: 'Turkish Super Lig', aliases: ['turkish super lig', 'super lig', 'süper lig'] },
   { code: 'uefa.europa', name: 'UEFA Europa League', aliases: ['uefa europa league', 'europa league', 'uel'] },
   { code: 'uefa.europa.conf', name: 'UEFA Conference League', aliases: ['uefa conference league', 'uefa europa conference league', 'conference league'] },
   { code: 'uefa.super_cup', name: 'UEFA Super Cup', aliases: ['uefa super cup', 'super cup'] },
+  { code: 'uefa.nations', name: 'UEFA Nations League', aliases: ['uefa nations league', 'nations league'] },
+  { code: 'uefa.euro', name: 'UEFA European Championship', aliases: ['uefa european championship', 'european championship', 'euro 2024', 'euro 2028', 'euros'] },
+  { code: 'uefa.euroq', name: 'UEFA European Championship Qualifying', aliases: ['uefa european championship qualifying', 'euro qualifying', 'euro qualifiers'] },
+  { code: 'fifa.world', name: 'FIFA World Cup', aliases: ['fifa world cup', 'world cup'] },
+  { code: 'fifa.worldq.uefa', name: 'UEFA World Cup Qualifiers', aliases: ['uefa world cup qualifiers', 'world cup qualifying uefa'] },
+  { code: 'fifa.worldq.conmebol', name: 'CONMEBOL World Cup Qualifiers', aliases: ['conmebol world cup qualifiers', 'world cup qualifying conmebol'] },
 
   // 3. Major European Domestic Knockout Cups
   { code: 'eng.fa', name: 'English FA Cup', aliases: ['fa cup', 'english fa cup'] },
@@ -87,7 +97,7 @@ const BLACKLISTED_CODES = new Set([
 ]);
 
 const BLACKLISTED_REGEXES = [
-  /\bchampionship\b/i,
+  /(?<!european\s+|world\s+|uefa\s+)\bchampionship\b/i,
   /\bleague\s*one\b/i,
   /\bleague\s*two\b/i,
   /\b2\.?\s*bundesliga\b/i,
@@ -185,7 +195,12 @@ export const LEAGUE_PREDICTABILITY_TIERS = {
       'Copa del Rey', 'esp.copa_del_rey',
       'Coppa Italia', 'ita.coppa_italia',
       'Coupe de France', 'fra.coupe_de_france',
-      'KNVB Beker', 'ned.cup'
+      'KNVB Beker', 'ned.cup',
+      'Saudi Pro League', 'ksa.1',
+      'Greek Super League', 'gre.1',
+      'UEFA European Championship', 'uefa.euro',
+      'UEFA European Championship Qualifying', 'uefa.euroq',
+      'FIFA World Cup', 'fifa.world'
     ]
   },
   TIER_2: {
@@ -204,8 +219,13 @@ export const LEAGUE_PREDICTABILITY_TIERS = {
       'French Ligue 1', 'Ligue 1', 'fra.1',
       'Portuguese Primeira Liga', 'Primeira Liga', 'por.1',
       'Belgian Pro League', 'bel.1',
+      'Irish Premier Division', 'League of Ireland Premier Division', 'irl.1',
+      'Turkish Super Lig', 'tur.1',
       'UEFA Europa League', 'uefa.europa',
-      'UEFA Conference League', 'uefa.europa.conf'
+      'UEFA Conference League', 'uefa.europa.conf',
+      'UEFA Nations League', 'uefa.nations',
+      'UEFA World Cup Qualifiers', 'fifa.worldq.uefa',
+      'CONMEBOL World Cup Qualifiers', 'fifa.worldq.conmebol'
     ]
   },
   TIER_3: {
