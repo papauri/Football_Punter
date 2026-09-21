@@ -410,7 +410,7 @@ class SoccerEngine {
 
     // Quantitative Hyperparameters (Calibrated from 4,303 Match Benchmark)
     const defaultHyperparameters = {
-      homeAdvantage: 1.153147527116571,
+      homeAdvantage: 1.1549734108932828,
       homeEloBoost: 65,
       entropyFloorThreshold: 52.0,
       paritySafetyThreshold: 68.0,

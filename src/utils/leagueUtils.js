@@ -49,6 +49,7 @@ export const BLACKLISTED_LEAGUES = [
   'Liga de Expansión MX', 'mex.2',
 
   // 2. High-Entropy Parity / Volatility Leagues (Favorites consistently underperform)
+  'Liga MX', 'mex.1',
   'Brasileirão', 'bra.1',
   'MLS', 'Major League Soccer', 'usa.1',
   'Japanese J1 League', 'J1 League', 'jpn.1',
@@ -96,6 +97,7 @@ const BLACKLISTED_REGEXES = [
   /\bligue\s*2\b/i,
   /\beerste\s*divisie\b/i,
   /\bbrasileir[ãa]o\b/i,
+  /\bliga\s*mx\b/i,
   /\bbrazil\s*(?:s[ée]rie|serie)\b/i,
   /\bbrazilian\s*(?:s[ée]rie|serie)\b/i,
   /\bmls\b/i,
