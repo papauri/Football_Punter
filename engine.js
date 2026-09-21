@@ -11,6 +11,7 @@ import path from 'path';
 import { GoogleGenAI } from '@google/genai';
 import { fetchUnderstatData } from './understat_scraper.js';
 import { AISwarmOrchestrator } from './multiAgentSwarm.js';
+import { SOLID_LEAGUES, BLACKLISTED_LEAGUES, isLeagueBlacklisted, isLeagueSolid } from './src/utils/leagueUtils.js';
 
 const HYPERPARAMETERS_FILE = path.join(process.cwd(), 'hyperparameters.json');
 
@@ -97,96 +98,8 @@ async function callGemini(prompt, systemInstruction = '', explicitKey = null, op
   }
 }
 
-export const ESPN_LEAGUES = [
-  { code: 'eng.1', name: 'Premier League' },
-  { code: 'eng.fa', name: 'English FA Cup' },
-  { code: 'eng.league_cup', name: 'English Carabao Cup' },
-  { code: 'eng.charity', name: 'FA Community Shield' },
-  { code: 'eng.2', name: 'Championship' },
-  { code: 'esp.1', name: 'LaLiga' },
-  { code: 'esp.copa_del_rey', name: 'Copa del Rey' },
-  { code: 'esp.2', name: 'LaLiga 2' },
-  { code: 'ita.1', name: 'Serie A' },
-  { code: 'ita.coppa_italia', name: 'Coppa Italia' },
-  { code: 'ger.1', name: 'Bundesliga' },
-  { code: 'ger.dfb_pokal', name: 'DFB-Pokal' },
-  { code: 'ger.super_cup', name: 'DFL-Supercup' },
-  { code: 'ger.2', name: '2. Bundesliga' },
-  { code: 'fra.1', name: 'Ligue 1' },
-  { code: 'fra.coupe_de_france', name: 'Coupe de France' },
-  { code: 'uefa.champions', name: 'UEFA Champions League' },
-  { code: 'uefa.europa', name: 'UEFA Europa League' },
-  { code: 'uefa.europa.conf', name: 'UEFA Conference League' },
-  { code: 'uefa.super_cup', name: 'UEFA Super Cup' },
-  { code: 'uefa.euro', name: 'UEFA European Championship' },
-  { code: 'uefa.euroq', name: 'UEFA European Championship Qualifying' },
-  { code: 'conmebol.libertadores', name: 'Copa Libertadores' },
-  { code: 'conmebol.sudamericana', name: 'Copa Sudamericana' },
-  { code: 'conmebol.recopa', name: 'CONMEBOL Recopa' },
-  { code: 'concacaf.champions', name: 'Concacaf Champions Cup' },
-  { code: 'caf.champions', name: 'CAF Champions League' },
-  { code: 'afc.champions', name: 'AFC Champions League' },
-  { code: 'por.1', name: 'Primeira Liga' },
-  { code: 'ned.1', name: 'Eredivisie' },
-  { code: 'ned.2', name: 'Eerste Divisie' },
-  { code: 'ned.cup', name: 'KNVB Beker' },
-  { code: 'sco.1', name: 'Scottish Premiership' },
-  { code: 'tur.1', name: 'Turkish Super Lig' },
-  { code: 'bel.1', name: 'Belgian Pro League' },
-  { code: 'cze.1', name: 'Czech First League' },
-  { code: 'aus.1', name: 'A-League' },
-  { code: 'usa.1', name: 'MLS' },
-  { code: 'bra.1', name: 'Brasileirão' },
-  { code: 'mex.1', name: 'Liga MX' },
-  { code: 'aut.1', name: 'Austrian Bundesliga' },
-  { code: 'sui.1', name: 'Swiss Super League' },
-  { code: 'den.1', name: 'Danish Superliga' },
-  { code: 'gre.1', name: 'Greek Super League' },
-  { code: 'ksa.1', name: 'Saudi Pro League' },
-  { code: 'nor.1', name: 'Norwegian Eliteserien' },
-  { code: 'swe.1', name: 'Swedish Allsvenskan' },
-  { code: 'jpn.1', name: 'Japanese J1 League' },
-  { code: 'arg.1', name: 'Argentine Liga Profesional' },
-  { code: 'arg.2', name: 'Argentine Primera Nacional' },
-  { code: 'bra.2', name: 'Brasileirão Série B' },
-  { code: 'col.1', name: 'Categoría Primera A' },
-  { code: 'chi.1', name: 'Chilean Primera División' },
-  { code: 'uru.1', name: 'Uruguayan Primera División' },
-  { code: 'ecu.1', name: 'LigaPro Ecuador' },
-  { code: 'eng.trophy', name: 'EFL Trophy' },
-  { code: 'uefa.nations', name: 'UEFA Nations League' },
-  { code: 'fifa.world', name: 'FIFA World Cup' },
-  { code: 'fifa.worldq.uefa', name: 'UEFA World Cup Qualifiers' },
-  { code: 'fifa.worldq.conmebol', name: 'CONMEBOL World Cup Qualifiers' },
-  { code: 'irl.1', name: 'Irish Premier Division' },
-  { code: 'eng.3', name: 'English League One' },
-  { code: 'eng.4', name: 'English League Two' },
-  { code: 'ita.2', name: 'Italian Serie B' },
-  { code: 'fra.2', name: 'French Ligue 2' },
-  { code: 'sco.2', name: 'Scottish Championship' },
-  { code: 'rou.1', name: 'Romanian Liga 1' },
-  { code: 'rus.1', name: 'Russian Premier League' },
-  { code: 'par.1', name: 'Paraguayan Primera División' },
-  { code: 'bol.1', name: 'Bolivian Liga Profesional' },
-  { code: 'per.1', name: 'Peruvian Liga 1' },
-  { code: 'ven.1', name: 'Venezuelan Primera División' },
-  { code: 'chn.1', name: 'Chinese Super League' },
-  { code: 'ind.1', name: 'Indian Super League' },
-  { code: 'rsa.1', name: 'South African Premiership' },
-  { code: 'mex.2', name: 'Mexican Liga de Expansión MX' },
-  { code: 'usa.open', name: 'U.S. Open Cup' },
-  { code: 'nir.1', name: 'Northern Irish Premiership' },
-  { code: 'wal.1', name: 'Welsh Premier League' },
-  { code: 'fin.1', name: 'Finnish Veikkausliiga' },
-  { code: 'cyp.1', name: 'Cypriot First Division' },
-  { code: 'isr.1', name: 'Israeli Premier League' },
-  { code: 'tha.1', name: 'Thai League 1' },
-  { code: 'mys.1', name: 'Malaysian Super League' },
-  { code: 'eng.w.1', name: "English Women's Super League" },
-  { code: 'esp.w.1', name: 'Spanish Liga F' },
-  { code: 'fra.w.1', name: 'French Première Ligue' },
-  { code: 'usa.nwsl', name: 'NWSL' }
-];
+export { SOLID_LEAGUES, BLACKLISTED_LEAGUES, isLeagueBlacklisted, isLeagueSolid };
+export const ESPN_LEAGUES = SOLID_LEAGUES;
 
 // -------------------------------------------------------------
 // LEAGUE PREDICTABILITY TIERS (Calibrated from 4,303 Match Benchmark)
@@ -497,7 +410,7 @@ class SoccerEngine {
 
     // Quantitative Hyperparameters (Calibrated from 4,303 Match Benchmark)
     const defaultHyperparameters = {
-      homeAdvantage: 1.1406105601976653,
+      homeAdvantage: 1.1530994450696148,
       homeEloBoost: 65,
       entropyFloorThreshold: 52.0,
       paritySafetyThreshold: 68.0,
@@ -510,7 +423,7 @@ class SoccerEngine {
       dixonColesRho: -0.18,
       temperature: 0.80,
       maxScorelineSim: 6,
-      drawEquilibriumDelta: 9.199999999999996,
+      drawEquilibriumDelta: 13,
       h2hWeight: 0.12,
       timeDecayXi: 0.007,
       formWindowGames: 6,
@@ -3224,6 +3137,8 @@ class SoccerEngine {
           const home = comp?.competitors?.find(c => c.homeAway === 'home');
           const away = comp?.competitors?.find(c => c.homeAway === 'away');
 
+          if (isLeagueBlacklisted(league)) continue;
+
           if (home?.team?.displayName && away?.team?.displayName) {
             const evDate = ev.date ? new Date(ev.date) : new Date();
             const timeStr = evDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -3458,6 +3373,8 @@ class SoccerEngine {
         const data = resItem.value;
         if (data.Stages && data.Stages.length > 0) {
           for (const stage of data.Stages) {
+            const stageLeague = stage.Snm || stage.CompN || 'Global League';
+            if (isLeagueBlacklisted(stageLeague)) continue;
             if (stage.Events) {
               for (const f of stage.Events) {
                 const homeName = f.T1?.[0]?.Nm;
@@ -6025,11 +5942,14 @@ Provide a crisp 3-bullet assessment:
     // Step E: Source Code Self-Patching: Persist optimal weights to disk
     try {
       let engineSource = fs.readFileSync('engine.js', 'utf8');
-      engineSource = engineSource.replace(/homeAdvantage:\s*[\d\.]+/, `homeAdvantage: ${this.hyperparameters.homeAdvantage}`);
-      engineSource = engineSource.replace(/dixonColesRho:\s*[\-\d\.]+/, `dixonColesRho: ${this.hyperparameters.dixonColesRho}`);
-      engineSource = engineSource.replace(/drawEquilibriumDelta:\s*[\d\.]+/, `drawEquilibriumDelta: ${this.hyperparameters.drawEquilibriumDelta}`);
-      fs.writeFileSync('engine.js', engineSource, 'utf8');
-      this.log('AutonomousPatch', 'Safely persisted updated Dixon-Coles parameters to engine.js on disk.');
+      if (engineSource && engineSource.length > 50000) {
+        engineSource = engineSource.replace(/homeAdvantage:\s*[\d\.]+/, `homeAdvantage: ${this.hyperparameters.homeAdvantage}`);
+        engineSource = engineSource.replace(/dixonColesRho:\s*[\-\d\.]+/, `dixonColesRho: ${this.hyperparameters.dixonColesRho}`);
+        engineSource = engineSource.replace(/drawEquilibriumDelta:\s*[\d\.]+/, `drawEquilibriumDelta: ${this.hyperparameters.drawEquilibriumDelta}`);
+        fs.writeFileSync('engine.js.tmp', engineSource, 'utf8');
+        fs.renameSync('engine.js.tmp', 'engine.js');
+        this.log('AutonomousPatch', 'Safely persisted updated Dixon-Coles parameters to engine.js on disk.');
+      }
     } catch (e) {
       // In containerized read-only mode, in-memory state handles runtime
     }

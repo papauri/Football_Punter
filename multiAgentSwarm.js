@@ -3,6 +3,8 @@
 // 6 Autonomous Specialized Agents Operating Concurrently in Swarm Fleet
 // =========================================================================
 
+import { isLeagueBlacklisted } from './src/utils/leagueUtils.js';
+
 export class TacticalFormationAgent {
   constructor() {
     this.name = 'Tactical & Pressing Council';
@@ -391,7 +393,14 @@ export class AISynthesisAgent {
     let isContrarianTrap = Boolean(trapFlagged);
     let isUnanimousDirective = false;
 
-    if (trapFlagged) {
+    const isBlacklisted = isLeagueBlacklisted(match.league);
+    if (isBlacklisted) {
+      consensusTier = 'BLACKLISTED_LEAGUE_EXEMPT';
+      tierBadge = '⛔ Blacklisted League (High Chaos/No Telemetry)';
+      isTopValueLeg = false;
+      isUnanimousDirective = false;
+      is100Unanimous = false;
+    } else if (trapFlagged) {
       consensusTier = 'CONTRARIAN_TRAP_INTERCEPT';
       tierBadge = '⚠️ High-Risk Contrarian Trap Intercepted';
       isContrarianTrap = true;
@@ -728,7 +737,7 @@ export class AISwarmOrchestrator {
       // Curate Directives:
       // 1. Top Unanimous AI Directives (expand pool so all top qualified consensus legs are accessible)
       const unanimousDirectives = allScored
-        .filter(s => s.synthesis.isTopValueLeg)
+        .filter(s => s.synthesis.isTopValueLeg && !isLeagueBlacklisted(s.league))
         .sort((a, b) => b.synthesis.swarmScore - a.synthesis.swarmScore)
         .slice(0, 16);
 
@@ -740,9 +749,9 @@ export class AISwarmOrchestrator {
       // 3. Golden Top Value Swarm Parlay (6-Agent Unanimous Consensus)
       let parlayLegs = unanimousDirectives;
       if (parlayLegs.length < 2) {
-        // Fallback: top consensus non-trap matches
+        // Fallback: top consensus non-trap matches from verified non-blacklisted leagues
         const fallbackCandidates = allScored
-          .filter(s => !s.synthesis.isContrarianTrap && (s.synthesis.masterVerdict === 'HOME' || s.synthesis.masterVerdict === 'AWAY'))
+          .filter(s => !s.synthesis.isContrarianTrap && !isLeagueBlacklisted(s.league) && (s.synthesis.masterVerdict === 'HOME' || s.synthesis.masterVerdict === 'AWAY'))
           .sort((a, b) => (b.synthesis.swarmScore || 0) - (a.synthesis.swarmScore || 0));
         parlayLegs = fallbackCandidates.slice(0, 12);
       }
@@ -792,7 +801,7 @@ export class AISwarmOrchestrator {
       // 3b. Dedicated Prime Stable Outright Parlay (100% AI Consensus Outright Straight Wins)
       // Low volatility, high stability fixtures with unanimous council agreement on straight HOME or AWAY win (Zero DC shielding)
       const antiFragileCandidates = allScored
-        .filter(s => !s.synthesis.isContrarianTrap && (s.synthesis.isTopValueLeg || s.synthesis.is100Unanimous || s.synthesis.consensusTier === 'UNANIMOUS_DIRECTIVE'))
+        .filter(s => !s.synthesis.isContrarianTrap && !isLeagueBlacklisted(s.league) && (s.synthesis.isTopValueLeg || s.synthesis.is100Unanimous || s.synthesis.consensusTier === 'UNANIMOUS_DIRECTIVE'))
         .filter(s => s.synthesis.masterVerdict === 'HOME' || s.synthesis.masterVerdict === 'AWAY')
         .map(s => {
           const matchObj = upcoming.find(m => String(m.id) === String(s.fixtureId) || `${m.home} vs ${m.away}` === s.fixture);

@@ -28,13 +28,14 @@ import UniformDropdown from './UniformDropdown';
 import { safeParseFloat, safeToFixed } from '../utils/numberUtils';
 import { formatRelativeDayTime } from '../utils/dateUtils';
 import { resolveMatchOdds, resolveMatchProb } from '../utils/oddsUtils';
+import { isLeagueBlacklisted, isLeagueSolid } from '../utils/leagueUtils';
 import Markdown from 'react-markdown';
 
 const PARITY_LEAGUES = [
   'Championship', 'League One', 'League Two', 'MLS', 'Major League Soccer',
   'Liga Profesional', 'Liga MX', 'Serie B', 'LaLiga 2', 'Ligue 2',
   'Swedish Allsvenskan', 'Norwegian Eliteserien', 'Danish Superliga',
-  'Austrian Bundesliga', 'Saudi Pro League', 'Turkish Super Lig', 'Scottish Premiership'
+  'Austrian Bundesliga', 'Saudi Pro League', 'Turkish Super Lig'
 ];
 
 /**
@@ -44,6 +45,7 @@ function evaluateLegAutonomousStatus(leg, match) {
   const m = match || leg.match || {};
   const sw = m.aiSwarm || m.imperialSwarm || {};
   
+  const isBlacklisted = isLeagueBlacklisted(m.league || leg.league);
   const isTrap = Boolean(sw.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap || m.disruptionModel?.isPassFlagged);
   const isUnan = Boolean(
     sw.is100Unanimous || 
@@ -71,7 +73,13 @@ function evaluateLegAutonomousStatus(leg, match) {
     title: 'Balanced model probability'
   };
 
-  if (isTrap) {
+  if (isBlacklisted) {
+    badge = {
+      type: 'danger',
+      label: '⛔ Blacklisted League',
+      title: 'Competition blacklisted due to extreme parity, random noise, or zero telemetry'
+    };
+  } else if (isTrap) {
     badge = {
       type: 'danger',
       label: '⚠️ High Risk',
@@ -116,6 +124,7 @@ function evaluateLegAutonomousStatus(leg, match) {
   }
 
   return {
+    isBlacklisted,
     isTrap,
     isUnan,
     isParity,
@@ -239,6 +248,7 @@ export default function AccumulatorPage({
     const nLegs = activeLegs.length;
     let score = 75; // baseline
     const recommendations = [];
+    let blacklistedCount = 0;
     let trapCount = 0;
     let drawRiskCount = 0;
     let negativeEvCount = 0;
@@ -246,12 +256,19 @@ export default function AccumulatorPage({
     let dcCount = 0;
 
     activeLegs.forEach((l) => {
+      if (l.status.isBlacklisted) blacklistedCount++;
       if (l.status.isTrap) trapCount++;
       if (l.status.isDrawVulnerable) drawRiskCount++;
       if (l.status.ev < -0.05) negativeEvCount++;
       if (l.status.isUnan) unanimousCount++;
       if (l.status.isProtectedDC) dcCount++;
     });
+
+    // 0. Blacklisted League Penalty (Purge Noise)
+    if (blacklistedCount > 0) {
+      score -= blacklistedCount * 35;
+      recommendations.push(`${blacklistedCount} selection(s) are from blacklisted chaos/noise competitions (e.g. Championship, 2. Bundesliga, South American leagues). Immediate purge required.`);
+    }
 
     // 1. Leg Count Variance Decay Rubric
     if (nLegs <= 3) {
@@ -300,8 +317,8 @@ export default function AccumulatorPage({
       recommendations.push(`${nonUnanCount} selection(s) lack full AI council consensus. All AI models must agree for maximum ticket edge.`);
     }
 
-    if (unanimousCount === nLegs && dcCount === 0 && nLegs >= 2) {
-      score += 20; // Maximum boost for 100% unanimous outright ticket!
+    if (unanimousCount === nLegs && dcCount === 0 && blacklistedCount === 0 && nLegs >= 2) {
+      score += 20; // Maximum boost for 100% unanimous outright ticket on solid leagues!
     }
 
     // Clamp score
@@ -313,7 +330,12 @@ export default function AccumulatorPage({
     let verdictTitle = 'Solid Accumulator';
     let verdictText = 'Balanced slip with positive expectations. Disciplined staking advised.';
 
-    if (trapCount > 0) {
+    if (blacklistedCount > 0) {
+      grade = 'F';
+      gradeColor = 'text-rose-800 bg-rose-100 border-rose-300';
+      verdictTitle = 'Blacklisted League Pick';
+      verdictText = 'Contains selections from blacklisted competitions known for low predictability and high variance.';
+    } else if (trapCount > 0) {
       grade = 'D';
       gradeColor = 'text-rose-700 bg-rose-50 border-rose-200';
       verdictTitle = 'High Risk Trap';
@@ -355,7 +377,7 @@ export default function AccumulatorPage({
       verdictText = 'Low win probability or split AI consensus. Consider auto-optimizing to unanimous outrights.';
     }
 
-    const canAutoOptimize = trapCount > 0 || dcCount > 0 || nonUnanCount > 0 || drawRiskCount > 0 || nLegs > 4 || negativeEvCount > 0;
+    const canAutoOptimize = blacklistedCount > 0 || trapCount > 0 || dcCount > 0 || nonUnanCount > 0 || drawRiskCount > 0 || nLegs > 4 || negativeEvCount > 0;
 
     return {
       score: clampedScore,
@@ -365,6 +387,7 @@ export default function AccumulatorPage({
       verdictText,
       recommendations,
       canAutoOptimize,
+      blacklistedCount,
       trapCount,
       drawRiskCount,
       negativeEvCount,
@@ -450,6 +473,7 @@ export default function AccumulatorPage({
     directiveSource.forEach(leg => {
       const orig = findMatchForLeg(leg);
       const fixtureId = orig?.id || leg.fixtureId;
+      if (isLeagueBlacklisted(leg.league || orig?.league)) return;
       if (fixtureId && !map.has(String(fixtureId))) {
         let pPick = leg.pick || leg.masterVerdict || (orig && (typeof orig.predictedWinner === 'string' ? orig.predictedWinner : orig.predictedWinner?.pick)) || 'HOME';
         if (pPick === '1') pPick = 'HOME';
@@ -482,6 +506,7 @@ export default function AccumulatorPage({
     (matches || []).forEach(m => {
       const idStr = String(m.id);
       if (map.has(idStr)) return;
+      if (isLeagueBlacklisted(m.league)) return;
       const sw = m.aiSwarm || m.imperialSwarm;
       const isTrap = sw?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap || m.disruptionModel?.isPassFlagged;
       if (isTrap) return;
@@ -527,6 +552,7 @@ export default function AccumulatorPage({
     parlayAllLegs.forEach(leg => {
       const orig = findMatchForLeg(leg);
       const fixtureId = orig?.id || leg.fixtureId;
+      if (isLeagueBlacklisted(leg.league || orig?.league)) return;
       if (fixtureId && !map.has(String(fixtureId))) {
         let rawPick = leg.rawPick || leg.pick || 'HOME';
         if (rawPick === '1X' || rawPick === '1') rawPick = 'HOME';
@@ -559,6 +585,7 @@ export default function AccumulatorPage({
     (matches || []).forEach(m => {
       const idStr = String(m.id);
       if (map.has(idStr)) return;
+      if (isLeagueBlacklisted(m.league)) return;
       const sw = m.aiSwarm || m.imperialSwarm;
       const isTrap = sw?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap || m.disruptionModel?.isPassFlagged;
       if (isTrap) return;
@@ -601,6 +628,7 @@ export default function AccumulatorPage({
   const allValuePool = useMemo(() => {
     return (matches || [])
       .filter(m => {
+        if (isLeagueBlacklisted(m.league)) return false;
         const sw = m.aiSwarm || m.imperialSwarm;
         const isTrap = sw?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap;
         if (isTrap) return false;
@@ -649,6 +677,7 @@ export default function AccumulatorPage({
     return matches
       .filter(m => {
         if (accaMatchIds.has(String(m.id))) return false;
+        if (isLeagueBlacklisted(m.league)) return false;
         const sw = m.aiSwarm || m.imperialSwarm;
         const isTrap = sw?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap;
         if (isTrap) return false;
@@ -731,6 +760,7 @@ export default function AccumulatorPage({
   const handleAutoOptimizeSlip = () => {
     if (activeLegs.length === 0) return;
 
+    let removedBlacklistedCount = 0;
     let convertedDCCount = 0;
     let removedSplitCount = 0;
     let removedTrapCount = 0;
@@ -742,6 +772,12 @@ export default function AccumulatorPage({
       const m = leg.match || matches.find(item => item.id === leg.id);
       const p = String(leg.pick || '').toUpperCase();
       const isDC = p === '1X' || p === 'X2' || p === '12';
+
+      // 0. Prune blacklisted league picks immediately
+      if (leg.status.isBlacklisted || isLeagueBlacklisted(m?.league || leg.league)) {
+        removedBlacklistedCount++;
+        return;
+      }
 
       // 1. Convert Double Chance back to straight outright or disallow
       if (isDC) {
@@ -832,6 +868,7 @@ export default function AccumulatorPage({
     }
 
     const notices = [];
+    if (removedBlacklistedCount > 0) notices.push(`${removedBlacklistedCount} blacklisted league pick(s) purged`);
     if (convertedDCCount > 0) notices.push(`${convertedDCCount} DC pick(s) converted/purged`);
     if (removedSplitCount > 0) notices.push(`${removedSplitCount} split-council pick(s) replaced`);
     if (removedTrapCount > 0) notices.push(`${removedTrapCount} trap(s) removed`);
