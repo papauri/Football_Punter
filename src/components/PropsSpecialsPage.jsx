@@ -163,7 +163,17 @@ export default function PropsSpecialsPage({
 
   const handleAddTopAnchors = () => {
     if (!onAddToSlip || allEliteAnchors.length === 0) return;
-    const available = allEliteAnchors.filter(item => !item.inSlip).slice(0, 3);
+    const seenMatches = new Set();
+    const available = [];
+    for (const item of allEliteAnchors) {
+      if (item.inSlip) continue;
+      const matchId = String(item.match?.id || item.match?.espnEventId || `${item.match?.home}-${item.match?.away}`);
+      if (!seenMatches.has(matchId)) {
+        seenMatches.add(matchId);
+        available.push(item);
+        if (available.length >= 3) break;
+      }
+    }
     available.forEach(item => {
       onAddToSlip(
         item.match,

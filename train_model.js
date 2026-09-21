@@ -270,19 +270,15 @@ console.log('------------------------------------------------------');
 console.log(`Total Value Bets Evaluated: ${fullResult.ev.bets}`);
 console.log(`Simulated EV+ Yield / ROI:  +${fullResult.ev.yieldRate.toFixed(2)}%`);
 
-// Sync optimal hyperparameters with engine.js
-let engineFile = fs.readFileSync('engine.js', 'utf8');
-engineFile = engineFile.replace(/homeAdvantage: [\d\.]+/, `homeAdvantage: ${bestParams.homeAdvantage}`);
-engineFile = engineFile.replace(/homeEloBoost: [\d\.]+/, `homeEloBoost: ${bestParams.homeEloBoost}`);
-engineFile = engineFile.replace(/drawEquilibriumDelta: [\d\.]+/, `drawEquilibriumDelta: ${bestParams.drawEquilibriumDelta}`);
-fs.writeFileSync('engine.js', engineFile, 'utf8');
-
-// Update hyperparameters.json
-let hpFile = JSON.parse(fs.readFileSync('hyperparameters.json', 'utf8'));
-hpFile.homeAdvantage = bestParams.homeAdvantage;
-hpFile.homeEloBoost = bestParams.homeEloBoost;
-hpFile.drawEquilibriumDelta = bestParams.drawEquilibriumDelta;
-fs.writeFileSync('hyperparameters.json', JSON.stringify(hpFile, null, 2), 'utf8');
-
-console.log('\nOptimal parameters updated in engine.js and hyperparameters.json.');
+// Update hyperparameters.json (Engine source of truth)
+try {
+  let hpFile = fs.existsSync('hyperparameters.json') ? JSON.parse(fs.readFileSync('hyperparameters.json', 'utf8')) : {};
+  hpFile.homeAdvantage = bestParams.homeAdvantage;
+  hpFile.homeEloBoost = bestParams.homeEloBoost;
+  hpFile.drawEquilibriumDelta = bestParams.drawEquilibriumDelta;
+  fs.writeFileSync('hyperparameters.json', JSON.stringify(hpFile, null, 2), 'utf8');
+  console.log('\nOptimal parameters successfully saved to hyperparameters.json.');
+} catch (err) {
+  console.error('Failed to update hyperparameters.json:', err.message);
+}
 console.log('======================================================\n');

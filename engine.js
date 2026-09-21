@@ -432,7 +432,7 @@ class SoccerEngine {
 
     // Quantitative Hyperparameters (Calibrated from 4,303 Match Benchmark)
     const defaultHyperparameters = {
-      homeAdvantage: 1.155696208774013,
+      homeAdvantage: 1.1022082450343518,
       homeEloBoost: 65,
       entropyFloorThreshold: 52.0,
       paritySafetyThreshold: 68.0,
@@ -442,10 +442,10 @@ class SoccerEngine {
       homeGoalIntensity: 1.30,
       awayGoalIntensity: 1.10,
       goalOverdispersionR: 4.5,
-      dixonColesRho: -0.064,
+      dixonColesRho: -0.18,
       temperature: 0.80,
       maxScorelineSim: 6,
-      drawEquilibriumDelta: 13,
+      drawEquilibriumDelta: 12.699999999999998,
       h2hWeight: 0.12,
       timeDecayXi: 0.007,
       formWindowGames: 6,
@@ -1352,9 +1352,20 @@ class SoccerEngine {
     return Math.round(base * 0.65); // e.g. ~49
   }
 
+  isLeagueDisabled(leagueName) {
+    if (!leagueName) return false;
+    const disabled = Array.isArray(this.hyperparameters?.disabledLeagues)
+      ? this.hyperparameters.disabledLeagues
+      : ['Liga Profesional', 'FIFA Club World Cup', 'Ligue 2', 'Serie B', 'League One', 'League Two'];
+    const target = String(leagueName).toLowerCase().trim();
+    return disabled.some(dl => {
+      const d = String(dl).toLowerCase().trim();
+      return target === d || target.includes(d) || d.includes(target);
+    });
+  }
+
   computeDixonColesProbabilities(homeTeam, awayTeam, options = {}) {
-    const disabledLeagues = this.hyperparameters?.disabledLeagues || [];
-    const isLeagueDisabled = disabledLeagues.includes(options.league);
+    const isLeagueDisabled = this.isLeagueDisabled(options.league);
 
     const homeEloBoost = this.getHomeEloBoost(options.league);
     const PARITY_LEAGUES = [
@@ -2040,8 +2051,10 @@ class SoccerEngine {
     // NEW: Chaotic League Override (Shift from Winner to Goals/BTTS)
     const chaoticLeagues = ['MLS', 'Championship', 'Turkish Super Lig', 'Liga MX', 'Ligue 2', 'Serie B'];
     const underBiasLeagues = ['LaLiga 2'];
-    const customDisabledLeagues = Array.isArray(this.hyperparameters?.disabledLeagues) ? this.hyperparameters.disabledLeagues : [];
-    const passBlacklist = ['Scottish Premiership', 'Austrian Bundesliga', ...customDisabledLeagues];
+    const isPassBlacklisted = Boolean(options.league && (
+      ['Scottish Premiership', 'Austrian Bundesliga'].some(bl => options.league.toLowerCase().includes(bl.toLowerCase())) ||
+      this.isLeagueDisabled(options.league)
+    ));
     const isChaoticLeague = options.league && chaoticLeagues.includes(options.league);
     
     // High-Draw, Parity Shield & Entropy Floor Market Routing
@@ -2049,7 +2062,7 @@ class SoccerEngine {
     const isParityVulnerable = isParityLeague && favProb < paritySafetyThreshold;
     const isEntropyContested = favProb < entropyFloorThreshold;
 
-    if (options.league && passBlacklist.includes(options.league)) {
+    if (isPassBlacklisted) {
       smartPick = 'PASS';
       smartMarketType = 'PASS_NO_EDGE';
       smartProb = favProb;
@@ -2909,7 +2922,7 @@ class SoccerEngine {
     let pushesCount = 0, passesCount = 0, activeWagersCount = 0, activeWagersHits = 0;
 
     this.yesterdayMatches.forEach(m => {
-      const isLeagueDisabled = m.league && disabledLeagues.includes(m.league);
+      const isLeagueDisabled = this.isLeagueDisabled(m.league);
       if (!isLeagueDisabled) {
         activeTotal++;
         if (m.isHit) activeCorrect++;
@@ -3597,7 +3610,7 @@ class SoccerEngine {
         const logLoss = -(yH * Math.log(pH + eps) + yD * Math.log(pD + eps) + yA * Math.log(pA + eps));
         totalLogLoss += logLoss;
 
-        const isLeagueDisabled = sample.league && disabledLeagues.includes(sample.league);
+        const isLeagueDisabled = this.isLeagueDisabled(sample.league);
         if (!isLeagueDisabled) {
           activeSampleCount++;
           if (isHit) activeCorrect++;
@@ -3669,7 +3682,7 @@ class SoccerEngine {
         const acc = stats.total > 0 ? (stats.correct / stats.total) * 100 : 0;
         const sAcc = stats.stableTotal > 0 ? (stats.stableCorrect / stats.stableTotal) * 100 : 0;
         const isProvisional = stats.total < 8;
-        const isBlacklisted = disabledLeagues.includes(league);
+        const isBlacklisted = this.isLeagueDisabled(league);
         return {
           league,
           ...stats,
