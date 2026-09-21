@@ -68,6 +68,66 @@
     "actualWinner": "DRAW"
   },
   {
+    "id": "701205",
+    "home": "Georgia",
+    "away": "Greece",
+    "homeScore": 0,
+    "awayScore": 0,
+    "league": "UEFA European Championship Qualifying",
+    "date": "2024-03-26",
+    "timestamp": 1711411200000,
+    "goals": {
+      "home": 0,
+      "away": 0
+    },
+    "actualWinner": "DRAW"
+  },
+  {
+    "id": "701206",
+    "home": "Ukraine",
+    "away": "Iceland",
+    "homeScore": 2,
+    "awayScore": 1,
+    "league": "UEFA European Championship Qualifying",
+    "date": "2024-03-26",
+    "timestamp": 1711411200000,
+    "goals": {
+      "home": 2,
+      "away": 1
+    },
+    "actualWinner": "HOME"
+  },
+  {
+    "id": "701207",
+    "home": "Wales",
+    "away": "Poland",
+    "homeScore": 0,
+    "awayScore": 0,
+    "league": "UEFA European Championship Qualifying",
+    "date": "2024-03-26",
+    "timestamp": 1711411200000,
+    "goals": {
+      "home": 0,
+      "away": 0
+    },
+    "actualWinner": "DRAW"
+  },
+  {
+    "id": "703945",
+    "home": "Spain",
+    "away": "England",
+    "homeScore": 2,
+    "awayScore": 1,
+    "league": "UEFA European Championship",
+    "date": "2024-07-14",
+    "timestamp": 1720915200000,
+    "goals": {
+      "home": 2,
+      "away": 1
+    },
+    "actualWinner": "HOME"
+  },
+  {
     "id": "733636",
     "home": "Athletic Club",
     "away": "AS Roma",
@@ -98312,6 +98372,21 @@
     "actualWinner": "HOME"
   },
   {
+    "id": "762262",
+    "home": "Flamengo",
+    "away": "Lanús",
+    "homeScore": 2,
+    "awayScore": 3,
+    "league": "CONMEBOL Recopa",
+    "date": "2026-02-27",
+    "timestamp": 1772150400000,
+    "goals": {
+      "home": 2,
+      "away": 3
+    },
+    "actualWinner": "AWAY"
+  },
+  {
     "id": "750133",
     "home": "Istanbul Basaksehir",
     "away": "Konyaspor",
@@ -136442,6 +136517,21 @@
     "actualWinner": "DRAW"
   },
   {
+    "id": "401871783",
+    "home": "Toluca",
+    "away": "Tigres UANL",
+    "homeScore": 1,
+    "awayScore": 1,
+    "league": "Concacaf Champions Cup",
+    "date": "2026-05-31",
+    "timestamp": 1780185600000,
+    "goals": {
+      "home": 1,
+      "away": 1
+    },
+    "actualWinner": "DRAW"
+  },
+  {
     "id": "401841141",
     "home": "Red Bull Bragantino",
     "away": "Internacional",
@@ -137624,6 +137714,21 @@
       "away": 3
     },
     "actualWinner": "AWAY"
+  },
+  {
+    "id": "760517",
+    "home": "Spain",
+    "away": "Argentina",
+    "homeScore": 1,
+    "awayScore": 0,
+    "league": "FIFA World Cup",
+    "date": "2026-07-19",
+    "timestamp": 1784419200000,
+    "goals": {
+      "home": 1,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401877038",
@@ -143872,6 +143977,21 @@
     "actualWinner": "AWAY"
   },
   {
+    "id": "401875219",
+    "home": "Arsenal",
+    "away": "Manchester City",
+    "homeScore": 3,
+    "awayScore": 0,
+    "league": "FA Community Shield",
+    "date": "2026-08-16",
+    "timestamp": 1786838400000,
+    "goals": {
+      "home": 3,
+      "away": 0
+    },
+    "actualWinner": "HOME"
+  },
+  {
     "id": "761715",
     "home": "Houston Dynamo FC",
     "away": "LA Galaxy",
@@ -145772,6 +145892,21 @@
       "away": 0
     },
     "actualWinner": "HOME"
+  },
+  {
+    "id": "401873679",
+    "home": "Borussia Dortmund",
+    "away": "Bayern Munich",
+    "homeScore": 1,
+    "awayScore": 2,
+    "league": "DFL-Supercup",
+    "date": "2026-08-22",
+    "timestamp": 1787356800000,
+    "goals": {
+      "home": 1,
+      "away": 2
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401877005",
@@ -154292,6 +154427,156 @@
     "actualWinner": "HOME"
   },
   {
+    "id": "401911618",
+    "home": "KVZ",
+    "away": "Asswehly SC",
+    "homeScore": 0,
+    "awayScore": 3,
+    "league": "CAF Champions League",
+    "date": "2026-09-13",
+    "timestamp": 1789257600000,
+    "goals": {
+      "home": 0,
+      "away": 3
+    },
+    "actualWinner": "AWAY"
+  },
+  {
+    "id": "401911620",
+    "home": "Simba SC",
+    "away": "Mighty Wanderers",
+    "homeScore": 6,
+    "awayScore": 1,
+    "league": "CAF Champions League",
+    "date": "2026-09-13",
+    "timestamp": 1789257600000,
+    "goals": {
+      "home": 6,
+      "away": 1
+    },
+    "actualWinner": "HOME"
+  },
+  {
+    "id": "401906241",
+    "home": "Rivers United FC",
+    "away": "San Pédro",
+    "homeScore": 2,
+    "awayScore": 2,
+    "league": "CAF Champions League",
+    "date": "2026-09-13",
+    "timestamp": 1789257600000,
+    "goals": {
+      "home": 2,
+      "away": 2
+    },
+    "actualWinner": "DRAW"
+  },
+  {
+    "id": "401906227",
+    "home": "ASEC Mimosas",
+    "away": "ASC Kara",
+    "homeScore": 2,
+    "awayScore": 1,
+    "league": "CAF Champions League",
+    "date": "2026-09-13",
+    "timestamp": 1789257600000,
+    "goals": {
+      "home": 2,
+      "away": 1
+    },
+    "actualWinner": "HOME"
+  },
+  {
+    "id": "401906239",
+    "home": "Horoya",
+    "away": "JS Saoura",
+    "homeScore": 3,
+    "awayScore": 1,
+    "league": "CAF Champions League",
+    "date": "2026-09-13",
+    "timestamp": 1789257600000,
+    "goals": {
+      "home": 3,
+      "away": 1
+    },
+    "actualWinner": "HOME"
+  },
+  {
+    "id": "401911622",
+    "home": "Sidama Coffee",
+    "away": "Aiglons FC",
+    "homeScore": 3,
+    "awayScore": 0,
+    "league": "CAF Champions League",
+    "date": "2026-09-13",
+    "timestamp": 1789257600000,
+    "goals": {
+      "home": 3,
+      "away": 0
+    },
+    "actualWinner": "HOME"
+  },
+  {
+    "id": "401906226",
+    "home": "Stade Malien",
+    "away": "Colombe Sportiv Du Dja Et Lobo",
+    "homeScore": 0,
+    "awayScore": 0,
+    "league": "CAF Champions League",
+    "date": "2026-09-13",
+    "timestamp": 1789257600000,
+    "goals": {
+      "home": 0,
+      "away": 0
+    },
+    "actualWinner": "DRAW"
+  },
+  {
+    "id": "401906240",
+    "home": "FC Nouadhibou",
+    "away": "Vipers SC",
+    "homeScore": 0,
+    "awayScore": 0,
+    "league": "CAF Champions League",
+    "date": "2026-09-13",
+    "timestamp": 1789257600000,
+    "goals": {
+      "home": 0,
+      "away": 0
+    },
+    "actualWinner": "DRAW"
+  },
+  {
+    "id": "401906230",
+    "home": "Pyramids FC",
+    "away": "Gor Mahia",
+    "homeScore": 5,
+    "awayScore": 1,
+    "league": "CAF Champions League",
+    "date": "2026-09-13",
+    "timestamp": 1789257600000,
+    "goals": {
+      "home": 5,
+      "away": 1
+    },
+    "actualWinner": "HOME"
+  },
+  {
+    "id": "401911600",
+    "home": "Teungueth",
+    "away": "Canchungo",
+    "homeScore": 1,
+    "awayScore": 0,
+    "league": "CAF Champions League",
+    "date": "2026-09-13",
+    "timestamp": 1789257600000,
+    "goals": {
+      "home": 1,
+      "away": 0
+    },
+    "actualWinner": "HOME"
+  },
+  {
     "id": "401875933",
     "home": "FC Volendam",
     "away": "FC Den Bosch",
@@ -157712,193 +157997,53 @@
     "actualWinner": "AWAY"
   },
   {
-    "id": "401875219",
-    "home": "Arsenal",
-    "away": "Manchester City",
-    "homeScore": 3,
-    "awayScore": 0,
-    "league": "FA Community Shield",
-    "date": "2026-08-16",
-    "timestamp": 1786838400000
+    "id": "401841238",
+    "home": "Athletico-PR",
+    "away": "Bahia",
+    "homeScore": 2,
+    "awayScore": 1,
+    "league": "Brasileirão",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
   },
   {
-    "id": "401873679",
-    "home": "Borussia Dortmund",
-    "away": "Bayern Munich",
-    "homeScore": 1,
+    "id": "401876967",
+    "home": "Pachuca",
+    "away": "Tijuana",
+    "homeScore": 2,
     "awayScore": 2,
-    "league": "DFL-Supercup",
-    "date": "2026-08-22",
-    "timestamp": 1787356800000
+    "league": "Liga MX",
+    "date": "2026-09-21",
+    "timestamp": 1789948800000
   },
   {
-    "id": "703945",
-    "home": "Spain",
-    "away": "England",
-    "homeScore": 2,
-    "awayScore": 1,
-    "league": "UEFA European Championship",
-    "date": "2024-07-14",
-    "timestamp": 1720915200000
-  },
-  {
-    "id": "701205",
-    "home": "Georgia",
-    "away": "Greece",
-    "homeScore": 0,
-    "awayScore": 0,
-    "league": "UEFA European Championship Qualifying",
-    "date": "2024-03-26",
-    "timestamp": 1711411200000
-  },
-  {
-    "id": "701206",
-    "home": "Ukraine",
-    "away": "Iceland",
-    "homeScore": 2,
-    "awayScore": 1,
-    "league": "UEFA European Championship Qualifying",
-    "date": "2024-03-26",
-    "timestamp": 1711411200000
-  },
-  {
-    "id": "701207",
-    "home": "Wales",
-    "away": "Poland",
-    "homeScore": 0,
-    "awayScore": 0,
-    "league": "UEFA European Championship Qualifying",
-    "date": "2024-03-26",
-    "timestamp": 1711411200000
-  },
-  {
-    "id": "762262",
-    "home": "Flamengo",
-    "away": "Lanús",
-    "homeScore": 2,
-    "awayScore": 3,
-    "league": "CONMEBOL Recopa",
-    "date": "2026-02-27",
-    "timestamp": 1772150400000
-  },
-  {
-    "id": "401871783",
+    "id": "401876966",
     "home": "Toluca",
-    "away": "Tigres UANL",
-    "homeScore": 1,
-    "awayScore": 1,
-    "league": "Concacaf Champions Cup",
-    "date": "2026-05-31",
-    "timestamp": 1780185600000
-  },
-  {
-    "id": "401911618",
-    "home": "KVZ",
-    "away": "Asswehly SC",
-    "homeScore": 0,
+    "away": "Santos",
+    "homeScore": 2,
     "awayScore": 3,
-    "league": "CAF Champions League",
-    "date": "2026-09-13",
-    "timestamp": 1789257600000
+    "league": "Liga MX",
+    "date": "2026-09-21",
+    "timestamp": 1789948800000
   },
   {
-    "id": "401911620",
-    "home": "Simba SC",
-    "away": "Mighty Wanderers",
-    "homeScore": 6,
-    "awayScore": 1,
-    "league": "CAF Champions League",
-    "date": "2026-09-13",
-    "timestamp": 1789257600000
-  },
-  {
-    "id": "401906241",
-    "home": "Rivers United FC",
-    "away": "San Pédro",
-    "homeScore": 2,
-    "awayScore": 2,
-    "league": "CAF Champions League",
-    "date": "2026-09-13",
-    "timestamp": 1789257600000
-  },
-  {
-    "id": "401906227",
-    "home": "ASEC Mimosas",
-    "away": "ASC Kara",
-    "homeScore": 2,
-    "awayScore": 1,
-    "league": "CAF Champions League",
-    "date": "2026-09-13",
-    "timestamp": 1789257600000
-  },
-  {
-    "id": "401906239",
-    "home": "Horoya",
-    "away": "JS Saoura",
-    "homeScore": 3,
-    "awayScore": 1,
-    "league": "CAF Champions League",
-    "date": "2026-09-13",
-    "timestamp": 1789257600000
-  },
-  {
-    "id": "401911622",
-    "home": "Sidama Coffee",
-    "away": "Aiglons FC",
-    "homeScore": 3,
-    "awayScore": 0,
-    "league": "CAF Champions League",
-    "date": "2026-09-13",
-    "timestamp": 1789257600000
-  },
-  {
-    "id": "401906226",
-    "home": "Stade Malien",
-    "away": "Colombe Sportiv Du Dja Et Lobo",
-    "homeScore": 0,
-    "awayScore": 0,
-    "league": "CAF Champions League",
-    "date": "2026-09-13",
-    "timestamp": 1789257600000
-  },
-  {
-    "id": "401906240",
-    "home": "FC Nouadhibou",
-    "away": "Vipers SC",
-    "homeScore": 0,
-    "awayScore": 0,
-    "league": "CAF Champions League",
-    "date": "2026-09-13",
-    "timestamp": 1789257600000
-  },
-  {
-    "id": "401906230",
-    "home": "Pyramids FC",
-    "away": "Gor Mahia",
-    "homeScore": 5,
-    "awayScore": 1,
-    "league": "CAF Champions League",
-    "date": "2026-09-13",
-    "timestamp": 1789257600000
-  },
-  {
-    "id": "401911600",
-    "home": "Teungueth",
-    "away": "Canchungo",
+    "id": "401876965",
+    "home": "Querétaro",
+    "away": "León",
     "homeScore": 1,
-    "awayScore": 0,
-    "league": "CAF Champions League",
-    "date": "2026-09-13",
-    "timestamp": 1789257600000
+    "awayScore": 1,
+    "league": "Liga MX",
+    "date": "2026-09-21",
+    "timestamp": 1789948800000
   },
   {
-    "id": "760517",
-    "home": "Spain",
-    "away": "Argentina",
-    "homeScore": 1,
-    "awayScore": 0,
-    "league": "FIFA World Cup",
-    "date": "2026-07-19",
-    "timestamp": 1784419200000
+    "id": "401850641",
+    "home": "Coquimbo Unido",
+    "away": "Huachipato",
+    "homeScore": 0,
+    "awayScore": 1,
+    "league": "Chilean Primera División",
+    "date": "2026-09-16",
+    "timestamp": 1789516800000
   }
 ]

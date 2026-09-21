@@ -157,7 +157,35 @@ export const ESPN_LEAGUES = [
   { code: 'uefa.nations', name: 'UEFA Nations League' },
   { code: 'fifa.world', name: 'FIFA World Cup' },
   { code: 'fifa.worldq.uefa', name: 'UEFA World Cup Qualifiers' },
-  { code: 'fifa.worldq.conmebol', name: 'CONMEBOL World Cup Qualifiers' }
+  { code: 'fifa.worldq.conmebol', name: 'CONMEBOL World Cup Qualifiers' },
+  { code: 'irl.1', name: 'Irish Premier Division' },
+  { code: 'eng.3', name: 'English League One' },
+  { code: 'eng.4', name: 'English League Two' },
+  { code: 'ita.2', name: 'Italian Serie B' },
+  { code: 'fra.2', name: 'French Ligue 2' },
+  { code: 'sco.2', name: 'Scottish Championship' },
+  { code: 'rou.1', name: 'Romanian Liga 1' },
+  { code: 'rus.1', name: 'Russian Premier League' },
+  { code: 'par.1', name: 'Paraguayan Primera División' },
+  { code: 'bol.1', name: 'Bolivian Liga Profesional' },
+  { code: 'per.1', name: 'Peruvian Liga 1' },
+  { code: 'ven.1', name: 'Venezuelan Primera División' },
+  { code: 'chn.1', name: 'Chinese Super League' },
+  { code: 'ind.1', name: 'Indian Super League' },
+  { code: 'rsa.1', name: 'South African Premiership' },
+  { code: 'mex.2', name: 'Mexican Liga de Expansión MX' },
+  { code: 'usa.open', name: 'U.S. Open Cup' },
+  { code: 'nir.1', name: 'Northern Irish Premiership' },
+  { code: 'wal.1', name: 'Welsh Premier League' },
+  { code: 'fin.1', name: 'Finnish Veikkausliiga' },
+  { code: 'cyp.1', name: 'Cypriot First Division' },
+  { code: 'isr.1', name: 'Israeli Premier League' },
+  { code: 'tha.1', name: 'Thai League 1' },
+  { code: 'mys.1', name: 'Malaysian Super League' },
+  { code: 'eng.w.1', name: "English Women's Super League" },
+  { code: 'esp.w.1', name: 'Spanish Liga F' },
+  { code: 'fra.w.1', name: 'French Première Ligue' },
+  { code: 'usa.nwsl', name: 'NWSL' }
 ];
 
 // -------------------------------------------------------------
@@ -203,7 +231,13 @@ export const LEAGUE_PREDICTABILITY_TIERS = {
       'KNVB Beker', 'ned.cup',
       'Czech First League', 'cze.1',
       'Greek Super League', 'gre.1',
-      'Austrian Bundesliga', 'aut.1'
+      'Austrian Bundesliga', 'aut.1',
+      'Romanian Liga 1', 'rou.1',
+      'Cypriot First Division', 'cyp.1',
+      'Israeli Premier League', 'isr.1',
+      "English Women's Super League", 'eng.w.1',
+      'Spanish Liga F', 'esp.w.1',
+      'French Première Ligue', 'fra.w.1'
     ]
   },
   // Tier 2: Standard Predictability (Empirical Conviction Hit Rate: 55%–62%)
@@ -231,9 +265,30 @@ export const LEAGUE_PREDICTABILITY_TIERS = {
       'Swedish Allsvenskan', 'swe.1',
       'UEFA Europa League', 'uefa.europa',
       'UEFA Conference League', 'uefa.europa.conf',
+      'UEFA Nations League', 'uefa.nations',
       'Copa Sudamericana', 'conmebol.sudamericana',
       'Eerste Divisie', 'ned.2',
-      'A-League', 'aus.1'
+      'A-League', 'aus.1',
+      'Irish Premier Division', 'League of Ireland Premier Division', 'irl.1',
+      'English League One', 'League One', 'eng.3',
+      'English League Two', 'League Two', 'eng.4',
+      'Scottish Championship', 'sco.2',
+      'Russian Premier League', 'rus.1',
+      'Chinese Super League', 'chn.1',
+      'Indian Super League', 'ind.1',
+      'South African Premiership', 'rsa.1',
+      'U.S. Open Cup', 'usa.open',
+      'Northern Irish Premiership', 'nir.1',
+      'Welsh Premier League', 'Cymru Premier', 'wal.1',
+      'Finnish Veikkausliiga', 'fin.1',
+      'Thai League 1', 'tha.1',
+      'Malaysian Super League', 'mys.1',
+      'NWSL', 'usa.nwsl',
+      'Argentine Liga Profesional', 'arg.1',
+      'Categoría Primera A', 'col.1',
+      'Chilean Primera División', 'chi.1',
+      'Uruguayan Primera División', 'uru.1',
+      'LigaPro Ecuador', 'ecu.1'
     ]
   },
   // Tier 3: High Parity / Volatile (Empirical Conviction Hit Rate: <55%)
@@ -253,8 +308,18 @@ export const LEAGUE_PREDICTABILITY_TIERS = {
       'Spanish LaLiga 2', 'LaLiga 2', 'esp.2',
       'German 2. Bundesliga', '2. Bundesliga', 'ger.2',
       'Brasileirão', 'bra.1',
+      'Brasileirão Série B', 'bra.2',
       'Liga MX', 'mex.1',
-      'Japanese J1 League', 'jpn.1'
+      'Mexican Liga de Expansión MX', 'mex.2',
+      'Japanese J1 League', 'jpn.1',
+      'Italian Serie B', 'Serie B', 'ita.2',
+      'French Ligue 2', 'Ligue 2', 'fra.2',
+      'Paraguayan Primera División', 'par.1',
+      'Bolivian Liga Profesional', 'bol.1',
+      'Peruvian Liga 1', 'per.1',
+      'Venezuelan Primera División', 'ven.1',
+      'Argentine Primera Nacional', 'arg.2',
+      'EFL Trophy', 'eng.trophy'
     ]
   }
 };
@@ -432,7 +497,7 @@ class SoccerEngine {
 
     // Quantitative Hyperparameters (Calibrated from 4,303 Match Benchmark)
     const defaultHyperparameters = {
-      homeAdvantage: 1.1022082450343518,
+      homeAdvantage: 1.1103590870992883,
       homeEloBoost: 65,
       entropyFloorThreshold: 52.0,
       paritySafetyThreshold: 68.0,
@@ -445,7 +510,7 @@ class SoccerEngine {
       dixonColesRho: -0.18,
       temperature: 0.80,
       maxScorelineSim: 6,
-      drawEquilibriumDelta: 12.699999999999998,
+      drawEquilibriumDelta: 13,
       h2hWeight: 0.12,
       timeDecayXi: 0.007,
       formWindowGames: 6,
@@ -3093,9 +3158,9 @@ class SoccerEngine {
               return isFuture && isNotCompleted;
             });
             
-            return { league: league.name, pastEvents, upEvents };
+            return { league: league.name, leagueCode: league.code, pastEvents, upEvents };
           } catch (err) {
-            return { league: league.name, pastEvents: [], upEvents: [] };
+            return { league: league.name, leagueCode: league.code, pastEvents: [], upEvents: [] };
           }
         });
         
@@ -3110,7 +3175,7 @@ class SoccerEngine {
 
       for (const res of fetchResults) {
         if (res.status !== 'fulfilled') continue;
-        const { league, pastEvents, upEvents } = res.value;
+        const { league, leagueCode, pastEvents, upEvents } = res.value;
 
         // Process Real Completed Fixtures for Yesterday & Training Corpus
         for (const ev of pastEvents) {
@@ -3132,6 +3197,7 @@ class SoccerEngine {
               away: away.team.displayName,
               awayLogo: away.team.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(away.team.displayName)}&background=334155&color=f8fafc`,
               league,
+              espnLeagueCode: leagueCode || league,
               date: isYesterdayMatch ? "Yesterday" : evDate.toLocaleDateString(),
               dateIso: evDate.toISOString().slice(0, 10),
               utcDate: ev.date || evDate.toISOString(),
@@ -3225,7 +3291,7 @@ class SoccerEngine {
               odds: odds || null,
               kellyStake: dcProbs.kellyStake,
               espnEventId: ev.id,
-              espnLeagueCode: league.code,
+              espnLeagueCode: leagueCode || league,
               homeTeamId: home.team.id,
               awayTeamId: away.team.id
             });

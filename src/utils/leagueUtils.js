@@ -44,7 +44,13 @@ export const LEAGUE_PREDICTABILITY_TIERS = {
       'KNVB Beker', 'ned.cup',
       'Czech First League', 'cze.1',
       'Greek Super League', 'gre.1',
-      'Austrian Bundesliga', 'aut.1'
+      'Austrian Bundesliga', 'aut.1',
+      'Romanian Liga 1', 'rou.1',
+      'Cypriot First Division', 'cyp.1',
+      'Israeli Premier League', 'isr.1',
+      "English Women's Super League", 'eng.w.1',
+      'Spanish Liga F', 'esp.w.1',
+      'French Première Ligue', 'fra.w.1'
     ]
   },
   // Tier 2: Standard Predictability (Empirical Conviction Hit Rate: 55%–62%)
@@ -73,9 +79,30 @@ export const LEAGUE_PREDICTABILITY_TIERS = {
       'Swedish Allsvenskan', 'swe.1',
       'UEFA Europa League', 'uefa.europa',
       'UEFA Conference League', 'uefa.europa.conf',
+      'UEFA Nations League', 'uefa.nations',
       'Copa Sudamericana', 'conmebol.sudamericana',
       'Eerste Divisie', 'ned.2',
-      'A-League', 'aus.1'
+      'A-League', 'aus.1',
+      'Irish Premier Division', 'League of Ireland Premier Division', 'irl.1',
+      'English League One', 'League One', 'eng.3',
+      'English League Two', 'League Two', 'eng.4',
+      'Scottish Championship', 'sco.2',
+      'Russian Premier League', 'rus.1',
+      'Chinese Super League', 'chn.1',
+      'Indian Super League', 'ind.1',
+      'South African Premiership', 'rsa.1',
+      'U.S. Open Cup', 'usa.open',
+      'Northern Irish Premiership', 'nir.1',
+      'Welsh Premier League', 'Cymru Premier', 'wal.1',
+      'Finnish Veikkausliiga', 'fin.1',
+      'Thai League 1', 'tha.1',
+      'Malaysian Super League', 'mys.1',
+      'NWSL', 'usa.nwsl',
+      'Argentine Liga Profesional', 'arg.1',
+      'Categoría Primera A', 'col.1',
+      'Chilean Primera División', 'chi.1',
+      'Uruguayan Primera División', 'uru.1',
+      'LigaPro Ecuador', 'ecu.1'
     ]
   },
   // Tier 3: High Parity / Volatile (Empirical Conviction Hit Rate: <55%)
@@ -96,8 +123,18 @@ export const LEAGUE_PREDICTABILITY_TIERS = {
       'Spanish LaLiga 2', 'LaLiga 2', 'esp.2',
       'German 2. Bundesliga', '2. Bundesliga', 'ger.2',
       'Brasileirão', 'bra.1',
+      'Brasileirão Série B', 'bra.2',
       'Liga MX', 'mex.1',
-      'Japanese J1 League', 'jpn.1'
+      'Mexican Liga de Expansión MX', 'mex.2',
+      'Japanese J1 League', 'jpn.1',
+      'Italian Serie B', 'Serie B', 'ita.2',
+      'French Ligue 2', 'Ligue 2', 'fra.2',
+      'Paraguayan Primera División', 'par.1',
+      'Bolivian Liga Profesional', 'bol.1',
+      'Peruvian Liga 1', 'per.1',
+      'Venezuelan Primera División', 'ven.1',
+      'Argentine Primera Nacional', 'arg.2',
+      'EFL Trophy', 'eng.trophy'
     ]
   }
 };
