@@ -86,6 +86,15 @@ export default function FixturesTablePage({
   const [copiedAccaSlip, setCopiedAccaSlip] = useState(false);
   const [isAccaLoaded, setIsAccaLoaded] = useState(false);
 
+  // Council Selections Local Filters & Sort
+  const [councilDate, setCouncilDate] = useState('All');
+  const [councilLeague, setCouncilLeague] = useState('All');
+  const [councilPick, setCouncilPick] = useState('ALL');
+  const [councilMinRate, setCouncilMinRate] = useState('0');
+  const [councilSearch, setCouncilSearch] = useState('');
+  const [councilSortField, setCouncilSortField] = useState('prob');
+  const [councilSortDirection, setCouncilSortDirection] = useState('desc');
+
   // Daily AI Swarm Accumulator (Highest Win Rate & Longest Acca Slate)
   const dailySwarmAcca = useMemo(() => {
     if (!matches || matches.length === 0) return null;
@@ -273,9 +282,165 @@ export default function FixturesTablePage({
     };
   }, [matches, aiSwarm]);
 
+  // Helper to extract localized date key for a council leg
+  const getLegDateKey = (leg) => {
+    const timeVal = leg.match?.timestamp || leg.match?.utcDate || leg.match?.dateIso || leg.match?.date || leg.date;
+    return timeVal ? getLocalizedDateKey(timeVal, tzSettings) : 'Upcoming';
+  };
+
+  // Council Selections Date Options
+  const councilDateOptions = useMemo(() => {
+    if (!dailySwarmAcca || !dailySwarmAcca.legs) return [{ value: 'All', label: 'All Dates' }];
+    const counts = {};
+    dailySwarmAcca.legs.forEach(leg => {
+      const dKey = getLegDateKey(leg);
+      counts[dKey] = (counts[dKey] || 0) + 1;
+    });
+    const keys = Object.keys(counts).sort();
+    return [
+      { value: 'All', label: `All Dates (${dailySwarmAcca.legs.length})` },
+      ...keys.map(k => ({ value: k, label: `${k} (${counts[k]})` }))
+    ];
+  }, [dailySwarmAcca, tzSettings]);
+
+  // Council Selections League Options
+  const councilLeagueOptions = useMemo(() => {
+    if (!dailySwarmAcca || !dailySwarmAcca.legs) return [{ value: 'All', label: 'All Leagues' }];
+    const counts = {};
+    dailySwarmAcca.legs.forEach(leg => {
+      const l = leg.league || 'Other';
+      counts[l] = (counts[l] || 0) + 1;
+    });
+    const keys = Object.keys(counts).sort();
+    return [
+      { value: 'All', label: `All Leagues (${dailySwarmAcca.legs.length})` },
+      ...keys.map(k => ({ value: k, label: `${k} (${counts[k]})` }))
+    ];
+  }, [dailySwarmAcca]);
+
+  const homePicksCount = useMemo(() => {
+    return (dailySwarmAcca?.legs || []).filter(l => l.pick === 'HOME').length;
+  }, [dailySwarmAcca]);
+
+  const awayPicksCount = useMemo(() => {
+    return (dailySwarmAcca?.legs || []).filter(l => l.pick === 'AWAY').length;
+  }, [dailySwarmAcca]);
+
+  // Filtered & Sorted Council Selections
+  const filteredCouncilLegs = useMemo(() => {
+    if (!dailySwarmAcca || !dailySwarmAcca.legs) return [];
+
+    let list = dailySwarmAcca.legs.filter(leg => {
+      // 1. Date filter
+      if (councilDate !== 'All') {
+        const dKey = getLegDateKey(leg);
+        if (dKey !== councilDate) return false;
+      }
+
+      // 2. League filter
+      if (councilLeague !== 'All' && leg.league !== councilLeague) {
+        return false;
+      }
+
+      // 3. Pick filter
+      if (councilPick !== 'ALL' && leg.pick !== councilPick) {
+        return false;
+      }
+
+      // 4. Min Win Rate filter
+      const minP = parseFloat(councilMinRate);
+      if (minP > 0 && leg.prob < minP) {
+        return false;
+      }
+
+      // 5. Search query
+      if (councilSearch.trim()) {
+        const q = councilSearch.toLowerCase();
+        const home = (leg.home || '').toLowerCase();
+        const away = (leg.away || '').toLowerCase();
+        const league = (leg.league || '').toLowerCase();
+        if (!home.includes(q) && !away.includes(q) && !league.includes(q)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    // Sorting
+    list.sort((a, b) => {
+      let diff = 0;
+      if (councilSortField === 'prob') {
+        diff = (b.prob || 0) - (a.prob || 0);
+      } else if (councilSortField === 'odds') {
+        diff = (b.odds || 0) - (a.odds || 0);
+      } else if (councilSortField === 'time') {
+        const timeA = new Date(a.match?.timestamp || a.match?.dateIso || a.date || 0).getTime();
+        const timeB = new Date(b.match?.timestamp || b.match?.dateIso || b.date || 0).getTime();
+        diff = timeA - timeB;
+      } else if (councilSortField === 'fixture') {
+        diff = (a.home || '').localeCompare(b.home || '');
+      } else if (councilSortField === 'league') {
+        diff = (a.league || '').localeCompare(b.league || '');
+      }
+      return councilSortDirection === 'asc' ? -diff : diff;
+    });
+
+    return list;
+  }, [dailySwarmAcca, councilDate, councilLeague, councilPick, councilMinRate, councilSearch, councilSortField, councilSortDirection, tzSettings]);
+
+  // Dynamically computed stats for filtered council selections
+  const filteredCouncilStats = useMemo(() => {
+    const legs = filteredCouncilLegs;
+    if (!legs || legs.length === 0) {
+      return {
+        count: 0,
+        combinedOdds: 1.0,
+        avgWinRate: 0,
+        jointProb: 0,
+        overallEv: 0
+      };
+    }
+
+    const combinedOdds = legs.reduce((acc, leg) => acc * (leg.odds > 0 ? leg.odds : 1.0), 1.0);
+    const jointProb = legs.reduce((acc, leg) => acc * ((leg.prob > 0 ? leg.prob : 50) / 100), 1.0) * 100;
+    const avgWinRate = legs.reduce((acc, leg) => acc + leg.prob, 0) / legs.length;
+    const overallEv = ((jointProb / 100) * combinedOdds) - 1;
+
+    return {
+      count: legs.length,
+      combinedOdds,
+      avgWinRate,
+      jointProb,
+      overallEv
+    };
+  }, [filteredCouncilLegs]);
+
+  const isAnyCouncilFilterActive = councilDate !== 'All' || councilLeague !== 'All' || councilPick !== 'ALL' || councilMinRate !== '0' || councilSearch.trim() !== '';
+
+  const handleResetCouncilFilters = () => {
+    setCouncilDate('All');
+    setCouncilLeague('All');
+    setCouncilPick('ALL');
+    setCouncilMinRate('0');
+    setCouncilSearch('');
+    setCouncilSortField('prob');
+    setCouncilSortDirection('desc');
+  };
+
+  const handleCouncilSort = (field) => {
+    if (councilSortField === field) {
+      setCouncilSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setCouncilSortField(field);
+      setCouncilSortDirection(['fixture', 'time', 'league'].includes(field) ? 'asc' : 'desc');
+    }
+  };
+
   const handleLoadDailyAccaToSlip = () => {
-    if (!dailySwarmAcca || dailySwarmAcca.legs.length === 0) return;
-    const picksToLoad = dailySwarmAcca.legs.map(leg => ({
+    const legsToLoad = filteredCouncilLegs;
+    if (!legsToLoad || legsToLoad.length === 0) return;
+    const picksToLoad = legsToLoad.map(leg => ({
       pickId: `${leg.match.id}-${leg.market}`,
       id: leg.match.id,
       match: leg.match,
@@ -294,8 +459,8 @@ export default function FixturesTablePage({
     if (onLoadAccaPicks) {
       onLoadAccaPicks(picksToLoad, activeSlipId || 'slip-1', {
         type: 'success',
-        title: '👑 Daily AI Swarm Acca Loaded',
-        message: `Loaded all ${picksToLoad.length} highest win-rate selections into your active bet slip.`
+        title: '👑 Council Selections Loaded',
+        message: `Loaded all ${picksToLoad.length} filtered council selections into your active bet slip.`
       });
     } else if (onAddToSlip) {
       picksToLoad.forEach(p => {
@@ -307,14 +472,15 @@ export default function FixturesTablePage({
   };
 
   const handleCopyDailyAcca = () => {
-    if (!dailySwarmAcca || dailySwarmAcca.legs.length === 0) return;
+    const legsToCopy = filteredCouncilLegs;
+    if (!legsToCopy || legsToCopy.length === 0) return;
     const lines = [
-      `👑 DAILY AI SWARM ACCUMULATOR (${dailySwarmAcca.legs.length} LEGS)`,
+      `👑 DAILY AI COUNCIL ACCUMULATOR (${legsToCopy.length} LEGS)`,
       `⚡ 100% Unanimous AI Council Consensus • Straight Outright Wins Only`,
-      `📊 Combined Multiplier: ${safeToFixed(dailySwarmAcca.combinedOdds, 2)}x`,
-      `🎯 Average Leg Win Rate: ${safeToFixed(dailySwarmAcca.avgWinRate, 1)}%`,
+      `📊 Combined Multiplier: ${safeToFixed(filteredCouncilStats.combinedOdds, 2)}x`,
+      `🎯 Average Leg Win Rate: ${safeToFixed(filteredCouncilStats.avgWinRate, 1)}%`,
       `----------------------------------------`,
-      ...dailySwarmAcca.legs.map((l, i) => 
+      ...legsToCopy.map((l, i) => 
         `${i + 1}. ${l.home} vs ${l.away} (${l.league})` +
         `\n   ➤ Pick: ${l.pick === 'HOME' ? l.home : l.away} Win (Outright) @ ${safeToFixed(l.odds, 2)}x (${safeToFixed(l.prob, 0)}% win rate)`
       ),
@@ -719,13 +885,15 @@ export default function FixturesTablePage({
                     <Award className="w-3.5 h-3.5 text-slate-300" /> Council Acca
                   </span>
                   <span className="bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-semibold px-2.5 py-0.5 rounded-md">
-                    {dailySwarmAcca.legs.length} Legs
+                    {filteredCouncilStats.count === dailySwarmAcca.legs.length 
+                      ? `${filteredCouncilStats.count} Legs`
+                      : `${filteredCouncilStats.count} / ${dailySwarmAcca.legs.length} Legs`}
                   </span>
                   <span className="bg-slate-100 text-slate-800 border border-slate-200 text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-md">
-                    {safeToFixed(dailySwarmAcca.combinedOdds, 2)}x Combined Odds
+                    {safeToFixed(filteredCouncilStats.combinedOdds, 2)}x Combined Odds
                   </span>
                   <span className="bg-slate-100 text-slate-800 border border-slate-200 text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-md">
-                    {safeToFixed(dailySwarmAcca.avgWinRate, 1)}% Avg Hit Rate
+                    {safeToFixed(filteredCouncilStats.avgWinRate, 1)}% Avg Hit Rate
                   </span>
                   <span className="text-slate-400 text-[11px] font-medium hidden sm:inline">
                     • LiveScore Bet Benchmark
@@ -739,7 +907,7 @@ export default function FixturesTablePage({
                   </span>
                 </h2>
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  Synthesized across all 6 autonomous AI agents (Dixon-Coles Poisson, Elo Dominance, Trend Impulse, Contrarian Disruption, Parity, and Value). Straight outright wins only — compiled into the longest qualifying ticket from today's slate.
+                  Synthesized across all 6 autonomous AI agents (Dixon-Coles Poisson, Elo Dominance, Trend Impulse, Contrarian Disruption, Parity, and Value). Straight outright wins only — filtered by your preferred date, league, and hit rate.
                 </p>
               </div>
 
@@ -747,7 +915,8 @@ export default function FixturesTablePage({
                 <button
                   type="button"
                   onClick={handleLoadDailyAccaToSlip}
-                  className="flex-1 sm:flex-initial px-3.5 py-2 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                  disabled={filteredCouncilStats.count === 0}
+                  className="flex-1 sm:flex-initial px-3.5 py-2 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                 >
                   {isAccaLoaded ? (
                     <>
@@ -757,7 +926,7 @@ export default function FixturesTablePage({
                   ) : (
                     <>
                       <Plus className="w-3.5 h-3.5" />
-                      <span>Load All {dailySwarmAcca.legs.length} Legs</span>
+                      <span>Load All {filteredCouncilStats.count} Legs</span>
                     </>
                   )}
                 </button>
@@ -765,7 +934,8 @@ export default function FixturesTablePage({
                 <button
                   type="button"
                   onClick={handleCopyDailyAcca}
-                  className="flex-1 sm:flex-initial px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                  disabled={filteredCouncilStats.count === 0}
+                  className="flex-1 sm:flex-initial px-3 py-2 bg-white hover:bg-slate-50 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-slate-700 border border-slate-300 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                   title="Copy formatted bet slip for LiveScore Bet"
                 >
                   {copiedAccaSlip ? (
@@ -806,112 +976,295 @@ export default function FixturesTablePage({
             </div>
           </div>
 
-          {/* Council Selections Table (replacing cards grid) */}
+          {/* Dedicated Filter Toolbar for Council Selections */}
+          <div className="px-4 py-2.5 bg-slate-50/70 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+            <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[240px]">
+              {/* Search Club or League */}
+              <div className="relative flex-1 min-w-[130px] max-w-xs">
+                <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Filter club / league..."
+                  value={councilSearch}
+                  onChange={(e) => setCouncilSearch(e.target.value)}
+                  className="w-full pl-8 pr-6 py-1 text-xs bg-white text-slate-800 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400 placeholder:text-slate-400"
+                />
+                {councilSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setCouncilSearch('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 font-bold text-xs"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+
+              {/* Date Filter */}
+              <UniformDropdown
+                label="Date"
+                value={councilDate}
+                onChange={setCouncilDate}
+                options={councilDateOptions}
+                selectClassName="bg-white border-slate-200 py-1 text-xs shadow-none"
+              />
+
+              {/* League Filter */}
+              <UniformDropdown
+                label="League"
+                value={councilLeague}
+                onChange={setCouncilLeague}
+                options={councilLeagueOptions}
+                selectClassName="bg-white border-slate-200 py-1 text-xs shadow-none"
+              />
+
+              {/* Outcome / Pick Filter */}
+              <UniformDropdown
+                label="Pick"
+                value={councilPick}
+                onChange={setCouncilPick}
+                options={[
+                  { value: 'ALL', label: `All Picks (${dailySwarmAcca.legs.length})` },
+                  { value: 'HOME', label: `Home Win (${homePicksCount})` },
+                  { value: 'AWAY', label: `Away Win (${awayPicksCount})` }
+                ]}
+                selectClassName="bg-white border-slate-200 py-1 text-xs shadow-none"
+              />
+
+              {/* Min Win Rate Filter */}
+              <UniformDropdown
+                label="Min Rate"
+                value={councilMinRate}
+                onChange={setCouncilMinRate}
+                options={[
+                  { value: '0', label: 'All Win %' },
+                  { value: '65', label: '≥ 65% Win Rate' },
+                  { value: '70', label: '≥ 70% Win Rate' },
+                  { value: '75', label: '≥ 75% Win Rate' },
+                  { value: '80', label: '≥ 80% Win Rate' }
+                ]}
+                selectClassName="bg-white border-slate-200 py-1 text-xs shadow-none"
+              />
+            </div>
+
+            {/* Filter status & clear */}
+            <div className="flex items-center gap-2 text-slate-500 text-[11px] shrink-0">
+              <span>Showing <strong>{filteredCouncilStats.count}</strong> of {dailySwarmAcca.legs.length} legs</span>
+              {isAnyCouncilFilterActive && (
+                <button
+                  type="button"
+                  onClick={handleResetCouncilFilters}
+                  className="font-semibold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer"
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Council Selections Table with Sortable Column Headers */}
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider h-9">
+                <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider h-9 select-none">
                   <th className="py-2 px-3 w-12 text-center">#</th>
-                  <th className="py-2 px-3 min-w-[200px]">Fixture</th>
-                  <th className="py-2 px-3 min-w-[130px]">League</th>
-                  <th className="py-2 px-3 w-24 text-center">Kickoff</th>
+                  
+                  {/* Fixture (Sortable) */}
+                  <th 
+                    onClick={() => handleCouncilSort('fixture')}
+                    className="py-2 px-3 min-w-[200px] cursor-pointer hover:bg-slate-100 transition-colors group"
+                    title="Click to sort by Fixture name"
+                  >
+                    <div className="inline-flex items-center gap-1">
+                      <span className={councilSortField === 'fixture' ? 'text-slate-900 font-bold' : ''}>Fixture</span>
+                      {councilSortField === 'fixture' ? (
+                        councilSortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-slate-700" /> : <ArrowDown className="w-3 h-3 text-slate-700" />
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
+
+                  {/* League (Sortable) */}
+                  <th 
+                    onClick={() => handleCouncilSort('league')}
+                    className="py-2 px-3 min-w-[130px] cursor-pointer hover:bg-slate-100 transition-colors group"
+                    title="Click to sort by League"
+                  >
+                    <div className="inline-flex items-center gap-1">
+                      <span className={councilSortField === 'league' ? 'text-slate-900 font-bold' : ''}>League</span>
+                      {councilSortField === 'league' ? (
+                        councilSortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-slate-700" /> : <ArrowDown className="w-3 h-3 text-slate-700" />
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
+
+                  {/* Kickoff (Sortable) */}
+                  <th 
+                    onClick={() => handleCouncilSort('time')}
+                    className="py-2 px-3 w-24 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
+                    title="Click to sort by Kickoff Time"
+                  >
+                    <div className="inline-flex items-center justify-center gap-1">
+                      <span className={councilSortField === 'time' ? 'text-slate-900 font-bold' : ''}>Kickoff</span>
+                      {councilSortField === 'time' ? (
+                        councilSortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-slate-700" /> : <ArrowDown className="w-3 h-3 text-slate-700" />
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
+
                   <th className="py-2 px-3 min-w-[160px]">Council Pick</th>
-                  <th className="py-2 px-3 w-20 text-right">Odds</th>
-                  <th className="py-2 px-3 w-24 text-right">Win Rate</th>
+
+                  {/* Odds (Sortable) */}
+                  <th 
+                    onClick={() => handleCouncilSort('odds')}
+                    className="py-2 px-3 w-20 text-right cursor-pointer hover:bg-slate-100 transition-colors group"
+                    title="Click to sort by Odds"
+                  >
+                    <div className="inline-flex items-center justify-end gap-1 w-full">
+                      <span className={councilSortField === 'odds' ? 'text-slate-900 font-bold' : ''}>Odds</span>
+                      {councilSortField === 'odds' ? (
+                        councilSortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-slate-700" /> : <ArrowDown className="w-3 h-3 text-slate-700" />
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
+
+                  {/* Win Rate (Sortable) */}
+                  <th 
+                    onClick={() => handleCouncilSort('prob')}
+                    className="py-2 px-3 w-24 text-right cursor-pointer hover:bg-slate-100 transition-colors group"
+                    title="Click to sort by Win Rate"
+                  >
+                    <div className="inline-flex items-center justify-end gap-1 w-full">
+                      <span className={councilSortField === 'prob' ? 'text-slate-900 font-bold' : ''}>Win Rate</span>
+                      {councilSortField === 'prob' ? (
+                        councilSortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-slate-700" /> : <ArrowDown className="w-3 h-3 text-slate-700" />
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
+
                   <th className="py-2 px-3 w-32 text-center">Consensus</th>
                   <th className="py-2 px-3 w-24 text-center">Slip</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {dailySwarmAcca.legs.map((leg, idx) => {
-                  const inSlip = accaMatchIds.has(String(leg.id));
-                  const isHome = leg.pick === 'HOME';
-                  const pickTeam = isHome ? leg.home : leg.away;
+                {filteredCouncilLegs.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="py-8 text-center text-slate-500">
+                      <div className="max-w-md mx-auto space-y-2">
+                        <p className="font-semibold text-xs text-slate-700">No council selections match the selected filters</p>
+                        <p className="text-[11px] text-slate-400">
+                          Try adjusting your Date, League, or Win Rate filters to view all {dailySwarmAcca.legs.length} council selections.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={handleResetCouncilFilters}
+                          className="mt-2 px-3 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md transition-colors cursor-pointer"
+                        >
+                          Reset Filters
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredCouncilLegs.map((leg, idx) => {
+                    const inSlip = accaMatchIds.has(String(leg.id));
+                    const isHome = leg.pick === 'HOME';
+                    const pickTeam = isHome ? leg.home : leg.away;
 
-                  return (
-                    <tr 
-                      key={leg.id || idx}
-                      className="hover:bg-slate-50/70 transition-colors"
-                    >
-                      {/* Leg Number */}
-                      <td className="py-2.5 px-3 text-center text-slate-400 font-mono text-[11px]">
-                        {idx + 1}
-                      </td>
+                    return (
+                      <tr 
+                        key={leg.id || idx}
+                        className="hover:bg-slate-50/70 transition-colors"
+                      >
+                        {/* Leg Number */}
+                        <td className="py-2.5 px-3 text-center text-slate-400 font-mono text-[11px]">
+                          {idx + 1}
+                        </td>
 
-                      {/* Fixture */}
-                      <td className="py-2.5 px-3">
-                        <div className="font-semibold text-slate-900 text-xs">
-                          <span className={isHome ? 'font-bold text-slate-900' : 'text-slate-700'}>{leg.home}</span>
-                          <span className="text-slate-400 font-normal mx-1.5 text-[11px]">vs</span>
-                          <span className={!isHome ? 'font-bold text-slate-900' : 'text-slate-700'}>{leg.away}</span>
-                        </div>
-                      </td>
+                        {/* Fixture */}
+                        <td className="py-2.5 px-3">
+                          <div className="font-semibold text-slate-900 text-xs">
+                            <span className={isHome ? 'font-bold text-slate-900' : 'text-slate-700'}>{leg.home}</span>
+                            <span className="text-slate-400 font-normal mx-1.5 text-[11px]">vs</span>
+                            <span className={!isHome ? 'font-bold text-slate-900' : 'text-slate-700'}>{leg.away}</span>
+                          </div>
+                        </td>
 
-                      {/* League */}
-                      <td className="py-2.5 px-3 text-slate-500 text-[11px] truncate max-w-[150px]">
-                        {leg.league}
-                      </td>
+                        {/* League */}
+                        <td className="py-2.5 px-3 text-slate-500 text-[11px] truncate max-w-[150px]">
+                          {leg.league}
+                        </td>
 
-                      {/* Kickoff */}
-                      <td className="py-2.5 px-3 text-center text-slate-500 font-mono text-[11px] whitespace-nowrap">
-                        {leg.time || 'Upcoming'}
-                      </td>
+                        {/* Kickoff */}
+                        <td className="py-2.5 px-3 text-center text-slate-500 font-mono text-[11px] whitespace-nowrap">
+                          {leg.time || 'Upcoming'}
+                        </td>
 
-                      {/* Pick */}
-                      <td className="py-2.5 px-3">
-                        <div className="inline-flex items-center gap-1.5">
-                          <span className="font-semibold text-slate-900 text-xs">
-                            {pickTeam}
-                          </span>
-                          <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-                            {isHome ? 'Home Win' : 'Away Win'}
-                          </span>
-                        </div>
-                      </td>
+                        {/* Pick */}
+                        <td className="py-2.5 px-3">
+                          <div className="inline-flex items-center gap-1.5">
+                            <span className="font-semibold text-slate-900 text-xs">
+                              {pickTeam}
+                            </span>
+                            <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                              {isHome ? 'Home Win' : 'Away Win'}
+                            </span>
+                          </div>
+                        </td>
 
-                      {/* Odds */}
-                      <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 text-xs">
-                        {safeToFixed(leg.odds, 2)}x
-                      </td>
+                        {/* Odds */}
+                        <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 text-xs">
+                          {safeToFixed(leg.odds, 2)}x
+                        </td>
 
-                      {/* Win Rate */}
-                      <td className="py-2.5 px-3 text-right font-mono font-semibold text-slate-800 text-xs">
-                        {safeToFixed(leg.prob, 0)}%
-                      </td>
+                        {/* Win Rate */}
+                        <td className="py-2.5 px-3 text-right font-mono font-semibold text-slate-800 text-xs">
+                          {safeToFixed(leg.prob, 0)}%
+                        </td>
 
-                      {/* Consensus */}
-                      <td className="py-2.5 px-3 text-center">
-                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                          <Check className="w-3 h-3 text-slate-400" />
-                          6/6 Unanimous
-                        </span>
-                      </td>
-
-                      {/* Slip Toggle */}
-                      <td className="py-2.5 px-3 text-center">
-                        {inSlip ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded border border-slate-200">
+                        {/* Consensus */}
+                        <td className="py-2.5 px-3 text-center">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
                             <Check className="w-3 h-3 text-slate-400" />
-                            In Slip
+                            6/6 Unanimous
                           </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (onAddToSlip) {
-                                onAddToSlip(leg.match, leg.pick, leg.market, leg.odds, leg.prob);
-                              }
-                            }}
-                            className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 px-2 py-1 rounded border border-slate-300 shadow-2xs transition-colors cursor-pointer"
-                          >
-                            <Plus className="w-3 h-3 text-slate-400" />
-                            Add
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
+                        </td>
+
+                        {/* Slip Toggle */}
+                        <td className="py-2.5 px-3 text-center">
+                          {inSlip ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded border border-slate-200">
+                              <Check className="w-3 h-3 text-slate-400" />
+                              In Slip
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (onAddToSlip) {
+                                  onAddToSlip(leg.match, leg.pick, leg.market, leg.odds, leg.prob);
+                                }
+                              }}
+                              className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 px-2 py-1 rounded border border-slate-300 shadow-2xs transition-colors cursor-pointer"
+                            >
+                              <Plus className="w-3 h-3 text-slate-400" />
+                              Add
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
@@ -919,10 +1272,10 @@ export default function FixturesTablePage({
           {/* Table Summary Footer */}
           <div className="px-4 py-3 bg-slate-50/60 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
             <div className="flex items-center gap-4 flex-wrap">
-              <span>Total Legs: <strong className="text-slate-900">{dailySwarmAcca.legs.length}</strong></span>
-              <span>Combined Odds: <strong className="text-slate-900 font-mono">{safeToFixed(dailySwarmAcca.combinedOdds, 2)}x</strong></span>
-              <span>Average Win Rate: <strong className="text-slate-900 font-mono">{safeToFixed(dailySwarmAcca.avgWinRate, 1)}%</strong></span>
-              <span>Joint Survival: <strong className="text-slate-900 font-mono">{safeToFixed(dailySwarmAcca.jointProb, 1)}%</strong></span>
+              <span>Total Legs: <strong className="text-slate-900">{filteredCouncilStats.count}</strong></span>
+              <span>Combined Odds: <strong className="text-slate-900 font-mono">{safeToFixed(filteredCouncilStats.combinedOdds, 2)}x</strong></span>
+              <span>Average Win Rate: <strong className="text-slate-900 font-mono">{safeToFixed(filteredCouncilStats.avgWinRate, 1)}%</strong></span>
+              <span>Joint Survival: <strong className="text-slate-900 font-mono">{safeToFixed(filteredCouncilStats.jointProb, 1)}%</strong></span>
             </div>
             <div className="text-[11px] text-slate-400 font-medium">
               Independent Fixture Verification • LiveScore Bet Ireland
