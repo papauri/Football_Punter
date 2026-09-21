@@ -367,27 +367,47 @@ export default function FixturesTablePage({
       return true;
     });
 
-    // Sorting
+    // Comprehensive sorting across all columns
     list.sort((a, b) => {
       let diff = 0;
-      if (councilSortField === 'prob') {
+      if (councilSortField === 'idx') {
+        const idxA = (dailySwarmAcca?.legs || []).indexOf(a);
+        const idxB = (dailySwarmAcca?.legs || []).indexOf(b);
+        diff = idxA - idxB;
+      } else if (councilSortField === 'prob') {
         diff = (b.prob || 0) - (a.prob || 0);
       } else if (councilSortField === 'odds') {
         diff = (b.odds || 0) - (a.odds || 0);
       } else if (councilSortField === 'time') {
-        const timeA = new Date(a.match?.timestamp || a.match?.dateIso || a.date || 0).getTime();
-        const timeB = new Date(b.match?.timestamp || b.match?.dateIso || b.date || 0).getTime();
-        diff = timeA - timeB;
+        const getTs = (item) => {
+          const t = item.match?.timestamp || item.match?.utcDate || item.match?.dateIso || item.date;
+          if (typeof t === 'number') return t;
+          const parsed = new Date(t).getTime();
+          return isNaN(parsed) ? 0 : parsed;
+        };
+        diff = getTs(a) - getTs(b);
       } else if (councilSortField === 'fixture') {
         diff = (a.home || '').localeCompare(b.home || '');
       } else if (councilSortField === 'league') {
         diff = (a.league || '').localeCompare(b.league || '');
+      } else if (councilSortField === 'pick') {
+        const teamA = a.pick === 'HOME' ? a.home : a.away;
+        const teamB = b.pick === 'HOME' ? b.home : b.away;
+        diff = teamA.localeCompare(teamB);
+      } else if (councilSortField === 'consensus') {
+        const scoreA = (a.swarmScore || a.prob || 0);
+        const scoreB = (b.swarmScore || b.prob || 0);
+        diff = scoreB - scoreA;
+      } else if (councilSortField === 'slip') {
+        const inSlipA = accaMatchIds.has(String(a.id)) ? 1 : 0;
+        const inSlipB = accaMatchIds.has(String(b.id)) ? 1 : 0;
+        diff = inSlipB - inSlipA;
       }
       return councilSortDirection === 'asc' ? -diff : diff;
     });
 
     return list;
-  }, [dailySwarmAcca, councilDate, councilLeague, councilPick, councilMinRate, councilSearch, councilSortField, councilSortDirection, tzSettings]);
+  }, [dailySwarmAcca, councilDate, councilLeague, councilPick, councilMinRate, councilSearch, councilSortField, councilSortDirection, accaMatchIds, tzSettings]);
 
   // Dynamically computed stats for filtered council selections
   const filteredCouncilStats = useMemo(() => {
@@ -433,7 +453,49 @@ export default function FixturesTablePage({
       setCouncilSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
     } else {
       setCouncilSortField(field);
-      setCouncilSortDirection(['fixture', 'time', 'league'].includes(field) ? 'asc' : 'desc');
+      const defaultDesc = ['prob', 'odds', 'consensus', 'slip'].includes(field);
+      setCouncilSortDirection(defaultDesc ? 'desc' : 'asc');
+    }
+  };
+
+  // Helper to format kickoff with relative day, day of week, and time
+  const getLegKickoffDisplay = (leg) => {
+    const timeVal = leg.match?.timestamp || leg.match?.utcDate || leg.match?.dateIso || leg.match?.date || leg.date;
+    const tzZone = tzSettings?.zone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    const hour12 = tzSettings?.hour24 === false;
+
+    if (!timeVal) {
+      return { day: 'Upcoming', time: leg.time || '' };
+    }
+
+    try {
+      const d = new Date(typeof timeVal === 'number' ? timeVal : timeVal);
+      if (isNaN(d.getTime())) {
+        return { day: 'Upcoming', time: leg.time || '' };
+      }
+
+      const dayOfWeek = d.toLocaleDateString(undefined, { timeZone: tzZone, weekday: 'short' });
+      const monthDay = d.toLocaleDateString(undefined, { timeZone: tzZone, month: 'short', day: 'numeric' });
+      const timeStr = d.toLocaleTimeString([], { timeZone: tzZone, hour12, hour: '2-digit', minute: '2-digit' });
+
+      const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: tzZone, year: 'numeric', month: '2-digit', day: '2-digit' });
+      const todayStr = formatter.format(new Date());
+      const targetStr = formatter.format(d);
+
+      let dayLabel = `${dayOfWeek}, ${monthDay}`;
+      if (todayStr === targetStr) {
+        dayLabel = `Today (${dayOfWeek})`;
+      } else {
+        const [y1, m1, day1] = todayStr.split('-').map(Number);
+        const [y2, m2, day2] = targetStr.split('-').map(Number);
+        const diff = Math.round((Date.UTC(y2, m2 - 1, day2) - Date.UTC(y1, m1 - 1, day1)) / (1000 * 60 * 60 * 24));
+        if (diff === 1) dayLabel = `Tomorrow (${dayOfWeek})`;
+        else if (diff === -1) dayLabel = `Yesterday (${dayOfWeek})`;
+      }
+
+      return { day: dayLabel, time: timeStr };
+    } catch (e) {
+      return { day: 'Upcoming', time: leg.time || '' };
     }
   };
 
@@ -1067,13 +1129,27 @@ export default function FixturesTablePage({
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider h-9 select-none">
-                  <th className="py-2 px-3 w-12 text-center">#</th>
+                  {/* Leg Number / Default Order (Sortable) */}
+                  <th 
+                    onClick={() => handleCouncilSort('idx')}
+                    className="py-2 px-3 w-12 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
+                    title="Click to reset to default order"
+                  >
+                    <div className="inline-flex items-center justify-center gap-0.5">
+                      <span className={councilSortField === 'idx' ? 'text-slate-900 font-bold' : ''}>#</span>
+                      {councilSortField === 'idx' ? (
+                        councilSortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-700" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-700" />
+                      ) : (
+                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
                   
                   {/* Fixture (Sortable) */}
                   <th 
                     onClick={() => handleCouncilSort('fixture')}
                     className="py-2 px-3 min-w-[200px] cursor-pointer hover:bg-slate-100 transition-colors group"
-                    title="Click to sort by Fixture name"
+                    title="Click to sort alphabetically by Club / Fixture"
                   >
                     <div className="inline-flex items-center gap-1">
                       <span className={councilSortField === 'fixture' ? 'text-slate-900 font-bold' : ''}>Fixture</span>
@@ -1089,7 +1165,7 @@ export default function FixturesTablePage({
                   <th 
                     onClick={() => handleCouncilSort('league')}
                     className="py-2 px-3 min-w-[130px] cursor-pointer hover:bg-slate-100 transition-colors group"
-                    title="Click to sort by League"
+                    title="Click to sort by Competition / League"
                   >
                     <div className="inline-flex items-center gap-1">
                       <span className={councilSortField === 'league' ? 'text-slate-900 font-bold' : ''}>League</span>
@@ -1101,14 +1177,14 @@ export default function FixturesTablePage({
                     </div>
                   </th>
 
-                  {/* Kickoff (Sortable) */}
+                  {/* Kickoff & Day (Sortable) */}
                   <th 
                     onClick={() => handleCouncilSort('time')}
-                    className="py-2 px-3 w-24 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                    title="Click to sort by Kickoff Time"
+                    className="py-2 px-3 min-w-[125px] text-center cursor-pointer hover:bg-slate-100 transition-colors group"
+                    title="Click to sort chronologically by Kickoff Day & Time"
                   >
                     <div className="inline-flex items-center justify-center gap-1">
-                      <span className={councilSortField === 'time' ? 'text-slate-900 font-bold' : ''}>Kickoff</span>
+                      <span className={councilSortField === 'time' ? 'text-slate-900 font-bold' : ''}>Kickoff & Day</span>
                       {councilSortField === 'time' ? (
                         councilSortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-slate-700" /> : <ArrowDown className="w-3 h-3 text-slate-700" />
                       ) : (
@@ -1117,13 +1193,27 @@ export default function FixturesTablePage({
                     </div>
                   </th>
 
-                  <th className="py-2 px-3 min-w-[160px]">Council Pick</th>
+                  {/* Council Pick (Sortable) */}
+                  <th 
+                    onClick={() => handleCouncilSort('pick')}
+                    className="py-2 px-3 min-w-[160px] cursor-pointer hover:bg-slate-100 transition-colors group"
+                    title="Click to sort by Selected Winner"
+                  >
+                    <div className="inline-flex items-center gap-1">
+                      <span className={councilSortField === 'pick' ? 'text-slate-900 font-bold' : ''}>Council Pick</span>
+                      {councilSortField === 'pick' ? (
+                        councilSortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-slate-700" /> : <ArrowDown className="w-3 h-3 text-slate-700" />
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
 
                   {/* Odds (Sortable) */}
                   <th 
                     onClick={() => handleCouncilSort('odds')}
                     className="py-2 px-3 w-20 text-right cursor-pointer hover:bg-slate-100 transition-colors group"
-                    title="Click to sort by Odds"
+                    title="Click to sort by Market Odds"
                   >
                     <div className="inline-flex items-center justify-end gap-1 w-full">
                       <span className={councilSortField === 'odds' ? 'text-slate-900 font-bold' : ''}>Odds</span>
@@ -1139,7 +1229,7 @@ export default function FixturesTablePage({
                   <th 
                     onClick={() => handleCouncilSort('prob')}
                     className="py-2 px-3 w-24 text-right cursor-pointer hover:bg-slate-100 transition-colors group"
-                    title="Click to sort by Win Rate"
+                    title="Click to sort by Win Rate Probability"
                   >
                     <div className="inline-flex items-center justify-end gap-1 w-full">
                       <span className={councilSortField === 'prob' ? 'text-slate-900 font-bold' : ''}>Win Rate</span>
@@ -1151,8 +1241,37 @@ export default function FixturesTablePage({
                     </div>
                   </th>
 
-                  <th className="py-2 px-3 w-32 text-center">Consensus</th>
-                  <th className="py-2 px-3 w-24 text-center">Slip</th>
+                  {/* Consensus (Sortable) */}
+                  <th 
+                    onClick={() => handleCouncilSort('consensus')}
+                    className="py-2 px-3 w-32 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
+                    title="Click to sort by Council Agreement Score"
+                  >
+                    <div className="inline-flex items-center justify-center gap-1">
+                      <span className={councilSortField === 'consensus' ? 'text-slate-900 font-bold' : ''}>Consensus</span>
+                      {councilSortField === 'consensus' ? (
+                        councilSortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-slate-700" /> : <ArrowDown className="w-3 h-3 text-slate-700" />
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
+
+                  {/* Slip (Sortable) */}
+                  <th 
+                    onClick={() => handleCouncilSort('slip')}
+                    className="py-2 px-3 w-24 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
+                    title="Click to sort by Slip Inclusion"
+                  >
+                    <div className="inline-flex items-center justify-center gap-1">
+                      <span className={councilSortField === 'slip' ? 'text-slate-900 font-bold' : ''}>Slip</span>
+                      {councilSortField === 'slip' ? (
+                        councilSortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-slate-700" /> : <ArrowDown className="w-3 h-3 text-slate-700" />
+                      ) : (
+                        <ArrowUpDown className="w-3 h-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                    </div>
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -1179,6 +1298,7 @@ export default function FixturesTablePage({
                     const inSlip = accaMatchIds.has(String(leg.id));
                     const isHome = leg.pick === 'HOME';
                     const pickTeam = isHome ? leg.home : leg.away;
+                    const kickoff = getLegKickoffDisplay(leg);
 
                     return (
                       <tr 
@@ -1204,9 +1324,14 @@ export default function FixturesTablePage({
                           {leg.league}
                         </td>
 
-                        {/* Kickoff */}
-                        <td className="py-2.5 px-3 text-center text-slate-500 font-mono text-[11px] whitespace-nowrap">
-                          {leg.time || 'Upcoming'}
+                        {/* Kickoff stating Day and Time */}
+                        <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                          <div className="font-semibold text-slate-800 text-xs">
+                            {kickoff.day}
+                          </div>
+                          <div className="text-slate-400 font-mono text-[10px] mt-0.5">
+                            {kickoff.time}
+                          </div>
                         </td>
 
                         {/* Pick */}
