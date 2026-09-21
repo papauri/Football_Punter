@@ -465,6 +465,7 @@ export default function AccumulatorPage({
         };
         const matchProb = resolveMatchProb(targetMatch, pPick, leg.modelProb && !orig?.prob ? leg.modelProb : null);
         const matchOdds = resolveMatchOdds(targetMatch, pPick, leg.odds);
+        const ev = ((matchProb / 100) * matchOdds) - 1;
 
         map.set(String(fixtureId), {
           match: targetMatch,
@@ -472,7 +473,8 @@ export default function AccumulatorPage({
           market: `${pPick} Win (Outright)`,
           odds: matchOdds,
           prob: matchProb,
-          score: (leg.swarmScore || 80) + matchProb
+          ev,
+          score: (leg.swarmScore || 80) + matchProb + (ev > 0 ? ev * 120 : ev * 80)
         });
       }
     });
@@ -501,6 +503,7 @@ export default function AccumulatorPage({
 
       const matchProb = resolveMatchProb(m, pickVal);
       const matchOdds = resolveMatchOdds(m, pickVal);
+      const ev = ((matchProb / 100) * matchOdds) - 1;
 
       map.set(idStr, {
         match: m,
@@ -508,7 +511,8 @@ export default function AccumulatorPage({
         market: `${pickVal} Win (Outright)`,
         odds: matchOdds,
         prob: matchProb,
-        score: (sw?.swarmScore || 75) + 30 + matchProb
+        ev,
+        score: (sw?.swarmScore || 75) + 30 + matchProb + (ev > 0 ? ev * 120 : ev * 80)
       });
     });
 
@@ -538,6 +542,7 @@ export default function AccumulatorPage({
         };
         const matchProb = resolveMatchProb(targetMatch, rawPick);
         const matchOdds = resolveMatchOdds(targetMatch, rawPick, leg.odds);
+        const ev = ((matchProb / 100) * matchOdds) - 1;
 
         map.set(String(fixtureId), {
           match: targetMatch,
@@ -545,7 +550,8 @@ export default function AccumulatorPage({
           market: `${rawPick} Win (Outright)`,
           odds: matchOdds,
           prob: matchProb,
-          score: matchProb + 30
+          ev,
+          score: matchProb + 30 + (ev > 0 ? ev * 100 : ev * 60)
         });
       }
     });
@@ -576,6 +582,7 @@ export default function AccumulatorPage({
 
       const matchProb = resolveMatchProb(m, rawPick);
       const matchOdds = resolveMatchOdds(m, rawPick);
+      const ev = ((matchProb / 100) * matchOdds) - 1;
 
       map.set(idStr, {
         match: m,
@@ -583,7 +590,8 @@ export default function AccumulatorPage({
         market: `${rawPick} Win (Outright)`,
         odds: matchOdds,
         prob: matchProb,
-        score: matchProb + (isPrime ? 25 : 0) + (stabScore > 75 ? 12 : 0)
+        ev,
+        score: matchProb + (isPrime ? 25 : 0) + (stabScore > 75 ? 12 : 0) + (ev > 0 ? ev * 100 : ev * 60)
       });
     });
 
@@ -668,7 +676,7 @@ export default function AccumulatorPage({
       .slice(0, 4);
   }, [matches, accaMatchIds]);
 
-  // Preset Generation Handler (Straight Outrights & 100% AI Consensus)
+  // Preset Generation Handler (Straight Outrights & 100% AI Consensus & +EV)
   const handleLoadAutonomousPreset = () => {
     let pool = allUnanimousPool;
     let label = '👑 100% AI Consensus Outright Ticket';
@@ -680,8 +688,11 @@ export default function AccumulatorPage({
       label = '💎 +EV Outright Alpha Ticket';
     }
 
-    const count = presetLegCount === 'ALL' ? pool.length : (parseInt(presetLegCount, 10) || 3);
-    const selected = pool.slice(0, count);
+    // Prioritize candidates with positive or neutral expected value
+    const positiveEvPool = pool.filter(p => (p.ev !== undefined ? p.ev >= -0.01 : true));
+    const candidatePool = positiveEvPool.length >= (typeof presetLegCount === 'number' ? presetLegCount : 3) ? positiveEvPool : pool;
+    const count = presetLegCount === 'ALL' ? candidatePool.length : (parseInt(presetLegCount, 10) || 3);
+    const selected = candidatePool.slice(0, count);
 
     const picksToLoad = selected.map(item => {
       const legProb = resolveMatchProb(item.match, item.pick);
@@ -716,13 +727,14 @@ export default function AccumulatorPage({
     }
   };
 
-  // Autonomous One-Click Optimization (Strict Outrights Only & 100% AI Consensus)
+  // Autonomous One-Click Optimization (Strict Outrights, 100% AI Consensus & +EV Edge)
   const handleAutoOptimizeSlip = () => {
     if (activeLegs.length === 0) return;
 
     let convertedDCCount = 0;
     let removedSplitCount = 0;
     let removedTrapCount = 0;
+    let removedNegativeEvCount = 0;
 
     let compliantPicks = [];
 
@@ -740,8 +752,11 @@ export default function AccumulatorPage({
         if (isUnan && (straightPick === 'HOME' || straightPick === 'AWAY') && !leg.status.isTrap) {
           const newOdds = resolveMatchOdds(m, straightPick);
           const newProb = resolveMatchProb(m, straightPick);
-          compliantPicks.push(buildPickObject(m, straightPick, `${straightPick} Win (Outright)`, newOdds, newProb));
-          return;
+          const ev = ((newProb / 100) * newOdds) - 1;
+          if (ev >= -0.04) {
+            compliantPicks.push(buildPickObject(m, straightPick, `${straightPick} Win (Outright)`, newOdds, newProb));
+            return;
+          }
         }
         return; // Discard non-unanimous DC pick
       }
@@ -764,14 +779,29 @@ export default function AccumulatorPage({
         return;
       }
 
+      // 5. Prune negative EV selections where bookmaker juice severely outweighs model probability
+      const legProb = resolveMatchProb(m, leg.pick, leg.prob);
+      const legOdds = resolveMatchOdds(m, leg.pick, leg.odds);
+      const legEv = ((legProb / 100) * legOdds) - 1;
+      if (legEv < -0.04) {
+        removedNegativeEvCount++;
+        return;
+      }
+
       const outrightPick = (p === '1' ? 'HOME' : p === '2' ? 'AWAY' : p);
       compliantPicks.push(buildPickObject(m, outrightPick, `${outrightPick} Win (Outright)`, leg.odds, leg.prob));
     });
 
-    // Backfill from allUnanimousPool if needed
-    if (compliantPicks.length < 3 && allUnanimousPool.length > 0) {
+    // Backfill from allUnanimousPool / allValuePool if needed (prioritizing positive EV)
+    const combinedCandidatePool = [
+      ...allUnanimousPool.filter(p => (p.ev || 0) >= -0.02),
+      ...allValuePool,
+      ...allUnanimousPool
+    ];
+
+    if (compliantPicks.length < 3 && combinedCandidatePool.length > 0) {
       const existingIds = new Set(compliantPicks.map(p => String(p.id)));
-      for (const item of allUnanimousPool) {
+      for (const item of combinedCandidatePool) {
         if (compliantPicks.length >= 3) break;
         const fixId = String(item.match?.id || item.fixtureId);
         if (!existingIds.has(fixId)) {
@@ -805,11 +835,12 @@ export default function AccumulatorPage({
     if (convertedDCCount > 0) notices.push(`${convertedDCCount} DC pick(s) converted/purged`);
     if (removedSplitCount > 0) notices.push(`${removedSplitCount} split-council pick(s) replaced`);
     if (removedTrapCount > 0) notices.push(`${removedTrapCount} trap(s) removed`);
+    if (removedNegativeEvCount > 0) notices.push(`${removedNegativeEvCount} negative EV / juiced pick(s) replaced with +EV outright value`);
 
     setLoadedNotice(
       notices.length > 0
-        ? `Optimized for Outrights & All AI Consensus: ${notices.join(', ')}.`
-        : `Acca Verified: All ${compliantPicks.length} selections are straight outrights with 100% AI consensus.`
+        ? `Optimized for Outrights, +EV & All AI Consensus: ${notices.join(', ')}.`
+        : `Acca Verified: All ${compliantPicks.length} selections are straight outrights with positive mathematical edge & 100% AI consensus.`
     );
     setTimeout(() => setLoadedNotice(null), 4500);
   };

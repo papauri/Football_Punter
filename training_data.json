@@ -155012,6 +155012,21 @@
     "actualWinner": "AWAY"
   },
   {
+    "id": "401850641",
+    "home": "Coquimbo Unido",
+    "away": "Huachipato",
+    "homeScore": 0,
+    "awayScore": 1,
+    "league": "Chilean Primera División",
+    "date": "2026-09-16",
+    "timestamp": 1789516800000,
+    "goals": {
+      "home": 0,
+      "away": 1
+    },
+    "actualWinner": "AWAY"
+  },
+  {
     "id": "401876991",
     "home": "Puebla",
     "away": "Toluca",
@@ -157817,6 +157832,21 @@
     "actualWinner": "HOME"
   },
   {
+    "id": "401841238",
+    "home": "Athletico-PR",
+    "away": "Bahia",
+    "homeScore": 2,
+    "awayScore": 1,
+    "league": "Brasileirão",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 2,
+      "away": 1
+    },
+    "actualWinner": "HOME"
+  },
+  {
     "id": "761822",
     "home": "FC Dallas",
     "away": "Austin FC",
@@ -157997,16 +158027,6 @@
     "actualWinner": "AWAY"
   },
   {
-    "id": "401841238",
-    "home": "Athletico-PR",
-    "away": "Bahia",
-    "homeScore": 2,
-    "awayScore": 1,
-    "league": "Brasileirão",
-    "date": "2026-09-20",
-    "timestamp": 1789862400000
-  },
-  {
     "id": "401876967",
     "home": "Pachuca",
     "away": "Tijuana",
@@ -158014,7 +158034,12 @@
     "awayScore": 2,
     "league": "Liga MX",
     "date": "2026-09-21",
-    "timestamp": 1789948800000
+    "timestamp": 1789948800000,
+    "goals": {
+      "home": 2,
+      "away": 2
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401876966",
@@ -158024,7 +158049,12 @@
     "awayScore": 3,
     "league": "Liga MX",
     "date": "2026-09-21",
-    "timestamp": 1789948800000
+    "timestamp": 1789948800000,
+    "goals": {
+      "home": 2,
+      "away": 3
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401876965",
@@ -158034,16 +158064,951 @@
     "awayScore": 1,
     "league": "Liga MX",
     "date": "2026-09-21",
-    "timestamp": 1789948800000
+    "timestamp": 1789948800000,
+    "goals": {
+      "home": 1,
+      "away": 1
+    },
+    "actualWinner": "DRAW"
   },
   {
-    "id": "401850641",
-    "home": "Coquimbo Unido",
-    "away": "Huachipato",
+    "id": "725404",
+    "home": "Cork",
+    "away": "Derry City",
     "homeScore": 0,
     "awayScore": 1,
-    "league": "Chilean Primera División",
+    "league": "Irish Premier Division",
+    "date": "2025-11-01",
+    "timestamp": 1761955200000
+  },
+  {
+    "id": "725405",
+    "home": "Drogheda United",
+    "away": "Bohemians",
+    "homeScore": 1,
+    "awayScore": 4,
+    "league": "Irish Premier Division",
+    "date": "2025-11-01",
+    "timestamp": 1761955200000
+  },
+  {
+    "id": "725403",
+    "home": "Shamrock Rovers",
+    "away": "Sligo Rovers",
+    "homeScore": 1,
+    "awayScore": 2,
+    "league": "Irish Premier Division",
+    "date": "2025-11-01",
+    "timestamp": 1761955200000
+  },
+  {
+    "id": "725402",
+    "home": "Shelbourne",
+    "away": "St Patrick's Athletic",
+    "homeScore": 0,
+    "awayScore": 0,
+    "league": "Irish Premier Division",
+    "date": "2025-11-01",
+    "timestamp": 1761955200000
+  },
+  {
+    "id": "725406",
+    "home": "Waterford",
+    "away": "Galway United FC",
+    "homeScore": 1,
+    "awayScore": 1,
+    "league": "Irish Premier Division",
+    "date": "2025-11-01",
+    "timestamp": 1761955200000
+  },
+  {
+    "id": "401880849",
+    "home": "Barnsley",
+    "away": "Leicester City",
+    "homeScore": 1,
+    "awayScore": 1,
+    "league": "English League One",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401880846",
+    "home": "Burton Albion",
+    "away": "Mansfield Town",
+    "homeScore": 2,
+    "awayScore": 2,
+    "league": "English League One",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401880848",
+    "home": "Blackpool",
+    "away": "Plymouth Argyle",
+    "homeScore": 2,
+    "awayScore": 4,
+    "league": "English League One",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401880847",
+    "home": "Bromley",
+    "away": "Huddersfield Town",
+    "homeScore": 2,
+    "awayScore": 1,
+    "league": "English League One",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401880845",
+    "home": "Leyton Orient",
+    "away": "Stevenage",
+    "homeScore": 1,
+    "awayScore": 0,
+    "league": "English League One",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401880844",
+    "home": "Luton Town",
+    "away": "Bradford City",
+    "homeScore": 0,
+    "awayScore": 1,
+    "league": "English League One",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401880843",
+    "home": "Oxford United",
+    "away": "Cambridge United",
+    "homeScore": 1,
+    "awayScore": 1,
+    "league": "English League One",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401880842",
+    "home": "Peterborough United",
+    "away": "Doncaster Rovers",
+    "homeScore": 0,
+    "awayScore": 2,
+    "league": "English League One",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401880841",
+    "home": "Reading",
+    "away": "Notts County",
+    "homeScore": 2,
+    "awayScore": 0,
+    "league": "English League One",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401880840",
+    "home": "Sheffield Wednesday",
+    "away": "Stockport County",
+    "homeScore": 0,
+    "awayScore": 0,
+    "league": "English League One",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401880839",
+    "home": "Wigan Athletic",
+    "away": "Wycombe Wanderers",
+    "homeScore": 0,
+    "awayScore": 1,
+    "league": "English League One",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401881363",
+    "home": "Rochdale",
+    "away": "Oldham Athletic",
+    "homeScore": 2,
+    "awayScore": 0,
+    "league": "English League Two",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401881361",
+    "home": "Walsall",
+    "away": "Port Vale",
+    "homeScore": 2,
+    "awayScore": 0,
+    "league": "English League Two",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401881372",
+    "home": "Accrington Stanley",
+    "away": "Newport County",
+    "homeScore": 0,
+    "awayScore": 0,
+    "league": "English League Two",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401881371",
+    "home": "Barnet",
+    "away": "Fleetwood Town",
+    "homeScore": 3,
+    "awayScore": 1,
+    "league": "English League Two",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401881370",
+    "home": "Chesterfield",
+    "away": "York City",
+    "homeScore": 2,
+    "awayScore": 0,
+    "league": "English League Two",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401881369",
+    "home": "Colchester United",
+    "away": "Cheltenham Town",
+    "homeScore": 1,
+    "awayScore": 1,
+    "league": "English League Two",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401881368",
+    "home": "Crewe Alexandra",
+    "away": "Shrewsbury Town",
+    "homeScore": 1,
+    "awayScore": 1,
+    "league": "English League Two",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401881367",
+    "home": "Exeter City",
+    "away": "Tranmere Rovers",
+    "homeScore": 0,
+    "awayScore": 0,
+    "league": "English League Two",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401881366",
+    "home": "Gillingham",
+    "away": "Bristol Rovers",
+    "homeScore": 3,
+    "awayScore": 0,
+    "league": "English League Two",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401881365",
+    "home": "Grimsby Town",
+    "away": "Crawley Town",
+    "homeScore": 2,
+    "awayScore": 0,
+    "league": "English League Two",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401881364",
+    "home": "Northampton Town",
+    "away": "Rotherham United",
+    "homeScore": 0,
+    "awayScore": 1,
+    "league": "English League Two",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401881362",
+    "home": "Salford City",
+    "away": "Swindon Town",
+    "homeScore": 1,
+    "awayScore": 0,
+    "league": "English League Two",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401899619",
+    "home": "Arezzo",
+    "away": "Sudtirol",
+    "homeScore": 1,
+    "awayScore": 4,
+    "league": "Italian Serie B",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401899615",
+    "home": "Hellas Verona",
+    "away": "Vicenza",
+    "homeScore": 2,
+    "awayScore": 1,
+    "league": "Italian Serie B",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401899613",
+    "home": "Mantova",
+    "away": "Pisa",
+    "homeScore": 2,
+    "awayScore": 2,
+    "league": "Italian Serie B",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401899612",
+    "home": "Modena",
+    "away": "Empoli",
+    "homeScore": 2,
+    "awayScore": 1,
+    "league": "Italian Serie B",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401876744",
+    "home": "Boulogne",
+    "away": "Nantes",
+    "homeScore": 1,
+    "awayScore": 2,
+    "league": "French Ligue 2",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401876742",
+    "home": "Guingamp",
+    "away": "Red Star FC 93",
+    "homeScore": 1,
+    "awayScore": 3,
+    "league": "French Ligue 2",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401876740",
+    "home": "Metz",
+    "away": "Saint-Étienne",
+    "homeScore": 2,
+    "awayScore": 2,
+    "league": "French Ligue 2",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401878566",
+    "home": "Greenock Morton",
+    "away": "Dunfermline Athletic",
+    "homeScore": 0,
+    "awayScore": 1,
+    "league": "Scottish Championship",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401878565",
+    "home": "Livingston",
+    "away": "Inverness Caledonian Thistle",
+    "homeScore": 2,
+    "awayScore": 2,
+    "league": "Scottish Championship",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401878564",
+    "home": "Partick Thistle",
+    "away": "Raith Rovers",
+    "homeScore": 0,
+    "awayScore": 0,
+    "league": "Scottish Championship",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401878562",
+    "home": "Stenhousemuir",
+    "away": "Arbroath",
+    "homeScore": 1,
+    "awayScore": 0,
+    "league": "Scottish Championship",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "744439",
+    "home": "Unirea Slobozia",
+    "away": "Petrolul Ploiesti",
+    "homeScore": 1,
+    "awayScore": 0,
+    "league": "Romanian Liga 1",
+    "date": "2025-09-21",
+    "timestamp": 1758412800000
+  },
+  {
+    "id": "744433",
+    "home": "CFR Cluj-Napoca",
+    "away": "UTA Arad",
+    "homeScore": 1,
+    "awayScore": 1,
+    "league": "Romanian Liga 1",
+    "date": "2025-09-21",
+    "timestamp": 1758412800000
+  },
+  {
+    "id": "744438",
+    "home": "Rapid Bucuresti",
+    "away": "Hermannstadt",
+    "homeScore": 1,
+    "awayScore": 2,
+    "league": "Romanian Liga 1",
+    "date": "2025-09-21",
+    "timestamp": 1758412800000
+  },
+  {
+    "id": "401879851",
+    "home": "Gazovik Orenburg",
+    "away": "Krasnodar",
+    "homeScore": 0,
+    "awayScore": 0,
+    "league": "Russian Premier League",
+    "date": "2026-09-17",
+    "timestamp": 1789603200000
+  },
+  {
+    "id": "401879848",
+    "home": "Akron Tolyatti",
+    "away": "Akhmat Grozny",
+    "homeScore": 2,
+    "awayScore": 0,
+    "league": "Russian Premier League",
+    "date": "2026-09-17",
+    "timestamp": 1789603200000
+  },
+  {
+    "id": "401879853",
+    "home": "Rostov",
+    "away": "Dinamo Moscow",
+    "homeScore": 0,
+    "awayScore": 3,
+    "league": "Russian Premier League",
+    "date": "2026-09-17",
+    "timestamp": 1789603200000
+  },
+  {
+    "id": "401879854",
+    "home": "Dynamo Makhachkala",
+    "away": "CSKA Moscow",
+    "homeScore": 1,
+    "awayScore": 3,
+    "league": "Russian Premier League",
+    "date": "2026-09-17",
+    "timestamp": 1789603200000
+  },
+  {
+    "id": "401888665",
+    "home": "Sportivo San Lorenzo",
+    "away": "Club Olimpia",
+    "homeScore": 0,
+    "awayScore": 3,
+    "league": "Paraguayan Primera División",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401888594",
+    "home": "Sportivo Luqueño",
+    "away": "Deportivo Recoleta",
+    "homeScore": 1,
+    "awayScore": 0,
+    "league": "Paraguayan Primera División",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401906473",
+    "home": "Independiente Petrolero",
+    "away": "San Antonio Bulo Bulo",
+    "homeScore": 1,
+    "awayScore": 3,
+    "league": "Bolivian Liga Profesional",
+    "date": "2026-09-18",
+    "timestamp": 1789689600000
+  },
+  {
+    "id": "401903322",
+    "home": "Anzoátegui FC",
+    "away": "Caracas FC",
+    "homeScore": 1,
+    "awayScore": 1,
+    "league": "Venezuelan Primera División",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401903319",
+    "home": "Zamora FC",
+    "away": "Metropolitanos",
+    "homeScore": 1,
+    "awayScore": 3,
+    "league": "Venezuelan Primera División",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401903321",
+    "home": "Estudiantes de Mérida",
+    "away": "Trujillanos",
+    "homeScore": 1,
+    "awayScore": 1,
+    "league": "Venezuelan Primera División",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401861443",
+    "home": "Zhejiang Professional FC",
+    "away": "Wuhan Three Towns",
+    "homeScore": 4,
+    "awayScore": 1,
+    "league": "Chinese Super League",
+    "date": "2026-09-18",
+    "timestamp": 1789689600000
+  },
+  {
+    "id": "401861202",
+    "home": "Inter Kashi",
+    "away": "SC East Bengal",
+    "homeScore": 1,
+    "awayScore": 2,
+    "league": "Indian Super League",
+    "date": "2026-05-21",
+    "timestamp": 1779321600000
+  },
+  {
+    "id": "401861204",
+    "home": "Jamshedpur FC",
+    "away": "Odisha FC",
+    "homeScore": 0,
+    "awayScore": 0,
+    "league": "Indian Super League",
+    "date": "2026-05-21",
+    "timestamp": 1779321600000
+  },
+  {
+    "id": "401861201",
+    "home": "Mohun Bagan Super Giant",
+    "away": "Sporting Club Delhi",
+    "homeScore": 2,
+    "awayScore": 1,
+    "league": "Indian Super League",
+    "date": "2026-05-21",
+    "timestamp": 1779321600000
+  },
+  {
+    "id": "401861198",
+    "home": "Punjab FC",
+    "away": "Mumbai City FC",
+    "homeScore": 0,
+    "awayScore": 2,
+    "league": "Indian Super League",
+    "date": "2026-05-21",
+    "timestamp": 1779321600000
+  },
+  {
+    "id": "401902038",
+    "home": "Golden Arrows",
+    "away": "Kaizer Chiefs",
+    "homeScore": 0,
+    "awayScore": 0,
+    "league": "South African Premiership",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401902034",
+    "home": "Marumo Gallants",
+    "away": "Orlando Pirates",
+    "homeScore": 0,
+    "awayScore": 2,
+    "league": "South African Premiership",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401902037",
+    "home": "Milford FC",
+    "away": "Durban City",
+    "homeScore": 1,
+    "awayScore": 1,
+    "league": "South African Premiership",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401902033",
+    "home": "TS Galaxy FC",
+    "away": "Chippa United",
+    "homeScore": 0,
+    "awayScore": 1,
+    "league": "South African Premiership",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401874270",
+    "home": "Columbus Crew",
+    "away": "Orlando City SC",
+    "homeScore": 2,
+    "awayScore": 1,
+    "league": "U.S. Open Cup",
     "date": "2026-09-16",
     "timestamp": 1789516800000
+  },
+  {
+    "id": "401874269",
+    "home": "Colorado Rapids",
+    "away": "St. Louis CITY SC",
+    "homeScore": 0,
+    "awayScore": 3,
+    "league": "U.S. Open Cup",
+    "date": "2026-09-17",
+    "timestamp": 1789603200000
+  },
+  {
+    "id": "743879",
+    "home": "Ballymena",
+    "away": "Dungannon Swifts",
+    "homeScore": 0,
+    "awayScore": 2,
+    "league": "Northern Irish Premiership",
+    "date": "2025-09-27",
+    "timestamp": 1758931200000
+  },
+  {
+    "id": "743878",
+    "home": "Cliftonville",
+    "away": "Portadown",
+    "homeScore": 1,
+    "awayScore": 2,
+    "league": "Northern Irish Premiership",
+    "date": "2025-09-27",
+    "timestamp": 1758931200000
+  },
+  {
+    "id": "743881",
+    "home": "Coleraine",
+    "away": "Carrick",
+    "homeScore": 2,
+    "awayScore": 1,
+    "league": "Northern Irish Premiership",
+    "date": "2025-09-27",
+    "timestamp": 1758931200000
+  },
+  {
+    "id": "743876",
+    "home": "Glenavon",
+    "away": "Crusaders",
+    "homeScore": 0,
+    "awayScore": 2,
+    "league": "Northern Irish Premiership",
+    "date": "2025-09-27",
+    "timestamp": 1758931200000
+  },
+  {
+    "id": "706336",
+    "home": "Bala Town",
+    "away": "Newtown",
+    "homeScore": 2,
+    "awayScore": 2,
+    "league": "Welsh Premier League",
+    "date": "2024-09-20",
+    "timestamp": 1726790400000
+  },
+  {
+    "id": "706337",
+    "home": "Penybont FC",
+    "away": "The New Saints",
+    "homeScore": 2,
+    "awayScore": 1,
+    "league": "Welsh Premier League",
+    "date": "2024-09-20",
+    "timestamp": 1726790400000
+  },
+  {
+    "id": "706338",
+    "home": "Aberystwyth",
+    "away": "Haverfordwest",
+    "homeScore": 0,
+    "awayScore": 3,
+    "league": "Welsh Premier League",
+    "date": "2024-09-20",
+    "timestamp": 1726790400000
+  },
+  {
+    "id": "759502",
+    "home": "Apollon Limassol",
+    "away": "Enosis Neon Paralimni",
+    "homeScore": 3,
+    "awayScore": 0,
+    "league": "Cypriot First Division",
+    "date": "2025-09-21",
+    "timestamp": 1758412800000
+  },
+  {
+    "id": "759501",
+    "home": "Omonia Aradippou",
+    "away": "Pafos",
+    "homeScore": 0,
+    "awayScore": 2,
+    "league": "Cypriot First Division",
+    "date": "2025-09-21",
+    "timestamp": 1758412800000
+  },
+  {
+    "id": "734353",
+    "home": "Hapoel Be'er",
+    "away": "Hapoel Haifa",
+    "homeScore": 5,
+    "awayScore": 0,
+    "league": "Israeli Premier League",
+    "date": "2025-05-24",
+    "timestamp": 1748044800000
+  },
+  {
+    "id": "734352",
+    "home": "Maccabi Netanya",
+    "away": "Maccabi Haifa",
+    "homeScore": 2,
+    "awayScore": 3,
+    "league": "Israeli Premier League",
+    "date": "2025-05-24",
+    "timestamp": 1748044800000
+  },
+  {
+    "id": "734354",
+    "home": "Maccabi Tel-Aviv",
+    "away": "Beitar Jerusalem",
+    "homeScore": 5,
+    "awayScore": 0,
+    "league": "Israeli Premier League",
+    "date": "2025-05-24",
+    "timestamp": 1748044800000
+  },
+  {
+    "id": "757356",
+    "home": "Chiangrai United",
+    "away": "BG Pathum United",
+    "homeScore": 1,
+    "awayScore": 0,
+    "league": "Thai League 1",
+    "date": "2025-09-21",
+    "timestamp": 1758412800000
+  },
+  {
+    "id": "757357",
+    "home": "Muangthong United",
+    "away": "Ratchaburi FC",
+    "homeScore": 1,
+    "awayScore": 3,
+    "league": "Thai League 1",
+    "date": "2025-09-21",
+    "timestamp": 1758412800000
+  },
+  {
+    "id": "757358",
+    "home": "Rayong FC",
+    "away": "Ayutthaya United",
+    "homeScore": 2,
+    "awayScore": 2,
+    "league": "Thai League 1",
+    "date": "2025-09-21",
+    "timestamp": 1758412800000
+  },
+  {
+    "id": "757359",
+    "home": "Bangkok United",
+    "away": "Buriram United",
+    "homeScore": 1,
+    "awayScore": 2,
+    "league": "Thai League 1",
+    "date": "2025-09-21",
+    "timestamp": 1758412800000
+  },
+  {
+    "id": "752626",
+    "home": "Kuching City",
+    "away": "Kuala Lumpur City FC",
+    "homeScore": 1,
+    "awayScore": 0,
+    "league": "Malaysian Super League",
+    "date": "2026-05-17",
+    "timestamp": 1778976000000
+  },
+  {
+    "id": "752625",
+    "home": "Selangor FC",
+    "away": "PDRM FC",
+    "homeScore": 6,
+    "awayScore": 0,
+    "league": "Malaysian Super League",
+    "date": "2026-05-17",
+    "timestamp": 1778976000000
+  },
+  {
+    "id": "401902910",
+    "home": "Brighton & Hove Albion",
+    "away": "Aston Villa",
+    "homeScore": 1,
+    "awayScore": 1,
+    "league": "English Women's Super League",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401902909",
+    "home": "Crystal Palace",
+    "away": "Tottenham Hotspur",
+    "homeScore": 0,
+    "awayScore": 7,
+    "league": "English Women's Super League",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401902908",
+    "home": "West Ham United",
+    "away": "Everton",
+    "homeScore": 0,
+    "awayScore": 1,
+    "league": "English Women's Super League",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401882514",
+    "home": "CD Tenerife",
+    "away": "Sevilla",
+    "homeScore": 1,
+    "awayScore": 3,
+    "league": "Spanish Liga F",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401882511",
+    "home": "Granada",
+    "away": "Deportivo",
+    "homeScore": 0,
+    "awayScore": 3,
+    "league": "Spanish Liga F",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401882513",
+    "home": "Eibar",
+    "away": "Athletic Club",
+    "homeScore": 1,
+    "awayScore": 0,
+    "league": "Spanish Liga F",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401888032",
+    "home": "Lens",
+    "away": "Toulouse",
+    "homeScore": 2,
+    "awayScore": 2,
+    "league": "French Première Ligue",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401885705",
+    "home": "Saint-Malo",
+    "away": "FC Fleury 91",
+    "homeScore": 0,
+    "awayScore": 2,
+    "league": "French Première Ligue",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401885665",
+    "home": "Montpellier",
+    "away": "Marseille",
+    "homeScore": 0,
+    "awayScore": 0,
+    "league": "French Première Ligue",
+    "date": "2026-09-19",
+    "timestamp": 1789776000000
+  },
+  {
+    "id": "401854086",
+    "home": "Boston Legacy FC",
+    "away": "Houston Dash",
+    "homeScore": 1,
+    "awayScore": 2,
+    "league": "NWSL",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401854006",
+    "home": "Chicago Stars FC",
+    "away": "Washington Spirit",
+    "homeScore": 0,
+    "awayScore": 3,
+    "league": "NWSL",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401854007",
+    "home": "Bay FC",
+    "away": "Racing Louisville FC",
+    "homeScore": 2,
+    "awayScore": 0,
+    "league": "NWSL",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
+  },
+  {
+    "id": "401854008",
+    "home": "Utah Royals",
+    "away": "Angel City FC",
+    "homeScore": 0,
+    "awayScore": 3,
+    "league": "NWSL",
+    "date": "2026-09-20",
+    "timestamp": 1789862400000
   }
 ]

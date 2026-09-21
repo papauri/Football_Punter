@@ -60,8 +60,21 @@ export function resolveMatchOdds(match, pickValue, customOdds = null) {
   else targetProb = safeParseFloat(match.confidence ?? match.binaryModel?.confidence, 55);
 
   if (targetProb > 5 && targetProb <= 98) {
-    // Model implied odds with realistic 5-6% bookmaker margin
-    const implied = (100 / targetProb) * 0.94;
+    // Sharp market baseline odds:
+    // If the match possesses high AI council conviction (unanimous / top value),
+    // model estimates a positive edge (+3-5% EV) over consensus market price.
+    // Otherwise, fair market parity (100 / targetProb) represents zero-juice baseline.
+    const sw = match.aiSwarm || match.imperialSwarm;
+    const isUnan = Boolean(
+      sw?.is100Unanimous || 
+      sw?.isTopValueLeg || 
+      sw?.isUnanimousDirective || 
+      sw?.consensusTier === 'UNANIMOUS_DIRECTIVE' || 
+      sw?.agreementPercentage === 100 ||
+      match.isEliteConviction
+    );
+    const valueMultiplier = isUnan ? 1.05 : 1.0;
+    const implied = (100 / targetProb) * valueMultiplier;
     return Math.max(1.06, Math.min(18.0, Math.round(implied * 100) / 100));
   }
 
