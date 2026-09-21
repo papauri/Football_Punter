@@ -54,7 +54,7 @@ export default function SideMenuTray({
 
   const navSections = [
     {
-      title: 'Match Predictions & Bets',
+      title: 'Predictions & Bets',
       items: [
         {
           id: 'fixtures',
@@ -65,73 +65,73 @@ export default function SideMenuTray({
         },
         {
           id: 'props',
-          label: 'Props & Specials (Corners/Cards)',
+          label: 'Corners & Cards',
           icon: Target,
-          badge: 'AI Prop Model',
+          badge: 'Props',
           badgeColor: 'bg-indigo-100 text-indigo-800'
         },
         {
           id: 'swarm',
-          label: 'AI Swarm Consensus',
+          label: 'Model Consensus',
           icon: Bot,
-          badge: isSwarmRunning ? 'Simultaneous' : 'Idle',
+          badge: isSwarmRunning ? 'Active' : 'Idle',
           badgeColor: isSwarmRunning ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'
         },
         {
           id: 'acca',
-          label: 'Bet Slips & Accumulators',
+          label: 'Bet Slips',
           icon: ListChecks,
-          badge: counts.acca > 0 ? `${counts.acca} picks` : 'Smart Bet',
+          badge: counts.acca > 0 ? `${counts.acca} picks` : null,
           badgeColor: 'bg-purple-100 text-purple-800'
         }
       ]
     },
     {
-      title: 'Intelligence & Audit',
+      title: 'Analysis & History',
       items: [
         {
           id: 'lineups',
-          label: 'Starting XI Lineups',
+          label: 'Starting Lineups',
           icon: Users,
-          badge: 'Confirmed Starters',
+          badge: 'Confirmed',
           badgeColor: 'bg-sky-100 text-sky-800'
         },
         {
           id: 'results',
-          label: 'Past Results & Proof',
+          label: 'Past Results',
           icon: History,
-          badge: 'Verified Audit',
+          badge: 'Audit',
           badgeColor: 'bg-slate-200 text-slate-800'
         },
         {
           id: 'leagues',
-          label: 'League Stats & Profiles',
+          label: 'League Stats',
           icon: Trophy,
-          badge: 'Tier Ranking',
+          badge: 'Rankings',
           badgeColor: 'bg-amber-100 text-amber-800'
         }
       ]
     },
     {
-      title: 'System & Configuration',
+      title: 'Settings & Logs',
       items: [
         {
           id: 'tuning',
-          label: 'Model Settings & Tuning',
+          label: 'Model Settings',
           icon: Sliders,
           badge: safeParseFloat(effectiveTrained, 0) > 0 ? `${safeToFixed(safeParseFloat(effectiveTrained, 0) / 1000, 1)}k trained` : null,
           badgeColor: 'bg-slate-100 text-slate-700'
         },
         {
           id: 'patches',
-          label: 'System Updates & Learning',
+          label: 'Model Updates',
           icon: Zap,
-          badge: effectivePatchCount > 0 ? `${effectivePatchCount} patches` : 'Active',
+          badge: effectivePatchCount > 0 ? `${effectivePatchCount} updates` : 'Active',
           badgeColor: 'bg-emerald-100 text-emerald-800'
         },
         {
           id: 'logs',
-          label: 'System Activity Logs',
+          label: 'Activity Logs',
           icon: Terminal,
           badge: 'Live',
           badgeColor: 'bg-slate-100 text-slate-700'
@@ -162,7 +162,7 @@ export default function SideMenuTray({
                 <span className="text-sm font-bold text-slate-900 tracking-tight">MatchScraper AI</span>
                 <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               </div>
-              <p className="text-[11px] text-slate-500 font-medium">Predictive Football Intelligence</p>
+              <p className="text-[11px] text-slate-500 font-medium">Football Match Predictions</p>
             </div>
           </div>
           <button
@@ -191,7 +191,7 @@ export default function SideMenuTray({
                     <button
                       key={item.id}
                       onClick={() => handleSelect(item.id)}
-                      title={item.id === 'binary' ? 'Binary Value & Kelly: Optimal unit sizing based on calculated model edge (+EV)' : item.label}
+                      title={item.label}
                       className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer text-left ${
                         isActive
                           ? 'bg-indigo-50 text-indigo-700 font-semibold border-l-2 border-indigo-600'
@@ -220,15 +220,15 @@ export default function SideMenuTray({
           <div className="flex items-center justify-between mb-1 text-[11px]">
             <span className="flex items-center gap-1.5 font-medium text-slate-700">
               <Activity className="w-3.5 h-3.5 text-emerald-600" />
-              Engine Status
+              Status
             </span>
             <span className="font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 text-[10px]">
-              ONLINE (100%)
+              Active
             </span>
           </div>
           <div className="text-[10px] text-slate-400 flex items-center justify-between">
-            <span>Dixon-Coles &amp; Statistical xG</span>
-            <span>v3.4 Production</span>
+            <span>Statistical Models</span>
+            <span>Live</span>
           </div>
         </div>
 

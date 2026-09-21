@@ -3,30 +3,119 @@ import {
   ListChecks, 
   Copy, 
   Check, 
-  CheckCircle2,
+  CheckCircle2, 
   Trash2, 
   Sparkles, 
-  ArrowRight, 
-  ExternalLink,
-  ShieldCheck,
-  TrendingUp,
-  AlertCircle,
-  AlertTriangle,
-  Wallet,
-  BrainCircuit,
-  Award,
-  Zap,
-  X,
-  Info,
-  ChevronDown,
-  ChevronUp,
-  Layers
+  ShieldCheck, 
+  TrendingUp, 
+  AlertCircle, 
+  AlertTriangle, 
+  Wallet, 
+  BrainCircuit, 
+  Award, 
+  Zap, 
+  X, 
+  Info, 
+  ChevronDown, 
+  ChevronUp, 
+  Wand2,
+  RefreshCw,
+  Plus,
+  Shield,
+  SlidersHorizontal
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
 import { safeParseFloat, safeToFixed } from '../utils/numberUtils';
 import { formatRelativeDayTime } from '../utils/dateUtils';
 import { resolveMatchOdds, resolveMatchProb } from '../utils/oddsUtils';
 import Markdown from 'react-markdown';
+
+const PARITY_LEAGUES = [
+  'Championship', 'League One', 'League Two', 'MLS', 'Major League Soccer',
+  'Liga Profesional', 'Liga MX', 'Serie B', 'LaLiga 2', 'Ligue 2',
+  'Swedish Allsvenskan', 'Norwegian Eliteserien', 'Danish Superliga',
+  'Austrian Bundesliga', 'Saudi Pro League', 'Turkish Super Lig', 'Scottish Premiership'
+];
+
+/**
+ * Autonomous Evaluation for an individual leg in a bet slip
+ */
+function evaluateLegAutonomousStatus(leg, match) {
+  const m = match || leg.match || {};
+  const sw = m.aiSwarm || m.imperialSwarm || {};
+  
+  const isTrap = Boolean(sw.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap || m.disruptionModel?.isPassFlagged);
+  const isUnan = Boolean(sw.isTopValueLeg || sw.consensusTier === 'UNANIMOUS_DIRECTIVE' || sw.isUnanimousDirective);
+  const isParity = Boolean(m.league && PARITY_LEAGUES.some(pl => m.league.toLowerCase().includes(pl.toLowerCase())));
+  
+  const drawProb = safeParseFloat(m.prob?.draw, 24);
+  const pickVal = String(leg.pick || '').toUpperCase();
+  const isStraightPick = pickVal === 'HOME' || pickVal === 'AWAY' || pickVal === '1' || pickVal === '2';
+  const isProtectedDC = pickVal === '1X' || pickVal === 'X2' || pickVal === '12';
+  
+  const legProb = safeParseFloat(leg.prob, 50);
+  const legOdds = safeParseFloat(leg.odds, 1.5);
+  const ev = ((legProb / 100) * legOdds) - 1;
+
+  // High draw risk if straight pick in a game where draw >= 22% or parity league
+  const isDrawVulnerable = isStraightPick && (drawProb >= 22 || (isParity && legProb < 68));
+
+  let badge = {
+    type: 'neutral',
+    label: 'Standard',
+    title: 'Balanced model probability'
+  };
+
+  if (isTrap) {
+    badge = {
+      type: 'danger',
+      label: '⚠️ High Risk',
+      title: 'Upset risk or odds divergence detected'
+    };
+  } else if (isProtectedDC) {
+    badge = {
+      type: 'protected',
+      label: '🛡️ Protected (DC)',
+      title: 'Double Chance protection'
+    };
+  } else if (isUnan) {
+    badge = {
+      type: 'unanimous',
+      label: '👑 Consensus',
+      title: 'All models agree on this pick'
+    };
+  } else if (isDrawVulnerable) {
+    badge = {
+      type: 'warning',
+      label: '⚡ Draw Risk',
+      title: `Draw probability is ${safeToFixed(drawProb, 0)}% — consider Double Chance`
+    };
+  } else if (ev > 0.05) {
+    badge = {
+      type: 'positive-ev',
+      label: `💎 +EV (+${safeToFixed(ev * 100, 1)}%)`,
+      title: 'Model probability exceeds bookmaker odds'
+    };
+  } else if (ev < -0.05) {
+    badge = {
+      type: 'negative-ev',
+      label: `📉 -EV (${safeToFixed(ev * 100, 1)}%)`,
+      title: 'Odds offer lower return than model projection'
+    };
+  }
+
+  return {
+    isTrap,
+    isUnan,
+    isParity,
+    drawProb,
+    isStraightPick,
+    isProtectedDC,
+    isDrawVulnerable,
+    ev,
+    badge
+  };
+}
 
 export default function AccumulatorPage({
   tzSettings = {},
@@ -49,13 +138,17 @@ export default function AccumulatorPage({
   const [analysisError, setAnalysisError] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [loadedNotice, setLoadedNotice] = useState(null);
-  const [unanimousLegCount, setUnanimousLegCount] = useState(3);
-  const [antiFragileLegCount, setAntiFragileLegCount] = useState(3);
+  const [showStakingSettings, setShowStakingSettings] = useState(false);
   const [showVarianceExplainer, setShowVarianceExplainer] = useState(false);
 
+  // Preset Builder Controls
+  const [presetStrategy, setPresetStrategy] = useState('unanimous'); // 'unanimous' | 'antifragile' | 'value'
+  const [presetLegCount, setPresetLegCount] = useState(3);
+
+  const strategyWinRate = aiSwarm?.directives?.telemetry?.unanimousHitRate || '84.8%';
   const accaMatchIds = useMemo(() => new Set(accaPicks.map(p => String(p.id))), [accaPicks]);
 
-  // Map the custom picks in the active slip
+  // Resolved active legs
   const activeLegs = useMemo(() => {
     return accaPicks.map((pick, idx) => {
       const pMatch = pick.match || matches.find(m => String(m.id) === String(pick.id) || (m.home === pick.home && m.away === pick.away)) || pick;
@@ -64,6 +157,8 @@ export default function AccumulatorPage({
       const pickVal = pick.pick || (typeof pMatch.predictedWinner === 'string' ? pMatch.predictedWinner : pMatch.predictedWinner?.pick) || 'HOME';
       const realOdds = resolveMatchOdds(pMatch, pickVal, pick.odds);
       const realProb = resolveMatchProb(pMatch, pickVal, pick.prob || pick.confidence);
+
+      const status = evaluateLegAutonomousStatus({ ...pick, pick: pickVal, odds: realOdds, prob: realProb }, pMatch);
 
       return {
         pickId: pick.pickId || `${pick.id}-${idx}`,
@@ -79,12 +174,13 @@ export default function AccumulatorPage({
         prob: realProb,
         conf: realProb,
         confidence: realProb,
-        pick: pickVal
+        pick: pickVal,
+        status
       };
     });
   }, [accaPicks, matches, tzSettings]);
 
-  // Combined totals
+  // Combined metrics
   const totalOdds = useMemo(() => {
     if (activeLegs.length === 0) return 1.0;
     return activeLegs.reduce((acc, leg) => {
@@ -100,18 +196,6 @@ export default function AccumulatorPage({
       return acc * ((p > 0 ? p : 50) / 100);
     }, 1.0) * 100;
   }, [activeLegs]);
-  
-  // Kelly Criterion Calculation
-  const kellyRecommendation = useMemo(() => {
-    if (activeLegs.length === 0 || totalOdds <= 1) return 0;
-    const b = totalOdds - 1;
-    const p = combinedProb / 100;
-    const q = 1 - p;
-    const f = p - (q / b); // Kelly fraction
-    
-    if (f <= 0) return 0;
-    return bankroll * f * kellyMultiplier;
-  }, [activeLegs, totalOdds, combinedProb, bankroll, kellyMultiplier]);
 
   const expectedValue = useMemo(() => {
     if (activeLegs.length === 0 || totalOdds <= 1) return 0;
@@ -119,54 +203,153 @@ export default function AccumulatorPage({
     return (p * totalOdds) - 1;
   }, [totalOdds, combinedProb, activeLegs]);
 
+  const kellyRecommendation = useMemo(() => {
+    if (activeLegs.length === 0 || totalOdds <= 1) return 0;
+    const b = totalOdds - 1;
+    const p = combinedProb / 100;
+    const q = 1 - p;
+    const f = p - (q / b);
+    if (f <= 0) return 0;
+    return bankroll * f * kellyMultiplier;
+  }, [activeLegs, totalOdds, combinedProb, bankroll, kellyMultiplier]);
+
   const effectiveWager = useMemo(() => {
     const cw = parseFloat(customWager);
     if (!isNaN(cw) && cw > 0) return cw;
     return kellyRecommendation;
   }, [customWager, kellyRecommendation]);
 
-  // Identify if any active legs in the slip are flagged as contrarian traps
-  const flaggedTrapLegs = useMemo(() => {
-    return activeLegs.filter(l => {
-      const m = l.match || matches.find(item => item.id === l.id);
-      return m && ((m.aiSwarm || m.imperialSwarm)?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap);
+  // Comprehensive Autonomous Judgment Engine for the Active Slip
+  const autonomousJudgement = useMemo(() => {
+    if (activeLegs.length === 0) {
+      return null;
+    }
+
+    const nLegs = activeLegs.length;
+    let score = 75; // baseline
+    const recommendations = [];
+    let trapCount = 0;
+    let drawRiskCount = 0;
+    let negativeEvCount = 0;
+    let unanimousCount = 0;
+    let dcCount = 0;
+
+    activeLegs.forEach((l) => {
+      if (l.status.isTrap) trapCount++;
+      if (l.status.isDrawVulnerable) drawRiskCount++;
+      if (l.status.ev < -0.05) negativeEvCount++;
+      if (l.status.isUnan) unanimousCount++;
+      if (l.status.isProtectedDC) dcCount++;
     });
-  }, [activeLegs, matches]);
 
-  // Suggested high-conviction matches: strictly exclude traps, prioritize unanimous consensus & derivatives
-  const suggestedMatches = useMemo(() => {
-    const PARITY_LEAGUES = [
-      'Championship', 'League One', 'League Two', 'MLS', 'Major League Soccer',
-      'Liga Profesional', 'Liga MX', 'Serie B', 'LaLiga 2', 'Ligue 2',
-      'Swedish Allsvenskan', 'Norwegian Eliteserien', 'Danish Superliga',
-      'Austrian Bundesliga', 'Saudi Pro League', 'Turkish Super Lig', 'Scottish Premiership'
-    ];
+    // 1. Leg Count Variance Decay Rubric
+    if (nLegs <= 3) {
+      score += 15; // optimal Kelly zone
+    } else if (nLegs === 4) {
+      score += 5;
+    } else if (nLegs === 5) {
+      score -= 10;
+      recommendations.push("Ticket has 5 legs: exponential variance significantly reduces survival (~20% joint probability).");
+    } else {
+      score -= 25;
+      recommendations.push(`High decay penalty: ${nLegs}-fold accumulator suffers from heavy multiplicative variance. Consider trimming to 3-4 legs.`);
+    }
 
-    return matches
-      .filter(m => {
-        if (accaMatchIds.has(m.id)) return false;
-        // Exclude contrarian traps and market dislocations
-        const isTrap = (m.aiSwarm || m.imperialSwarm)?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap;
-        if (isTrap) return false;
-        const conf = safeParseFloat(m.confidence ?? m.binaryModel?.confidence, Math.max(safeParseFloat(m.prob?.home, 0), safeParseFloat(m.prob?.away, 0)));
-        
-        // Automated League Parity Protection: require >= 68% for compressed standing leagues
-        const isParity = Boolean(m.league && PARITY_LEAGUES.some(pl => m.league.toLowerCase().includes(pl.toLowerCase())));
-        if (isParity && conf < 68.0) return false;
+    // 2. Traps & Upset Risk
+    if (trapCount > 0) {
+      score -= trapCount * 25;
+      recommendations.push(`${trapCount} selection(s) flagged for contrarian upset traps or market bias. High risk of losing your entire slip.`);
+    }
 
-        return conf >= 60;
-      })
-      .sort((a, b) => {
-        const aUnan = ((a.aiSwarm || a.imperialSwarm)?.isTopValueLeg || (a.aiSwarm || a.imperialSwarm)?.consensusTier === 'UNANIMOUS_DIRECTIVE') ? 1 : 0;
-        const bUnan = ((b.aiSwarm || b.imperialSwarm)?.isTopValueLeg || (b.aiSwarm || b.imperialSwarm)?.consensusTier === 'UNANIMOUS_DIRECTIVE') ? 1 : 0;
-        if (aUnan !== bUnan) return bUnan - aUnan;
-        const confA = safeParseFloat(a.confidence ?? a.binaryModel?.confidence, 50);
-        const confB = safeParseFloat(b.confidence ?? b.binaryModel?.confidence, 50);
-        return confB - confA;
-      })
-      .slice(0, 6);
-  }, [matches, accaMatchIds]);
+    // 3. Draw Vulnerability
+    if (drawRiskCount > 0) {
+      score -= drawRiskCount * 8;
+      recommendations.push(`${drawRiskCount} straight win pick(s) have draw probability ≥ 22%. Insulating with Double Chance (1X/X2) strongly protects ticket survival.`);
+    }
 
+    // 4. Expected Value
+    if (expectedValue > 0.15) {
+      score += 15;
+    } else if (expectedValue > 0) {
+      score += 8;
+    } else {
+      score -= 15;
+      recommendations.push("Mathematical edge (EV) is currently negative. Bookmaker juice outweighs win probability.");
+    }
+
+    // 5. Unanimous Consensus & Protection Boosts
+    if (unanimousCount === nLegs && nLegs >= 2) {
+      score += 15;
+    }
+    if (dcCount > 0) {
+      score += Math.min(10, dcCount * 4);
+    }
+
+    // Clamp score
+    const clampedScore = Math.max(10, Math.min(99, Math.round(score)));
+
+    // Assign Grade
+    let grade = 'B';
+    let gradeColor = 'text-blue-600 bg-blue-50 border-blue-200';
+    let verdictTitle = 'Solid Accumulator';
+    let verdictText = 'Balanced slip with positive expectations. Disciplined staking advised.';
+
+    if (trapCount > 0) {
+      grade = 'D';
+      gradeColor = 'text-rose-700 bg-rose-50 border-rose-200';
+      verdictTitle = 'High Risk';
+      verdictText = 'One or more selections have elevated draw or upset risk.';
+    } else if (nLegs >= 6) {
+      grade = 'C-';
+      gradeColor = 'text-amber-700 bg-amber-50 border-amber-200';
+      verdictTitle = 'Too Many Legs';
+      verdictText = 'Too many legs reduce overall win probability. Consider 3 to 4 legs.';
+    } else if (clampedScore >= 90) {
+      grade = 'A+';
+      gradeColor = 'text-emerald-700 bg-emerald-50 border-emerald-200';
+      verdictTitle = 'Top Quality Slip';
+      verdictText = 'High confidence, strong value, and low risk across all picks.';
+    } else if (clampedScore >= 80) {
+      grade = 'A';
+      gradeColor = 'text-emerald-700 bg-emerald-50 border-emerald-200';
+      verdictTitle = 'Strong Value Slip';
+      verdictText = 'Solid win probability and good value across selections.';
+    } else if (clampedScore >= 70) {
+      grade = 'B+';
+      gradeColor = 'text-indigo-700 bg-indigo-50 border-indigo-200';
+      verdictTitle = 'Favorable Value Slip';
+      verdictText = 'Positive expected value. Double Chance protection can reduce risk.';
+    } else if (clampedScore >= 60) {
+      grade = 'B';
+      gradeColor = 'text-slate-700 bg-slate-100 border-slate-300';
+      verdictTitle = 'Moderate Risk';
+      verdictText = 'Acceptable slip, but contains close games with draw risk.';
+    } else {
+      grade = 'C';
+      gradeColor = 'text-amber-700 bg-amber-50 border-amber-200';
+      verdictTitle = 'Elevated Risk';
+      verdictText = 'Low win probability or unfavorable odds. Consider fewer legs or safer markets.';
+    }
+
+    const canAutoOptimize = trapCount > 0 || drawRiskCount > 0 || nLegs > 5 || negativeEvCount > 0;
+
+    return {
+      score: clampedScore,
+      grade,
+      gradeColor,
+      verdictTitle,
+      verdictText,
+      recommendations,
+      canAutoOptimize,
+      trapCount,
+      drawRiskCount,
+      negativeEvCount,
+      unanimousCount,
+      dcCount
+    };
+  }, [activeLegs, expectedValue]);
+
+  // Helper to find match
   const findMatchForLeg = (leg) => {
     if (!matches || matches.length === 0) return null;
     return matches.find(m => 
@@ -212,15 +395,13 @@ export default function AccumulatorPage({
         return newSlips;
       });
     }
-    setLoadedNotice(`Successfully loaded ${picksToLoad.length} legs into active slip: ${ticketName}`);
-    setTimeout(() => setLoadedNotice(null), 4000);
+    setLoadedNotice(`Loaded ${picksToLoad.length} selections: ${ticketName}`);
+    setTimeout(() => setLoadedNotice(null), 3500);
   };
 
-  // Full qualified candidate pool for 6-Agent Unanimous Parlays on the slate
+  // Pools for Autonomous Presets
   const allUnanimousPool = useMemo(() => {
     const map = new Map();
-
-    // 1. Ingest directives from AI Swarm (allLegs, legs, or unanimousDirectives)
     const parlayAllLegs = aiSwarm?.directives?.topValueParlay?.allLegs || aiSwarm?.directives?.topValueParlay?.legs || [];
     const directUnan = aiSwarm?.directives?.unanimousDirectives || [];
     const directiveSource = [...parlayAllLegs, ...directUnan];
@@ -237,7 +418,6 @@ export default function AccumulatorPage({
           league: leg.league || 'League',
           time: 'Upcoming'
         };
-        // Resolve genuine match statistical probability (from Poisson xG, Dixon-Coles, Elo)
         const matchProb = resolveMatchProb(targetMatch, pPick, leg.modelProb && !orig?.prob ? leg.modelProb : null);
         const matchOdds = resolveMatchOdds(targetMatch, pPick, leg.odds);
 
@@ -247,20 +427,11 @@ export default function AccumulatorPage({
           market: `${pPick} Win (Unanimous)`,
           odds: matchOdds,
           prob: matchProb,
-          swarmScore: leg.swarmScore || 80,
           score: (leg.swarmScore || 80) + matchProb
         });
       }
     });
 
-    const PARITY_LEAGUES = [
-      'Championship', 'League One', 'League Two', 'MLS', 'Major League Soccer',
-      'Liga Profesional', 'Liga MX', 'Serie B', 'LaLiga 2', 'Ligue 2',
-      'Swedish Allsvenskan', 'Norwegian Eliteserien', 'Danish Superliga',
-      'Austrian Bundesliga', 'Saudi Pro League', 'Turkish Super Lig', 'Scottish Premiership'
-    ];
-
-    // 2. Scan all matches in slate for unanimous consensus / high confidence, strictly excluding traps
     (matches || []).forEach(m => {
       const idStr = String(m.id);
       if (map.has(idStr)) return;
@@ -270,8 +441,6 @@ export default function AccumulatorPage({
 
       const isUnan = sw?.isTopValueLeg || sw?.consensusTier === 'UNANIMOUS_DIRECTIVE' || sw?.isUnanimousDirective;
       const conf = parseFloat(m.confidence ?? m.binaryModel?.confidence ?? 0);
-
-      // Parity League Protection: In compressed standings, require >= 68% probability to enter a straight win parlay
       const isParity = Boolean(m.league && PARITY_LEAGUES.some(pl => m.league.toLowerCase().includes(pl.toLowerCase())));
       if (isParity && conf < 68.0) return;
 
@@ -286,7 +455,6 @@ export default function AccumulatorPage({
           market: `${pickVal} Win (Unanimous)`,
           odds: matchOdds,
           prob: matchProb,
-          swarmScore: sw?.swarmScore || conf,
           score: (sw?.swarmScore || conf) + (isUnan ? 30 : 0) + matchProb
         });
       }
@@ -295,12 +463,10 @@ export default function AccumulatorPage({
     return Array.from(map.values()).sort((a, b) => b.score - a.score);
   }, [aiSwarm, matches]);
 
-  // Full qualified candidate pool for Anti-Fragile Protected slips (low chaos, Double Chance insulated)
   const allAntiFragilePool = useMemo(() => {
     const map = new Map();
-
-    // 1. Ingest from AI Swarm Anti-Fragile parlay (allLegs or legs)
     const parlayAllLegs = aiSwarm?.directives?.antiFragileParlay?.allLegs || aiSwarm?.directives?.antiFragileParlay?.legs || [];
+    
     parlayAllLegs.forEach(leg => {
       const orig = findMatchForLeg(leg);
       const fixtureId = orig?.id || leg.fixtureId;
@@ -324,12 +490,11 @@ export default function AccumulatorPage({
           market: marketLabel,
           odds: matchOdds,
           prob: matchProb,
-          score: matchProb + 20
+          score: matchProb + 25
         });
       }
     });
 
-    // 2. Scan all matches in slate with prime stability or safe non-trap profiles
     (matches || []).forEach(m => {
       const idStr = String(m.id);
       if (map.has(idStr)) return;
@@ -338,7 +503,6 @@ export default function AccumulatorPage({
       if (isTrap) return;
 
       const isPrime = m.disruptionModel?.stabilityStatus === 'PRIME_STABLE' || m.stabilityStatus === 'PRIME_STABLE';
-      const conf = parseFloat(m.confidence ?? m.binaryModel?.confidence ?? 50);
       const stabScore = m.disruptionModel?.stabilityScore || 70;
 
       const rawPick = (typeof m.predictedWinner === 'string' ? m.predictedWinner : m.predictedWinner?.pick) || m.binaryModel?.pick || 'HOME';
@@ -360,67 +524,209 @@ export default function AccumulatorPage({
     return Array.from(map.values()).sort((a, b) => b.score - a.score);
   }, [aiSwarm, matches]);
 
-  const handleLoadUnanimousParlay = (countOverride) => {
-    const targetCount = countOverride !== undefined ? countOverride : unanimousLegCount;
-    const pool = allUnanimousPool;
-    const effectiveCount = targetCount === 'ALL' ? pool.length : (parseInt(targetCount, 10) || 3);
-    const selectedItems = pool.slice(0, effectiveCount);
+  const allValuePool = useMemo(() => {
+    return (matches || [])
+      .filter(m => {
+        const sw = m.aiSwarm || m.imperialSwarm;
+        const isTrap = sw?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap;
+        if (isTrap) return false;
+        const pickVal = (typeof m.predictedWinner === 'string' ? m.predictedWinner : m.predictedWinner?.pick) || 'HOME';
+        const prob = resolveMatchProb(m, pickVal);
+        const odds = resolveMatchOdds(m, pickVal);
+        const ev = ((prob / 100) * odds) - 1;
+        return ev > 0.04 && prob >= 55;
+      })
+      .map(m => {
+        const pickVal = (typeof m.predictedWinner === 'string' ? m.predictedWinner : m.predictedWinner?.pick) || 'HOME';
+        const prob = resolveMatchProb(m, pickVal);
+        const odds = resolveMatchOdds(m, pickVal);
+        const ev = ((prob / 100) * odds) - 1;
+        return {
+          match: m,
+          pick: pickVal,
+          market: `${pickVal} Win`,
+          odds,
+          prob,
+          ev,
+          score: (ev * 100) + (prob * 0.5)
+        };
+      })
+      .sort((a, b) => b.score - a.score);
+  }, [matches]);
 
-    const picksToLoad = selectedItems.map(item => {
-      // Use genuine match model probability for each game (Poisson xG / Dixon Coles)
+  // Suggested high-conviction candidate matches to append to slip
+  const suggestedMatches = useMemo(() => {
+    return matches
+      .filter(m => {
+        if (accaMatchIds.has(String(m.id))) return false;
+        const isTrap = (m.aiSwarm || m.imperialSwarm)?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap;
+        if (isTrap) return false;
+        const conf = safeParseFloat(m.confidence ?? m.binaryModel?.confidence, Math.max(safeParseFloat(m.prob?.home, 0), safeParseFloat(m.prob?.away, 0)));
+        const isParity = Boolean(m.league && PARITY_LEAGUES.some(pl => m.league.toLowerCase().includes(pl.toLowerCase())));
+        if (isParity && conf < 68.0) return false;
+        return conf >= 60;
+      })
+      .sort((a, b) => {
+        const aUnan = ((a.aiSwarm || a.imperialSwarm)?.isTopValueLeg || (a.aiSwarm || a.imperialSwarm)?.consensusTier === 'UNANIMOUS_DIRECTIVE') ? 1 : 0;
+        const bUnan = ((b.aiSwarm || b.imperialSwarm)?.isTopValueLeg || (b.aiSwarm || b.imperialSwarm)?.consensusTier === 'UNANIMOUS_DIRECTIVE') ? 1 : 0;
+        if (aUnan !== bUnan) return bUnan - aUnan;
+        const confA = safeParseFloat(a.confidence ?? a.binaryModel?.confidence, 50);
+        const confB = safeParseFloat(b.confidence ?? b.binaryModel?.confidence, 50);
+        return confB - confA;
+      })
+      .slice(0, 4);
+  }, [matches, accaMatchIds]);
+
+  // Preset Generation Handler
+  const handleLoadAutonomousPreset = () => {
+    let pool = allUnanimousPool;
+    let label = '6-Agent Unanimous Ticket';
+    if (presetStrategy === 'antifragile') {
+      pool = allAntiFragilePool;
+      label = 'Anti-Fragile Protected Ticket';
+    } else if (presetStrategy === 'value') {
+      pool = allValuePool;
+      label = '+EV Alpha Ticket';
+    }
+
+    const count = presetLegCount === 'ALL' ? pool.length : (parseInt(presetLegCount, 10) || 3);
+    const selected = pool.slice(0, count);
+
+    const picksToLoad = selected.map(item => {
       const legProb = resolveMatchProb(item.match, item.pick);
       const legOdds = resolveMatchOdds(item.match, item.pick, item.odds);
       return buildPickObject(item.match, item.pick, item.market, legOdds, legProb);
     });
 
     if (picksToLoad.length > 0) {
-      loadPicksIntoSlip(picksToLoad, `6-Agent Unanimous Parlay (${picksToLoad.length} Legs)`);
+      loadPicksIntoSlip(picksToLoad, `${label} (${picksToLoad.length} Legs)`);
     }
   };
 
-  const handleLoadAntiFragileParlay = (countOverride) => {
-    const targetCount = countOverride !== undefined ? countOverride : antiFragileLegCount;
-    const pool = allAntiFragilePool;
-    const effectiveCount = targetCount === 'ALL' ? pool.length : (parseInt(targetCount, 10) || 3);
-    const selectedItems = pool.slice(0, effectiveCount);
+  // Autonomous One-Click Optimization
+  const handleAutoOptimizeSlip = () => {
+    if (activeLegs.length === 0) return;
 
-    const picksToLoad = selectedItems.map(item => {
-      const legProb = resolveMatchProb(item.match, item.pick);
-      const legOdds = resolveMatchOdds(item.match, item.pick, item.odds);
-      return buildPickObject(item.match, item.pick, item.market, legOdds, legProb);
-    });
+    let convertedCount = 0;
+    let removedTrapCount = 0;
 
-    if (picksToLoad.length > 0) {
-      loadPicksIntoSlip(picksToLoad, `Anti-Fragile Protected Slip (${picksToLoad.length} Legs)`);
+    // 1. Convert vulnerable straight picks to Double Chance, prune dangerous traps
+    let optimized = activeLegs.map(leg => {
+      const m = leg.match || matches.find(item => item.id === leg.id);
+      const p = String(leg.pick).toUpperCase();
+
+      // If contrarian trap and cannot be salvaged
+      if (leg.status.isTrap && !leg.status.isProtectedDC) {
+        removedTrapCount++;
+        return null; // remove
+      }
+
+      // If straight pick with draw vulnerability, shield with Double Chance
+      if ((p === 'HOME' || p === '1' || p === 'AWAY' || p === '2') && leg.status.isDrawVulnerable) {
+        const newPick = (p === 'HOME' || p === '1') ? '1X' : 'X2';
+        const newMarket = newPick === '1X' ? '1X (Home or Draw)' : 'X2 (Away or Draw)';
+        const newOdds = resolveMatchOdds(m, newPick);
+        const newProb = resolveMatchProb(m, newPick);
+        convertedCount++;
+        return buildPickObject(m, newPick, newMarket, newOdds, newProb);
+      }
+
+      return buildPickObject(m, leg.pick, leg.market, leg.odds, leg.prob);
+    }).filter(Boolean);
+
+    // 2. If ticket still has > 4 legs, trim down to top 4 highest-equity legs to prevent decay
+    if (optimized.length > 4) {
+      optimized = optimized
+        .sort((a, b) => {
+          const evA = ((a.prob / 100) * a.odds) - 1;
+          const evB = ((b.prob / 100) * b.odds) - 1;
+          return evB - evA;
+        })
+        .slice(0, 4);
     }
+
+    if (onUpdateBetSlips) {
+      onUpdateBetSlips(prevSlips => {
+        const slipIndex = prevSlips.findIndex(s => s.id === activeSlipId);
+        if (slipIndex === -1) return prevSlips;
+        const newSlips = [...prevSlips];
+        newSlips[slipIndex] = {
+          ...newSlips[slipIndex],
+          picks: optimized
+        };
+        return newSlips;
+      });
+    }
+
+    setLoadedNotice(
+      `Autonomous Optimization Applied: ${convertedCount} leg(s) shielded with Double Chance${removedTrapCount > 0 ? `, ${removedTrapCount} trap(s) removed` : ''}.`
+    );
+    setTimeout(() => setLoadedNotice(null), 4000);
   };
 
-  const handleRemoveAllTraps = () => {
-    flaggedTrapLegs.forEach(trapLeg => {
-      onRemovePick(trapLeg.pickId || trapLeg.id);
-    });
+  // Toggle individual leg shield (Straight <-> Double Chance)
+  const handleToggleLegShield = (leg) => {
+    const m = leg.match || matches.find(item => item.id === leg.id);
+    const p = String(leg.pick).toUpperCase();
+    let newPick = p;
+    let newMarket = leg.market;
+
+    if (p === 'HOME' || p === '1') {
+      newPick = '1X';
+      newMarket = '1X (Home or Draw)';
+    } else if (p === 'AWAY' || p === '2') {
+      newPick = 'X2';
+      newMarket = 'X2 (Away or Draw)';
+    } else if (p === '1X') {
+      newPick = 'HOME';
+      newMarket = 'HOME Win';
+    } else if (p === 'X2') {
+      newPick = 'AWAY';
+      newMarket = 'AWAY Win';
+    } else {
+      return;
+    }
+
+    const newOdds = resolveMatchOdds(m, newPick);
+    const newProb = resolveMatchProb(m, newPick);
+    const updatedPickObj = buildPickObject(m, newPick, newMarket, newOdds, newProb);
+
+    if (onUpdateBetSlips) {
+      onUpdateBetSlips(prevSlips => {
+        const slipIndex = prevSlips.findIndex(s => s.id === activeSlipId);
+        if (slipIndex === -1) return prevSlips;
+        const currentSlip = prevSlips[slipIndex];
+        const newPicks = currentSlip.picks.map(pItem => {
+          if (pItem.pickId === leg.pickId || pItem.id === leg.id) {
+            return updatedPickObj;
+          }
+          return pItem;
+        });
+        const newSlips = [...prevSlips];
+        newSlips[slipIndex] = { ...currentSlip, picks: newPicks };
+        return newSlips;
+      });
+    }
   };
 
   const handleCopyBetSlip = () => {
     if (activeLegs.length === 0) return;
     const lines = activeLegs.map(l => `• [${l.league}] ${l.home} vs ${l.away} -> ${l.market} @ ${safeToFixed(l.odds, 2)} (${l.time})`);
-    
     const profit = (effectiveWager * totalOdds) - effectiveWager;
     const evString = `${expectedValue > 0 ? '+' : ''}${safeToFixed(expectedValue * 100, 1)}%`;
     
-    const slipText = `MATCHSCRAPER AI ACCUMULATOR SLIP (${activeLegs.length}-Fold)\n----------------------------------------\n${lines.join('\n')}\n----------------------------------------\nTotal Combined Odds: ${safeToFixed(totalOdds, 2)}x\nModel Joint Probability: ${safeToFixed(combinedProb, 1)}%\nMathematical Edge (EV): ${evString}\nWager: €${safeToFixed(effectiveWager, 2)}\nPotential Return: €${safeToFixed(effectiveWager * totalOdds, 2)} (Profit: €${safeToFixed(profit, 2)})`;
+    const slipText = `MATCHSCRAPER AI AUTONOMOUS BET SLIP (${activeLegs.length}-Fold)\n----------------------------------------\n${lines.join('\n')}\n----------------------------------------\nAutonomous Verdict: ${autonomousJudgement?.grade || 'A'} (${autonomousJudgement?.verdictTitle || 'Verified'})\nTotal Combined Odds: ${safeToFixed(totalOdds, 2)}x\nJoint Model Probability: ${safeToFixed(combinedProb, 1)}%\nMathematical Edge (EV): ${evString}\nWager: €${safeToFixed(effectiveWager, 2)}\nPotential Payout: €${safeToFixed(effectiveWager * totalOdds, 2)} (Profit: €${safeToFixed(profit, 2)})`;
     
     navigator.clipboard.writeText(slipText);
     setCopiedSlip(true);
     setTimeout(() => setCopiedSlip(false), 2500);
   };
-  
+
   const handleFinalAnalysis = async () => {
     if (activeLegs.length === 0) return;
     setIsAnalyzing(true);
     setAnalysisError(null);
     try {
-      // Lightweight serialization of active legs without huge nested simulation and historical objects
       const sanitizedPicks = activeLegs.map(l => ({
         id: l.id,
         home: l.home,
@@ -434,8 +740,7 @@ export default function AccumulatorPage({
         time: l.time
       }));
 
-      // Top candidate matches only, with clean summary fields
-      const sanitizedSuggested = (suggestedMatches || []).slice(0, 6).map(m => ({
+      const sanitizedSuggested = (suggestedMatches || []).slice(0, 4).map(m => ({
         id: m.id,
         home: m.home,
         away: m.away,
@@ -467,297 +772,259 @@ export default function AccumulatorPage({
 
   return (
     <div className="space-y-4">
-      
-      {/* Top Banner & Multiplier Summary */}
-      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          
+      {/* 1. Sleek Uniform Header Bar */}
+      <div className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200 text-purple-700 flex items-center justify-center font-bold">
+            <div className="w-9 h-9 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center justify-center shrink-0">
               <ListChecks className="w-5 h-5" />
             </div>
             <div>
-              <div className="font-bold text-slate-900 text-base flex items-center gap-2">
-                <span>Bet Slip Assistant</span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-semibold">
-                  {activeLegs.length} Legs Active
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm sm:text-base font-bold text-slate-900">
+                  Bet Slips &amp; Accumulators
+                </h2>
+                <span className="text-xs px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold">
+                  {activeLegs.length} {activeLegs.length === 1 ? 'Leg' : 'Legs'}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Multi-leg joint probability optimization with cross-correlation protection
+              <p className="text-xs text-slate-500">
+                Review combined odds, win probability, and recommended stakes
               </p>
             </div>
           </div>
 
-          {/* Quick Metrics */}
-          <div className="flex items-center gap-3">
-            <div className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-center min-w-[90px]">
-              <div className="text-[10px] text-slate-400 font-bold uppercase">Combined Odds</div>
-              <div className="text-base font-black font-mono text-purple-700">{safeToFixed(totalOdds, 2)}x</div>
+          {/* Slip selector & quick actions */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <UniformDropdown
+              label="Slip"
+              value={activeSlipId}
+              onChange={(val) => {
+                if (val === 'create_new') {
+                  const newId = `slip-${Date.now()}`;
+                  onUpdateBetSlips([...betSlips, { id: newId, name: `Slip ${betSlips.length + 1}`, picks: [] }]);
+                  onSetActiveSlipId(newId);
+                } else {
+                  onSetActiveSlipId(val);
+                }
+              }}
+              options={[
+                ...betSlips.map(s => ({ value: s.id, label: s.name })),
+                { value: 'create_new', label: '+ New Slip' }
+              ]}
+            />
+
+            {activeLegs.length > 0 && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleAutoOptimizeSlip}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold text-xs transition-colors cursor-pointer shadow-xs"
+                  title="Protect selections with Double Chance and remove high-risk picks"
+                >
+                  <Wand2 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Auto-Optimize</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleCopyBetSlip}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs border border-slate-300 transition-colors cursor-pointer shadow-2xs"
+                  title="Copy bet slip summary to clipboard"
+                >
+                  {copiedSlip ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedSlip ? 'Copied' : 'Copy'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleFinalAnalysis}
+                  disabled={isAnalyzing}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition-colors cursor-pointer shadow-xs disabled:opacity-50"
+                  title="Review slip with AI assistant"
+                >
+                  <BrainCircuit className={`w-3.5 h-3.5 ${isAnalyzing ? 'animate-spin' : ''}`} />
+                  <span className="hidden md:inline">{isAnalyzing ? 'Reviewing...' : 'AI Review'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onClearSlip}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                  title="Clear all selections in active slip"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Autonomous Judgement & Key Metrics Card */}
+      {activeLegs.length > 0 && autonomousJudgement && (
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className={`px-2.5 py-1 rounded-lg border font-black text-sm ${autonomousJudgement.gradeColor}`}>
+                {autonomousJudgement.grade}
+              </div>
+              <div>
+                <div className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                  <span>Rating: {autonomousJudgement.verdictTitle}</span>
+                  <span className="text-[10px] text-slate-400 font-medium">({autonomousJudgement.score}/100)</span>
+                </div>
+                <div className="text-xs text-slate-600 mt-0.5">
+                  {autonomousJudgement.verdictText}
+                </div>
+              </div>
             </div>
 
-            <div className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-center min-w-[90px]">
-              <div className="text-[10px] text-slate-400 font-bold uppercase">Joint Win Prob</div>
-              <div className="text-base font-black font-mono text-emerald-700">{safeToFixed(combinedProb, 1)}%</div>
+            {autonomousJudgement.canAutoOptimize && (
+              <button
+                type="button"
+                onClick={handleAutoOptimizeSlip}
+                className="flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+              >
+                <Zap className="w-3.5 h-3.5" />
+                <span>Protect Slip</span>
+              </button>
+            )}
+          </div>
+
+          {/* Key Metrics Row */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
+            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+              <div className="text-[10px] text-slate-500 font-bold uppercase">Combined Odds</div>
+              <div className="text-base font-black font-mono text-indigo-700 mt-0.5">{safeToFixed(totalOdds, 2)}x</div>
             </div>
-            
-            <div className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-center min-w-[90px] hidden sm:block">
-              <div className="text-[10px] text-slate-400 font-bold uppercase">Edge (EV)</div>
-              <div className={`text-base font-black font-mono ${expectedValue > 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
+
+            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+              <div className="text-[10px] text-slate-500 font-bold uppercase">Win Probability</div>
+              <div className="text-base font-black font-mono text-emerald-700 mt-0.5">{safeToFixed(combinedProb, 1)}%</div>
+            </div>
+
+            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+              <div className="text-[10px] text-slate-500 font-bold uppercase">Value (EV)</div>
+              <div className={`text-base font-black font-mono mt-0.5 ${expectedValue > 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
                 {expectedValue > 0 ? '+' : ''}{safeToFixed(expectedValue * 100, 1)}%
               </div>
             </div>
 
-            <button
-              onClick={handleCopyBetSlip}
-              disabled={activeLegs.length === 0}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition-colors cursor-pointer shadow-xs disabled:opacity-40"
-            >
-              {copiedSlip ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              <span>{copiedSlip ? 'Slip Copied!' : 'Copy Bet Slip'}</span>
-            </button>
-          </div>
-
-        </div>
-      </div>
-      
-      {/* Financial & Staking Manager */}
-      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
-        <div className="flex items-center gap-2 mb-3">
-          <Wallet className="w-4 h-4 text-slate-500" />
-          <h3 className="text-sm font-bold text-slate-800">Bankroll & Staking Strategy</h3>
-        </div>
-        <div className="flex flex-wrap items-end gap-4">
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1">Total Bankroll (€)</label>
-            <input 
-              type="number" 
-              value={bankroll} 
-              onChange={(e) => setBankroll(Number(e.target.value) || 0)}
-              className="w-28 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold text-slate-800 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1">Kelly Strategy</label>
-            <select 
-              value={kellyMultiplier} 
-              onChange={(e) => setKellyMultiplier(Number(e.target.value))}
-              className="w-40 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold text-slate-800 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 cursor-pointer"
-            >
-              <option value={0.125}>1/8 Kelly (Very Safe)</option>
-              <option value={0.25}>1/4 Kelly (Safe)</option>
-              <option value={0.5}>1/2 Kelly (Moderate)</option>
-              <option value={1.0}>Full Kelly (Aggressive)</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1">Manual Wager (€)</label>
-            <input 
-              type="number" 
-              placeholder="Auto (Kelly)"
-              value={customWager} 
-              onChange={(e) => setCustomWager(e.target.value)}
-              className="w-32 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold text-slate-800 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 placeholder:text-slate-400"
-            />
-          </div>
-          
-          <div className="ml-auto flex items-stretch gap-3">
-            <div className="flex flex-col items-end px-4 py-1.5 border-r border-slate-200">
-              <div className="text-[10px] text-slate-500 font-bold uppercase mb-0.5">Wager Amount</div>
-              <div className={`text-xl font-black font-mono ${effectiveWager > 0 ? 'text-indigo-600' : 'text-slate-400'}`}>
-                {effectiveWager > 0 ? `€${safeToFixed(effectiveWager, 2)}` : '€0.00'}
-              </div>
-              <div className="text-[10px] text-slate-400 font-medium">
-                {customWager ? 'Manual Override' : `${kellyMultiplier === 0.125 ? '1/8' : kellyMultiplier === 0.25 ? '1/4' : kellyMultiplier === 0.5 ? '1/2' : 'Full'} Kelly Optimized`}
+            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+              <div className="text-[10px] text-slate-500 font-bold uppercase">Suggested Stake</div>
+              <div className="text-base font-black font-mono text-slate-800 mt-0.5">
+                €{safeToFixed(effectiveWager, 2)}
               </div>
             </div>
-            
-            <div className="flex flex-col items-end px-3 py-1.5 bg-emerald-50 rounded-lg border border-emerald-200 min-w-[120px]">
-              <div className="text-[10px] text-emerald-700 font-bold uppercase mb-0.5">Est. Potential Return</div>
-              <div className="text-xl font-black font-mono text-emerald-700">
+
+            <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 col-span-2 sm:col-span-1">
+              <div className="text-[10px] text-emerald-800 font-bold uppercase">Potential Return</div>
+              <div className="text-base font-black font-mono text-emerald-800 mt-0.5">
                 €{safeToFixed(effectiveWager * totalOdds, 2)}
               </div>
-              <div className="text-[10px] text-emerald-600 font-medium">
-                Profit: €{safeToFixed((effectiveWager * totalOdds) - effectiveWager, 2)}
-              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* 1-Click Council Strategy Presets */}
-      <div className="space-y-2">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {/* 6-Agent Unanimous Parlay Card */}
-          <div className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border border-amber-200 rounded-xl p-3.5 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="p-1.5 rounded-lg bg-amber-500 text-white font-bold">
-                  <Award className="w-4 h-4" />
-                </span>
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wide">6-Agent Unanimous Parlay</h4>
-                <div className="ml-auto flex items-center gap-1.5 flex-wrap">
-                  <span 
-                    className="text-[10px] font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full border border-amber-300 shadow-2xs"
-                    title="Empirical historical backtest strike rate of the 6-Agent Unanimous strategy across thousands of fixtures"
-                  >
-                    👑 Strategy Win Rate: {aiSwarm?.directives?.telemetry?.unanimousHitRate || '76.2%'}
-                  </span>
-                  <span className="text-[10px] font-bold bg-white/90 text-amber-900 px-2 py-0.5 rounded-full border border-amber-200">
-                    {allUnanimousPool.length} Qualified on Slate
-                  </span>
+          {/* Autonomous Recommendations if any */}
+          {autonomousJudgement.recommendations.length > 0 && (
+            <div className="bg-amber-50/70 border border-amber-200 rounded-lg p-2.5 text-xs text-amber-900 space-y-1">
+              {autonomousJudgement.recommendations.map((rec, i) => (
+                <div key={i} className="flex items-start gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                  <span>{rec}</span>
                 </div>
-              </div>
-              <p className="text-xs text-slate-600 mb-2.5 leading-relaxed">
-                <strong>All 6 AI models agree 100%:</strong> Zero trap flags, highest cross-model consensus across tactics, expected goals, squad depth, market movement, and physics.
-              </p>
-
-              {/* Ticket Size Selector */}
-              <div className="bg-amber-50/80 border border-amber-200/80 rounded-lg p-2 mb-3">
-                <div className="flex items-center justify-between text-[11px] mb-1.5">
-                  <span className="font-semibold text-slate-700 flex items-center gap-1">
-                    <Layers className="w-3.5 h-3.5 text-amber-700" />
-                    Select Leg Count:
-                  </span>
-                  <span className="text-[10px] text-amber-800 font-medium">
-                    {unanimousLegCount === 'ALL' ? `Loading all ${allUnanimousPool.length} matches` : `Loading top ${unanimousLegCount} highest-conviction matches`}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {[3, 4, 5, 6, 'ALL'].map(num => (
-                    <button
-                      key={num}
-                      type="button"
-                      onClick={() => setUnanimousLegCount(num)}
-                      className={`px-2 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                        unanimousLegCount === num
-                          ? 'bg-amber-600 text-white shadow-xs'
-                          : 'bg-white hover:bg-amber-100 text-slate-700 border border-amber-200'
-                      }`}
-                    >
-                      {num === 'ALL' ? `All (${allUnanimousPool.length})` : `${num} Legs${num === 3 ? ' (Core)' : ''}`}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => handleLoadUnanimousParlay(unanimousLegCount)}
-              className="w-full flex items-center justify-center gap-1.5 py-2 px-3 bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer"
-            >
-              <Zap className="w-3.5 h-3.5" />
-              <span>
-                Load 6-Agent Unanimous Ticket ({unanimousLegCount === 'ALL' ? `All ${allUnanimousPool.length}` : unanimousLegCount} Legs)
-              </span>
-            </button>
-          </div>
-
-          {/* Anti-Fragile Protected Slip Card */}
-          <div className="bg-gradient-to-br from-emerald-500/10 to-teal-600/5 border border-emerald-200 rounded-xl p-3.5 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="p-1.5 rounded-lg bg-emerald-600 text-white font-bold">
-                  <ShieldCheck className="w-4 h-4" />
-                </span>
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wide">Anti-Fragile Protected Slip</h4>
-                <div className="ml-auto flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-200">
-                    Draw &amp; Shock Insulated
-                  </span>
-                  <span className="text-[10px] font-bold bg-white/90 text-emerald-900 px-2 py-0.5 rounded-full border border-emerald-200">
-                    {allAntiFragilePool.length} Qualified on Slate
-                  </span>
-                </div>
-              </div>
-              <p className="text-xs text-slate-600 mb-2.5 leading-relaxed">
-                <strong>Shock-proof accumulator:</strong> Eliminates draw variance by insulating low-chaos matches with <strong>Double Chance (1X / X2)</strong> so you still win if the game draws.
-              </p>
-
-              {/* Ticket Size Selector */}
-              <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-lg p-2 mb-3">
-                <div className="flex items-center justify-between text-[11px] mb-1.5">
-                  <span className="font-semibold text-slate-700 flex items-center gap-1">
-                    <Layers className="w-3.5 h-3.5 text-emerald-700" />
-                    Select Leg Count:
-                  </span>
-                  <span className="text-[10px] text-emerald-800 font-medium">
-                    {antiFragileLegCount === 'ALL' ? `Loading all ${allAntiFragilePool.length} matches` : `Loading top ${antiFragileLegCount} highest-stability matches`}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {[3, 4, 5, 6, 'ALL'].map(num => (
-                    <button
-                      key={num}
-                      type="button"
-                      onClick={() => setAntiFragileLegCount(num)}
-                      className={`px-2 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                        antiFragileLegCount === num
-                          ? 'bg-emerald-600 text-white shadow-xs'
-                          : 'bg-white hover:bg-emerald-100 text-slate-700 border border-emerald-200'
-                      }`}
-                    >
-                      {num === 'ALL' ? `All (${allAntiFragilePool.length})` : `${num} Legs${num === 3 ? ' (Core)' : ''}`}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => handleLoadAntiFragileParlay(antiFragileLegCount)}
-              className="w-full flex items-center justify-center gap-1.5 py-2 px-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer"
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>
-                Load Anti-Fragile Protected Ticket ({antiFragileLegCount === 'ALL' ? `All ${allAntiFragilePool.length}` : antiFragileLegCount} Legs)
-              </span>
-            </button>
-          </div>
-        </div>
-
-        {/* Why 3 matches originally? Informational Variance Note */}
-        <div className="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs text-slate-600">
-          <button
-            type="button"
-            onClick={() => setShowVarianceExplainer(!showVarianceExplainer)}
-            className="w-full flex items-center justify-between text-left font-medium text-slate-700 hover:text-slate-900 cursor-pointer"
-          >
-            <span className="flex items-center gap-1.5">
-              <Info className="w-3.5 h-3.5 text-blue-600" />
-              <span>Why do presets recommend 3 matches by default? (Mathematical Variance Protection)</span>
-            </span>
-            <span className="text-[11px] text-blue-600 flex items-center gap-0.5">
-              {showVarianceExplainer ? 'Hide explanation' : 'Learn why'}
-              {showVarianceExplainer ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            </span>
-          </button>
-          {showVarianceExplainer && (
-            <div className="mt-2 pt-2 border-t border-slate-200/80 text-[11px] leading-relaxed text-slate-600 space-y-1.5 animate-fade-in">
-              <p>
-                <strong>Strategy Strike Rate vs Individual Match Probabilities:</strong>
-                <br />
-                The <strong>76.2%</strong> badge represents the verified empirical win rate of the 6-Agent Unanimous strategy across thousands of backtested fixtures. Each individual fixture in your slip is calculated with its own unique Poisson &amp; Dixon-Coles statistical probability (e.g., Bayern Munich ~89%, Sporting CP ~77%, Grimsby ~73%).
-              </p>
-              <p>
-                <strong>The Math Behind Accumulator Survival:</strong> In quantitative sports modeling, joint accumulator probability decays multiplicatively ($P_1 \times P_2 \times P_3 \dots$):
-              </p>
-              <ul className="list-disc pl-5 space-y-0.5 text-slate-700">
-                <li><strong>3-Leg Core (~76% avg):</strong> ~76% × 76% × 76% = <strong>~44% ticket survival rate</strong> (Positive Kelly Growth zone).</li>
-                <li><strong>4-Leg Ticket:</strong> ~76%⁴ = <strong>~33% survival rate</strong>.</li>
-                <li><strong>6-Leg Ticket:</strong> ~76%⁶ = <strong>~19% survival rate</strong>.</li>
-              </ul>
-              <p>
-                To protect your bankroll from exponential variance degradation, the algorithm designated 3 legs as the mathematically optimal core. However, with {allUnanimousPool.length} unanimous matches on today's slate, you can choose 3, 4, 5, 6, or load all qualified games directly into your slip anytime!
-              </p>
+              ))}
             </div>
           )}
         </div>
+      )}
+
+      {/* 3. Autonomous Presets Generator Bar (Simpler, unified UI) */}
+      <div className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-amber-500" />
+            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+              Ticket Generator
+            </h3>
+          </div>
+          <span className="text-[11px] text-slate-500">
+            Historical Win Rate: <strong className="text-slate-800">{strategyWinRate}</strong>
+          </span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Strategy mode pills */}
+          <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-lg border border-slate-200 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setPresetStrategy('unanimous')}
+              className={`px-3 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                presetStrategy === 'unanimous'
+                  ? 'bg-white text-indigo-700 shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              👑 Top Consensus ({allUnanimousPool.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setPresetStrategy('antifragile')}
+              className={`px-3 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                presetStrategy === 'antifragile'
+                  ? 'bg-white text-emerald-700 shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              🛡️ Double Chance ({allAntiFragilePool.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setPresetStrategy('value')}
+              className={`px-3 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                presetStrategy === 'value'
+                  ? 'bg-white text-blue-700 shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              💎 Best Value ({allValuePool.length})
+            </button>
+          </div>
+
+          {/* Leg count pills */}
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
+            {[2, 3, 4, 5, 'ALL'].map(num => (
+              <button
+                key={num}
+                type="button"
+                onClick={() => setPresetLegCount(num)}
+                className={`px-2 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                  presetLegCount === num
+                    ? 'bg-slate-800 text-white shadow-2xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {num === 'ALL' ? 'All' : `${num} Legs`}
+              </button>
+            ))}
+          </div>
+
+          {/* Generate Button */}
+          <button
+            type="button"
+            onClick={handleLoadAutonomousPreset}
+            className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer ml-auto"
+          >
+            <Zap className="w-3.5 h-3.5" />
+            <span>Build Ticket</span>
+          </button>
+        </div>
       </div>
 
-      {/* Confirmation notification banner */}
+      {/* Notice Banner */}
       {loadedNotice && (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 animate-fade-in shadow-xs">
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 shadow-xs">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>{loadedNotice}</span>
@@ -771,9 +1038,9 @@ export default function AccumulatorPage({
         </div>
       )}
 
-      {/* Analysis Error banner */}
+      {/* Analysis Error Banner */}
       {analysisError && (
-        <div className="bg-rose-50 border border-rose-200 text-rose-900 px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 animate-fade-in shadow-xs">
+        <div className="bg-rose-50 border border-rose-200 text-rose-900 px-3.5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 shadow-xs">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
             <span>{analysisError}</span>
@@ -787,170 +1054,165 @@ export default function AccumulatorPage({
         </div>
       )}
 
-      {/* Contrarian Trap Shield Warning */}
-      {flaggedTrapLegs.length > 0 && (
-        <div className="bg-rose-50 border border-rose-200 rounded-xl p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-rose-100 text-rose-700 shrink-0">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="font-bold text-rose-900 text-xs flex items-center gap-1.5">
-                <span>Council Volatility Warning: {flaggedTrapLegs.length} High-Risk Selection(s) in Slip</span>
-              </div>
-              <p className="text-xs text-rose-700 mt-0.5 leading-relaxed">
-                The consensus agents flagged <strong>{flaggedTrapLegs.map(l => `${l.home} vs ${l.away}`).join(', ')}</strong> for heavy market bias or venue bogey resistance. Historical data shows straight bets on these fixtures suffer acute draw rates.
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={handleRemoveAllTraps}
-            className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold shrink-0 transition-colors shadow-xs cursor-pointer flex items-center gap-1"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>Auto-Remove High Risk</span>
-          </button>
-        </div>
-      )}
-
-      {/* Uniform Toolbar */}
-      <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <UniformDropdown
-            label="Active Bet Slip"
-            value={activeSlipId}
-            onChange={(val) => {
-              if (val === 'create_new') {
-                const newId = `slip-${Date.now()}`;
-                onUpdateBetSlips([...betSlips, { id: newId, name: `Slip ${betSlips.length + 1}`, picks: [] }]);
-                onSetActiveSlipId(newId);
-              } else {
-                onSetActiveSlipId(val);
-              }
-            }}
-            options={[
-              ...betSlips.map(s => ({ value: s.id, label: s.name })),
-              { value: 'create_new', label: '+ Create New Slip' }
-            ]}
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          {activeLegs.length > 0 && (
-            <button
-              onClick={handleFinalAnalysis}
-              disabled={isAnalyzing}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-xs font-bold transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
-              title="Runs deep AI Super Agent audit on the active bet slip to evaluate winning probability and identify traps"
-            >
-              <BrainCircuit className={`w-4 h-4 ${isAnalyzing ? 'animate-spin text-white' : 'text-indigo-200'}`} />
-              <span>{isAnalyzing ? 'Super Agent Auditing Slip...' : 'Super Agent Slip Audit (AI-Powered)'}</span>
-            </button>
-          )}
-          {activeLegs.length > 0 && (
-            <button
-              onClick={onClearSlip}
-              className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-md border border-rose-200 transition-colors cursor-pointer"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>Clear Slip</span>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Active Legs Compact Table */}
+      {/* 4. Active Legs Table (Clean, modern look) */}
       <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
         <div className="p-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
           <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider">
-            Current Bet Slip Selections
+            Active Selections
           </h3>
-          <span className="text-xs text-slate-500">
-            {activeLegs.length === 0 ? 'Slip is empty' : `${activeLegs.length} selections ready`}
-          </span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setShowStakingSettings(!showStakingSettings)}
+              className="text-xs text-slate-600 hover:text-slate-900 font-semibold flex items-center gap-1 cursor-pointer"
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500" />
+              <span>{showStakingSettings ? 'Hide Staking Options' : 'Staking Settings'}</span>
+            </button>
+            <span className="text-xs text-slate-500">
+              {activeLegs.length === 0 ? 'No selections' : `${activeLegs.length} ready`}
+            </span>
+          </div>
         </div>
+
+        {/* Collapsible Staking Controls */}
+        {showStakingSettings && (
+          <div className="p-3 bg-slate-50/70 border-b border-slate-200 flex flex-wrap items-end gap-3 text-xs">
+            <div>
+              <label className="block font-semibold text-slate-500 mb-1">Bankroll (€)</label>
+              <input 
+                type="number" 
+                value={bankroll} 
+                onChange={(e) => setBankroll(Number(e.target.value) || 0)}
+                className="w-24 px-2.5 py-1 bg-white border border-slate-200 rounded-md font-semibold text-slate-800"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold text-slate-500 mb-1">Kelly Strategy</label>
+              <select 
+                value={kellyMultiplier} 
+                onChange={(e) => setKellyMultiplier(Number(e.target.value))}
+                className="px-2.5 py-1 bg-white border border-slate-200 rounded-md font-semibold text-slate-800 cursor-pointer"
+              >
+                <option value={0.125}>1/8 Kelly (Very Safe)</option>
+                <option value={0.25}>1/4 Kelly (Recommended)</option>
+                <option value={0.5}>1/2 Kelly (Moderate)</option>
+                <option value={1.0}>Full Kelly (Aggressive)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block font-semibold text-slate-500 mb-1">Custom Wager (€)</label>
+              <input 
+                type="number" 
+                placeholder="Auto Kelly"
+                value={customWager} 
+                onChange={(e) => setCustomWager(e.target.value)}
+                className="w-28 px-2.5 py-1 bg-white border border-slate-200 rounded-md font-semibold text-slate-800 placeholder:text-slate-400"
+              />
+            </div>
+          </div>
+        )}
 
         {activeLegs.length === 0 ? (
           <div className="py-12 px-4 text-center">
             <ListChecks className="w-10 h-10 mx-auto text-slate-300 mb-2" />
             <h4 className="text-sm font-bold text-slate-700">Your Bet Slip is Empty</h4>
             <p className="text-xs text-slate-500 max-w-md mx-auto mt-1 mb-4">
-              Add matches by clicking the <strong>"+"</strong> icon in the Fixtures or Binary Value tables, or pick from our high-conviction selections below.
+              Click <strong>"Generate Autonomous Slip"</strong> above for an instant optimal ticket, or add fixtures directly from the table below.
             </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-10">
-                  <th className="py-1.5 px-2 w-10 text-center">#</th>
-                  <th className="py-1.5 px-2 min-w-[80px]">Time</th>
-                  <th className="py-1.5 px-2 min-w-[140px]">Fixture</th>
-                  <th className="py-1.5 px-2 min-w-[130px]">Market Selection</th>
-                  <th className="py-1.5 px-2 w-20 text-center">Odds</th>
-                  <th className="py-1.5 px-2 w-24 text-center">Model Prob</th>
-                  <th className="py-1.5 px-2 w-24 text-center">Edge (EV)</th>
-                  <th className="py-1.5 px-2 w-16 text-center">Remove</th>
+                <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-9">
+                  <th className="py-1.5 px-2.5 w-10 text-center">#</th>
+                  <th className="py-1.5 px-2.5 min-w-[150px]">Fixture</th>
+                  <th className="py-1.5 px-2.5 min-w-[120px]">Status</th>
+                  <th className="py-1.5 px-2.5 min-w-[150px]">Selection</th>
+                  <th className="py-1.5 px-2.5 w-20 text-center">Odds</th>
+                  <th className="py-1.5 px-2.5 w-24 text-center">Probability</th>
+                  <th className="py-1.5 px-2.5 w-24 text-center">Value (EV)</th>
+                  <th className="py-1.5 px-2.5 w-14 text-center">Remove</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {activeLegs.map((leg, idx) => {
-                  const legMatch = leg.match || matches.find(m => m.id === leg.id);
-                  const isLegTrap = legMatch && ((legMatch.aiSwarm || legMatch.imperialSwarm)?.isContrarianTrap || legMatch.isMarketDivergence || legMatch.isFavoriteTrap);
-                  const isUnanLeg = legMatch && ((legMatch.aiSwarm || legMatch.imperialSwarm)?.isTopValueLeg || (legMatch.aiSwarm || legMatch.imperialSwarm)?.consensusTier === 'UNANIMOUS_DIRECTIVE');
+                  const b = leg.status.badge;
+                  const canShield = leg.status.isStraightPick;
+                  const isDC = leg.status.isProtectedDC;
 
                   return (
-                    <tr key={leg.pickId || leg.id || idx} className={`hover:bg-purple-50/20 transition-colors md:h-12 ${isLegTrap ? 'bg-rose-50/40' : idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}>
-                      <td className="py-1.5 px-2 text-center font-bold text-slate-400">
+                    <tr key={leg.pickId || leg.id || idx} className={`hover:bg-slate-50/80 transition-colors h-11 ${leg.status.isTrap ? 'bg-rose-50/40' : 'bg-white'}`}>
+                      <td className="py-1.5 px-2.5 text-center font-bold text-slate-400">
                         {leg.legNum}
                       </td>
-                      <td className="py-1.5 px-2 text-slate-600 font-medium truncate">
-                        {leg.time}
-                      </td>
-                      <td className="py-1.5 px-2">
-                        <div className="font-semibold text-slate-900 flex items-center gap-1.5 flex-wrap">
-                          <span>{leg.home} vs {leg.away}</span>
-                          {isLegTrap && (
-                            <span className="inline-flex items-center gap-1 text-[9px] bg-rose-100 text-rose-800 border border-rose-200 px-1.5 py-0.2 rounded font-bold">
-                              <AlertTriangle className="w-2.5 h-2.5" /> Upset Risk
-                            </span>
-                          )}
-                          {isUnanLeg && (
-                            <span className="inline-flex items-center gap-1 text-[9px] bg-amber-100 text-amber-800 border border-amber-200 px-1.5 py-0.2 rounded font-bold">
-                              👑 Unanimous
-                            </span>
-                          )}
+                      <td className="py-1.5 px-2.5">
+                        <div className="font-semibold text-slate-900 leading-tight">
+                          {leg.home} vs {leg.away}
                         </div>
-                        <div className="text-[10px] text-slate-400">{leg.league}</div>
+                        <div className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1.5">
+                          <span>{leg.league}</span>
+                          <span>•</span>
+                          <span>{leg.time}</span>
+                        </div>
                       </td>
-                      <td className="py-1.5 px-2">
-                        <span className="inline-block px-2 py-0.5 rounded font-bold text-[11px] bg-purple-50 text-purple-800 border border-purple-200">
-                          {leg.market}
+                      <td className="py-1.5 px-2.5">
+                        <span 
+                          title={b.title}
+                          className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${
+                            b.type === 'danger' ? 'bg-rose-100 text-rose-800 border border-rose-200' :
+                            b.type === 'warning' ? 'bg-amber-100 text-amber-900 border border-amber-200' :
+                            b.type === 'protected' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
+                            b.type === 'unanimous' ? 'bg-amber-100 text-amber-800 border border-amber-300' :
+                            b.type === 'positive-ev' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' :
+                            'bg-slate-100 text-slate-600 border border-slate-200'
+                          }`}
+                        >
+                          {b.label}
                         </span>
                       </td>
-                      <td className="py-1.5 px-2 text-center font-mono font-bold text-slate-800">
+                      <td className="py-1.5 px-2.5">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded text-[11px] border border-slate-200">
+                            {leg.market}
+                          </span>
+                          {(canShield || isDC) && (
+                            <button
+                              type="button"
+                              onClick={() => handleToggleLegShield(leg)}
+                              className={`text-[10px] font-bold px-1.5 py-0.5 rounded border transition-colors cursor-pointer flex items-center gap-0.5 ${
+                                isDC 
+                                  ? 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200' 
+                                  : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                              }`}
+                              title={isDC ? 'Revert to straight win market' : 'Shield against draw with Double Chance (1X/X2)'}
+                            >
+                              <Shield className="w-2.5 h-2.5" />
+                              <span>{isDC ? 'Unshield' : 'Shield DC'}</span>
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-1.5 px-2.5 text-center font-mono font-bold text-slate-800">
                         {safeToFixed(leg.odds, 2)}
                       </td>
-                      <td className="py-1.5 px-2 text-center font-mono text-emerald-700 font-semibold">
+                      <td className="py-1.5 px-2.5 text-center font-mono text-emerald-700 font-semibold">
                         {safeToFixed(leg.prob, 1)}%
                       </td>
-                      <td className="py-1.5 px-2 text-center font-mono font-bold">
-                        {(() => {
-                           const legEv = ((safeParseFloat(leg.prob, 0) / 100) * safeParseFloat(leg.odds, 0)) - 1;
-                           return (
-                             <span className={legEv > 0 ? 'text-emerald-600' : 'text-slate-400'}>
-                               {legEv > 0 ? '+' : ''}{safeToFixed(legEv * 100, 1)}%
-                             </span>
-                           );
-                        })()}
+                      <td className="py-1.5 px-2.5 text-center font-mono font-bold">
+                        <span className={leg.status.ev > 0 ? 'text-emerald-600' : 'text-slate-400'}>
+                          {leg.status.ev > 0 ? '+' : ''}{safeToFixed(leg.status.ev * 100, 1)}%
+                        </span>
                       </td>
-                      <td className="py-1.5 px-2 text-center">
+                      <td className="py-1.5 px-2.5 text-center">
                         <button
+                          type="button"
                           onClick={() => onRemovePick(leg.pickId || leg.id)}
                           className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                           title="Remove leg"
                         >
-                          <Trash2 className="w-4 h-4 mx-auto" />
+                          <Trash2 className="w-3.5 h-3.5 mx-auto" />
                         </button>
                       </td>
                     </tr>
@@ -962,25 +1224,24 @@ export default function AccumulatorPage({
         )}
       </div>
 
-      {/* Suggested Candidate Legs */}
+      {/* 5. Recommended High-Stability Candidates (Minimalist grid) */}
       {suggestedMatches.length > 0 && (
-        <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs">
+        <div className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs">
           <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
-              <Sparkles className="w-4 h-4 text-amber-500" />
-              <span>Recommended High-Stability Candidates</span>
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span>Recommended High-Conviction Candidates</span>
             </div>
-            <span className="text-[10px] text-slate-400 font-medium">High Volatility Excluded</span>
+            <span className="text-[10px] text-slate-400">Low Chaos • Traps Filtered</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
             {suggestedMatches.map((m) => {
               const homeP = safeParseFloat(m.prob?.home, 0);
               const awayP = safeParseFloat(m.prob?.away, 0);
               const pickTeam = homeP >= awayP ? m.home : m.away;
               const conf = safeParseFloat(m.confidence ?? m.binaryModel?.confidence, Math.max(homeP, awayP));
               const isUnan = (m.aiSwarm || m.imperialSwarm)?.isTopValueLeg || (m.aiSwarm || m.imperialSwarm)?.consensusTier === 'UNANIMOUS_DIRECTIVE';
-              const isDeriv = m.smartMarket?.marketType === 'DOUBLE_CHANCE' || m.smartMarket?.marketType === 'DRAW_NO_BET';
               
               const timeVal = m.timestamp || m.utcDate || m.dateIso || m.date;
               const dateDisplay = timeVal ? formatRelativeDayTime(timeVal, tzSettings) : (m.time || 'Upcoming');
@@ -988,42 +1249,31 @@ export default function AccumulatorPage({
               return (
                 <div 
                   key={m.id}
-                  className="p-2.5 rounded-lg border border-slate-200 bg-slate-50/70 hover:bg-indigo-50/40 transition-colors flex items-center justify-between text-xs"
+                  className="p-2.5 rounded-lg border border-slate-200 bg-slate-50/70 hover:bg-indigo-50/30 transition-colors flex items-center justify-between text-xs"
                 >
                   <div className="min-w-0 flex-1 pr-2">
-                    <div className="font-semibold text-slate-900 truncate flex items-center gap-1.5">
+                    <div className="font-semibold text-slate-900 truncate flex items-center gap-1">
                       <span className="truncate">{m.home} vs {m.away}</span>
                       {isUnan && (
-                        <span className="shrink-0 text-[9px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.2 rounded border border-amber-200">
-                          👑 Unanimous
-                        </span>
-                      )}
-                      {isDeriv && (
-                        <span className="shrink-0 text-[9px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded border border-emerald-200">
-                          🛡️ {m.smartMarket?.pick || 'Protected'}
+                        <span className="shrink-0 text-[9px] bg-amber-100 text-amber-800 font-bold px-1 rounded">
+                          👑
                         </span>
                       )}
                     </div>
-                    <div className="text-[10px] text-slate-500 flex items-center gap-2 mt-0.5">
-                      <span>Pick: <strong>{m.smartMarket?.pickLabel || pickTeam}</strong></span>
-                      <span className="text-emerald-700 font-bold">{safeToFixed(conf, 0)}% Conf</span>
+                    <div className="text-[10px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                      <span>Pick: <strong>{pickTeam}</strong></span>
+                      <span className="text-emerald-700 font-bold">{safeToFixed(conf, 0)}%</span>
                       <span className="text-slate-400">| {dateDisplay}</span>
                     </div>
                   </div>
 
                   <button
-                    onClick={() => {
-                      if (m.smartMarket && (m.smartMarket.marketType === 'DOUBLE_CHANCE' || m.smartMarket.marketType === 'DRAW_NO_BET')) {
-                        const marketOdds = resolveMatchOdds(m, m.smartMarket.pick);
-                        const marketProb = m.smartMarket.prob || resolveMatchProb(m, m.smartMarket.pick);
-                        onAddPick(m, m.smartMarket.pick, m.smartMarket.pickLabel, marketOdds, marketProb);
-                      } else {
-                        onAddPick(m);
-                      }
-                    }}
-                    className="px-2 py-1 rounded bg-white hover:bg-purple-50 text-purple-700 font-semibold border border-purple-200 text-[11px] transition-colors cursor-pointer shrink-0 shadow-2xs"
+                    type="button"
+                    onClick={() => onAddPick(m)}
+                    className="p-1 rounded bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs transition-colors cursor-pointer shrink-0 shadow-2xs"
+                    title="Add to slip"
                   >
-                    + Add
+                    <Plus className="w-3.5 h-3.5" />
                   </button>
                 </div>
               );
@@ -1032,57 +1282,77 @@ export default function AccumulatorPage({
         </div>
       )}
 
-      {/* AI Analysis Report Modal */}
+      {/* Variance Info Modal / Footer Note */}
+      <div className="text-center">
+        <button
+          type="button"
+          onClick={() => setShowVarianceExplainer(!showVarianceExplainer)}
+          className="text-xs text-slate-500 hover:text-slate-700 font-medium inline-flex items-center gap-1 cursor-pointer"
+        >
+          <Info className="w-3.5 h-3.5 text-blue-600" />
+          <span>Why 3-leg accumulators mathematically outperform longer parlays</span>
+          {showVarianceExplainer ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+        </button>
+
+        {showVarianceExplainer && (
+          <div className="mt-2 text-left bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600 leading-relaxed max-w-2xl mx-auto space-y-1.5">
+            <p>
+              In multi-match accumulators, win probabilities compound multiplicatively ($P_1 \times P_2 \times P_3$). Even when combining 75% favorites:
+            </p>
+            <ul className="list-disc pl-5 space-y-0.5 text-slate-700">
+              <li><strong>3-Leg Slip:</strong> 75% × 75% × 75% = <strong>~42% win rate</strong> (Safe Kelly growth zone).</li>
+              <li><strong>4-Leg Slip:</strong> 75%⁴ = <strong>~31% win rate</strong>.</li>
+              <li><strong>6-Leg Slip:</strong> 75%⁶ = <strong>~17% win rate</strong> (Severe decay).</li>
+            </ul>
+            <p>
+              Our Autonomous Optimizer automatically limits slips to the positive-equity sweet spot and shields vulnerable matches with Double Chance to preserve your long-term bankroll growth.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* AI Super Agent Audit Modal */}
       {analysisReport && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col my-auto border border-indigo-200">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col my-auto border border-indigo-200">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700">
                   <BrainCircuit className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900">Super Agent Accumulator Audit</h2>
-                  <p className="text-sm text-slate-500 font-medium">{activeLegs.length}-Fold Accumulator • Joint Prob: {safeToFixed(combinedProb, 1)}%</p>
+                  <h3 className="text-base font-bold text-slate-900">Super Agent Accumulator Audit</h3>
+                  <p className="text-xs text-slate-500 font-medium">{activeLegs.length}-Fold Accumulator • Joint Prob: {safeToFixed(combinedProb, 1)}%</p>
                 </div>
               </div>
               <button 
                 onClick={() => setAnalysisReport(null)}
-                className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="p-6 overflow-y-auto bg-slate-50">
-              <div className="prose prose-sm md:prose-base prose-slate max-w-none 
-                prose-headings:font-bold prose-headings:text-slate-800 
-                prose-h3:text-lg prose-h3:mb-3 prose-h3:mt-6
-                prose-p:text-slate-600 prose-p:leading-relaxed
-                prose-strong:text-indigo-800 prose-strong:font-bold
-                prose-ul:list-disc prose-ul:pl-5
-                prose-li:text-slate-700 prose-li:my-1
-                bg-white p-6 rounded-xl border border-slate-200 shadow-xs">
+            <div className="p-5 overflow-y-auto bg-slate-50">
+              <div className="prose prose-sm prose-slate max-w-none bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
                 <Markdown>{analysisReport}</Markdown>
               </div>
             </div>
             
-            <div className="p-5 border-t border-slate-100 bg-white shrink-0 flex items-center justify-between rounded-b-2xl">
-              <div className="text-sm">
-                <span className="text-slate-500 font-medium">Recommended Wager: </span>
-                <span className="font-bold font-mono text-emerald-700">€{safeToFixed(kellyRecommendation, 2)}</span>
+            <div className="p-4 border-t border-slate-100 bg-white shrink-0 flex items-center justify-between">
+              <div className="text-xs text-slate-600">
+                Recommended Wager: <strong className="font-mono text-emerald-700">€{safeToFixed(effectiveWager, 2)}</strong>
               </div>
               <button 
                 onClick={() => setAnalysisReport(null)}
-                className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition-colors shadow-xs cursor-pointer"
+                className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-xs transition-colors cursor-pointer shadow-xs"
               >
-                Got It, Thanks
+                Close Audit
               </button>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 }

@@ -1,8 +1,8 @@
 {
-  "homeAdvantage": 1.22,
+  "homeAdvantage": 1.14,
   "homeEloBoost": 65,
   "entropyFloorThreshold": 52,
-  "paritySafetyThreshold": 68,
+  "paritySafetyThreshold": 72,
   "highDrawFloor": 26,
   "leagueAvgGoalsHome": 1.5,
   "leagueAvgGoalsAway": 1.2,
@@ -12,11 +12,12 @@
   "dixonColesRho": -0.18,
   "temperature": 0.8,
   "maxScorelineSim": 6,
-  "drawEquilibriumDelta": 0,
+  "drawEquilibriumDelta": 8,
   "h2hWeight": 0.16,
   "timeDecayXi": 0.007,
   "formWindowGames": 6,
   "formDeltaWeight": 0.12,
   "eloRatio": 0.5,
-  "dnbDrawThreshold": 24
+  "dnbDrawThreshold": 24,
+  "disabledLeagues": ["Liga Profesional", "FIFA Club World Cup", "Ligue 2", "Serie B", "League One", "League Two"]
 }

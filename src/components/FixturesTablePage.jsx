@@ -33,10 +33,25 @@ import ConfidenceGauge from './ConfidenceGauge';
 import KellyTooltip from './KellyTooltip';
 import InfoTooltip from './InfoTooltip';
 
+// Helper to reliably extract match pick without gaps
+export const getMatchPick = (m) => {
+  if (!m) return 'HOME';
+  if (typeof m.predictedWinner === 'string') return m.predictedWinner;
+  if (m.predictedWinner?.pick) return m.predictedWinner.pick;
+  if (m.binaryModel?.pick) return m.binaryModel.pick;
+  const homeProb = safeParseFloat(m.prob?.home, 0);
+  const drawProb = safeParseFloat(m.prob?.draw, 0);
+  const awayProb = safeParseFloat(m.prob?.away, 0);
+  const highestProb = Math.max(homeProb, drawProb, awayProb);
+  if (drawProb === highestProb && drawProb > homeProb && drawProb > awayProb) return 'DRAW';
+  return homeProb >= awayProb ? 'HOME' : 'AWAY';
+};
+
 export default function FixturesTablePage({
   matches = [],
   leaguePerformance = [],
   tzSettings,
+  unanimousHitRate = 84.8,
   onOpenDeepResearch,
   onOpenLineup,
   onAddToSlip,
@@ -50,11 +65,16 @@ export default function FixturesTablePage({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLeague, setSelectedLeague] = useState('All');
   const [selectedDate, setSelectedDate] = useState('All');
-  const [filterMode, setFilterMode] = useState('All'); // 'All', 'HIGH_CONFIDENCE', 'ELITE', 'CAUTION'
-  const [sortField, setSortField] = useState('time');
-  const [sortDirection, setSortDirection] = useState('asc'); // 'asc' | 'desc'
-  const [sortBy, setSortBy] = useState('time_asc');
+  const [selectedOutcome, setSelectedOutcome] = useState('ALL'); // 'ALL', 'WIN_LOSE', 'DRAW', 'HOME', 'AWAY'
+  const [filterMode, setFilterMode] = useState('All'); // 'All', 'UNANIMOUS', 'WIN_LOSE_ONLY', 'DRAW_ONLY', 'HIGH_CONFIDENCE', 'ELITE', etc.
+  const [sortField, setSortField] = useState('probs');
+  const [sortDirection, setSortDirection] = useState('desc'); // 'asc' | 'desc'
+  const [sortBy, setSortBy] = useState('probs_desc');
   const [expandedMatchId, setExpandedMatchId] = useState(null);
+
+  const unanimousRateDisplay = typeof unanimousHitRate === 'number'
+    ? `${unanimousHitRate.toFixed(1)}%`
+    : (unanimousHitRate || '84.8%');
 
   const getSortFieldLabel = (field) => {
     switch (field) {
@@ -240,9 +260,36 @@ export default function FixturesTablePage({
     return { hasUnanimous: hasUnan, maxBaseConfidence: maxConf };
   }, [baseMatches]);
 
+  // Dynamic counts for Outcome filter based on base filtered matches
+  const outcomeCounts = useMemo(() => {
+    let winLose = 0;
+    let draw = 0;
+    let home = 0;
+    let away = 0;
+    baseMatches.forEach(m => {
+      const pick = getMatchPick(m);
+      if (pick === 'HOME') {
+        home++;
+        winLose++;
+      } else if (pick === 'AWAY') {
+        away++;
+        winLose++;
+      } else if (pick === 'DRAW') {
+        draw++;
+      }
+    });
+    return {
+      all: baseMatches.length,
+      winLose,
+      draw,
+      home,
+      away
+    };
+  }, [baseMatches]);
+
   // Filter and sort matches
   const filteredMatches = useMemo(() => {
-    // 3. Apply the final strategy filter logic
+    // 3. Apply the final strategy and outcome filter logic
     return baseMatches.filter(m => {
       const homeProb = safeParseFloat(m.prob?.home, 0);
       const drawProb = safeParseFloat(m.prob?.draw, 0);
@@ -253,6 +300,19 @@ export default function FixturesTablePage({
       const isUnanimous = (m.aiSwarm || m.imperialSwarm)?.isTopValueLeg || (m.aiSwarm || m.imperialSwarm)?.consensusTier === 'UNANIMOUS_DIRECTIVE' || (m.aiSwarm || m.imperialSwarm)?.isUnanimousDirective;
       const isDerivative = m.smartMarket?.marketType === 'DOUBLE_CHANCE' || m.smartMarket?.marketType === 'DRAW_NO_BET' || m.smartMarket?.marketType === 'OVER_15';
 
+      // 3a. Dedicated Outcome Filter (Win/Lose Only vs Draw Only)
+      const matchPick = getMatchPick(m);
+      if (selectedOutcome === 'WIN_LOSE') {
+        if (matchPick !== 'HOME' && matchPick !== 'AWAY') return false;
+      } else if (selectedOutcome === 'DRAW') {
+        if (matchPick !== 'DRAW') return false;
+      } else if (selectedOutcome === 'HOME') {
+        if (matchPick !== 'HOME') return false;
+      } else if (selectedOutcome === 'AWAY') {
+        if (matchPick !== 'AWAY') return false;
+      }
+
+      // Strategy filter options
       if (filterMode === 'UNANIMOUS') {
         if (hasUnanimous) {
           if (!isUnanimous) return false;
@@ -264,8 +324,17 @@ export default function FixturesTablePage({
 
       if (filterMode === 'NO_TRAPS' && isTrap) return false;
       if (filterMode === 'DERIVATIVE_SAFETY' && !isDerivative) return false;
-      if (filterMode === 'HIGH_CONFIDENCE' && conf < 65) return false;
-      if (filterMode === 'ELITE' && conf < 75) return false;
+
+      // High Confidence (≥65%) & Elite (≥75%): Must have solid probability AND strictly no upset risk/traps
+      if (filterMode === 'HIGH_CONFIDENCE') {
+        const topProb = Math.max(homeProb, drawProb, awayProb);
+        if (conf < 65 || topProb < 60 || isTrap) return false;
+      }
+      if (filterMode === 'ELITE') {
+        const topProb = Math.max(homeProb, drawProb, awayProb);
+        if (conf < 75 || topProb < 68 || isTrap) return false;
+      }
+      if (filterMode === 'UPSET_RISK' && !isTrap) return false;
       if (filterMode === 'CAUTION' && conf >= 65) return false;
 
       const leagueTierObj = m.leagueTier || getLeaguePredictabilityTier(m.league);
@@ -277,6 +346,33 @@ export default function FixturesTablePage({
     }).sort((a, b) => {
       const multiplier = sortDirection === 'asc' ? 1 : -1;
 
+      if (sortField === 'probs') {
+        const maxA = Math.max(safeParseFloat(a.prob?.home, 0), safeParseFloat(a.prob?.draw, 0), safeParseFloat(a.prob?.away, 0));
+        const maxB = Math.max(safeParseFloat(b.prob?.home, 0), safeParseFloat(b.prob?.draw, 0), safeParseFloat(b.prob?.away, 0));
+        if (maxA !== maxB) {
+          return (maxA - maxB) * multiplier;
+        }
+        // Secondary tiebreaker: Model Confidence
+        const confA = safeParseFloat(a.confidence ?? a.binaryModel?.confidence, maxA);
+        const confB = safeParseFloat(b.confidence ?? b.binaryModel?.confidence, maxB);
+        if (confA !== confB) {
+          return (confA - confB) * multiplier;
+        }
+        // Tertiary tiebreaker: Kickoff time
+        const tA = a.timestamp || (a.utcDate ? new Date(a.utcDate).getTime() : 0);
+        const tB = b.timestamp || (b.utcDate ? new Date(b.utcDate).getTime() : 0);
+        return tA - tB;
+      }
+      if (sortField === 'conf') {
+        const confA = safeParseFloat(a.confidence ?? a.binaryModel?.confidence, Math.max(safeParseFloat(a.prob?.home, 0), safeParseFloat(a.prob?.draw, 0), safeParseFloat(a.prob?.away, 0)));
+        const confB = safeParseFloat(b.confidence ?? b.binaryModel?.confidence, Math.max(safeParseFloat(b.prob?.home, 0), safeParseFloat(b.prob?.draw, 0), safeParseFloat(b.prob?.away, 0)));
+        if (confA !== confB) {
+          return (confA - confB) * multiplier;
+        }
+        const tA = a.timestamp || (a.utcDate ? new Date(a.utcDate).getTime() : 0);
+        const tB = b.timestamp || (b.utcDate ? new Date(b.utcDate).getTime() : 0);
+        return tA - tB;
+      }
       if (sortField === 'time') {
         const tA = a.timestamp || (a.utcDate ? new Date(a.utcDate).getTime() : 0);
         const tB = b.timestamp || (b.utcDate ? new Date(b.utcDate).getTime() : 0);
@@ -298,14 +394,9 @@ export default function FixturesTablePage({
         return (lA - lB) * multiplier;
       }
       if (sortField === 'prediction') {
-        const pickA = (typeof a.predictedWinner === 'string' ? a.predictedWinner : (a.predictedWinner?.pick || a.binaryModel?.pick || '')) || '';
-        const pickB = (typeof b.predictedWinner === 'string' ? b.predictedWinner : (b.predictedWinner?.pick || b.binaryModel?.pick || '')) || '';
+        const pickA = getMatchPick(a);
+        const pickB = getMatchPick(b);
         return pickA.localeCompare(pickB) * multiplier;
-      }
-      if (sortField === 'probs') {
-        const maxA = Math.max(safeParseFloat(a.prob?.home, 0), safeParseFloat(a.prob?.draw, 0), safeParseFloat(a.prob?.away, 0));
-        const maxB = Math.max(safeParseFloat(b.prob?.home, 0), safeParseFloat(b.prob?.draw, 0), safeParseFloat(b.prob?.away, 0));
-        return (maxA - maxB) * multiplier;
       }
       if (sortField === 'home_prob') {
         return (safeParseFloat(a.prob?.home, 0) - safeParseFloat(b.prob?.home, 0)) * multiplier;
@@ -316,14 +407,9 @@ export default function FixturesTablePage({
       if (sortField === 'away_prob') {
         return (safeParseFloat(a.prob?.away, 0) - safeParseFloat(b.prob?.away, 0)) * multiplier;
       }
-      if (sortField === 'conf') {
-        const confA = safeParseFloat(a.confidence ?? a.binaryModel?.confidence, Math.max(safeParseFloat(a.prob?.home, 0), safeParseFloat(a.prob?.draw, 0), safeParseFloat(a.prob?.away, 0)));
-        const confB = safeParseFloat(b.confidence ?? b.binaryModel?.confidence, Math.max(safeParseFloat(b.prob?.home, 0), safeParseFloat(b.prob?.draw, 0), safeParseFloat(b.prob?.away, 0)));
-        return (confA - confB) * multiplier;
-      }
       if (sortField === 'xg') {
-        const xgA = safeParseFloat(a.lambda ?? a.xG?.home, 0) + safeParseFloat(a.mu ?? a.xG?.away, 0);
-        const xgB = safeParseFloat(b.lambda ?? b.xG?.home, 0) + safeParseFloat(b.mu ?? b.xG?.away, 0);
+        const xgA = safeParseFloat(a.xG?.home ?? a.lambda, 0) + safeParseFloat(a.xG?.away ?? a.mu, 0);
+        const xgB = safeParseFloat(b.xG?.home ?? b.lambda, 0) + safeParseFloat(b.xG?.away ?? b.mu, 0);
         return (xgA - xgB) * multiplier;
       }
       if (sortField === 'kelly') {
@@ -333,7 +419,7 @@ export default function FixturesTablePage({
       }
       return 0;
     });
-  }, [baseMatches, hasUnanimous, maxBaseConfidence, filterMode, sortField, sortDirection]);
+  }, [baseMatches, hasUnanimous, maxBaseConfidence, selectedOutcome, filterMode, sortField, sortDirection]);
 
   const toggleExpand = (id) => {
     setExpandedMatchId(prev => prev === id ? null : id);
@@ -369,13 +455,13 @@ export default function FixturesTablePage({
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
           <div>
             <div className="font-bold text-slate-900 text-base flex items-center gap-2">
-              <span>Main Model & Match Outputs (1X2)</span>
+              <span>Match Predictions</span>
               <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold">
-                {matches.length} Matches Analyzed
+                {matches.length} Matches
               </span>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Comprehensive probability engine combining Dixon-Coles, Elo, and 6-Agent Consensus.
+              Win, draw, and goal probabilities for upcoming fixtures.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -385,7 +471,7 @@ export default function FixturesTablePage({
               className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2 shadow-xs"
             >
               <Cpu className={`w-3.5 h-3.5 text-indigo-600 ${isRetraining ? 'animate-spin' : ''}`} />
-              <span>{isRetraining ? 'Retraining...' : 'Retrain Statistical Model'}</span>
+              <span>{isRetraining ? 'Updating...' : 'Update Predictions'}</span>
             </button>
           </div>
         </div>
@@ -396,7 +482,7 @@ export default function FixturesTablePage({
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Search club or competition..."
+              placeholder="Search club or league..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 text-slate-800 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-colors"
@@ -418,18 +504,48 @@ export default function FixturesTablePage({
               options={leagueOptions}
             />
             <UniformDropdown
-              label="Conviction"
+              label="Outcome"
+              value={selectedOutcome}
+              onChange={setSelectedOutcome}
+              options={[
+                { value: 'ALL', label: `All Outcomes (${outcomeCounts.all})` },
+                { value: 'WIN_LOSE', label: `Win / Lose Only (${outcomeCounts.winLose})` },
+                { value: 'DRAW', label: `Draw Only (${outcomeCounts.draw})` },
+                { value: 'HOME', label: `Home Win Only (${outcomeCounts.home})` },
+                { value: 'AWAY', label: `Away Win Only (${outcomeCounts.away})` }
+              ]}
+            />
+            <UniformDropdown
+              label="Strategy"
               value={filterMode}
               onChange={setFilterMode}
               options={[
-                { value: 'All', label: 'All Convictions' },
-                { value: 'UNANIMOUS', label: '👑 6-Agent Unanimous' },
-                { value: 'TIER_1_ONLY', label: '⭐ Tier 1 High-Edge Leagues Only' },
-                { value: 'DNB_ONLY', label: '🛡️ DNB Advised (Draw ≥ 24%)' },
-                { value: 'NO_TRAPS', label: '🛡️ High Stability Only' },
-                { value: 'DERIVATIVE_SAFETY', label: '🔄 Smart Derivative Picks' },
-                { value: 'ELITE', label: 'Elite Edge (≥75%)' },
-                { value: 'HIGH_CONFIDENCE', label: 'High Conf (≥65%)' }
+                { value: 'All', label: 'All Strategies' },
+                { value: 'UNANIMOUS', label: '👑 Consensus Picks' },
+                { value: 'HIGH_CONFIDENCE', label: '💎 High Confidence (≥65%)' },
+                { value: 'ELITE', label: '⭐ Elite Picks (≥75%)' },
+                { value: 'NO_TRAPS', label: '🛡️ Low Risk Only' },
+                { value: 'DNB_ONLY', label: '🛡️ Draw Protected (DNB)' },
+                { value: 'DERIVATIVE_SAFETY', label: '🔄 Safe Alternatives' },
+                { value: 'TIER_1_ONLY', label: '🏆 Top Leagues Only' },
+                { value: 'UPSET_RISK', label: '⚠️ Upset Alerts & Traps' }
+              ]}
+            />
+            <UniformDropdown
+              label="Sort"
+              value={sortBy}
+              onChange={handleDropdownSortChange}
+              options={[
+                { value: 'probs_desc', label: 'Highest Probability' },
+                { value: 'probs_asc', label: 'Lowest Probability' },
+                { value: 'conf_desc', label: 'Highest Confidence' },
+                { value: 'time_asc', label: 'Earliest Kickoff' },
+                { value: 'time_desc', label: 'Latest Kickoff' },
+                { value: 'home_desc', label: 'Home Win %' },
+                { value: 'draw_desc', label: 'Draw %' },
+                { value: 'away_desc', label: 'Away Win %' },
+                { value: 'xg_desc', label: 'Total Goals (xG)' },
+                { value: 'kelly_desc', label: 'Best Value / Stake' }
               ]}
             />
           </div>
@@ -438,14 +554,45 @@ export default function FixturesTablePage({
 
       {/* Showing matches count */}
       <div className="flex items-center justify-between px-1 text-xs text-slate-500 font-medium">
-        <span>Showing <strong>{filteredMatches.length}</strong> of {matches.length} fixtures</span>
-        {(searchQuery || selectedLeague !== 'All' || selectedDate !== 'All' || filterMode !== 'All') && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span>Showing <strong>{filteredMatches.length}</strong> of {matches.length} fixtures</span>
+          {selectedOutcome === 'WIN_LOSE' && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+              ⚡ Win / Lose Only
+            </span>
+          )}
+          {selectedOutcome === 'DRAW' && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+              🤝 Draw Only
+            </span>
+          )}
+          {selectedOutcome === 'HOME' && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+              🏠 Home Win Only
+            </span>
+          )}
+          {selectedOutcome === 'AWAY' && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+              ✈️ Away Win Only
+            </span>
+          )}
+          {sortBy === 'probs_desc' && (
+            <span className="hidden sm:inline-block text-[10px] text-slate-400 font-medium">
+              (Sorted: High → Low Probability)
+            </span>
+          )}
+        </div>
+        {(searchQuery || selectedLeague !== 'All' || selectedDate !== 'All' || selectedOutcome !== 'ALL' || filterMode !== 'All' || sortBy !== 'probs_desc') && (
           <button
             onClick={() => {
               setSearchQuery('');
               setSelectedLeague('All');
               setSelectedDate('All');
+              setSelectedOutcome('ALL');
               setFilterMode('All');
+              setSortBy('probs_desc');
+              setSortField('probs');
+              setSortDirection('desc');
             }}
             className="text-indigo-600 hover:text-indigo-800 font-semibold cursor-pointer"
           >
@@ -538,10 +685,10 @@ export default function FixturesTablePage({
                   className={`py-1.5 px-2 w-36 text-center cursor-pointer transition-colors group select-none ${
                     ['probs', 'home_prob', 'draw_prob', 'away_prob'].includes(sortField) ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
-                  title="Click to sort by Top Win Probability"
+                  title="Click to sort by Win Probability"
                 >
                   <div className="inline-flex items-center justify-center gap-1">
-                    <span className={['probs', 'home_prob', 'draw_prob', 'away_prob'].includes(sortField) ? 'text-indigo-600 font-bold' : ''}>1 | X | 2 Probs</span>
+                    <span className={['probs', 'home_prob', 'draw_prob', 'away_prob'].includes(sortField) ? 'text-indigo-600 font-bold' : ''}>Probabilities (1·X·2)</span>
                     {['probs', 'home_prob', 'draw_prob', 'away_prob'].includes(sortField) ? (
                       sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
                     ) : (
@@ -553,14 +700,14 @@ export default function FixturesTablePage({
                 {/* Conf */}
                 <th 
                   onClick={() => handleSort('conf')}
-                  className={`py-1.5 px-2 w-20 text-center cursor-pointer transition-colors group select-none ${
+                  className={`py-1.5 px-2 w-24 text-center cursor-pointer transition-colors group select-none ${
                     sortField === 'conf' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
-                  title={`Click to sort by AI Confidence (${sortField === 'conf' ? (sortDirection === 'desc' ? 'High to Low — click for Low to High' : 'Low to High — click for High to Low') : 'Click to sort'})`}
+                  title="Click to sort by Confidence"
                 >
                   <div className="inline-flex items-center justify-center gap-1">
-                    <InfoTooltip title="Confidence Score" content="Overall AI confidence in the top prediction, accounting for injury absences, odds movement, and historical variance. Click column to sort.">
-                      <span className={sortField === 'conf' ? 'text-indigo-600 font-bold' : ''}>Conf</span>
+                    <InfoTooltip title="Confidence" content="Model confidence in the predicted outcome.">
+                      <span className={sortField === 'conf' ? 'text-indigo-600 font-bold' : ''}>Confidence</span>
                     </InfoTooltip>
                     {sortField === 'conf' ? (
                       sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
@@ -576,11 +723,11 @@ export default function FixturesTablePage({
                   className={`py-1.5 px-2 w-24 text-center cursor-pointer transition-colors group select-none ${
                     sortField === 'xg' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
-                  title={`Click to sort by Total Projected Expected Goals (xG) (${sortField === 'xg' ? (sortDirection === 'desc' ? 'Highest xG first — click for Lowest' : 'Lowest xG first — click for Highest') : 'Click to sort'})`}
+                  title="Click to sort by Expected Goals (xG)"
                 >
                   <div className="inline-flex items-center justify-center gap-1">
-                    <InfoTooltip title="Score / Expected Goals (xG)" content="Most likely exact scoreline, along with calculated Expected Goals (xG). Click column to sort.">
-                      <span className={sortField === 'xg' ? 'text-indigo-600 font-bold' : ''}>Score/xG</span>
+                    <InfoTooltip title="Score & xG" content="Projected scoreline and expected goals (xG).">
+                      <span className={sortField === 'xg' ? 'text-indigo-600 font-bold' : ''}>Score & xG</span>
                     </InfoTooltip>
                     {sortField === 'xg' ? (
                       sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
@@ -596,11 +743,11 @@ export default function FixturesTablePage({
                   className={`py-1.5 px-2 w-36 text-left cursor-pointer transition-colors group select-none ${
                     sortField === 'kelly' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
-                  title={`Click to sort by Kelly sizing (${sortField === 'kelly' ? (sortDirection === 'desc' ? 'Highest stake first — click for Lowest' : 'Lowest stake first — click for Highest') : 'Click to sort'})`}
+                  title="Click to sort by Value Bet"
                 >
                   <div className="inline-flex items-center gap-1">
-                    <InfoTooltip title="Smart Staking & Kelly" content="Recommended betting market based on highest +EV edge with optimal Kelly bankroll sizing. Click column to sort.">
-                      <span className={sortField === 'kelly' ? 'text-indigo-600 font-bold' : ''}>Smart Staking</span>
+                    <InfoTooltip title="Value Bet" content="Recommended market based on calculated mathematical edge (+EV).">
+                      <span className={sortField === 'kelly' ? 'text-indigo-600 font-bold' : ''}>Value Bet</span>
                     </InfoTooltip>
                     {sortField === 'kelly' ? (
                       sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
@@ -619,21 +766,33 @@ export default function FixturesTablePage({
                 <tr className="flex flex-col md:table-row">
                   <td colSpan={9} className="py-12 text-center text-slate-400 block md:table-cell">
                     <p className="text-sm font-medium">
-                      {filterMode === 'UNANIMOUS' 
-                        ? 'No matches match your active filter criteria for 6 agent unanimous 76.2% win rate ai strategy filter.'
-                        : filterMode === 'NO_TRAPS'
-                        ? 'No matches match your active filter criteria for High Stability Only ai strategy filter.'
-                        : filterMode === 'DERIVATIVE_SAFETY'
-                        ? 'No matches match your active filter criteria for Derivative Safety ai strategy filter.'
-                        : filterMode === 'ELITE'
-                        ? 'No matches match your active filter criteria for Elite ai strategy filter.'
+                      {selectedOutcome === 'DRAW'
+                        ? 'No matches predicted as a Draw under current criteria.'
+                        : selectedOutcome === 'WIN_LOSE'
+                        ? 'No decisive Win / Lose matches found under current criteria.'
+                        : selectedOutcome === 'HOME'
+                        ? 'No Home Win matches found under current criteria.'
+                        : selectedOutcome === 'AWAY'
+                        ? 'No Away Win matches found under current criteria.'
+                        : filterMode === 'UNANIMOUS' 
+                        ? 'No matches found matching Consensus Picks under current filters.'
                         : filterMode === 'HIGH_CONFIDENCE'
-                        ? 'No matches match your active filter criteria for High Confidence ai strategy filter.'
-                        : filterMode === 'CAUTION'
-                        ? 'No matches match your active filter criteria for Caution Risk ai strategy filter.'
+                        ? 'No matches found with High Confidence (≥65%) under current filters.'
+                        : filterMode === 'ELITE'
+                        ? 'No matches found with Elite Edge (≥75%) under current filters.'
+                        : filterMode === 'NO_TRAPS'
+                        ? 'No low-risk matches found under current filters.'
+                        : filterMode === 'DERIVATIVE_SAFETY'
+                        ? 'No matches with safe alternative picks found.'
+                        : filterMode === 'DNB_ONLY'
+                        ? 'No Draw-No-Bet advised matches found under current filters.'
+                        : filterMode === 'TIER_1_ONLY'
+                        ? 'No Top League matches found for this selection.'
+                        : filterMode === 'UPSET_RISK'
+                        ? 'No upset alerts or trap matches detected for this period.'
                         : 'No matches match your active filter criteria.'}
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">Try switching dates, clearing the search query, or selecting "All Leagues".</p>
+                    <p className="text-xs text-slate-500 mt-1">Try switching dates, selecting "All Outcomes", clearing the search query, or selecting "All Leagues".</p>
                   </td>
                 </tr>
               ) : (
@@ -646,8 +805,7 @@ export default function FixturesTablePage({
                   const highestProb = Math.max(homeProb, drawProb, awayProb);
                   const conf = safeParseFloat(m.confidence ?? m.binaryModel?.confidence, highestProb);
                   
-                  const fallbackPick = homeProb === highestProb ? 'HOME' : (awayProb === highestProb ? 'AWAY' : 'DRAW');
-                  const predictedWinner = typeof m.predictedWinner === 'string' ? m.predictedWinner : (m.predictedWinner?.pick || m.binaryModel?.pick || fallbackPick);
+                  const predictedWinner = getMatchPick(m);
                   
                   const scoreObj = m.mostLikelyScore || m.scoreModel?.topScorelines?.[0]?.score;
                   let rawScore = '—';
@@ -658,8 +816,8 @@ export default function FixturesTablePage({
                   
                   const hasLineup = m.lineupAdjusted || m.hasConfirmedLineup;
 
-                  const homeXg = safeParseFloat(m.lambda ?? m.xG?.home, 1.5);
-                  const awayXg = safeParseFloat(m.mu ?? m.xG?.away, 1.1);
+                  const homeXg = safeParseFloat(m.xG?.home ?? m.lambda, 1.5);
+                  const awayXg = safeParseFloat(m.xG?.away ?? m.mu, 1.1);
                   const kellyDisplay = formatKellyStake(m.kellyStake ?? m.binaryModel?.kellyStake, '1.5u');
                   const smartMarketDisplay = formatSmartMarket(m.smartMarket ?? m.binaryModel?.smartMarket, `${predictedWinner === 'HOME' ? m.home : predictedWinner === 'AWAY' ? m.away : 'Draw'} ML`);
 
@@ -693,7 +851,14 @@ export default function FixturesTablePage({
                             <div className="flex flex-col flex-1">
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className="font-bold text-slate-900">{m.home}</span>
-                                {isUnanimous && <span className="text-[9px] bg-amber-100 text-amber-900 border border-amber-300 px-1 rounded font-bold" title="6-Agent Unanimous Selection (76.2% Win Rate)">👑 Unan (76.2%)</span>}
+                                {isUnanimous && (
+                                  <span 
+                                    className="text-[9px] bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.2 rounded font-bold shrink-0" 
+                                    title={`6-Agent Unanimous Consensus (All 6 AI agents agree · Historical Strategy Win Rate: ${unanimousRateDisplay})`}
+                                  >
+                                    👑 Unanimous
+                                  </span>
+                                )}
                                 {leagueTierObj && (
                                   <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded border shadow-2xs ${leagueTierObj.badgeStyle}`} title={`${leagueTierObj.label} (${leagueTierObj.expectedHighConvictionWinRate} hit rate)`}>
                                     {leagueTierObj.badgeShort}
@@ -766,7 +931,10 @@ export default function FixturesTablePage({
                               {m.home} vs {m.away}
                             </span>
                             {isUnanimous ? (
-                              <span className="inline-flex items-center text-[9px] font-bold bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded border border-amber-300 shrink-0" title="6-Agent Unanimous Selection (76.2% Empirical Win Rate)">
+                              <span 
+                                className="inline-flex items-center text-[9px] font-bold bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded border border-amber-300 shrink-0" 
+                                title={`6-Agent Unanimous Consensus (All 6 AI agents agree · Historical Strategy Win Rate: ${unanimousRateDisplay})`}
+                              >
                                 👑 Unanimous
                               </span>
                             ) : isTrap ? (

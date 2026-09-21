@@ -24,6 +24,25 @@ export const LEAGUE_PREDICTABILITY_TIERS = {
       'Scottish Premiership', 'sco.1',
       'German Bundesliga', 'Bundesliga', 'ger.1',
       'UEFA Champions League', 'Champions League', 'uefa.champions',
+      'DFL-Supercup', 'ger.super_cup',
+      'FA Community Shield', 'eng.charity',
+      'UEFA Super Cup', 'uefa.super_cup',
+      'CONMEBOL Recopa', 'conmebol.recopa',
+      'UEFA European Championship', 'uefa.euro',
+      'UEFA European Championship Qualifying', 'uefa.euroq',
+      'FIFA World Cup', 'fifa.world',
+      'Concacaf Champions Cup', 'concacaf.champions',
+      'CAF Champions League', 'caf.champions',
+      'Copa Libertadores', 'conmebol.libertadores',
+      'AFC Champions League', 'afc.champions',
+      'English FA Cup', 'FA Cup', 'eng.fa',
+      'English Carabao Cup', 'Carabao Cup', 'eng.league_cup',
+      'DFB-Pokal', 'ger.dfb_pokal',
+      'Copa del Rey', 'esp.copa_del_rey',
+      'Coppa Italia', 'ita.coppa_italia',
+      'Coupe de France', 'fra.coupe_de_france',
+      'KNVB Beker', 'ned.cup',
+      'Czech First League', 'cze.1',
       'Greek Super League', 'gre.1',
       'Austrian Bundesliga', 'aut.1'
     ]
@@ -53,7 +72,10 @@ export const LEAGUE_PREDICTABILITY_TIERS = {
       'Norwegian Eliteserien', 'nor.1',
       'Swedish Allsvenskan', 'swe.1',
       'UEFA Europa League', 'uefa.europa',
-      'UEFA Conference League', 'uefa.europa.conf'
+      'UEFA Conference League', 'uefa.europa.conf',
+      'Copa Sudamericana', 'conmebol.sudamericana',
+      'Eerste Divisie', 'ned.2',
+      'A-League', 'aus.1'
     ]
   },
   // Tier 3: High Parity / Volatile (Empirical Conviction Hit Rate: <55%)
@@ -71,17 +93,11 @@ export const LEAGUE_PREDICTABILITY_TIERS = {
     description: 'High variance & high parity. Draw-No-Bet or Double Chance mandatory to insulate bankroll.',
     leagues: [
       'English Championship', 'Championship', 'eng.2',
-      'English League One', 'League One', 'eng.3',
-      'English League Two', 'League Two', 'eng.4',
       'Spanish LaLiga 2', 'LaLiga 2', 'esp.2',
-      'Italian Serie B', 'Serie B', 'ita.2',
       'German 2. Bundesliga', '2. Bundesliga', 'ger.2',
-      'French Ligue 2', 'Ligue 2', 'fra.2',
-      'English FA Cup', 'FA Cup', 'eng.fa',
-      'English Carabao Cup', 'Carabao Cup', 'eng.league_cup',
-      'Copa del Rey', 'esp.copa_del_rey',
-      'DFB-Pokal', 'ger.dfb_pokal',
-      'Coppa Italia', 'ita.coppa_italia'
+      'Brasileirão', 'bra.1',
+      'Liga MX', 'mex.1',
+      'Japanese J1 League', 'jpn.1'
     ]
   }
 };

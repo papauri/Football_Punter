@@ -108,10 +108,14 @@ export default function ResultsProofPage({
       const hG = m.homeScore ?? m.goals?.home;
       const aG = m.awayScore ?? m.goals?.away;
       const actualWinner = m.actualWinner || (hG != null && aG != null ? (hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW') : 'DRAW');
-      const isHit = m.isHit !== undefined ? Boolean(m.isHit) : (m.predictedWinner ? actualWinner === m.predictedWinner : false);
+      const isHit = m.isHit === true;
+      const isMiss = m.isHit === false;
+      const isPush = m.isPush || (m.isHit === null && m.smartMarket?.pick?.includes('DNB') && actualWinner === 'DRAW');
+      const isPass = m.isPass || (m.isHit === null && m.smartMarket?.pick === 'PASS');
 
       if (statusFilter === 'HITS' && !isHit) return false;
-      if (statusFilter === 'MISSES' && isHit) return false;
+      if (statusFilter === 'MISSES' && !isMiss) return false;
+      if (statusFilter === 'PUSHES' && !isPush && !isPass) return false;
 
       return true;
     }).sort((a, b) => {
@@ -154,18 +158,35 @@ export default function ResultsProofPage({
     const validMatches = historicalResults.filter(m => {
       return m.isCompleted || m.status === 'FT' || m.status?.includes('FT') || m.status?.includes('Final') || m.actualScore || (m.homeScore != null && m.awayScore != null);
     });
-    if (validMatches.length === 0) return { total: 0, hits: 0, misses: 0, hitRate: '0.0' };
+    if (validMatches.length === 0) return { total: 0, hits: 0, misses: 0, pushes: 0, passes: 0, activeTotal: 0, hitRate: '0.0' };
     let hits = 0;
+    let misses = 0;
+    let pushes = 0;
+    let passes = 0;
+
     validMatches.forEach(m => {
       const hG = m.homeScore ?? m.goals?.home;
       const aG = m.awayScore ?? m.goals?.away;
       const actualWinner = m.actualWinner || (hG != null && aG != null ? (hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW') : 'DRAW');
-      const isHit = m.isHit !== undefined ? Boolean(m.isHit) : (m.predictedWinner ? actualWinner === m.predictedWinner : false);
-      if (isHit) hits++;
+      if (m.isHit === true) {
+        hits++;
+      } else if (m.isHit === false) {
+        misses++;
+      } else if (m.isPush || (m.smartMarket?.pick?.includes('DNB') && actualWinner === 'DRAW')) {
+        pushes++;
+      } else if (m.isPass || m.smartMarket?.pick === 'PASS') {
+        passes++;
+      } else {
+        // Fallback to binary pick if isHit is completely undefined
+        const binaryHit = m.predictedWinner ? actualWinner === m.predictedWinner : false;
+        if (binaryHit) hits++;
+        else misses++;
+      }
     });
     const total = validMatches.length;
-    const hitRate = total > 0 ? safeToFixed((hits / total) * 100, 1) : '0.0';
-    return { total, hits, misses: total - hits, hitRate };
+    const activeTotal = hits + misses;
+    const hitRate = activeTotal > 0 ? safeToFixed((hits / activeTotal) * 100, 1) : (total > 0 ? safeToFixed((hits / total) * 100, 1) : '0.0');
+    return { total, hits, misses, pushes, passes, activeTotal, hitRate };
   }, [historicalResults]);
 
   return (
@@ -193,6 +214,10 @@ export default function ResultsProofPage({
               <div className="text-sm font-bold font-mono text-slate-800">{stats.total}</div>
             </div>
             <div className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-center min-w-[85px]">
+              <div className="text-[10px] text-slate-400 font-bold uppercase">Active Wagers</div>
+              <div className="text-sm font-bold font-mono text-slate-800">{stats.activeTotal}</div>
+            </div>
+            <div className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-center min-w-[85px]">
               <div className="text-[10px] text-slate-400 font-bold uppercase">Correct Hits</div>
               <div className="text-sm font-bold font-mono text-emerald-700">{stats.hits}</div>
             </div>
@@ -201,9 +226,10 @@ export default function ResultsProofPage({
               <div className="text-sm font-bold font-mono text-indigo-700">{stats.hitRate}%</div>
             </div>
             <div className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-center min-w-[85px]">
-              <div className="text-[10px] text-slate-400 font-bold uppercase">Hits / Misses</div>
+              <div className="text-[10px] text-slate-400 font-bold uppercase">Record</div>
               <div className="text-sm font-bold font-mono text-slate-800">
                 <span className="text-emerald-700">{stats.hits}W</span> - <span className="text-rose-700">{stats.misses}L</span>
+                {stats.pushes > 0 && <span className="text-amber-600"> - {stats.pushes}P</span>}
               </div>
             </div>
           </div>
@@ -247,8 +273,9 @@ export default function ResultsProofPage({
               onChange={setStatusFilter}
               options={[
                 { value: 'ALL', label: 'All Audited Outcomes' },
-                { value: 'HITS', label: 'Verified Hits (Green)' },
-                { value: 'MISSES', label: 'Audited Misses (Red)' }
+                { value: 'HITS', label: `Verified Hits (${stats.hits})` },
+                { value: 'MISSES', label: `Audited Misses (${stats.misses})` },
+                { value: 'PUSHES', label: `Pushes & Passed (${stats.pushes + stats.passes})` }
               ]}
             />
           </div>
@@ -398,7 +425,10 @@ export default function ResultsProofPage({
                   const hG = m.homeScore ?? m.goals?.home;
                   const aG = m.awayScore ?? m.goals?.away;
                   const actualWinner = m.actualWinner || (hG != null && aG != null ? (hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW') : 'DRAW');
-                  const isHit = m.isHit !== undefined ? Boolean(m.isHit) : (m.predictedWinner ? actualWinner === m.predictedWinner : false);
+                  const isHit = m.isHit === true;
+                  const isMiss = m.isHit === false;
+                  const isPush = m.isPush || (m.isHit === null && m.smartMarket?.pick?.includes('DNB') && actualWinner === 'DRAW');
+                  const isPass = m.isPass || (m.isHit === null && m.smartMarket?.pick === 'PASS');
                   const actualScore = formatScore(
                     m.actualScore ||
                     (hG != null && aG != null ? `${hG}-${aG}` : null) ||
@@ -424,9 +454,13 @@ export default function ResultsProofPage({
                           <span className={`inline-block px-1.5 py-0.5 rounded font-bold text-[10px] font-mono border ${
                             isHit 
                               ? 'bg-emerald-100 text-emerald-800 border-emerald-300' 
+                              : isPush
+                              ? 'bg-amber-100 text-amber-800 border-amber-300'
+                              : isPass
+                              ? 'bg-slate-100 text-slate-700 border-slate-300'
                               : 'bg-rose-100 text-rose-800 border-rose-300'
                           }`}>
-                            {isHit ? 'HIT' : 'MISS'}
+                            {isHit ? 'HIT' : isPush ? 'PUSH' : isPass ? 'PASS' : 'MISS'}
                           </span>
                         </div>
                         <div className="flex justify-between items-center mb-3">
@@ -498,14 +532,18 @@ export default function ResultsProofPage({
                         </div>
                       </td>
 
-                      {/* Pick Res Hit/Miss */}
+                      {/* Pick Res Hit/Miss/Push/Pass */}
                       <td className="hidden md:table-cell py-1.5 px-2 text-center">
                         <span className={`inline-block px-2.5 py-0.5 rounded font-bold text-[11px] border ${
                           isHit
                             ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                            : isPush
+                            ? 'bg-amber-100 text-amber-800 border-amber-300'
+                            : isPass
+                            ? 'bg-slate-100 text-slate-700 border-slate-300'
                             : 'bg-rose-100 text-rose-800 border-rose-300'
                         }`}>
-                          {isHit ? 'HIT' : 'MISS'}
+                          {isHit ? 'HIT' : isPush ? 'PUSH' : isPass ? 'PASS' : 'MISS'}
                         </span>
                       </td>
 

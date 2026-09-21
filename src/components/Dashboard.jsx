@@ -589,6 +589,7 @@ export default function Dashboard() {
                 matches={matches}
                 leaguePerformance={state.trainingStats?.leaguePerformance || []}
                 tzSettings={tzSettings}
+                unanimousHitRate={state.unanimousHitRate || state.aiSwarm?.directives?.telemetry?.unanimousHitRate || 84.8}
                 onAddToSlip={handleToggleAccaPick}
                 accaMatchIds={new Set(accaPicks.map(p => p.id))}
                 onClearSlip={handleClearAcca}

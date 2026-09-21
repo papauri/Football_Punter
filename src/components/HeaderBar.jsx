@@ -33,20 +33,20 @@ export default function HeaderBar({
 }) {
   const PAGE_TITLES = {
     fixtures: 'Match Predictions',
-    props: 'Props & Specials (Corners/Cards)',
+    props: 'Corners & Cards',
     scores: 'Goals & Totals',
-    binary: 'Value Bets & Kelly',
-    swarm: 'AI Swarm Consensus',
-    acca: 'Bet Slips & Accumulators',
-    'deep-research': 'Match AI Research',
-    lineups: 'Starting XI Lineups',
-    results: 'Past Results & Proof',
-    leagues: 'League Stats & Profiles',
-    tuning: 'Model Settings & Tuning',
-    patches: 'System Updates & Learning',
-    autonomous: 'System Updates & Learning',
-    timezone: 'Timezone Settings',
-    logs: 'System Activity Logs'
+    binary: 'Value Bets',
+    swarm: 'Model Consensus',
+    acca: 'Bet Slips',
+    'deep-research': 'Match Research',
+    lineups: 'Starting Lineups',
+    results: 'Past Results',
+    leagues: 'League Stats',
+    tuning: 'Model Settings',
+    patches: 'Model Updates',
+    autonomous: 'Model Updates',
+    timezone: 'Timezone',
+    logs: 'Activity Logs'
   };
 
   const handlePageSelect = (val) => {
@@ -169,14 +169,14 @@ export default function HeaderBar({
             <span className="truncate max-w-[130px] font-mono">{tzLabel || 'UTC'}</span>
           </button>
 
-          {/* Unanimous Strike Rate Badge */}
+          {/* Consensus Win Rate Badge */}
           <button
             onClick={() => handlePageSelect('swarm')}
             className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-mono transition-colors cursor-pointer shadow-2xs shrink-0"
-            title="Empirical hit rate on 6-agent unanimous consensus picks (Click to view AI Swarm Consensus)"
+            title="Historical win rate on consensus picks"
           >
             <span>👑</span>
-            <span className="hidden sm:inline font-sans font-semibold text-slate-700">Unanimous Rate:</span>
+            <span className="hidden sm:inline font-sans font-semibold text-slate-700">Win Rate:</span>
             <span className="font-extrabold text-amber-700">
               {typeof state?.unanimousHitRate === 'number' 
                 ? `${state.unanimousHitRate.toFixed(1)}%` 
@@ -184,23 +184,22 @@ export default function HeaderBar({
             </span>
           </button>
 
-          {/* Super Agent Dual-Engine Status Pill */}
+          {/* AI / Model Status Pill */}
           <div 
             className="hidden lg:flex items-center text-[10px] font-semibold select-none shrink-0"
             title={state?.hasActiveAiKey 
-              ? "Super Agent (Gemini AI) is ONLINE: providing qualitative news synthesis and supervisory research over the deterministic core." 
-              : "Deterministic Mathematical Engine (Dixon-Coles + 6 Councils) is 100% Active. Super Agent is on Standby (Offline-Safe)."}
+              ? "AI Assistant is active with real-time news and match insights." 
+              : "Statistical models are active."}
           >
             {state?.hasActiveAiKey ? (
               <span className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-purple-50 text-purple-800 border border-purple-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-purple-600 animate-pulse"></span>
-                <span>Super Agent: Online</span>
+                <span>AI Assistant: Online</span>
               </span>
             ) : (
               <span className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                <span>Deterministic Core Active</span>
-                <span className="text-slate-400 font-normal">(Super Agent Standby)</span>
+                <span>Models: Active</span>
               </span>
             )}
           </div>
@@ -208,15 +207,35 @@ export default function HeaderBar({
           {/* Accuracy Badge */}
           {overallAccuracy && (
             <div className="hidden xl:flex items-center px-2 py-1 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono shadow-sm">
-              <span>Model Accuracy: {typeof overallAccuracy === 'number' ? `${overallAccuracy.toFixed(1)}%` : overallAccuracy.toString().includes('%') ? overallAccuracy : `${overallAccuracy}%`}</span>
+              <span>Accuracy: {typeof overallAccuracy === 'number' ? `${overallAccuracy.toFixed(1)}%` : overallAccuracy.toString().includes('%') ? overallAccuracy : `${overallAccuracy}%`}</span>
             </div>
           )}
 
           {/* Matches Count Badge */}
           <div className="flex items-center px-2 py-1 rounded-md text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
             <span className="font-mono font-semibold">{matchCount}</span>
-            <span className="ml-1 hidden sm:inline text-slate-500">Fixtures</span>
+            <span className="ml-1 hidden sm:inline text-slate-500">Matches</span>
           </div>
+
+          {/* Bet Slip Quick Access Pill */}
+          <button
+            onClick={() => handlePageSelect('acca')}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition-all cursor-pointer shadow-2xs border ${
+              activePage === 'acca'
+                ? 'bg-indigo-600 text-white border-indigo-700'
+                : accaCount > 0
+                  ? 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
+                  : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-200'
+            }`}
+            title="View bet slip"
+          >
+            <span>Slip</span>
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+              activePage === 'acca' ? 'bg-indigo-800 text-white' : accaCount > 0 ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'
+            }`}>
+              {accaCount}
+            </span>
+          </button>
 
           {/* Refresh Button */}
           <button

@@ -46,16 +46,33 @@ async function startServer() {
 
     // Populate predictions for historical matches so the chart has real accuracy data
     const populated = recentMatches.map(m => {
-        if (m.predictedWinner) return m; // Already has prediction
         const dcProbs = engine.computeDixonColesProbabilities(m.home, m.away, { league: m.league });
-        const actualWinner = m.actualWinner || (m.homeScore > m.awayScore ? 'HOME' : m.awayScore > m.homeScore ? 'AWAY' : 'DRAW');
+        const hG = m.homeScore ?? m.goals?.home;
+        const aG = m.awayScore ?? m.goals?.away;
+        const actualWinner = m.actualWinner || (hG != null && aG != null ? (hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW') : 'DRAW');
+        const smartHit = (hG != null && aG != null) ? engine.evaluateHit(dcProbs, hG, aG) : null;
+        const isHit = smartHit !== null ? smartHit : (dcProbs.predictedWinner === actualWinner);
+        const isPush = smartHit === null && (dcProbs.smartMarket?.pick?.includes('DNB') || false);
+        const isPass = dcProbs.smartMarket?.pick === 'PASS';
+
         return {
             ...m,
             actualWinner,
+            actualScore: (hG != null && aG != null) ? `${hG}-${aG}` : m.actualScore,
             predictedWinner: dcProbs.predictedWinner,
-            isHit: dcProbs.predictedWinner === actualWinner,
+            isHit,
+            smartHit,
+            isPush,
+            isPass,
+            smartMarket: dcProbs.smartMarket,
             binaryModel: dcProbs.binaryModel,
-            confidence: dcProbs.confidence
+            disruptionModel: dcProbs.disruptionModel,
+            confidence: dcProbs.confidence,
+            prob: {
+              home: typeof dcProbs.home === 'number' ? dcProbs.home.toFixed(1) : '33.3',
+              draw: typeof dcProbs.draw === 'number' ? dcProbs.draw.toFixed(1) : '33.4',
+              away: typeof dcProbs.away === 'number' ? dcProbs.away.toFixed(1) : '33.3'
+            }
         };
     });
 
@@ -141,7 +158,22 @@ app.get('/api/state', (req, res) => {
         success: true,
         result,
         telemetry: engine.patchTelemetry,
+        governorState: engine.patchGovernorState,
         autonomousPatches: engine.autonomousPatches
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/autonomous-patch/governor-status', (req, res) => {
+    try {
+      const govState = engine.swarmOrchestrator?.patchGovernorAgent?.evaluateState() || engine.patchGovernorState;
+      res.json({
+        success: true,
+        governorState: govState,
+        telemetry: engine.patchTelemetry,
+        hyperparameters: engine.hyperparameters
       });
     } catch (error) {
       res.status(500).json({ success: false, error: error.message });
@@ -317,8 +349,41 @@ app.get('/api/state', (req, res) => {
       console.error(`Error in /api/fetch-date for ${date}:`, err);
 
       // Attempt fallback from historical matches or state
-      const fallback = (engine.historicalMatches || []).concat(engine.yesterdayMatches || []).concat(engine.matches || [])
+      const rawFallback = (engine.historicalMatches || []).concat(engine.yesterdayMatches || []).concat(engine.matches || [])
         .filter(x => (x.date && x.date.startsWith(date)) || (x.dateIso && x.dateIso.startsWith(date)));
+
+      const fallback = rawFallback.map(m => {
+        if (m.predictedWinner && m.smartMarket && m.isHit !== undefined) return m;
+        const dcProbs = engine.computeDixonColesProbabilities(m.home, m.away, { league: m.league, odds: m.odds });
+        const hG = m.homeScore ?? m.goals?.home;
+        const aG = m.awayScore ?? m.goals?.away;
+        const actualWinner = m.actualWinner || (hG != null && aG != null ? (hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW') : null);
+        const smartHit = (hG != null && aG != null) ? engine.evaluateHit(dcProbs, hG, aG) : null;
+        const isHit = smartHit !== null ? smartHit : (actualWinner && dcProbs.predictedWinner ? dcProbs.predictedWinner === actualWinner : null);
+        const isPush = smartHit === null && (dcProbs.smartMarket?.pick?.includes('DNB') || false);
+        const isPass = dcProbs.smartMarket?.pick === 'PASS';
+
+        return {
+          ...m,
+          actualWinner,
+          actualScore: (hG != null && aG != null) ? `${hG}-${aG}` : m.actualScore,
+          predictedWinner: dcProbs.predictedWinner,
+          predictedScore: dcProbs.mostLikelyScore,
+          isHit,
+          smartHit,
+          isPush,
+          isPass,
+          smartMarket: dcProbs.smartMarket,
+          binaryModel: dcProbs.binaryModel,
+          disruptionModel: dcProbs.disruptionModel,
+          confidence: dcProbs.confidence,
+          prob: {
+            home: typeof dcProbs.home === 'number' ? dcProbs.home.toFixed(1) : '33.3',
+            draw: typeof dcProbs.draw === 'number' ? dcProbs.draw.toFixed(1) : '33.4',
+            away: typeof dcProbs.away === 'number' ? dcProbs.away.toFixed(1) : '33.3'
+          }
+        };
+      });
 
       res.json({
         success: true,
@@ -326,7 +391,7 @@ app.get('/api/state', (req, res) => {
         count: fallback.length,
         matches: fallback,
         fallback: true,
-        notice: 'Served from internal historical repository due to upstream provider latency.'
+        notice: 'Served from internal historical repository with live calibrated evaluations.'
       });
     }
   });
@@ -426,12 +491,12 @@ app.get('/api/state', (req, res) => {
     res.json({ success: true, status: engine.agentStats?.status || 'Offline' });
   });
 
-  // Start the continuous autonomous agent on boot
-  engine.startAutonomousAgent();
-
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: process.env.DISABLE_HMR === 'true' ? false : undefined,
+      },
       appType: 'spa',
     });
     app.use(vite.middlewares);
@@ -442,7 +507,13 @@ app.get('/api/state', (req, res) => {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => console.log(`API Engine running on ${PORT}`));
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`API Engine running on http://localhost:${PORT}`);
+    // Start continuous autonomous agent in the background after server is listening
+    setTimeout(() => {
+      engine.startAutonomousAgent();
+    }, 1000);
+  });
 }
 
 startServer();

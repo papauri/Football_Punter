@@ -17,29 +17,36 @@ export default function PerformanceChart({ historicalResults = [] }) {
 
     // Group by date
     const dailyStats = historicalResults.reduce((acc, m) => {
-      if (!m.date) return acc;
-      const dateStr = typeof m.date === 'string' ? m.date.slice(0, 10) : new Date(m.timestamp || m.date).toISOString().slice(0, 10);
+      if (!m.date && !m.dateIso) return acc;
+      const rawDate = m.dateIso || m.date;
+      const dateStr = typeof rawDate === 'string' ? rawDate.slice(0, 10) : new Date(m.timestamp || rawDate).toISOString().slice(0, 10);
       
       if (!acc[dateStr]) {
-        acc[dateStr] = { date: dateStr, total: 0, hits: 0, confidenceSum: 0 };
+        acc[dateStr] = { date: dateStr, total: 0, activeWagers: 0, hits: 0, pushes: 0, passes: 0, confidenceSum: 0 };
       }
       
-      const predictedScore = `${m.homeScore || 0}-${m.awayScore || 0}`;
-      let predictedWinner = 'DRAW';
-      if ((m.homeScore || 0) > (m.awayScore || 0)) predictedWinner = 'HOME';
-      else if ((m.awayScore || 0) > (m.homeScore || 0)) predictedWinner = 'AWAY';
-      
-      if (m.binaryModel && m.binaryModel.pick) {
-         predictedWinner = m.binaryModel.pick;
-      } else if (m.predictedWinner) {
-         predictedWinner = m.predictedWinner;
-      }
-      
-      const isHit = m.isHit !== undefined ? Boolean(m.isHit) : (m.actualWinner === predictedWinner);
-      const confidence = m.confidence || 75;
+      const isHit = m.isHit === true;
+      const isMiss = m.isHit === false;
+      const isPush = m.isPush || (m.isHit === null && m.smartMarket?.pick?.includes('DNB'));
+      const isPass = m.isPass || (m.isHit === null && m.smartMarket?.pick === 'PASS');
+      const confidence = m.confidence ? parseFloat(m.confidence) : 70;
 
       acc[dateStr].total += 1;
-      if (isHit) acc[dateStr].hits += 1;
+      if (isHit) {
+        acc[dateStr].hits += 1;
+        acc[dateStr].activeWagers += 1;
+      } else if (isMiss) {
+        acc[dateStr].activeWagers += 1;
+      } else if (isPush) {
+        acc[dateStr].pushes += 1;
+      } else if (isPass) {
+        acc[dateStr].passes += 1;
+      } else {
+        const fallbackHit = m.isHit !== undefined ? Boolean(m.isHit) : (m.actualWinner && m.predictedWinner ? m.actualWinner === m.predictedWinner : false);
+        if (fallbackHit) acc[dateStr].hits += 1;
+        acc[dateStr].activeWagers += 1;
+      }
+
       acc[dateStr].confidenceSum += confidence;
 
       return acc;
@@ -49,12 +56,17 @@ export default function PerformanceChart({ historicalResults = [] }) {
     const sortedDates = Object.values(dailyStats).sort((a, b) => a.date.localeCompare(b.date));
     
     return sortedDates.map((day) => {
-      const winRate = day.total > 0 ? (day.hits / day.total) * 100 : 0;
+      const activeCount = day.activeWagers > 0 ? day.activeWagers : day.total;
+      const winRate = activeCount > 0 ? (day.hits / activeCount) * 100 : 0;
       return {
         date: day.date,
         shortDate: day.date.slice(5).replace('-', '/'),
         winRate: winRate,
         volume: day.total,
+        activeWagers: day.activeWagers,
+        hits: day.hits,
+        pushes: day.pushes,
+        passes: day.passes,
         avgConfidence: day.total > 0 ? day.confidenceSum / day.total : 0
       };
     }).slice(-30); // Last 30 days maximum
@@ -70,26 +82,88 @@ export default function PerformanceChart({ historicalResults = [] }) {
   }
 
   // Calculate overall metrics for the visible period
+  const rawStats = useMemo(() => {
+    let rawHits = 0;
+    let total = 0;
+    let hits = 0;
+    let misses = 0;
+    let pushes = 0;
+    let passes = 0;
+
+    (historicalResults || []).forEach(m => {
+      const hG = m.homeScore ?? m.goals?.home;
+      const aG = m.awayScore ?? m.goals?.away;
+      if (hG == null || aG == null) return;
+      total++;
+      const actualWinner = m.actualWinner || (hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW');
+      if (m.predictedWinner && m.predictedWinner === actualWinner) rawHits++;
+
+      if (m.isHit === true) hits++;
+      else if (m.isHit === false) misses++;
+      else if (m.isPush || (m.smartMarket?.pick?.includes('DNB') && actualWinner === 'DRAW')) pushes++;
+      else if (m.isPass || m.smartMarket?.pick === 'PASS') passes++;
+    });
+
+    const activeWagers = hits + misses;
+    const smartWinRate = activeWagers > 0 ? (hits / activeWagers) * 100 : 0;
+    const rawRate = total > 0 ? (rawHits / total) * 100 : 0;
+    const passRate = total > 0 ? (passes / total) * 100 : 0;
+
+    return { total, rawHits, rawRate, hits, misses, pushes, passes, activeWagers, smartWinRate, passRate };
+  }, [historicalResults]);
+
   const totalMatches = chartData.reduce((sum, d) => sum + d.volume, 0);
-  const avgWinRate = chartData.reduce((sum, d) => sum + (d.winRate * d.volume), 0) / (totalMatches || 1);
+  const avgWinRate = rawStats.smartWinRate || (chartData.reduce((sum, d) => sum + (d.winRate * d.volume), 0) / (totalMatches || 1));
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl shadow-xs p-5">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
         <div>
-          <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+          <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-indigo-600" />
-            30-Day Model Trajectory
+            30-Day Model Trajectory &amp; Calibration Audit
           </h3>
-          <p className="text-[11px] text-slate-500 mt-1">Rolling daily win rate accuracy</p>
+          <p className="text-xs text-slate-500 mt-1">
+            Rolling daily win rate accuracy on recommended plays across audited global fixtures
+          </p>
         </div>
         
-        <div className="mt-3 sm:mt-0 flex gap-4">
-          <div className="text-right">
-            <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">30-Day Avg</div>
-            <div className="text-lg font-black text-emerald-600 font-mono flex items-center justify-end gap-1">
-              <Crosshair className="w-4 h-4" />
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="bg-emerald-50/60 border border-emerald-200 px-3.5 py-1.5 rounded-lg text-right">
+            <div className="text-[10px] text-emerald-800 font-semibold uppercase tracking-wider flex items-center justify-end gap-1">
+              <span>Smart Strike Rate</span>
+              <span className="text-[9px] px-1 py-0.2 bg-emerald-200 text-emerald-900 rounded font-bold">Recommended</span>
+            </div>
+            <div className="text-lg font-black text-emerald-700 font-mono flex items-center justify-end gap-1">
+              <Crosshair className="w-3.5 h-3.5 text-emerald-600" />
               {safeToFixed(avgWinRate, 1)}%
+            </div>
+            <div className="text-[10px] text-emerald-600/90 font-mono">
+              {rawStats.hits}W - {rawStats.misses}L on active wagers
+            </div>
+          </div>
+
+          <div className="bg-slate-50 border border-slate-200 px-3.5 py-1.5 rounded-lg text-right">
+            <div className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">
+              Raw 1X2 Baseline
+            </div>
+            <div className="text-lg font-black text-slate-700 font-mono">
+              {safeToFixed(rawStats.rawRate, 1)}%
+            </div>
+            <div className="text-[10px] text-slate-400 font-mono">
+              Unhedged single-winner
+            </div>
+          </div>
+
+          <div className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-right hidden sm:block">
+            <div className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">
+              Traps Passed
+            </div>
+            <div className="text-lg font-black text-slate-700 font-mono">
+              {safeToFixed(rawStats.passRate, 1)}%
+            </div>
+            <div className="text-[10px] text-slate-400 font-mono">
+              {rawStats.passes} coin-flips bypassed
             </div>
           </div>
         </div>

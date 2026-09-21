@@ -65,9 +65,23 @@ export default function LeagueProfilesPage({
       { name: 'Turkish Super Lig', country: 'Turkey', totalMatches: 380, avgGoals: 2.79, drawRate: 24.1, paceFactor: 1.03 },
       { name: 'English Championship', country: 'England', totalMatches: 552, avgGoals: 2.45, drawRate: 28.5, paceFactor: 0.91 },
       { name: 'Spanish LaLiga 2', country: 'Spain', totalMatches: 462, avgGoals: 2.25, drawRate: 29.8, paceFactor: 0.83 },
-      { name: 'Italian Serie B', country: 'Italy', totalMatches: 380, avgGoals: 2.38, drawRate: 30.2, paceFactor: 0.88 },
       { name: 'German 2. Bundesliga', country: 'Germany', totalMatches: 306, avgGoals: 3.05, drawRate: 22.1, paceFactor: 1.13 },
-      { name: 'English FA Cup', country: 'England', totalMatches: 140, avgGoals: 2.92, drawRate: 21.5, paceFactor: 1.08 }
+      { name: 'English FA Cup', country: 'England', totalMatches: 140, avgGoals: 2.92, drawRate: 21.5, paceFactor: 1.08 },
+      { name: 'DFL-Supercup', country: 'Germany', totalMatches: 30, avgGoals: 3.65, drawRate: 15.2, paceFactor: 1.28 },
+      { name: 'FA Community Shield', country: 'England', totalMatches: 35, avgGoals: 2.95, drawRate: 17.5, paceFactor: 1.10 },
+      { name: 'Concacaf Champions Cup', country: 'North America', totalMatches: 90, avgGoals: 3.15, drawRate: 19.2, paceFactor: 1.16 },
+      { name: 'CAF Champions League', country: 'Africa', totalMatches: 110, avgGoals: 2.70, drawRate: 20.8, paceFactor: 1.02 },
+      { name: 'Copa Libertadores', country: 'South America', totalMatches: 120, avgGoals: 2.85, drawRate: 21.2, paceFactor: 1.05 },
+      { name: 'Copa Sudamericana', country: 'South America', totalMatches: 110, avgGoals: 2.74, drawRate: 23.8, paceFactor: 1.01 },
+      { name: 'Eerste Divisie', country: 'Netherlands', totalMatches: 380, avgGoals: 3.25, drawRate: 22.0, paceFactor: 1.20 },
+      { name: 'AFC Champions League', country: 'Asia', totalMatches: 140, avgGoals: 2.95, drawRate: 20.5, paceFactor: 1.09 },
+      { name: 'Czech First League', country: 'Czechia', totalMatches: 240, avgGoals: 2.80, drawRate: 23.5, paceFactor: 1.04 },
+      { name: 'A-League', country: 'Australia', totalMatches: 160, avgGoals: 3.10, drawRate: 21.8, paceFactor: 1.15 },
+      { name: 'Coupe de France', country: 'France', totalMatches: 130, avgGoals: 3.02, drawRate: 19.5, paceFactor: 1.12 },
+      { name: 'KNVB Beker', country: 'Netherlands', totalMatches: 115, avgGoals: 3.35, drawRate: 18.2, paceFactor: 1.24 },
+      { name: 'DFB-Pokal', country: 'Germany', totalMatches: 98, avgGoals: 3.42, drawRate: 18.4, paceFactor: 1.27 },
+      { name: 'Copa del Rey', country: 'Spain', totalMatches: 140, avgGoals: 2.88, drawRate: 20.1, paceFactor: 1.07 },
+      { name: 'Coppa Italia', country: 'Italy', totalMatches: 78, avgGoals: 2.76, drawRate: 21.8, paceFactor: 1.02 }
     ];
 
     return defaultLeagues.map(l => {
