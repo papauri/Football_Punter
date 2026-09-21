@@ -163,7 +163,7 @@ export default function AccumulatorPage({
 
   // Preset Builder Controls
   const [presetStrategy, setPresetStrategy] = useState('unanimous'); // 'unanimous' | 'antifragile' | 'value'
-  const [presetLegCount, setPresetLegCount] = useState(3);
+  const [presetLegCount, setPresetLegCount] = useState('ALL');
 
   const strategyWinRate = aiSwarm?.directives?.telemetry?.unanimousHitRate || '84.8%';
   const accaMatchIds = useMemo(() => new Set(accaPicks.map(p => String(p.id))), [accaPicks]);
@@ -345,11 +345,16 @@ export default function AccumulatorPage({
       gradeColor = 'text-amber-700 bg-amber-50 border-amber-200';
       verdictTitle = 'DC Shielded (Policy Alert)';
       verdictText = 'Contains Double Chance picks. Acca requires straight outright selections only.';
+    } else if (unanimousCount === nLegs && dcCount === 0 && blacklistedCount === 0 && trapCount === 0 && nLegs >= 4) {
+      grade = 'A+';
+      gradeColor = 'text-emerald-700 bg-emerald-50 border-emerald-200';
+      verdictTitle = `👑 100% Unanimous Long Acca (${nLegs} Legs)`;
+      verdictText = 'Every selection is a straight outright win with 100% unanimous AI council agreement. Longest possible high-win-rate ticket.';
     } else if (nLegs >= 6) {
       grade = 'C-';
       gradeColor = 'text-amber-700 bg-amber-50 border-amber-200';
-      verdictTitle = 'Too Many Legs';
-      verdictText = 'Too many legs reduce overall win probability. Consider 3 to 4 legs.';
+      verdictTitle = 'High Leg Multiplier';
+      verdictText = 'Multi-leg accumulators have high multiplicative variance. Ensure all legs maintain council agreement.';
     } else if (clampedScore >= 90) {
       grade = 'A+';
       gradeColor = 'text-emerald-700 bg-emerald-50 border-emerald-200';
@@ -377,7 +382,7 @@ export default function AccumulatorPage({
       verdictText = 'Low win probability or split AI consensus. Consider auto-optimizing to unanimous outrights.';
     }
 
-    const canAutoOptimize = blacklistedCount > 0 || trapCount > 0 || dcCount > 0 || nonUnanCount > 0 || drawRiskCount > 0 || nLegs > 4 || negativeEvCount > 0;
+    const canAutoOptimize = blacklistedCount > 0 || trapCount > 0 || dcCount > 0 || nonUnanCount > 0 || drawRiskCount > 0 || negativeEvCount > 0;
 
     return {
       score: clampedScore,
@@ -849,9 +854,14 @@ export default function AccumulatorPage({
       }
     }
 
-    // Limit to top 4 highest-equity legs to prevent variance decay
-    if (compliantPicks.length > 4) {
-      compliantPicks = compliantPicks.slice(0, 4);
+    // Sort compliant picks by win rate and model probability, preserving the longest possible acca
+    compliantPicks.sort((a, b) => {
+      const probA = safeParseFloat(a.prob, 50);
+      const probB = safeParseFloat(b.prob, 50);
+      return probB - probA;
+    });
+    if (compliantPicks.length > 15) {
+      compliantPicks = compliantPicks.slice(0, 15);
     }
 
     if (onUpdateBetSlips) {

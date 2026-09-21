@@ -345,6 +345,28 @@ export default function Dashboard() {
     });
   };
 
+  const handleLoadPicksToSlip = (picks, targetSlipId = null, toastMsg = null) => {
+    const destSlipId = targetSlipId || activeSlipId;
+    handleUpdateBetSlips(prevSlips => {
+      let slipIndex = prevSlips.findIndex(s => s.id === destSlipId);
+      if (slipIndex === -1) {
+        slipIndex = prevSlips.findIndex(s => s.id === activeSlipId);
+        if (slipIndex === -1) return prevSlips;
+      }
+      const currentSlip = prevSlips[slipIndex];
+      const newSlips = [...prevSlips];
+      newSlips[slipIndex] = {
+        ...currentSlip,
+        picks: picks
+      };
+      return newSlips;
+    });
+    if (toastMsg) {
+      setToastNotification(toastMsg);
+      setTimeout(() => setToastNotification(null), 3500);
+    }
+  };
+
   // Timezone Settings
   const [tzSettings, setTzSettings] = useState(() => {
     try {
@@ -639,6 +661,12 @@ export default function Dashboard() {
                 isScraping={isScraping}
                 isRetraining={isRetraining}
                 onSelectMarketMode={setActivePage}
+                onNavigate={setActivePage}
+                onLoadAccaPicks={handleLoadPicksToSlip}
+                onSetActiveSlipId={setActiveSlipId}
+                betSlips={betSlips}
+                activeSlipId={activeSlipId}
+                aiSwarm={state?.aiSwarm}
               />
             )}
 
