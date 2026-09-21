@@ -495,6 +495,7 @@ app.get('/api/state', (req, res) => {
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
+        allowedHosts: true,
         hmr: process.env.DISABLE_HMR === 'true' ? false : undefined,
       },
       appType: 'spa',
