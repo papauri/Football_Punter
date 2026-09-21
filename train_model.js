@@ -282,3 +282,4 @@ try {
   console.error('Failed to update hyperparameters.json:', err.message);
 }
 console.log('======================================================\n');
+process.exit(0);

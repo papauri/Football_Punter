@@ -380,8 +380,8 @@ export class AISynthesisAgent {
       a.verdict === 'BOGEY_KRYPTONITE_CURSE'
     ) || Boolean(match?.isMarketDivergence || match?.isFavoriteTrap || match?.disruptionModel?.isBogeyKryptonite);
 
-    const is100Unanimous = (agreementRatio === 1.0 || agreeingAgents.length === 6);
-    const isSupermajority = (agreeingAgents.length >= 5 && opposingAgents.length === 0);
+    let is100Unanimous = (agreementRatio === 1.0 || agreeingAgents.length === 6);
+    let isSupermajority = (agreeingAgents.length >= 5 && opposingAgents.length === 0);
 
     // Extract match confidence accurately (whether from match.confidence, binaryModel, or prob)
     const matchConf = match.confidence != null ? parseFloat(match.confidence) : (match.binaryModel?.confidence != null ? parseFloat(match.binaryModel.confidence) : (match.prob ? Math.max(parseFloat(match.prob.home || 0), parseFloat(match.prob.away || 0)) : 50));

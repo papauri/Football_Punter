@@ -12,12 +12,19 @@
   "dixonColesRho": -0.18,
   "temperature": 0.8,
   "maxScorelineSim": 6,
-  "drawEquilibriumDelta": 8,
+  "drawEquilibriumDelta": 0,
   "h2hWeight": 0.16,
   "timeDecayXi": 0.007,
   "formWindowGames": 6,
   "formDeltaWeight": 0.12,
   "eloRatio": 0.5,
   "dnbDrawThreshold": 24,
-  "disabledLeagues": ["Liga Profesional", "FIFA Club World Cup", "Ligue 2", "Serie B", "League One", "League Two"]
+  "disabledLeagues": [
+    "Liga Profesional",
+    "FIFA Club World Cup",
+    "Ligue 2",
+    "Serie B",
+    "League One",
+    "League Two"
+  ]
 }
