@@ -119,7 +119,7 @@ export default function Dashboard() {
   });
 
   const activeSlip = betSlips.find(s => s.id === activeSlipId) || betSlips[0];
-  const accaPicks = activeSlip.picks;
+  const accaPicks = activeSlip?.picks || [];
 
   const handleUpdateBetSlips = (updaterOrSlips) => {
     setBetSlips(prev => {
@@ -239,21 +239,27 @@ export default function Dashboard() {
       }
       
       const currentSlip = prevSlips[slipIndex];
-      // LiveScore Bet & Bookmaker Acca Rule: Only ONE selection allowed per fixture.
-      // If the match is already on this slip, check whether this exact pick is already selected:
-      // - If exact same pick exists: remove it (toggle off)
-      // - If a different pick for the SAME fixture exists: replace it so the slip always has exactly 1 pick per match
-      const existingPickIndex = currentSlip.picks.findIndex(p => 
-        String(p.id) === String(match.id) || 
-        (p.home && match.home && p.away && match.away && 
-         p.home.toLowerCase() === match.home.toLowerCase() && 
-         p.away.toLowerCase() === match.away.toLowerCase())
-      );
+      const isPropsTarget = destinationSlipId === 'props-slip' || (customMarket && String(customMarket).startsWith('Props'));
 
-      const pickValue = customPick || match.binaryModel?.pick || (typeof match.predictedWinner === 'string' ? match.predictedWinner : match.predictedWinner?.pick) || 'HOME';
+      // Resolve pick value (straight outright normalization if DRAW or unspecified)
+      let pickValue = customPick || match.binaryModel?.pick || (typeof match.predictedWinner === 'string' ? match.predictedWinner : match.predictedWinner?.pick) || 'HOME';
+      if (!customMarket?.startsWith('Props')) {
+        let strPick = String(pickValue).toUpperCase();
+        if (strPick === '1') strPick = 'HOME';
+        if (strPick === '2') strPick = 'AWAY';
+        if (!customPick && strPick !== 'HOME' && strPick !== 'AWAY') {
+          const pHome = Number(match.prob?.home || match.homeProb || 40);
+          const pAway = Number(match.prob?.away || match.awayProb || 30);
+          strPick = pHome >= pAway ? 'HOME' : 'AWAY';
+        }
+        pickValue = strPick;
+      }
+
+      const outrightMarket = `${pickValue} Win (Outright)`;
+      const effectiveMarket = customMarket || outrightMarket;
       const odds = resolveMatchOdds(match, pickValue, customOdds);
       const prob = resolveMatchProb(match, pickValue, customProb);
-      const pickId = `${match.id}-${customMarket || pickValue}`;
+      const pickId = `${match.id}-${effectiveMarket}`;
 
       const newPick = {
         pickId,
@@ -265,11 +271,28 @@ export default function Dashboard() {
         time: match.time,
         date: match.dateIso || match.date,
         pick: pickValue,
-        market: customMarket || `${pickValue} Win (1X2)`,
+        market: effectiveMarket,
         confidence: prob,
         prob,
         odds
       };
+
+      // LiveScore Bet & Bookmaker Acca Rule: Only ONE selection allowed per fixture on match accumulators.
+      // For props slips, allow distinct prop markets for the same match, toggling off if the identical prop is clicked.
+      const existingPickIndex = currentSlip.picks.findIndex(p => {
+        const isSameFixture = String(p.id) === String(match.id) || 
+          (p.home && match.home && p.away && match.away && 
+           p.home.toLowerCase() === match.home.toLowerCase() && 
+           p.away.toLowerCase() === match.away.toLowerCase());
+        
+        if (!isSameFixture) return false;
+
+        if (isPropsTarget) {
+          return p.pickId === pickId || (p.pick === pickValue && p.market === effectiveMarket);
+        }
+
+        return true;
+      });
 
       let updatedPicks;
       if (existingPickIndex !== -1) {

@@ -45,7 +45,13 @@ function evaluateLegAutonomousStatus(leg, match) {
   const sw = m.aiSwarm || m.imperialSwarm || {};
   
   const isTrap = Boolean(sw.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap || m.disruptionModel?.isPassFlagged);
-  const isUnan = Boolean(sw.isTopValueLeg || sw.consensusTier === 'UNANIMOUS_DIRECTIVE' || sw.isUnanimousDirective);
+  const isUnan = Boolean(
+    sw.is100Unanimous || 
+    sw.isTopValueLeg || 
+    sw.isUnanimousDirective || 
+    sw.consensusTier === 'UNANIMOUS_DIRECTIVE' || 
+    sw.agreementPercentage === 100
+  );
   const isParity = Boolean(m.league && PARITY_LEAGUES.some(pl => m.league.toLowerCase().includes(pl.toLowerCase())));
   const drawProb = safeParseFloat(m.prob?.draw, 24);
   const pickVal = String(leg.pick || '').toUpperCase();
@@ -954,7 +960,7 @@ export default function AccumulatorPage({
                   type="button"
                   onClick={handleAutoOptimizeSlip}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold text-xs transition-colors cursor-pointer shadow-xs"
-                  title="Protect selections with Double Chance and remove high-risk picks"
+                  title="Enforce straight outright selections and 100% unanimous AI council consensus"
                 >
                   <Wand2 className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Auto-Optimize</span>
@@ -1381,7 +1387,14 @@ export default function AccumulatorPage({
               const awayP = safeParseFloat(m.prob?.away, 0);
               const pickTeam = homeP >= awayP ? m.home : m.away;
               const conf = safeParseFloat(m.confidence ?? m.binaryModel?.confidence, Math.max(homeP, awayP));
-              const isUnan = (m.aiSwarm || m.imperialSwarm)?.isTopValueLeg || (m.aiSwarm || m.imperialSwarm)?.consensusTier === 'UNANIMOUS_DIRECTIVE';
+              const sw = m.aiSwarm || m.imperialSwarm;
+              const isUnan = Boolean(
+                sw?.is100Unanimous || 
+                sw?.isTopValueLeg || 
+                sw?.isUnanimousDirective || 
+                sw?.consensusTier === 'UNANIMOUS_DIRECTIVE' || 
+                sw?.agreementPercentage === 100
+              );
               
               const timeVal = m.timestamp || m.utcDate || m.dateIso || m.date;
               const dateDisplay = timeVal ? formatRelativeDayTime(timeVal, tzSettings) : (m.time || 'Upcoming');
