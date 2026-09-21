@@ -497,7 +497,7 @@ class SoccerEngine {
 
     // Quantitative Hyperparameters (Calibrated from 4,303 Match Benchmark)
     const defaultHyperparameters = {
-      homeAdvantage: 1.1103590870992883,
+      homeAdvantage: 1.1180737527434101,
       homeEloBoost: 65,
       entropyFloorThreshold: 52.0,
       paritySafetyThreshold: 68.0,
@@ -4287,18 +4287,34 @@ Output strictly JSON format:
       }).join('\n');
     }
 
-    // Check for trap warnings and high-draw games in the selections
+    // Check for compliance: straight outrights only & all AI consensus to agree
     const trapWarnings = [];
-    const pivotSuggestions = [];
+    const nonOutrightWarnings = [];
+    const consensusWarnings = [];
+    const drawWarnings = [];
+
     for (const pick of picksData) {
       const match = (this.matches || []).find(m => String(m.id) === String(pick.id) || (m.home === pick.home && m.away === pick.away));
+      const pVal = String(pick.pick || '').toUpperCase();
+      const isDC = pVal === '1X' || pVal === 'X2' || pVal === '12';
+
+      if (isDC) {
+        nonOutrightWarnings.push(`⚠️ **${pick.home} vs ${pick.away}**: Double Chance selection (${pVal}). Acca policy requires straight outrights only (HOME Win or AWAY Win).`);
+      }
+
       if (match) {
-        if (match.isMarketDivergence || match.isFavoriteTrap || (match.aiSwarm || match.imperialSwarm)?.isContrarianTrap) {
-          trapWarnings.push(`⚠️ **${pick.home} vs ${pick.away}**: Flagged as a **Contrarian Trap** by the consensus council (market dislocation or underdog friction). Council suggests passing or using safety insurance.`);
+        const sw = match.aiSwarm || match.imperialSwarm;
+        const isUnan = Boolean(sw?.is100Unanimous || sw?.isTopValueLeg || sw?.isUnanimousDirective || sw?.consensusTier === 'UNANIMOUS_DIRECTIVE' || (sw?.agreementPercentage === 100));
+        
+        if (match.isMarketDivergence || match.isFavoriteTrap || sw?.isContrarianTrap) {
+          trapWarnings.push(`⚠️ **${pick.home} vs ${pick.away}**: Flagged as a **Contrarian Trap** by the consensus council (market dislocation or bogey friction). Purge from slip.`);
+        } else if (!isUnan) {
+          consensusWarnings.push(`⚠️ **${pick.home} vs ${pick.away}**: Split AI council (${sw?.agreementPercentage || 67}% agreement). Selection lacks 100% unanimous AI consensus.`);
         }
+
         const drawVal = parseFloat(match.prob?.draw);
-        if (!isNaN(drawVal) && drawVal >= 25.0) {
-          pivotSuggestions.push(`🔄 **${pick.home} vs ${pick.away}**: Elevated draw risk (${drawVal.toFixed(0)}%). Consider pivoting to **Double Chance (1X/X2)** or **Draw No Bet** to protect against the ~28% draw leakage.`);
+        if (!isNaN(drawVal) && drawVal >= 26.0) {
+          drawWarnings.push(`⚡ **${pick.home} vs ${pick.away}**: Elevated draw risk (${drawVal.toFixed(0)}%). Since DC shielding is prohibited, ensure outright edge is decisive.`);
         }
       }
     }
@@ -4307,18 +4323,26 @@ Output strictly JSON format:
       ? `\n\n### ⚠️ Council Trap Warnings\n${trapWarnings.join('\n')}\n` 
       : '';
 
-    const pivotSection = pivotSuggestions.length > 0 
-      ? `\n\n### 🔄 Suggested Market Protection\n${pivotSuggestions.join('\n')}\n` 
+    const nonOutrightSection = nonOutrightWarnings.length > 0
+      ? `\n\n### 🚫 Non-Outright Selections (Acca Rule Violation)\n${nonOutrightWarnings.join('\n')}\n`
+      : '';
+
+    const consensusSection = consensusWarnings.length > 0
+      ? `\n\n### ⚡ AI Consensus Split Warnings\n${consensusWarnings.join('\n')}\n`
+      : `\n\n### 👑 AI Consensus Verification\nAll selections verified: 100% unanimous AI council agreement on straight outright wins.\n`;
+
+    const drawSection = drawWarnings.length > 0
+      ? `\n\n### ⚡ Draw Resistance Pointers\n${drawWarnings.join('\n')}\n`
       : '';
 
     const defaultQuantitativeReport = `### 🎯 Super Agent Bet Slip Audit & Verdict
-This ${picksData.length}-selection accumulator combines games with statistically verified edges across our analytical models.
+This ${picksData.length}-selection accumulator combines straight outright games evaluated across our analytical models.
 - **Estimated Chance of Winning:** ${combinedProb.toFixed(1)}%
 - **Total Combined Odds:** ~${totalOdds.toFixed(2)}x payout multiplier
 
 ### ⚡ Game-by-Game Breakdown & What to Watch
-${legSummaries}${trapSection}${pivotSection}
-**Primary Risk Factor:** In accumulator betting, unexpected draws in tightly balanced games are responsible for over 28% of ticket busts. Using Double Chance on close fixtures drastically increases survival rates.
+${legSummaries}${nonOutrightSection}${trapSection}${consensusSection}${drawSection}
+**Acca Golden Rule:** Strictly outright straight selections (HOME Win or AWAY Win, zero Double Chance shielding) with 100% unanimous agreement across all AI council models.
 
 ### 💰 Final Staking & Execution Advice
 - **Optimal Staking:** Employ **Quarter Kelly (0.25x)** staking. Keep wagers disciplined to protect capital against statistical clustering.${pointersText}`;
@@ -4354,6 +4378,7 @@ ${legSummaries}${trapSection}${pivotSection}
 
     const prompt = `You are the Super Agent Lead Auditor for our AI Sports Intelligence Swarm.
 Your task is to thoroughly audit the user's CURRENT BET SLIP SELECTIONS to give them the absolute highest chance of winning and protecting their bankroll.
+CRITICAL MANDATE: All selections must be straight outright selections (HOME or AWAY Win only) with NO Double Chance shielding, and ALL AI models in consensus must agree.
 
 Ticket Profile:
 - Selections Count: ${picksData.length}-Fold Accumulator

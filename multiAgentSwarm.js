@@ -789,16 +789,17 @@ export class AISwarmOrchestrator {
         status: 'READY_TO_WAGER'
       } : null;
 
-      // 3b. Dedicated Anti-Fragile Protected Parlay
-      // Low volatility, high stability matches insulated with Double Chance (1X/X2) or Draw No Bet to eliminate draw variance
+      // 3b. Dedicated Prime Stable Outright Parlay (100% AI Consensus Outright Straight Wins)
+      // Low volatility, high stability fixtures with unanimous council agreement on straight HOME or AWAY win (Zero DC shielding)
       const antiFragileCandidates = allScored
-        .filter(s => !s.synthesis.isContrarianTrap)
+        .filter(s => !s.synthesis.isContrarianTrap && (s.synthesis.isTopValueLeg || s.synthesis.is100Unanimous || s.synthesis.consensusTier === 'UNANIMOUS_DIRECTIVE'))
+        .filter(s => s.synthesis.masterVerdict === 'HOME' || s.synthesis.masterVerdict === 'AWAY')
         .map(s => {
           const matchObj = upcoming.find(m => String(m.id) === String(s.fixtureId) || `${m.home} vs ${m.away}` === s.fixture);
           const isPrimeStable = matchObj?.disruptionModel?.stabilityStatus === 'PRIME_STABLE' || matchObj?.stabilityStatus === 'PRIME_STABLE';
           const master = s.synthesis.masterVerdict;
-          let protectedPick = master === 'HOME' ? '1X' : master === 'AWAY' ? 'X2' : master;
-          let marketLabel = master === 'HOME' ? '1X (Home or Draw)' : master === 'AWAY' ? 'X2 (Away or Draw)' : `${master} (Protected)`;
+          const straightPick = master;
+          const marketLabel = `${straightPick} Win (Outright)`;
 
           return {
             fixtureId: s.fixtureId,
@@ -807,7 +808,7 @@ export class AISwarmOrchestrator {
             away: s.away,
             league: s.league,
             rawPick: master,
-            pick: protectedPick,
+            pick: straightPick,
             market: marketLabel,
             swarmScore: s.synthesis.swarmScore || 70,
             isPrimeStable,
@@ -829,7 +830,7 @@ export class AISwarmOrchestrator {
           market: l.market,
           rawPick: l.rawPick,
           swarmScore: l.swarmScore,
-          badge: '🛡️ Anti-Fragile Protected'
+          badge: '👑 100% AI Consensus (Outright)'
         })),
         allLegs: antiFragileLegs.map(l => ({
           fixtureId: l.fixtureId,
@@ -841,13 +842,13 @@ export class AISwarmOrchestrator {
           market: l.market,
           rawPick: l.rawPick,
           swarmScore: l.swarmScore,
-          badge: '🛡️ Anti-Fragile Protected'
+          badge: '👑 100% AI Consensus (Outright)'
         })),
         totalQualifiedCount: antiFragileCandidates.length,
         combinedConfidence: Math.round(antiFragileLegs.slice(0, 3).reduce((acc, l) => acc * (Math.min(92, (l.swarmScore + 12)) / 100), 1) * 100),
         recommendedUnits: 2.0,
         status: 'READY_TO_WAGER',
-        type: 'PROTECTED_DOUBLE_CHANCE'
+        type: 'OUTRIGHT_CONSENSUS_PARLAY'
       } : null;
 
       // 4. Update orchestrator telemetry

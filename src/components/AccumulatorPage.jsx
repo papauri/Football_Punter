@@ -47,7 +47,6 @@ function evaluateLegAutonomousStatus(leg, match) {
   const isTrap = Boolean(sw.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap || m.disruptionModel?.isPassFlagged);
   const isUnan = Boolean(sw.isTopValueLeg || sw.consensusTier === 'UNANIMOUS_DIRECTIVE' || sw.isUnanimousDirective);
   const isParity = Boolean(m.league && PARITY_LEAGUES.some(pl => m.league.toLowerCase().includes(pl.toLowerCase())));
-  
   const drawProb = safeParseFloat(m.prob?.draw, 24);
   const pickVal = String(leg.pick || '').toUpperCase();
   const isStraightPick = pickVal === 'HOME' || pickVal === 'AWAY' || pickVal === '1' || pickVal === '2';
@@ -57,8 +56,8 @@ function evaluateLegAutonomousStatus(leg, match) {
   const legOdds = safeParseFloat(leg.odds, 1.5);
   const ev = ((legProb / 100) * legOdds) - 1;
 
-  // High draw risk if straight pick in a game where draw >= 22% or parity league
-  const isDrawVulnerable = isStraightPick && (drawProb >= 22 || (isParity && legProb < 68));
+  // High draw risk in straight outright selection
+  const isDrawVulnerable = isStraightPick && (drawProb >= 26 || (isParity && legProb < 66));
 
   let badge = {
     type: 'neutral',
@@ -74,21 +73,27 @@ function evaluateLegAutonomousStatus(leg, match) {
     };
   } else if (isProtectedDC) {
     badge = {
-      type: 'protected',
-      label: '🛡️ Protected (DC)',
-      title: 'Double Chance protection'
+      type: 'danger',
+      label: '⚠️ DC (Non-Outright)',
+      title: 'Acca rule requires straight outright picks only — no Double Chance'
     };
-  } else if (isUnan) {
+  } else if (isStraightPick && isUnan) {
     badge = {
       type: 'unanimous',
-      label: '👑 Consensus',
-      title: 'All models agree on this pick'
+      label: '👑 All AI Agree',
+      title: '100% Unanimous AI council agreement on this outright straight win'
+    };
+  } else if (isStraightPick && !isUnan) {
+    badge = {
+      type: 'warning',
+      label: '⚠️ Split AI Council',
+      title: 'AI council does not have 100% unanimous agreement on this match'
     };
   } else if (isDrawVulnerable) {
     badge = {
       type: 'warning',
       label: '⚡ Draw Risk',
-      title: `Draw probability is ${safeToFixed(drawProb, 0)}% — consider Double Chance`
+      title: `Draw probability is ${safeToFixed(drawProb, 0)}% — verify outright conviction`
     };
   } else if (ev > 0.05) {
     badge = {
@@ -264,7 +269,7 @@ export default function AccumulatorPage({
     // 3. Draw Vulnerability
     if (drawRiskCount > 0) {
       score -= drawRiskCount * 8;
-      recommendations.push(`${drawRiskCount} straight win pick(s) have draw probability ≥ 22%. Insulating with Double Chance (1X/X2) strongly protects ticket survival.`);
+      recommendations.push(`${drawRiskCount} straight win pick(s) have draw probability ≥ 26%. Since DC shielding is disabled, verify strong favorite dominance.`);
     }
 
     // 4. Expected Value
@@ -277,12 +282,20 @@ export default function AccumulatorPage({
       recommendations.push("Mathematical edge (EV) is currently negative. Bookmaker juice outweighs win probability.");
     }
 
-    // 5. Unanimous Consensus & Protection Boosts
-    if (unanimousCount === nLegs && nLegs >= 2) {
-      score += 15;
-    }
+    // 5. Outright Policy & Unanimous Consensus Verification
     if (dcCount > 0) {
-      score += Math.min(10, dcCount * 4);
+      score -= dcCount * 20;
+      recommendations.push(`${dcCount} selection(s) are Double Chance. Acca rule strictly requires straight outright wins only (no DC shielding).`);
+    }
+
+    const nonUnanCount = nLegs - unanimousCount;
+    if (nonUnanCount > 0) {
+      score -= nonUnanCount * 12;
+      recommendations.push(`${nonUnanCount} selection(s) lack full AI council consensus. All AI models must agree for maximum ticket edge.`);
+    }
+
+    if (unanimousCount === nLegs && dcCount === 0 && nLegs >= 2) {
+      score += 20; // Maximum boost for 100% unanimous outright ticket!
     }
 
     // Clamp score
@@ -297,8 +310,13 @@ export default function AccumulatorPage({
     if (trapCount > 0) {
       grade = 'D';
       gradeColor = 'text-rose-700 bg-rose-50 border-rose-200';
-      verdictTitle = 'High Risk';
-      verdictText = 'One or more selections have elevated draw or upset risk.';
+      verdictTitle = 'High Risk Trap';
+      verdictText = 'One or more selections have elevated upset or trap risk.';
+    } else if (dcCount > 0) {
+      grade = 'C';
+      gradeColor = 'text-amber-700 bg-amber-50 border-amber-200';
+      verdictTitle = 'DC Shielded (Policy Alert)';
+      verdictText = 'Contains Double Chance picks. Acca requires straight outright selections only.';
     } else if (nLegs >= 6) {
       grade = 'C-';
       gradeColor = 'text-amber-700 bg-amber-50 border-amber-200';
@@ -307,31 +325,31 @@ export default function AccumulatorPage({
     } else if (clampedScore >= 90) {
       grade = 'A+';
       gradeColor = 'text-emerald-700 bg-emerald-50 border-emerald-200';
-      verdictTitle = 'Top Quality Slip';
-      verdictText = 'High confidence, strong value, and low risk across all picks.';
+      verdictTitle = '100% AI Consensus Ticket';
+      verdictText = 'Every selection is a straight outright win with 100% unanimous AI council agreement.';
     } else if (clampedScore >= 80) {
       grade = 'A';
       gradeColor = 'text-emerald-700 bg-emerald-50 border-emerald-200';
-      verdictTitle = 'Strong Value Slip';
-      verdictText = 'Solid win probability and good value across selections.';
+      verdictTitle = 'High-Conviction Outright Slip';
+      verdictText = 'Strong win probability and verified outright value across selections.';
     } else if (clampedScore >= 70) {
       grade = 'B+';
       gradeColor = 'text-indigo-700 bg-indigo-50 border-indigo-200';
-      verdictTitle = 'Favorable Value Slip';
-      verdictText = 'Positive expected value. Double Chance protection can reduce risk.';
+      verdictTitle = 'Favorable Outright Slip';
+      verdictText = 'Positive expected value and solid model consensus on straight selections.';
     } else if (clampedScore >= 60) {
       grade = 'B';
       gradeColor = 'text-slate-700 bg-slate-100 border-slate-300';
       verdictTitle = 'Moderate Risk';
-      verdictText = 'Acceptable slip, but contains close games with draw risk.';
+      verdictText = 'Acceptable slip, but contains split council or close games.';
     } else {
       grade = 'C';
       gradeColor = 'text-amber-700 bg-amber-50 border-amber-200';
       verdictTitle = 'Elevated Risk';
-      verdictText = 'Low win probability or unfavorable odds. Consider fewer legs or safer markets.';
+      verdictText = 'Low win probability or split AI consensus. Consider auto-optimizing to unanimous outrights.';
     }
 
-    const canAutoOptimize = trapCount > 0 || drawRiskCount > 0 || nLegs > 5 || negativeEvCount > 0;
+    const canAutoOptimize = trapCount > 0 || dcCount > 0 || nonUnanCount > 0 || drawRiskCount > 0 || nLegs > 4 || negativeEvCount > 0;
 
     return {
       score: clampedScore,
@@ -416,7 +434,7 @@ export default function AccumulatorPage({
     setTimeout(() => setLoadedNotice(null), 3500);
   };
 
-  // Pools for Autonomous Presets
+  // Pools for Autonomous Presets (Strict Outrights Only & 100% AI Consensus)
   const allUnanimousPool = useMemo(() => {
     const map = new Map();
     const parlayAllLegs = aiSwarm?.directives?.topValueParlay?.allLegs || aiSwarm?.directives?.topValueParlay?.legs || [];
@@ -427,7 +445,11 @@ export default function AccumulatorPage({
       const orig = findMatchForLeg(leg);
       const fixtureId = orig?.id || leg.fixtureId;
       if (fixtureId && !map.has(String(fixtureId))) {
-        const pPick = leg.pick || leg.masterVerdict || (orig && (typeof orig.predictedWinner === 'string' ? orig.predictedWinner : orig.predictedWinner?.pick)) || 'HOME';
+        let pPick = leg.pick || leg.masterVerdict || (orig && (typeof orig.predictedWinner === 'string' ? orig.predictedWinner : orig.predictedWinner?.pick)) || 'HOME';
+        if (pPick === '1') pPick = 'HOME';
+        if (pPick === '2') pPick = 'AWAY';
+        if (pPick !== 'HOME' && pPick !== 'AWAY') return; // Outrights only
+
         const targetMatch = orig || {
           id: fixtureId,
           home: leg.home,
@@ -441,7 +463,7 @@ export default function AccumulatorPage({
         map.set(String(fixtureId), {
           match: targetMatch,
           pick: pPick,
-          market: `${pPick} Win (Unanimous)`,
+          market: `${pPick} Win (Outright)`,
           odds: matchOdds,
           prob: matchProb,
           score: (leg.swarmScore || 80) + matchProb
@@ -456,31 +478,39 @@ export default function AccumulatorPage({
       const isTrap = sw?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap || m.disruptionModel?.isPassFlagged;
       if (isTrap) return;
 
-      const isUnan = sw?.isTopValueLeg || sw?.consensusTier === 'UNANIMOUS_DIRECTIVE' || sw?.isUnanimousDirective;
-      const conf = parseFloat(m.confidence ?? m.binaryModel?.confidence ?? 0);
-      const isParity = Boolean(m.league && PARITY_LEAGUES.some(pl => m.league.toLowerCase().includes(pl.toLowerCase())));
-      if (isParity && conf < 68.0) return;
+      // Strict requirement: all AI council models agree
+      const isUnan = Boolean(
+        sw?.is100Unanimous || 
+        sw?.isTopValueLeg || 
+        sw?.isUnanimousDirective || 
+        sw?.consensusTier === 'UNANIMOUS_DIRECTIVE' || 
+        sw?.agreementPercentage === 100
+      );
+      if (!isUnan) return;
 
-      if (isUnan || conf >= 65) {
-        const pickVal = (typeof m.predictedWinner === 'string' ? m.predictedWinner : m.predictedWinner?.pick) || m.binaryModel?.pick || 'HOME';
-        const matchProb = resolveMatchProb(m, pickVal);
-        const matchOdds = resolveMatchOdds(m, pickVal);
+      let pickVal = (typeof m.predictedWinner === 'string' ? m.predictedWinner : m.predictedWinner?.pick) || m.binaryModel?.pick || sw?.masterVerdict || 'HOME';
+      if (pickVal === '1') pickVal = 'HOME';
+      if (pickVal === '2') pickVal = 'AWAY';
+      if (pickVal !== 'HOME' && pickVal !== 'AWAY') return; // Outrights only
 
-        map.set(idStr, {
-          match: m,
-          pick: pickVal,
-          market: `${pickVal} Win (Unanimous)`,
-          odds: matchOdds,
-          prob: matchProb,
-          score: (sw?.swarmScore || conf) + (isUnan ? 30 : 0) + matchProb
-        });
-      }
+      const matchProb = resolveMatchProb(m, pickVal);
+      const matchOdds = resolveMatchOdds(m, pickVal);
+
+      map.set(idStr, {
+        match: m,
+        pick: pickVal,
+        market: `${pickVal} Win (Outright)`,
+        odds: matchOdds,
+        prob: matchProb,
+        score: (sw?.swarmScore || 75) + 30 + matchProb
+      });
     });
 
     return Array.from(map.values()).sort((a, b) => b.score - a.score);
   }, [aiSwarm, matches]);
 
-  const allAntiFragilePool = useMemo(() => {
+  // Prime Stable Outright Pool (All AI Agree, zero DC shielding)
+  const allEliteStraightPool = useMemo(() => {
     const map = new Map();
     const parlayAllLegs = aiSwarm?.directives?.antiFragileParlay?.allLegs || aiSwarm?.directives?.antiFragileParlay?.legs || [];
     
@@ -488,9 +518,11 @@ export default function AccumulatorPage({
       const orig = findMatchForLeg(leg);
       const fixtureId = orig?.id || leg.fixtureId;
       if (fixtureId && !map.has(String(fixtureId))) {
-        const rawPick = leg.rawPick || leg.pick || 'HOME';
-        const pickVal = leg.pick || (rawPick === 'HOME' ? '1X' : rawPick === 'AWAY' ? 'X2' : rawPick);
-        const marketLabel = leg.market || (rawPick === 'HOME' ? '1X (Home or Draw)' : rawPick === 'AWAY' ? 'X2 (Away or Draw)' : `${pickVal} (Protected)`);
+        let rawPick = leg.rawPick || leg.pick || 'HOME';
+        if (rawPick === '1X' || rawPick === '1') rawPick = 'HOME';
+        if (rawPick === 'X2' || rawPick === '2') rawPick = 'AWAY';
+        if (rawPick !== 'HOME' && rawPick !== 'AWAY') return;
+
         const targetMatch = orig || {
           id: fixtureId,
           home: leg.home,
@@ -498,16 +530,16 @@ export default function AccumulatorPage({
           league: leg.league || 'League',
           time: 'Upcoming'
         };
-        const matchProb = resolveMatchProb(targetMatch, pickVal);
-        const matchOdds = resolveMatchOdds(targetMatch, pickVal, leg.odds);
+        const matchProb = resolveMatchProb(targetMatch, rawPick);
+        const matchOdds = resolveMatchOdds(targetMatch, rawPick, leg.odds);
 
         map.set(String(fixtureId), {
           match: targetMatch,
-          pick: pickVal,
-          market: marketLabel,
+          pick: rawPick,
+          market: `${rawPick} Win (Outright)`,
           odds: matchOdds,
           prob: matchProb,
-          score: matchProb + 25
+          score: matchProb + 30
         });
       }
     });
@@ -519,19 +551,30 @@ export default function AccumulatorPage({
       const isTrap = sw?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap || m.disruptionModel?.isPassFlagged;
       if (isTrap) return;
 
+      const isUnan = Boolean(
+        sw?.is100Unanimous || 
+        sw?.isTopValueLeg || 
+        sw?.isUnanimousDirective || 
+        sw?.consensusTier === 'UNANIMOUS_DIRECTIVE' || 
+        sw?.agreementPercentage === 100
+      );
+      if (!isUnan) return;
+
       const isPrime = m.disruptionModel?.stabilityStatus === 'PRIME_STABLE' || m.stabilityStatus === 'PRIME_STABLE';
       const stabScore = m.disruptionModel?.stabilityScore || 70;
 
-      const rawPick = (typeof m.predictedWinner === 'string' ? m.predictedWinner : m.predictedWinner?.pick) || m.binaryModel?.pick || 'HOME';
-      const protectedPick = rawPick === 'HOME' ? '1X' : rawPick === 'AWAY' ? 'X2' : rawPick;
-      const marketLabel = rawPick === 'HOME' ? '1X (Home or Draw)' : rawPick === 'AWAY' ? 'X2 (Away or Draw)' : `${rawPick} (Protected)`;
-      const matchProb = resolveMatchProb(m, protectedPick);
-      const matchOdds = resolveMatchOdds(m, protectedPick);
+      let rawPick = (typeof m.predictedWinner === 'string' ? m.predictedWinner : m.predictedWinner?.pick) || m.binaryModel?.pick || 'HOME';
+      if (rawPick === '1X' || rawPick === '1') rawPick = 'HOME';
+      if (rawPick === 'X2' || rawPick === '2') rawPick = 'AWAY';
+      if (rawPick !== 'HOME' && rawPick !== 'AWAY') return;
+
+      const matchProb = resolveMatchProb(m, rawPick);
+      const matchOdds = resolveMatchOdds(m, rawPick);
 
       map.set(idStr, {
         match: m,
-        pick: protectedPick,
-        market: marketLabel,
+        pick: rawPick,
+        market: `${rawPick} Win (Outright)`,
         odds: matchOdds,
         prob: matchProb,
         score: matchProb + (isPrime ? 25 : 0) + (stabScore > 75 ? 12 : 0)
@@ -547,21 +590,37 @@ export default function AccumulatorPage({
         const sw = m.aiSwarm || m.imperialSwarm;
         const isTrap = sw?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap;
         if (isTrap) return false;
-        const pickVal = (typeof m.predictedWinner === 'string' ? m.predictedWinner : m.predictedWinner?.pick) || 'HOME';
+
+        const isUnan = Boolean(
+          sw?.is100Unanimous || 
+          sw?.isTopValueLeg || 
+          sw?.isUnanimousDirective || 
+          sw?.consensusTier === 'UNANIMOUS_DIRECTIVE' || 
+          (sw?.agreementPercentage >= 85)
+        );
+        if (!isUnan) return false;
+
+        let pickVal = (typeof m.predictedWinner === 'string' ? m.predictedWinner : m.predictedWinner?.pick) || 'HOME';
+        if (pickVal === '1') pickVal = 'HOME';
+        if (pickVal === '2') pickVal = 'AWAY';
+        if (pickVal !== 'HOME' && pickVal !== 'AWAY') return false;
+
         const prob = resolveMatchProb(m, pickVal);
         const odds = resolveMatchOdds(m, pickVal);
         const ev = ((prob / 100) * odds) - 1;
-        return ev > 0.04 && prob >= 55;
+        return ev > 0.02 && prob >= 52;
       })
       .map(m => {
-        const pickVal = (typeof m.predictedWinner === 'string' ? m.predictedWinner : m.predictedWinner?.pick) || 'HOME';
+        let pickVal = (typeof m.predictedWinner === 'string' ? m.predictedWinner : m.predictedWinner?.pick) || 'HOME';
+        if (pickVal === '1') pickVal = 'HOME';
+        if (pickVal === '2') pickVal = 'AWAY';
         const prob = resolveMatchProb(m, pickVal);
         const odds = resolveMatchOdds(m, pickVal);
         const ev = ((prob / 100) * odds) - 1;
         return {
           match: m,
           pick: pickVal,
-          market: `${pickVal} Win`,
+          market: `${pickVal} Win (Outright)`,
           odds,
           prob,
           ev,
@@ -571,39 +630,48 @@ export default function AccumulatorPage({
       .sort((a, b) => b.score - a.score);
   }, [matches]);
 
-  // Suggested high-conviction candidate matches to append to slip
+  // Suggested candidate matches: strictly straight outrights with all AI consensus agreeing
   const suggestedMatches = useMemo(() => {
     return matches
       .filter(m => {
         if (accaMatchIds.has(String(m.id))) return false;
-        const isTrap = (m.aiSwarm || m.imperialSwarm)?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap;
+        const sw = m.aiSwarm || m.imperialSwarm;
+        const isTrap = sw?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap;
         if (isTrap) return false;
-        const conf = safeParseFloat(m.confidence ?? m.binaryModel?.confidence, Math.max(safeParseFloat(m.prob?.home, 0), safeParseFloat(m.prob?.away, 0)));
-        const isParity = Boolean(m.league && PARITY_LEAGUES.some(pl => m.league.toLowerCase().includes(pl.toLowerCase())));
-        if (isParity && conf < 68.0) return false;
-        return conf >= 60;
+        
+        // Strict All AI consensus agrees:
+        const isUnan = Boolean(
+          sw?.is100Unanimous || 
+          sw?.isTopValueLeg || 
+          sw?.isUnanimousDirective || 
+          sw?.consensusTier === 'UNANIMOUS_DIRECTIVE' || 
+          sw?.agreementPercentage === 100
+        );
+        if (!isUnan) return false;
+
+        const homeP = safeParseFloat(m.prob?.home, 0);
+        const awayP = safeParseFloat(m.prob?.away, 0);
+        const maxProb = Math.max(homeP, awayP);
+        return maxProb >= 50;
       })
       .sort((a, b) => {
-        const aUnan = ((a.aiSwarm || a.imperialSwarm)?.isTopValueLeg || (a.aiSwarm || a.imperialSwarm)?.consensusTier === 'UNANIMOUS_DIRECTIVE') ? 1 : 0;
-        const bUnan = ((b.aiSwarm || b.imperialSwarm)?.isTopValueLeg || (b.aiSwarm || b.imperialSwarm)?.consensusTier === 'UNANIMOUS_DIRECTIVE') ? 1 : 0;
-        if (aUnan !== bUnan) return bUnan - aUnan;
-        const confA = safeParseFloat(a.confidence ?? a.binaryModel?.confidence, 50);
-        const confB = safeParseFloat(b.confidence ?? b.binaryModel?.confidence, 50);
-        return confB - confA;
+        const swA = a.aiSwarm || a.imperialSwarm;
+        const swB = b.aiSwarm || b.imperialSwarm;
+        return (swB?.swarmScore || 0) - (swA?.swarmScore || 0);
       })
       .slice(0, 4);
   }, [matches, accaMatchIds]);
 
-  // Preset Generation Handler
+  // Preset Generation Handler (Straight Outrights & 100% AI Consensus)
   const handleLoadAutonomousPreset = () => {
     let pool = allUnanimousPool;
-    let label = '6-Agent Unanimous Ticket';
+    let label = '👑 100% AI Consensus Outright Ticket';
     if (presetStrategy === 'antifragile') {
-      pool = allAntiFragilePool;
-      label = 'Anti-Fragile Protected Ticket';
+      pool = allEliteStraightPool;
+      label = '⭐ Prime Stable Outright Ticket';
     } else if (presetStrategy === 'value') {
       pool = allValuePool;
-      label = '+EV Alpha Ticket';
+      label = '💎 +EV Outright Alpha Ticket';
     }
 
     const count = presetLegCount === 'ALL' ? pool.length : (parseInt(presetLegCount, 10) || 3);
@@ -618,18 +686,23 @@ export default function AccumulatorPage({
     if (picksToLoad.length > 0) {
       loadPicksIntoSlip(picksToLoad, `${label} (${picksToLoad.length} Legs)`);
     } else {
-      // If pool is empty, fall back to any available high-confidence matches
+      // If pool is empty, fall back to any available high-confidence matches with outrights
       const fallbackMatches = (matches || [])
-        .filter(m => !m.disruptionModel?.isPassFlagged)
+        .filter(m => !m.disruptionModel?.isPassFlagged && !m.isMarketDivergence && !m.isFavoriteTrap && !(m.aiSwarm || m.imperialSwarm)?.isContrarianTrap)
         .slice(0, typeof presetLegCount === 'number' ? presetLegCount : 3);
       if (fallbackMatches.length > 0) {
         const fallbackPicks = fallbackMatches.map(m => {
-          const pickVal = (typeof m.predictedWinner === 'string' ? m.predictedWinner : m.predictedWinner?.pick) || 'HOME';
+          let pickVal = (typeof m.predictedWinner === 'string' ? m.predictedWinner : m.predictedWinner?.pick) || 'HOME';
+          if (pickVal !== 'HOME' && pickVal !== 'AWAY') {
+            const hp = safeParseFloat(m.prob?.home, 0);
+            const ap = safeParseFloat(m.prob?.away, 0);
+            pickVal = hp >= ap ? 'HOME' : 'AWAY';
+          }
           const p = resolveMatchProb(m, pickVal);
           const o = resolveMatchOdds(m, pickVal);
-          return buildPickObject(m, pickVal, `${pickVal} Win`, o, p);
+          return buildPickObject(m, pickVal, `${pickVal} Win (Outright)`, o, p);
         });
-        loadPicksIntoSlip(fallbackPicks, `High-Confidence Slate (${fallbackPicks.length} Legs)`);
+        loadPicksIntoSlip(fallbackPicks, `High-Confidence Outrights (${fallbackPicks.length} Legs)`);
       } else {
         setLoadedNotice('No active matches available in slate to build ticket.');
         setTimeout(() => setLoadedNotice(null), 3000);
@@ -637,46 +710,76 @@ export default function AccumulatorPage({
     }
   };
 
-  // Autonomous One-Click Optimization
+  // Autonomous One-Click Optimization (Strict Outrights Only & 100% AI Consensus)
   const handleAutoOptimizeSlip = () => {
     if (activeLegs.length === 0) return;
 
-    let convertedCount = 0;
+    let convertedDCCount = 0;
+    let removedSplitCount = 0;
     let removedTrapCount = 0;
 
-    // 1. Convert vulnerable straight picks to Double Chance, prune dangerous traps
-    let optimized = activeLegs.map(leg => {
+    let compliantPicks = [];
+
+    activeLegs.forEach(leg => {
       const m = leg.match || matches.find(item => item.id === leg.id);
-      const p = String(leg.pick).toUpperCase();
+      const p = String(leg.pick || '').toUpperCase();
+      const isDC = p === '1X' || p === 'X2' || p === '12';
 
-      // If contrarian trap and cannot be salvaged
-      if (leg.status.isTrap && !leg.status.isProtectedDC) {
+      // 1. Convert Double Chance back to straight outright or disallow
+      if (isDC) {
+        convertedDCCount++;
+        const sw = m?.aiSwarm || m?.imperialSwarm;
+        const isUnan = Boolean(sw?.is100Unanimous || sw?.isTopValueLeg || sw?.isUnanimousDirective || sw?.consensusTier === 'UNANIMOUS_DIRECTIVE' || (sw?.agreementPercentage === 100));
+        let straightPick = p === '1X' ? 'HOME' : p === 'X2' ? 'AWAY' : (sw?.masterVerdict || 'HOME');
+        if (isUnan && (straightPick === 'HOME' || straightPick === 'AWAY') && !leg.status.isTrap) {
+          const newOdds = resolveMatchOdds(m, straightPick);
+          const newProb = resolveMatchProb(m, straightPick);
+          compliantPicks.push(buildPickObject(m, straightPick, `${straightPick} Win (Outright)`, newOdds, newProb));
+          return;
+        }
+        return; // Discard non-unanimous DC pick
+      }
+
+      // 2. Prune traps
+      if (leg.status.isTrap) {
         removedTrapCount++;
-        return null; // remove
+        return;
       }
 
-      // If straight pick with draw vulnerability, shield with Double Chance
-      if ((p === 'HOME' || p === '1' || p === 'AWAY' || p === '2') && leg.status.isDrawVulnerable) {
-        const newPick = (p === 'HOME' || p === '1') ? '1X' : 'X2';
-        const newMarket = newPick === '1X' ? '1X (Home or Draw)' : 'X2 (Away or Draw)';
-        const newOdds = resolveMatchOdds(m, newPick);
-        const newProb = resolveMatchProb(m, newPick);
-        convertedCount++;
-        return buildPickObject(m, newPick, newMarket, newOdds, newProb);
+      // 3. Prune matches without full AI council consensus
+      if (!leg.status.isUnan) {
+        removedSplitCount++;
+        return;
       }
 
-      return buildPickObject(m, leg.pick, leg.market, leg.odds, leg.prob);
-    }).filter(Boolean);
+      // 4. Ensure outright selection
+      if (p !== 'HOME' && p !== 'AWAY' && p !== '1' && p !== '2') {
+        removedSplitCount++;
+        return;
+      }
 
-    // 2. If ticket still has > 4 legs, trim down to top 4 highest-equity legs to prevent decay
-    if (optimized.length > 4) {
-      optimized = optimized
-        .sort((a, b) => {
-          const evA = ((a.prob / 100) * a.odds) - 1;
-          const evB = ((b.prob / 100) * b.odds) - 1;
-          return evB - evA;
-        })
-        .slice(0, 4);
+      const outrightPick = (p === '1' ? 'HOME' : p === '2' ? 'AWAY' : p);
+      compliantPicks.push(buildPickObject(m, outrightPick, `${outrightPick} Win (Outright)`, leg.odds, leg.prob));
+    });
+
+    // Backfill from allUnanimousPool if needed
+    if (compliantPicks.length < 3 && allUnanimousPool.length > 0) {
+      const existingIds = new Set(compliantPicks.map(p => String(p.id)));
+      for (const item of allUnanimousPool) {
+        if (compliantPicks.length >= 3) break;
+        const fixId = String(item.match?.id || item.fixtureId);
+        if (!existingIds.has(fixId)) {
+          const legProb = resolveMatchProb(item.match, item.pick);
+          const legOdds = resolveMatchOdds(item.match, item.pick, item.odds);
+          compliantPicks.push(buildPickObject(item.match, item.pick, `${item.pick} Win (Outright)`, legOdds, legProb));
+          existingIds.add(fixId);
+        }
+      }
+    }
+
+    // Limit to top 4 highest-equity legs to prevent variance decay
+    if (compliantPicks.length > 4) {
+      compliantPicks = compliantPicks.slice(0, 4);
     }
 
     if (onUpdateBetSlips) {
@@ -686,41 +789,38 @@ export default function AccumulatorPage({
         const newSlips = [...prevSlips];
         newSlips[slipIndex] = {
           ...newSlips[slipIndex],
-          picks: optimized
+          picks: compliantPicks
         };
         return newSlips;
       });
     }
 
+    const notices = [];
+    if (convertedDCCount > 0) notices.push(`${convertedDCCount} DC pick(s) converted/purged`);
+    if (removedSplitCount > 0) notices.push(`${removedSplitCount} split-council pick(s) replaced`);
+    if (removedTrapCount > 0) notices.push(`${removedTrapCount} trap(s) removed`);
+
     setLoadedNotice(
-      `Autonomous Optimization Applied: ${convertedCount} leg(s) shielded with Double Chance${removedTrapCount > 0 ? `, ${removedTrapCount} trap(s) removed` : ''}.`
+      notices.length > 0
+        ? `Optimized for Outrights & All AI Consensus: ${notices.join(', ')}.`
+        : `Acca Verified: All ${compliantPicks.length} selections are straight outrights with 100% AI consensus.`
     );
-    setTimeout(() => setLoadedNotice(null), 4000);
+    setTimeout(() => setLoadedNotice(null), 4500);
   };
 
-  // Toggle individual leg shield (Straight <-> Double Chance)
-  const handleToggleLegShield = (leg) => {
+  // Convert non-outright DC leg to straight outright win
+  const handleConvertToOutright = (leg) => {
     const m = leg.match || matches.find(item => item.id === leg.id);
     const p = String(leg.pick).toUpperCase();
-    let newPick = p;
-    let newMarket = leg.market;
+    let newPick = 'HOME';
 
-    if (p === 'HOME' || p === '1') {
-      newPick = '1X';
-      newMarket = '1X (Home or Draw)';
-    } else if (p === 'AWAY' || p === '2') {
-      newPick = 'X2';
-      newMarket = 'X2 (Away or Draw)';
-    } else if (p === '1X') {
-      newPick = 'HOME';
-      newMarket = 'HOME Win';
-    } else if (p === 'X2') {
+    if (p === 'X2' || p === 'AWAY' || p === '2') {
       newPick = 'AWAY';
-      newMarket = 'AWAY Win';
     } else {
-      return;
+      newPick = 'HOME';
     }
 
+    const newMarket = `${newPick} Win (Outright)`;
     const newOdds = resolveMatchOdds(m, newPick);
     const newProb = resolveMatchProb(m, newPick);
     const updatedPickObj = buildPickObject(m, newPick, newMarket, newOdds, newProb);
@@ -921,7 +1021,7 @@ export default function AccumulatorPage({
                 className="flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
               >
                 <Zap className="w-3.5 h-3.5" />
-                <span>Protect Slip</span>
+                <span>Optimize to Outrights</span>
               </button>
             )}
           </div>
@@ -952,20 +1052,20 @@ export default function AccumulatorPage({
               </div>
             </div>
 
-            <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 col-span-2 sm:col-span-1">
-              <div className="text-[10px] text-emerald-800 font-bold uppercase">Potential Return</div>
-              <div className="text-base font-black font-mono text-emerald-800 mt-0.5">
+            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+              <div className="text-[10px] text-slate-500 font-bold uppercase">Potential Return</div>
+              <div className="text-base font-black font-mono text-emerald-600 mt-0.5">
                 €{safeToFixed(effectiveWager * totalOdds, 2)}
               </div>
             </div>
           </div>
 
-          {/* Autonomous Recommendations if any */}
+          {/* Recommendations List */}
           {autonomousJudgement.recommendations.length > 0 && (
-            <div className="bg-amber-50/70 border border-amber-200 rounded-lg p-2.5 text-xs text-amber-900 space-y-1">
+            <div className="pt-2 border-t border-slate-100 space-y-1">
               {autonomousJudgement.recommendations.map((rec, i) => (
-                <div key={i} className="flex items-start gap-1.5">
-                  <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                <div key={i} className="text-[11px] text-slate-600 flex items-start gap-1.5">
+                  <span className="text-amber-500 font-bold">•</span>
                   <span>{rec}</span>
                 </div>
               ))}
@@ -974,13 +1074,13 @@ export default function AccumulatorPage({
         </div>
       )}
 
-      {/* 3. Autonomous Presets Generator Bar (Simpler, unified UI) */}
+      {/* 3. Autonomous Presets Generator Bar (Strict Outrights Only & 100% AI Consensus) */}
       <div className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-amber-500" />
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              Ticket Generator
+              Outright Acca Generator (100% AI Consensus)
             </h3>
           </div>
           <span className="text-[11px] text-slate-500">
@@ -1000,7 +1100,7 @@ export default function AccumulatorPage({
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              👑 Top Consensus ({allUnanimousPool.length})
+              👑 All AI Agree ({allUnanimousPool.length})
             </button>
             <button
               type="button"
@@ -1011,7 +1111,7 @@ export default function AccumulatorPage({
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              🛡️ Double Chance ({allAntiFragilePool.length})
+              ⭐ Prime Stable ({allEliteStraightPool.length})
             </button>
             <button
               type="button"
@@ -1022,7 +1122,7 @@ export default function AccumulatorPage({
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              💎 Best Value ({allValuePool.length})
+              💎 +EV Value ({allValuePool.length})
             </button>
           </div>
 
@@ -1181,7 +1281,6 @@ export default function AccumulatorPage({
               <tbody className="divide-y divide-slate-100">
                 {activeLegs.map((leg, idx) => {
                   const b = leg.status.badge;
-                  const canShield = leg.status.isStraightPick;
                   const isDC = leg.status.isProtectedDC;
 
                   return (
@@ -1219,20 +1318,19 @@ export default function AccumulatorPage({
                           <span className="font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded text-[11px] border border-slate-200">
                             {leg.market}
                           </span>
-                          {(canShield || isDC) && (
+                          {isDC ? (
                             <button
                               type="button"
-                              onClick={() => handleToggleLegShield(leg)}
-                              className={`text-[10px] font-bold px-1.5 py-0.5 rounded border transition-colors cursor-pointer flex items-center gap-0.5 ${
-                                isDC 
-                                  ? 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200' 
-                                  : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-                              }`}
-                              title={isDC ? 'Revert to straight win market' : 'Shield against draw with Double Chance (1X/X2)'}
+                              onClick={() => handleConvertToOutright(leg)}
+                              className="text-[10px] font-bold px-1.5 py-0.5 rounded border border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer flex items-center gap-0.5"
+                              title="Convert non-outright Double Chance pick to straight outright win"
                             >
-                              <Shield className="w-2.5 h-2.5" />
-                              <span>{isDC ? 'Unshield' : 'Shield DC'}</span>
+                              <span>Convert to Outright</span>
                             </button>
+                          ) : (
+                            <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">
+                              Straight Win
+                            </span>
                           )}
                         </div>
                       </td>
@@ -1311,9 +1409,15 @@ export default function AccumulatorPage({
 
                   <button
                     type="button"
-                    onClick={() => onAddPick(m)}
+                    onClick={() => {
+                      const outrightPick = homeP >= awayP ? 'HOME' : 'AWAY';
+                      const outrightMarket = `${outrightPick} Win (Outright)`;
+                      const o = resolveMatchOdds(m, outrightPick);
+                      const p = resolveMatchProb(m, outrightPick);
+                      onAddPick(m, outrightPick, outrightMarket, o, p);
+                    }}
                     className="p-1 rounded bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs transition-colors cursor-pointer shrink-0 shadow-2xs"
-                    title="Add to slip"
+                    title="Add straight outright pick to slip"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -1347,7 +1451,7 @@ export default function AccumulatorPage({
               <li><strong>6-Leg Slip:</strong> 75%⁶ = <strong>~17% win rate</strong> (Severe decay).</li>
             </ul>
             <p>
-              Our Autonomous Optimizer automatically limits slips to the positive-equity sweet spot and shields vulnerable matches with Double Chance to preserve your long-term bankroll growth.
+              Our Autonomous Optimizer automatically limits slips to the positive-equity sweet spot and enforces strictly straight outright selections with 100% unanimous agreement across all specialized AI council models.
             </p>
           </div>
         )}
