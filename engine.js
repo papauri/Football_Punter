@@ -146,6 +146,14 @@ export const ESPN_LEAGUES = [
   { code: 'nor.1', name: 'Norwegian Eliteserien' },
   { code: 'swe.1', name: 'Swedish Allsvenskan' },
   { code: 'jpn.1', name: 'Japanese J1 League' },
+  { code: 'arg.1', name: 'Argentine Liga Profesional' },
+  { code: 'arg.2', name: 'Argentine Primera Nacional' },
+  { code: 'bra.2', name: 'Brasileirão Série B' },
+  { code: 'col.1', name: 'Categoría Primera A' },
+  { code: 'chi.1', name: 'Chilean Primera División' },
+  { code: 'uru.1', name: 'Uruguayan Primera División' },
+  { code: 'ecu.1', name: 'LigaPro Ecuador' },
+  { code: 'eng.trophy', name: 'EFL Trophy' },
   { code: 'uefa.nations', name: 'UEFA Nations League' },
   { code: 'fifa.world', name: 'FIFA World Cup' },
   { code: 'fifa.worldq.uefa', name: 'UEFA World Cup Qualifiers' },
@@ -424,7 +432,7 @@ class SoccerEngine {
 
     // Quantitative Hyperparameters (Calibrated from 4,303 Match Benchmark)
     const defaultHyperparameters = {
-      homeAdvantage: 1.185026410552199,
+      homeAdvantage: 1.155696208774013,
       homeEloBoost: 65,
       entropyFloorThreshold: 52.0,
       paritySafetyThreshold: 68.0,
@@ -434,7 +442,7 @@ class SoccerEngine {
       homeGoalIntensity: 1.30,
       awayGoalIntensity: 1.10,
       goalOverdispersionR: 4.5,
-      dixonColesRho: -0.02,
+      dixonColesRho: -0.064,
       temperature: 0.80,
       maxScorelineSim: 6,
       drawEquilibriumDelta: 13,
@@ -5718,7 +5726,7 @@ Provide a crisp 3-bullet assessment:
   // COMPREHENSIVE AUTONOMOUS MISS PATCHING PIPELINE
   // -------------------------------------------------------------
   async runAutonomousMissPatching(options = {}) {
-    const maxMatches = options.maxMatches || 6;
+    const maxMatches = options.maxMatches || options.maxMisses || 6;
     this.log('AutonomousPatch', `Initiating autonomous miss analysis & patch cycle (Cap: ${maxMatches})...`);
 
     // Ingest misses from live concluded fixtures, yesterday matches, and validation slate

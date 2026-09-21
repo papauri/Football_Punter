@@ -239,34 +239,50 @@ export default function Dashboard() {
       }
       
       const currentSlip = prevSlips[slipIndex];
-      // If no custom market provided, default to moneyline logic to ensure backwards compatibility
-      const pickId = `${match.id}-${customMarket || 'MONEYLINE'}`;
-      
-      const exists = currentSlip.picks.some(p => p.pickId === pickId || (p.id === match.id && !p.pickId && !customMarket));
-      let updatedPicks;
+      // LiveScore Bet & Bookmaker Acca Rule: Only ONE selection allowed per fixture.
+      // If the match is already on this slip, check whether this exact pick is already selected:
+      // - If exact same pick exists: remove it (toggle off)
+      // - If a different pick for the SAME fixture exists: replace it so the slip always has exactly 1 pick per match
+      const existingPickIndex = currentSlip.picks.findIndex(p => 
+        String(p.id) === String(match.id) || 
+        (p.home && match.home && p.away && match.away && 
+         p.home.toLowerCase() === match.home.toLowerCase() && 
+         p.away.toLowerCase() === match.away.toLowerCase())
+      );
 
-      if (exists) {
-        updatedPicks = currentSlip.picks.filter(p => !(p.pickId === pickId || (p.id === match.id && !p.pickId && !customMarket)));
+      const pickValue = customPick || match.binaryModel?.pick || (typeof match.predictedWinner === 'string' ? match.predictedWinner : match.predictedWinner?.pick) || 'HOME';
+      const odds = resolveMatchOdds(match, pickValue, customOdds);
+      const prob = resolveMatchProb(match, pickValue, customProb);
+      const pickId = `${match.id}-${customMarket || pickValue}`;
+
+      const newPick = {
+        pickId,
+        id: match.id,
+        match: match,
+        home: match.home,
+        away: match.away,
+        league: match.league,
+        time: match.time,
+        date: match.dateIso || match.date,
+        pick: pickValue,
+        market: customMarket || `${pickValue} Win (1X2)`,
+        confidence: prob,
+        prob,
+        odds
+      };
+
+      let updatedPicks;
+      if (existingPickIndex !== -1) {
+        const existing = currentSlip.picks[existingPickIndex];
+        // If clicking the identical pick/market, toggle off
+        if (existing.pickId === pickId || (existing.pick === pickValue && existing.market === newPick.market)) {
+          updatedPicks = currentSlip.picks.filter((_, idx) => idx !== existingPickIndex);
+        } else {
+          // Replace with the new single selection for this fixture
+          updatedPicks = [...currentSlip.picks];
+          updatedPicks[existingPickIndex] = newPick;
+        }
       } else {
-        const pickValue = customPick || match.binaryModel?.pick || (typeof match.predictedWinner === 'string' ? match.predictedWinner : match.predictedWinner?.pick) || 'HOME';
-        const odds = resolveMatchOdds(match, pickValue, customOdds);
-        const prob = resolveMatchProb(match, pickValue, customProb);
-        
-        const newPick = {
-          pickId,
-          id: match.id,
-          match: match,
-          home: match.home,
-          away: match.away,
-          league: match.league,
-          time: match.time,
-          date: match.dateIso || match.date,
-          pick: pickValue,
-          market: customMarket || `${pickValue} Win (1X2)`,
-          confidence: prob,
-          prob,
-          odds
-        };
         updatedPicks = [...currentSlip.picks, newPick];
       }
       

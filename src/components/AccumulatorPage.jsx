@@ -381,8 +381,25 @@ export default function AccumulatorPage({
     };
   };
 
+  // Helper to strictly deduplicate picks by fixture (LiveScore Bet single selection per match rule)
+  const deduplicatePicksByFixture = (picksList) => {
+    if (!Array.isArray(picksList)) return [];
+    const seen = new Map();
+    for (const p of picksList) {
+      const matchKey = p.id 
+        ? String(p.id) 
+        : `${(p.home || '').toLowerCase().trim()}_vs_${(p.away || '').toLowerCase().trim()}`;
+      // Keep the latest/first distinct selection per match
+      if (!seen.has(matchKey)) {
+        seen.set(matchKey, p);
+      }
+    }
+    return Array.from(seen.values());
+  };
+
   const loadPicksIntoSlip = (picksToLoad, ticketName) => {
     if (!picksToLoad || picksToLoad.length === 0) return;
+    const singlePicksPerMatch = deduplicatePicksByFixture(picksToLoad);
     if (onUpdateBetSlips) {
       onUpdateBetSlips(prevSlips => {
         const slipIndex = prevSlips.findIndex(s => s.id === activeSlipId);
@@ -390,12 +407,12 @@ export default function AccumulatorPage({
         const newSlips = [...prevSlips];
         newSlips[slipIndex] = {
           ...newSlips[slipIndex],
-          picks: picksToLoad
+          picks: singlePicksPerMatch
         };
         return newSlips;
       });
     }
-    setLoadedNotice(`Loaded ${picksToLoad.length} selections: ${ticketName}`);
+    setLoadedNotice(`Loaded ${singlePicksPerMatch.length} selections: ${ticketName}`);
     setTimeout(() => setLoadedNotice(null), 3500);
   };
 
@@ -600,6 +617,23 @@ export default function AccumulatorPage({
 
     if (picksToLoad.length > 0) {
       loadPicksIntoSlip(picksToLoad, `${label} (${picksToLoad.length} Legs)`);
+    } else {
+      // If pool is empty, fall back to any available high-confidence matches
+      const fallbackMatches = (matches || [])
+        .filter(m => !m.disruptionModel?.isPassFlagged)
+        .slice(0, typeof presetLegCount === 'number' ? presetLegCount : 3);
+      if (fallbackMatches.length > 0) {
+        const fallbackPicks = fallbackMatches.map(m => {
+          const pickVal = (typeof m.predictedWinner === 'string' ? m.predictedWinner : m.predictedWinner?.pick) || 'HOME';
+          const p = resolveMatchProb(m, pickVal);
+          const o = resolveMatchOdds(m, pickVal);
+          return buildPickObject(m, pickVal, `${pickVal} Win`, o, p);
+        });
+        loadPicksIntoSlip(fallbackPicks, `High-Confidence Slate (${fallbackPicks.length} Legs)`);
+      } else {
+        setLoadedNotice('No active matches available in slate to build ticket.');
+        setTimeout(() => setLoadedNotice(null), 3000);
+      }
     }
   };
 
@@ -1118,8 +1152,16 @@ export default function AccumulatorPage({
             <ListChecks className="w-10 h-10 mx-auto text-slate-300 mb-2" />
             <h4 className="text-sm font-bold text-slate-700">Your Bet Slip is Empty</h4>
             <p className="text-xs text-slate-500 max-w-md mx-auto mt-1 mb-4">
-              Click <strong>"Generate Autonomous Slip"</strong> above for an instant optimal ticket, or add fixtures directly from the table below.
+              Select your preferred strategy and click <strong>"Build Ticket"</strong> above, or generate an instant high-conviction slip below.
             </p>
+            <button
+              type="button"
+              onClick={handleLoadAutonomousPreset}
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              <span>Generate Autonomous Slip</span>
+            </button>
           </div>
         ) : (
           <div className="overflow-x-auto">
