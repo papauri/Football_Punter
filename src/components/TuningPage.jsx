@@ -1,22 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Sliders, 
   Save, 
   RotateCcw, 
   Check, 
   Sparkles, 
-  Info,
-  Layers,
-  Clock,
-  Globe,
-  RefreshCw,
-  AlertCircle,
-  ShieldCheck,
-  Scale,
-  Compass
+  Info, 
+  Layers, 
+  Clock, 
+  Globe, 
+  RefreshCw, 
+  AlertCircle, 
+  ShieldCheck, 
+  Scale, 
+  Compass,
+  CheckCircle2
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
 import KellyTooltip from './KellyTooltip';
+import { isLeagueBlacklisted } from '../utils/leagueUtils';
 
 export default function TuningPage({
   state = {},
@@ -50,6 +52,19 @@ export default function TuningPage({
       setDisabledLeagues(tuningConfig.disabledLeagues);
     }
   }, [tuningConfig.disabledLeagues]);
+
+  // Only add leagues with enough training data (>= 25 matches) and more hits than misses (> 50% accuracy)
+  // Strictly purge all blacklisted leagues from model settings
+  const verifiedLeagues = useMemo(() => {
+    return (state.trainingStats?.leaguePerformance || [])
+      .filter((leagueStat) => {
+        if (isLeagueBlacklisted(leagueStat.league)) return false;
+        if (leagueStat.total < 25) return false;
+        if (leagueStat.accuracy <= 50.0) return false;
+        return true;
+      })
+      .sort((a, b) => b.accuracy - a.accuracy);
+  }, [state.trainingStats?.leaguePerformance]);
   
   // Timezone local state
   const [selectedZone, setSelectedZone] = useState(tzSettings.zone || 'UTC');
@@ -114,17 +129,11 @@ export default function TuningPage({
   const handleAiAutoFilter = () => {
     const suggestedToDisable = [];
     
-    // Auto-disable if accuracy is below 62% in historical backtesting
-    (state.trainingStats?.leaguePerformance || []).forEach(stat => {
-        if (stat.accuracy < 62) {
-            suggestedToDisable.push(stat.league);
-        }
-    });
-    
-    // Also add known hardcoded chaotic ones just to be safe if they aren't in performance metrics yet
-    const chaotic = ['MLS', 'Championship', 'Turkish Super Lig', 'Liga MX', 'Ligue 2', 'Serie B', 'Scottish Premiership', 'Austrian Bundesliga'];
-    chaotic.forEach(c => {
-        if (!suggestedToDisable.includes(c)) suggestedToDisable.push(c);
+    // Auto-disable if accuracy is below 62% in verified training benchmark
+    verifiedLeagues.forEach(stat => {
+      if (stat.accuracy < 62) {
+        suggestedToDisable.push(stat.league);
+      }
     });
 
     setDisabledLeagues(suggestedToDisable);
@@ -416,17 +425,24 @@ export default function TuningPage({
       <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
         <div className="flex flex-wrap items-center justify-between pb-3 border-b border-slate-200 gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-lg bg-red-50 border border-red-200 text-red-700 flex items-center justify-center font-bold">
+            <div className="w-9 h-9 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center font-bold">
               <Globe className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-bold text-slate-800">Disabled / Blacklisted Leagues</h2>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
-                  {disabledLeagues.length} Excluded
+                <h2 className="text-sm font-bold text-slate-800">Verified Model Leagues &amp; Whitelist Controls</h2>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  {verifiedLeagues.length} Solid Leagues Active
                 </span>
+                {disabledLeagues.length > 0 && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                    {disabledLeagues.length} Excluded
+                  </span>
+                )}
               </div>
-              <p className="text-xs text-slate-500">Blacklisted leagues are purged from top picks and excluded from accuracy &amp; unanimous proof rates</p>
+              <p className="text-xs text-slate-500">
+                Only leagues with &ge;25 completed matches and &gt;50% accuracy appear in the model. Blacklisted &amp; chaotic leagues are permanently purged.
+              </p>
             </div>
           </div>
 
@@ -436,7 +452,7 @@ export default function TuningPage({
               type="button"
               className="flex items-center gap-1.5 px-3 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 rounded-lg text-xs font-bold transition-colors cursor-pointer"
             >
-              <Sparkles className="w-3.5 h-3.5" /> AI Auto-Filter (&lt;62%)
+              <Sparkles className="w-3.5 h-3.5" /> AI Filter (&lt;62%)
             </button>
 
             {/* DEDICATED PRIMARY SAVE BUTTON IN CARD HEADER */}
@@ -444,7 +460,7 @@ export default function TuningPage({
               onClick={() => handleSaveBlacklistOnly()}
               disabled={isSavingBlacklist || isSaving}
               type="button"
-              className="flex items-center gap-1.5 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
+              className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
             >
               {isSavingBlacklist ? (
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -454,7 +470,7 @@ export default function TuningPage({
                 <Save className="w-3.5 h-3.5" />
               )}
               <span>
-                {blacklistSavedSuccess ? 'Saved & Refreshed!' : isSavingBlacklist ? 'Recalculating Model...' : 'Save Blacklisted Leagues'}
+                {blacklistSavedSuccess ? 'Saved & Refreshed!' : isSavingBlacklist ? 'Recalculating Model...' : 'Save League Exclusions'}
               </span>
             </button>
           </div>
@@ -465,7 +481,7 @@ export default function TuningPage({
           <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-xs text-emerald-800 flex items-center justify-between animate-in fade-in duration-200">
             <div className="flex items-center gap-2">
               <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-              <span><strong>League blacklist saved successfully!</strong> Model accuracy, unanimous rates, and system filters have been fully refreshed across the entire app.</span>
+              <span><strong>League whitelist settings saved successfully!</strong> Model accuracy and system predictions have been updated.</span>
             </div>
             <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">Synchronized</span>
           </div>
@@ -474,47 +490,47 @@ export default function TuningPage({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold text-slate-700 block">
-              Toggle leagues to blacklist from predictions &amp; model calculations
+              Toggle specific competitions to include or exclude from model predictions:
             </label>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => {
-                  const below60 = (state.trainingStats?.leaguePerformance || [])
+                  const below60 = verifiedLeagues
                     .filter(s => s.accuracy < 60)
                     .map(s => s.league);
                   setDisabledLeagues(prev => Array.from(new Set([...prev, ...below60])));
                 }}
                 className="text-[11px] text-slate-600 hover:text-slate-900 underline cursor-pointer"
               >
-                Select &lt;60% Accuracy
+                Exclude &lt;60% Accuracy
               </button>
               <span className="text-slate-300">|</span>
               <button
                 type="button"
                 onClick={() => setDisabledLeagues([])}
-                className="text-[11px] text-red-600 hover:text-red-700 underline cursor-pointer"
+                className="text-[11px] text-emerald-600 hover:text-emerald-700 underline cursor-pointer"
               >
-                Clear All
+                Include All ({verifiedLeagues.length})
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[300px] overflow-y-auto pr-2">
-            {[...(state.trainingStats?.leaguePerformance || [])].sort((a,b) => a.accuracy - b.accuracy).map((leagueStat) => {
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[320px] overflow-y-auto pr-2">
+            {verifiedLeagues.map((leagueStat) => {
               const isDisabled = disabledLeagues.includes(leagueStat.league);
-              const colorClass = leagueStat.accuracy >= 75 ? 'text-emerald-600' : leagueStat.accuracy < 60 ? 'text-red-600' : 'text-amber-600';
+              const colorClass = leagueStat.accuracy >= 70 ? 'text-emerald-600' : leagueStat.accuracy < 58 ? 'text-amber-600' : 'text-blue-600';
               return (
                 <label 
                   key={leagueStat.league} 
-                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${isDisabled ? 'bg-red-50 border-red-300 shadow-xs' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}
+                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${isDisabled ? 'bg-slate-100 border-slate-300 opacity-60' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}
                 >
                   <input
                     type="checkbox"
-                    className="w-4 h-4 rounded border-slate-300 text-red-600 focus:ring-red-500"
-                    checked={isDisabled}
+                    className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    checked={!isDisabled}
                     onChange={(e) => {
-                      if (e.target.checked) {
+                      if (!e.target.checked) {
                         setDisabledLeagues(prev => [...prev, leagueStat.league]);
                       } else {
                         setDisabledLeagues(prev => prev.filter(l => l !== leagueStat.league));
@@ -524,9 +540,13 @@ export default function TuningPage({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-xs text-slate-800 truncate">{leagueStat.league}</span>
-                      {isDisabled && (
-                        <span className="text-[9px] font-bold bg-red-200 text-red-800 px-1.5 py-0.5 rounded">
-                          BLACKLISTED
+                      {isDisabled ? (
+                        <span className="text-[9px] font-bold bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded">
+                          EXCLUDED
+                        </span>
+                      ) : (
+                        <span className="text-[9px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">
+                          ACTIVE
                         </span>
                       )}
                     </div>
@@ -543,7 +563,7 @@ export default function TuningPage({
           {/* DEDICATED SAVE BUTTON IN CARD FOOTER */}
           <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
             <p className="text-[11px] text-slate-500">
-              Note: Saving immediately updates model accuracy, recalculates the swarm unanimous rate, and passes all blacklisted fixtures.
+              Only leagues with &ge;25 matches and &gt;50% accuracy ({verifiedLeagues.length} solid competitions) are available in model settings.
             </p>
             <button
               onClick={() => handleSaveBlacklistOnly()}
@@ -552,7 +572,7 @@ export default function TuningPage({
               className="px-4 py-2 bg-slate-900 hover:bg-black text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50 ml-auto"
             >
               {isSavingBlacklist ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-              <span>{isSavingBlacklist ? 'Recalculating App...' : 'Save Blacklist & Refresh App'}</span>
+              <span>{isSavingBlacklist ? 'Recalculating App...' : 'Save League Exclusions & Refresh'}</span>
             </button>
           </div>
         </div>

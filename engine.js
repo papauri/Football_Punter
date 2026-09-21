@@ -410,7 +410,7 @@ class SoccerEngine {
 
     // Quantitative Hyperparameters (Calibrated from 4,303 Match Benchmark)
     const defaultHyperparameters = {
-      homeAdvantage: 1.156962972130831,
+      homeAdvantage: 1.1598562015052951,
       homeEloBoost: 65,
       entropyFloorThreshold: 52.0,
       paritySafetyThreshold: 68.0,
@@ -1332,6 +1332,7 @@ class SoccerEngine {
 
   isLeagueDisabled(leagueName) {
     if (!leagueName) return false;
+    if (isLeagueBlacklisted(leagueName)) return true;
     const disabled = Array.isArray(this.hyperparameters?.disabledLeagues)
       ? this.hyperparameters.disabledLeagues
       : ['Liga Profesional', 'FIFA Club World Cup', 'Ligue 2', 'Serie B', 'League One', 'League Two'];
@@ -2528,6 +2529,7 @@ class SoccerEngine {
       // 2. Build League Pace & Draw Profiles
       this.leagueProfiles = {};
       Object.entries(leagueStats).forEach(([lgName, s]) => {
+        if (isLeagueBlacklisted(lgName)) return; // Strictly purge blacklisted leagues
         if (s.total >= 10) {
           const avgGoals = s.goals / s.total;
           const drawRate = s.draws / s.total;
@@ -2683,6 +2685,14 @@ class SoccerEngine {
     try {
       if (!this.historicalMatches || this.historicalMatches.length < 1000) return;
       const filePath = path.join(process.cwd(), 'training_data.json');
+      if (fs.existsSync(filePath)) {
+        try {
+          const existing = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          if (Array.isArray(existing) && existing.length > this.historicalMatches.length) {
+            return; // Never overwrite larger training corpus with smaller in-memory slice
+          }
+        } catch (_) {}
+      }
       fs.writeFileSync(filePath, JSON.stringify(this.historicalMatches, null, 2), 'utf8');
       this.log('TrainingEngine', `Auto-persisted ${this.historicalMatches.length} matches to training_data.json on disk.`);
     } catch (err) {
@@ -2983,8 +2993,8 @@ class SoccerEngine {
       const yestDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
       const todayStr = formatYMD(now);
       const yestStr = formatYMD(yestDate);
-      const nextWeekDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-      const nextWeekStr = formatYMD(nextWeekDate);
+      const nextWindowDate = new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000);
+      const nextWindowStr = formatYMD(nextWindowDate);
 
       let newCompleted = [];
       let newYesterday = [];
@@ -3004,29 +3014,43 @@ class SoccerEngine {
             const data = (res && res.ok) ? await res.json().catch(() => ({ events: [] })) : { events: [] };
             let allEvs = [...(data.events || [])];
             
-            // Check calendar for upcoming dates in the 7-day window to avoid missing weekly fixtures
+            // Check calendar for upcoming dates in the 21-day window, or fallback to next active matchday
             const cal = data.leagues?.[0]?.calendar || [];
             let upcomingCalDates = [];
+            let futureDates = [];
             if (Array.isArray(cal)) {
               for (const entry of cal) {
                 if (typeof entry === 'string') {
                   const ymd = entry.substring(0, 10).replace(/-/g, '');
-                  if (ymd >= todayStr && ymd <= nextWeekStr) {
+                  if (ymd >= todayStr && ymd <= nextWindowStr) {
                     upcomingCalDates.push(ymd);
+                  } else if (ymd > nextWindowStr) {
+                    futureDates.push(ymd);
                   }
                 } else if (entry && typeof entry === 'object' && Array.isArray(entry.entries)) {
                   for (const sub of entry.entries) {
                     if (sub && sub.startDate) {
                       const ymd = String(sub.startDate).substring(0, 10).replace(/-/g, '');
-                      if (ymd >= todayStr && ymd <= nextWeekStr) {
+                      if (ymd >= todayStr && ymd <= nextWindowStr) {
                         upcomingCalDates.push(ymd);
+                      } else if (ymd > nextWindowStr) {
+                        futureDates.push(ymd);
                       }
                     }
                   }
                 }
               }
             }
-            upcomingCalDates = [...new Set(upcomingCalDates)];
+            upcomingCalDates = [...new Set(upcomingCalDates)].sort();
+            futureDates = [...new Set(futureDates)].sort();
+
+            // If a solid league has no matches in the upcoming 3-week window (e.g. paused for tournament or international break),
+            // automatically fall back to its next scheduled active matchday dates (up to 3 dates, max 4 dates per league)
+            if (upcomingCalDates.length === 0 && futureDates.length > 0) {
+              upcomingCalDates = futureDates.slice(0, 3);
+            } else if (upcomingCalDates.length > 4) {
+              upcomingCalDates = upcomingCalDates.slice(0, 4);
+            }
 
             if (upcomingCalDates.length > 0) {
               const datePromises = upcomingCalDates.map(async (dateStr) => {
@@ -3661,27 +3685,29 @@ class SoccerEngine {
         this.hyperparameters.drawEquilibriumDelta = Math.max(9.5, this.hyperparameters.drawEquilibriumDelta - 0.1);
       }
 
-      const leaguePerformance = Object.entries(leagueStats).map(([league, stats]) => {
-        const acc = stats.total > 0 ? (stats.correct / stats.total) * 100 : 0;
-        const sAcc = stats.stableTotal > 0 ? (stats.stableCorrect / stats.stableTotal) * 100 : 0;
-        const isProvisional = stats.total < 8;
-        const isBlacklisted = this.isLeagueDisabled(league);
-        return {
-          league,
-          ...stats,
-          accuracy: parseFloat(acc.toFixed(1)),
-          stableAccuracy: parseFloat(sAcc.toFixed(1)),
-          sampleTier: stats.total >= 25 ? 'ESTABLISHED' : stats.total >= 8 ? 'SOLID' : 'PROVISIONAL',
-          isProvisional,
-          isBlacklisted
-        };
-      }).sort((a, b) => {
-        // Established samples rank ahead of provisional samples (e.g. 1/1 cups)
-        if (a.isProvisional !== b.isProvisional) {
-          return a.isProvisional ? 1 : -1;
-        }
-        return b.accuracy - a.accuracy || b.total - a.total;
-      });
+      const leaguePerformance = Object.entries(leagueStats)
+        .filter(([league, stats]) => {
+          // Strictly purge blacklisted leagues, low training samples (<25 matches), and <=50% win rates
+          if (isLeagueBlacklisted(league)) return false;
+          if (this.isLeagueDisabled(league)) return false;
+          if (stats.total < 25) return false;
+          if (stats.correct <= stats.total / 2) return false;
+          return true;
+        })
+        .map(([league, stats]) => {
+          const acc = stats.total > 0 ? (stats.correct / stats.total) * 100 : 0;
+          const sAcc = stats.stableTotal > 0 ? (stats.stableCorrect / stats.stableTotal) * 100 : 0;
+          return {
+            league,
+            ...stats,
+            accuracy: parseFloat(acc.toFixed(1)),
+            stableAccuracy: parseFloat(sAcc.toFixed(1)),
+            sampleTier: stats.total >= 100 ? 'CORE_ELITE' : 'ESTABLISHED',
+            isProvisional: false,
+            isBlacklisted: false
+          };
+        })
+        .sort((a, b) => b.accuracy - a.accuracy || b.total - a.total);
 
         // Execute 6-Agent Swarm Backtest Verification across training corpus
         let unanimousProof = null;
@@ -5941,15 +5967,16 @@ Provide a crisp 3-bullet assessment:
 
     // Step E: Source Code Self-Patching: Persist optimal weights to disk
     try {
-      let engineSource = fs.readFileSync('engine.js', 'utf8');
-      if (engineSource && engineSource.length > 50000) {
-        engineSource = engineSource.replace(/homeAdvantage:\s*[\d\.]+/, `homeAdvantage: ${this.hyperparameters.homeAdvantage}`);
-        engineSource = engineSource.replace(/dixonColesRho:\s*[\-\d\.]+/, `dixonColesRho: ${this.hyperparameters.dixonColesRho}`);
-        engineSource = engineSource.replace(/drawEquilibriumDelta:\s*[\d\.]+/, `drawEquilibriumDelta: ${this.hyperparameters.drawEquilibriumDelta}`);
-        fs.writeFileSync('engine.js.tmp', engineSource, 'utf8');
-        fs.renameSync('engine.js.tmp', 'engine.js');
-        this.log('AutonomousPatch', 'Safely persisted updated Dixon-Coles parameters to engine.js on disk.');
+      const hpPath = 'hyperparameters.json';
+      let currentHp = {};
+      if (fs.existsSync(hpPath)) {
+        try { currentHp = JSON.parse(fs.readFileSync(hpPath, 'utf8')); } catch (_) {}
       }
+      currentHp.homeAdvantage = this.hyperparameters.homeAdvantage;
+      currentHp.dixonColesRho = this.hyperparameters.dixonColesRho;
+      currentHp.drawEquilibriumDelta = this.hyperparameters.drawEquilibriumDelta;
+      fs.writeFileSync(hpPath, JSON.stringify(currentHp, null, 2), 'utf8');
+      this.log('AutonomousPatch', 'Safely persisted updated Dixon-Coles parameters to hyperparameters.json.');
     } catch (e) {
       // In containerized read-only mode, in-memory state handles runtime
     }

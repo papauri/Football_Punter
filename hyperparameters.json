@@ -1,5 +1,5 @@
 {
-  "homeAdvantage": 1.14,
+  "homeAdvantage": 1.1117107424024775,
   "homeEloBoost": 65,
   "entropyFloorThreshold": 52,
   "paritySafetyThreshold": 72,
@@ -12,7 +12,7 @@
   "dixonColesRho": -0.18,
   "temperature": 0.8,
   "maxScorelineSim": 6,
-  "drawEquilibriumDelta": 0,
+  "drawEquilibriumDelta": 4.9999999999999964,
   "h2hWeight": 0.16,
   "timeDecayXi": 0.007,
   "formWindowGames": 6,
