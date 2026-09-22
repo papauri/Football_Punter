@@ -1,4 +1,7 @@
 import express from 'express';
+import { createServer as createHttpServer } from 'http';
+import compression from 'compression';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { engine } from './engine.js';
@@ -9,8 +12,10 @@ const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
+  const httpServer = createHttpServer(app);
   const PORT = 3000;
 
+  app.use(compression());
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
@@ -408,6 +413,45 @@ app.get('/api/state', (req, res) => {
     }
   });
 
+  app.post('/api/lineups/auto-calibrate', async (req, res) => {
+    try {
+      const force = req.body?.force === true;
+      const result = await engine.autoCalibrateAllUpcomingLineups(force);
+      res.json({ success: true, ...result });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post('/api/leagues/strict-pruning', (req, res) => {
+    try {
+      const enabled = req.body?.enabled !== false;
+      const result = engine.setStrictLeaguePruning(enabled);
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.get('/api/strategy-proof-metrics', (req, res) => {
+    try {
+      const metrics = engine.getStrategyProofMetrics();
+      res.json({ success: true, metrics });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post('/api/run-20k-backtest', (req, res) => {
+    try {
+      const options = req.body || {};
+      const results = engine.runComprehensiveHistoricalBacktest(options);
+      res.json({ success: true, results });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   app.post('/api/bankroll-config', (req, res) => {
     try {
       const { bankrollEuro, kellyFraction } = req.body;
@@ -491,24 +535,35 @@ app.get('/api/state', (req, res) => {
     res.json({ success: true, status: engine.agentStats?.status || 'Offline' });
   });
 
-  if (process.env.NODE_ENV !== 'production') {
+  const distDir = path.join(__dirname, 'dist');
+  const hasDist = fs.existsSync(path.join(distDir, 'index.html'));
+
+  if (hasDist) {
+    console.log('[Server] Serving pre-bundled production assets from /dist');
+    app.use(express.static(distDir));
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(distDir, 'index.html'));
+    });
+  } else if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
         allowedHosts: true,
-        hmr: process.env.DISABLE_HMR === 'true' ? false : undefined,
+        hmr: {
+          server: httpServer,
+        },
       },
       appType: 'spa',
     });
     app.use(vite.middlewares);
   } else {
-    app.use(express.static(path.join(__dirname, 'dist')));
+    app.use(express.static(distDir));
     app.get('*', (req, res) => {
-      res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+      res.sendFile(path.join(distDir, 'index.html'));
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`API Engine running on http://localhost:${PORT}`);
     // Start continuous autonomous agent in the background after server is listening
     setTimeout(() => {

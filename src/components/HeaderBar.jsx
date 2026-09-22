@@ -29,7 +29,8 @@ export default function HeaderBar({
   isScraping = false,
   overallAccuracy = null,
   accaCount = 0,
-  state
+  state,
+  onOpenStrategyProof
 }) {
   const PAGE_TITLES = {
     fixtures: 'Match Predictions',
@@ -45,7 +46,7 @@ export default function HeaderBar({
     tuning: 'Model Settings',
     patches: 'Model Updates',
     autonomous: 'Model Updates',
-    timezone: 'Timezone',
+    timezone: 'Timezone Settings',
     logs: 'Activity Logs'
   };
 
@@ -80,32 +81,32 @@ export default function HeaderBar({
 
   const pageOptions = [
     {
-      group: 'Match Predictions & Bets',
+      group: 'Predictions & Bets',
       options: [
-        { value: 'fixtures', label: 'Match Predictions' },
-        { value: 'props', label: 'Props & Specials (Corners/Cards)' },
-        { value: 'scores', label: 'Goals & Totals' },
-        { value: 'binary', label: 'Value Bets & Kelly' },
-        { value: 'swarm', label: 'AI Swarm Consensus' },
+        { value: 'fixtures', label: 'Match Predictions & Fixtures' },
+        { value: 'props', label: 'Corners & Cards (Props & Specials)' },
+        { value: 'scores', label: 'Goals & Totals (O/U & BTTS)' },
+        { value: 'binary', label: 'Value Bets & Kelly (+EV)' },
+        { value: 'swarm', label: 'Model Consensus & AI Swarm' },
         { value: 'acca', label: 'Bet Slips & Accumulators' }
       ]
     },
     {
-      group: 'Intelligence & Audit',
+      group: 'Analysis & History',
       options: [
-        { value: 'lineups', label: 'Starting XI Lineups' },
+        { value: 'lineups', label: 'Starting Lineups & Starting XI' },
         { value: 'results', label: 'Past Results & Proof' },
-        { value: 'deep-research', label: 'Match AI Research' },
+        { value: 'deep-research', label: 'Match Research & Deep AI' },
         { value: 'leagues', label: 'League Stats & Profiles' }
       ]
     },
     {
-      group: 'System & Configuration',
+      group: 'Settings & Logs',
       options: [
         { value: 'tuning', label: 'Model Settings & Tuning' },
-        { value: 'patches', label: 'System Updates & Learning' },
-        { value: 'timezone', label: 'Timezone Settings' },
-        { value: 'logs', label: 'System Activity Logs' }
+        { value: 'patches', label: 'Model Updates & Autonomous Learning' },
+        { value: 'timezone', label: 'Timezone Settings & Clock' },
+        { value: 'logs', label: 'Activity Logs & System Telemetry' }
       ]
     }
   ];
@@ -114,17 +115,17 @@ export default function HeaderBar({
 
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-xs">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between gap-3">
+      <div className="w-full max-w-[1920px] mx-auto px-2.5 sm:px-4 md:px-6 lg:px-8 h-14 flex items-center justify-between gap-1.5 sm:gap-3">
         
         {/* Left: Tray Opener + Title */}
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
           <button
             onClick={handleOpenMenuClick}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 font-medium text-xs shadow-xs transition-colors cursor-pointer shrink-0"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[38px] rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 font-medium text-xs shadow-xs transition-colors cursor-pointer shrink-0"
             title="Open navigation menu"
           >
             <Menu className="w-4 h-4 text-slate-600" />
-            <span className="font-semibold">Menu</span>
+            <span className="font-semibold hidden xs:inline">Menu</span>
           </button>
 
           <div className="h-4 w-px bg-slate-200 hidden sm:block" />
@@ -135,7 +136,7 @@ export default function HeaderBar({
               MatchScraper AI
             </span>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400 hidden md:inline shrink-0" />
-            <span className="font-semibold text-indigo-700 text-xs sm:text-sm bg-indigo-50/70 px-2 py-0.5 rounded-md border border-indigo-100 truncate">
+            <span className="font-semibold text-indigo-700 text-xs sm:text-sm bg-indigo-50/70 px-1.5 sm:px-2 py-0.5 rounded-md border border-indigo-100 truncate max-w-[110px] xs:max-w-[160px] sm:max-w-none">
               {currentTitle}
             </span>
           </div>
@@ -205,11 +206,20 @@ export default function HeaderBar({
           </div>
 
           {/* Accuracy Badge */}
-          {overallAccuracy && (
-            <div className="hidden xl:flex items-center px-2 py-1 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono shadow-sm">
-              <span>Accuracy: {typeof overallAccuracy === 'number' ? `${overallAccuracy.toFixed(1)}%` : overallAccuracy.toString().includes('%') ? overallAccuracy : `${overallAccuracy}%`}</span>
-            </div>
-          )}
+          <button 
+            type="button"
+            onClick={() => {
+              if (typeof onOpenStrategyProof === 'function') onOpenStrategyProof();
+            }}
+            className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono shadow-2xs cursor-pointer hover:bg-emerald-100 transition-colors"
+            title="Click to view Strategy Proof (23,453 Multi-Season Backtest: Raw 56.8% → Selective 76.3% – 82.3%)"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <span>Selective: <strong className="text-emerald-700">76.3% – 82.3%</strong></span>
+            <span className="text-[10px] text-slate-400 font-normal">
+              (23.4k Backtest)
+            </span>
+          </button>
 
           {/* Matches Count Badge */}
           <div className="flex items-center px-2 py-1 rounded-md text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
@@ -220,7 +230,7 @@ export default function HeaderBar({
           {/* Bet Slip Quick Access Pill */}
           <button
             onClick={() => handlePageSelect('acca')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition-all cursor-pointer shadow-2xs border ${
+            className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 min-h-[34px] rounded-md text-xs font-bold transition-all cursor-pointer shadow-2xs border shrink-0 ${
               activePage === 'acca'
                 ? 'bg-indigo-600 text-white border-indigo-700'
                 : accaCount > 0
@@ -241,11 +251,11 @@ export default function HeaderBar({
           <button
             onClick={handleRefreshClick}
             disabled={refreshing}
-            className="px-2.5 py-1 rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium text-xs shadow-xs transition-colors cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+            className="px-2 sm:px-2.5 py-1 min-h-[34px] rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium text-xs shadow-xs transition-colors cursor-pointer flex items-center gap-1.5 disabled:opacity-50 shrink-0"
             title="Refresh fixtures & recalculate state"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-slate-600 ${refreshing ? 'animate-spin text-indigo-600' : ''}`} />
-            <span>Refresh</span>
+            <span className="hidden xs:inline">Refresh</span>
           </button>
         </div>
 

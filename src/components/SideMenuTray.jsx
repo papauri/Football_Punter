@@ -71,6 +71,20 @@ export default function SideMenuTray({
           badgeColor: 'bg-indigo-100 text-indigo-800'
         },
         {
+          id: 'scores',
+          label: 'Goals & Totals',
+          icon: Activity,
+          badge: counts.scores > 0 ? `${counts.scores} goals` : 'O/U',
+          badgeColor: 'bg-blue-100 text-blue-800'
+        },
+        {
+          id: 'binary',
+          label: 'Value Bets',
+          icon: Scale,
+          badge: counts.binary > 0 ? `${counts.binary} picks` : 'Value',
+          badgeColor: 'bg-emerald-100 text-emerald-800'
+        },
+        {
           id: 'swarm',
           label: 'Model Consensus',
           icon: Bot,
@@ -104,6 +118,13 @@ export default function SideMenuTray({
           badgeColor: 'bg-slate-200 text-slate-800'
         },
         {
+          id: 'deep-research',
+          label: 'Match Research',
+          icon: Brain,
+          badge: 'AI Deep',
+          badgeColor: 'bg-purple-100 text-purple-800'
+        },
+        {
           id: 'leagues',
           label: 'League Stats',
           icon: Trophy,
@@ -128,6 +149,13 @@ export default function SideMenuTray({
           icon: Zap,
           badge: effectivePatchCount > 0 ? `${effectivePatchCount} updates` : 'Active',
           badgeColor: 'bg-emerald-100 text-emerald-800'
+        },
+        {
+          id: 'timezone',
+          label: 'Timezone Settings',
+          icon: Clock,
+          badge: tzLabel || 'UTC',
+          badgeColor: 'bg-slate-100 text-slate-700'
         },
         {
           id: 'logs',
@@ -185,8 +213,7 @@ export default function SideMenuTray({
                 {section.items.map((item) => {
                   const Icon = item.icon;
                   const isActive = activePage === item.id || 
-                    ((activePage === 'patches' || activePage === 'autonomous') && (item.id === 'patches' || item.id === 'autonomous')) ||
-                    ((activePage === 'scores' || activePage === 'binary') && item.id === 'fixtures');
+                    ((activePage === 'patches' || activePage === 'autonomous') && (item.id === 'patches' || item.id === 'autonomous'));
                   return (
                     <button
                       key={item.id}

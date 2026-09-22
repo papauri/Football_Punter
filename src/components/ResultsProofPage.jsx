@@ -16,6 +16,7 @@ import {
   ArrowDown
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
+import BacktestAccuracyTrendChart from './BacktestAccuracyTrendChart';
 import { safeToFixed, formatScore } from '../utils/numberUtils';
 import { formatSafeDateTime, formatRelativeDayTime } from '../utils/dateUtils';
 
@@ -37,6 +38,7 @@ export default function ResultsProofPage({
   const [searchQuery, setSearchQuery] = useState('');
   const [leagueFilter, setLeagueFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL', 'HITS', 'MISSES'
+  const [showBacktestChart, setShowBacktestChart] = useState(false);
   const [sortField, setSortField] = useState('time');
   const [sortDirection, setSortDirection] = useState('asc'); // 'asc' | 'desc'
 
@@ -234,9 +236,29 @@ export default function ResultsProofPage({
                 {stats.pushes > 0 && <span className="text-amber-600"> - {stats.pushes}P</span>}
               </div>
             </div>
+
+            <button
+              onClick={() => setShowBacktestChart(!showBacktestChart)}
+              className={`px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
+                showBacktestChart 
+                  ? 'bg-indigo-600 text-white shadow-xs' 
+                  : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200'
+              }`}
+              title="Toggle multi-season 23,453 match accuracy trend chart"
+            >
+              <TrendingUp className="w-3.5 h-3.5" />
+              <span>{showBacktestChart ? 'Hide 23.4k Chart' : '23.4k Accuracy Trend'}</span>
+            </button>
           </div>
 
         </div>
+
+        {/* Backtest Accuracy Trend Chart across 23,453 records */}
+        {showBacktestChart && (
+          <div className="mt-4 pt-4 border-t border-slate-100 animate-in fade-in slide-in-from-top-2 duration-200">
+            <BacktestAccuracyTrendChart />
+          </div>
+        )}
       </div>
 
       {/* Uniform Toolbar */}

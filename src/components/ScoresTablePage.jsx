@@ -385,7 +385,7 @@ export default function ScoresTablePage({
 
       {/* Compact Scores Table */}
       <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-        <div className="w-full">
+        <div className="w-full overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead className="hidden md:table-header-group">
               <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-10">

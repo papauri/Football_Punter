@@ -21,6 +21,7 @@ import AISwarmCenter from './AISwarmCenter';
 import LogsPage from './LogsPage';
 import ErrorBoundary from './ErrorBoundary';
 import PropsSpecialsPage from './PropsSpecialsPage';
+import StrategyProofModal from './StrategyProofModal';
 import { resolveMatchOdds, resolveMatchProb } from '../utils/oddsUtils';
 
 // =========================================================================
@@ -65,11 +66,13 @@ export const useTimezone = () => useContext(TimezoneContext);
 
 export default function Dashboard() {
   const [state, setState] = useState(null);
+  const [connectionError, setConnectionError] = useState(null);
   const [activePage, setActivePage] = useState('fixtures');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScraping, setIsScraping] = useState(false);
   const [isRetraining, setIsRetraining] = useState(false);
   const [toastNotification, setToastNotification] = useState(null);
+  const [showStrategyProof, setShowStrategyProof] = useState(false);
   
   // Active selected match for Deep Research or Lineup inspection
   const [activeResearchMatch, setActiveResearchMatch] = useState(null);
@@ -395,20 +398,32 @@ export default function Dashboard() {
     if (Date.now() < backoffUntilRef.current) return;
 
     isFetchingRef.current = true;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+
     try {
-      const res = await fetch('/api/state');
+      const res = await fetch('/api/state', { signal: controller.signal });
+      clearTimeout(timeoutId);
       if (!res.ok) {
         if (res.status === 429) {
           backoffUntilRef.current = Date.now() + 20000;
           return;
         }
+        setConnectionError(`Engine responded with status ${res.status}.`);
         return;
       }
       const data = await res.json();
       setState(data);
+      setConnectionError(null);
       backoffUntilRef.current = 0;
     } catch (err) {
+      clearTimeout(timeoutId);
       console.warn("Engine connection notice:", err.message || err);
+      if (err.name === 'AbortError') {
+        setConnectionError('Connection to prediction engine timed out. Reconnecting...');
+      } else {
+        setConnectionError(err.message || 'Unable to connect to prediction engine.');
+      }
     } finally {
       isFetchingRef.current = false;
     }
@@ -416,7 +431,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchState(true);
-    const int = setInterval(() => fetchState(false), 9000);
+    const int = setInterval(() => fetchState(false), 25000);
     const handleVisibility = () => {
       if (typeof document !== 'undefined' && !document.hidden) {
         fetchState(true);
@@ -534,10 +549,29 @@ export default function Dashboard() {
 
   if (!state) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-slate-500 font-sans text-sm">
-        <Activity className="animate-spin w-8 h-8 mb-3 text-indigo-600" />
-        <p className="text-xs tracking-wider text-slate-700 font-bold uppercase">Loading Prediction Engine...</p>
-        <span className="text-[11px] text-slate-400 mt-1">Initializing Statistical models &amp; swarm consensus</span>
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-slate-500 font-sans text-sm p-4 text-center">
+        {connectionError ? (
+          <div className="max-w-md w-full bg-white p-6 rounded-2xl border border-rose-200 shadow-sm">
+            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-3 border border-rose-100">
+              <AlertCircle className="w-6 h-6" />
+            </div>
+            <h2 className="text-base font-bold text-slate-900 mb-1">Backend Connection Notice</h2>
+            <p className="text-xs text-slate-500 mb-4">{connectionError}</p>
+            <button
+              onClick={() => { setConnectionError(null); fetchState(true); }}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs rounded-xl shadow-xs transition-colors cursor-pointer inline-flex items-center gap-2"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Retry Connection</span>
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center">
+            <Activity className="animate-spin w-8 h-8 mb-3 text-indigo-600" />
+            <p className="text-xs tracking-wider text-slate-700 font-bold uppercase">Loading Prediction Engine...</p>
+            <span className="text-[11px] text-slate-400 mt-1">Initializing Statistical models &amp; swarm consensus</span>
+          </div>
+        )}
       </div>
     );
   }
@@ -578,6 +612,7 @@ export default function Dashboard() {
           isRefreshing={isScraping || isRetraining}
           isScraping={isScraping}
           overallAccuracy={state.overallAccuracy || state.trainingStats?.accuracy || null}
+          onOpenStrategyProof={() => setShowStrategyProof(true)}
         />
 
         {/* Action Feedback Toast Notification */}
@@ -637,7 +672,7 @@ export default function Dashboard() {
         />
 
         {/* Main Content Viewport */}
-        <main className="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        <main className="flex-1 w-full max-w-[1920px] mx-auto px-2.5 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6">
           <ErrorBoundary key={activePage} onReset={() => fetchState(true)}>
             {activePage === 'results' && (
                <div className="mb-6">
@@ -854,18 +889,24 @@ export default function Dashboard() {
                 onClick={() => setActivePage('patches')}
                 className="hover:text-slate-600 transition-colors cursor-pointer font-medium"
               >
-                Telemetry &amp; Updates
+                Model Updates
               </button>
               <span>•</span>
               <button
                 onClick={() => setActivePage('logs')}
                 className="hover:text-slate-600 transition-colors cursor-pointer font-medium"
               >
-                System Logs
+                Activity Logs
               </button>
             </div>
           </div>
         </footer>
+
+        {/* Global Strategy Proof & Accuracy Breakdown Modal */}
+        <StrategyProofModal
+          isOpen={showStrategyProof}
+          onClose={() => setShowStrategyProof(false)}
+        />
 
       </div>
     </TimezoneContext.Provider>

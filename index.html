@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Live Match Scraper & AI Prediction Engine</title>
     <meta name="description" content="Football match predictions, value bets, and bet slips powered by statistical models and AI consensus." />
+    <script>
+      window.addEventListener('unhandledrejection', function(event) {
+        if (event && event.reason && (
+          event.reason.message?.includes('WebSocket') || 
+          event.reason.message?.includes('vite:ws') ||
+          String(event.reason).includes('WebSocket')
+        )) {
+          event.preventDefault();
+        }
+      });
+    </script>
   </head>
   <body class="bg-slate-50 text-slate-900 antialiased">
     <div id="root"></div>

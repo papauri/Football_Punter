@@ -938,7 +938,7 @@ export class AISwarmOrchestrator {
     if (!sampleSet || sampleSet.length === 0) return this.directives.telemetry?.unanimousProof || null;
 
     const disabledLeagues = options.disabledLeagues || this.engine?.hyperparameters?.disabledLeagues || [];
-    let matchesToTest = sampleSet.slice(-2000);
+    let matchesToTest = (options.limit && options.limit > 0) ? sampleSet.slice(-options.limit) : sampleSet;
     if (Array.isArray(disabledLeagues) && disabledLeagues.length > 0) {
       matchesToTest = matchesToTest.filter(m => !disabledLeagues.includes(m.league));
     }
