@@ -56,6 +56,7 @@ export const isMatchForDate = (m, targetIso) => {
 
 export default function ResultsProofPage({
   historicalResults = [],
+  historical30d = [],
   todayMatches = [],
   yesterdayMatches = [],
   leaguePerformance = [],
@@ -79,6 +80,13 @@ export default function ResultsProofPage({
   const [showLedger, setShowLedger] = useState(false);
   const [ledgerEntries, setLedgerEntries] = useState([]);
   const [ledgerLoading, setLedgerLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 8;
+  const isSearchMode = searchQuery.trim().length >= 2;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedDate, leagueFilter, statusFilter, sortField, sortDirection]);
 
   // Fetch the pre-kickoff snapshot ledger from the server
   const fetchLedger = async () => {
@@ -136,45 +144,57 @@ export default function ResultsProofPage({
     }
   }, [selectedDate]);
 
-  // Combine fetched historicalResults with local todayMatches / yesterdayMatches strictly for active selected date
+  // Combine fetched historicalResults, historical30d with local todayMatches / yesterdayMatches
   const activeResults = useMemo(() => {
     let list = [];
+    const existingIds = new Set();
 
-    // 1. Include fetched historical results strictly if they match selectedDate
-    if (Array.isArray(historicalResults)) {
-      historicalResults.forEach(m => {
-        if (isMatchForDate(m, selectedDate)) {
-          list.push(m);
-        }
-      });
-    }
+    const addMatch = (m) => {
+      if (!m || !m.id) return;
+      const idStr = String(m.id);
+      if (!existingIds.has(idStr)) {
+        existingIds.add(idStr);
+        list.push(m);
+      }
+    };
 
-    const todayIso = getTodayIso();
-    const yesterdayDate = new Date();
-    yesterdayDate.setUTCDate(yesterdayDate.getUTCDate() - 1);
-    const yesterdayIso = yesterdayDate.toISOString().slice(0, 10);
+    if (isSearchMode) {
+      // In search mode: query across the complete historical database
+      if (Array.isArray(historical30d)) historical30d.forEach(addMatch);
+      if (Array.isArray(historicalResults)) historicalResults.forEach(addMatch);
+      if (Array.isArray(todayMatches)) todayMatches.forEach(addMatch);
+      if (Array.isArray(yesterdayMatches)) yesterdayMatches.forEach(addMatch);
+    } else {
+      // Strict date isolation when no team search is active
+      if (Array.isArray(historicalResults)) {
+        historicalResults.forEach(m => {
+          if (isMatchForDate(m, selectedDate)) addMatch(m);
+        });
+      }
+      if (Array.isArray(historical30d)) {
+        historical30d.forEach(m => {
+          if (isMatchForDate(m, selectedDate)) addMatch(m);
+        });
+      }
 
-    const existingIds = new Set(list.map(m => String(m.id)));
+      const todayIso = getTodayIso();
+      const yesterdayDate = new Date();
+      yesterdayDate.setUTCDate(yesterdayDate.getUTCDate() - 1);
+      const yesterdayIso = yesterdayDate.toISOString().slice(0, 10);
 
-    // 2. Incorporate local matches ONLY if they strictly match selectedDate
-    if (selectedDate === todayIso && Array.isArray(todayMatches)) {
-      todayMatches.forEach(tm => {
-        if (isMatchForDate(tm, selectedDate) && !existingIds.has(String(tm.id))) {
-          existingIds.add(String(tm.id));
-          list.push(tm);
-        }
-      });
-    } else if (selectedDate === yesterdayIso && Array.isArray(yesterdayMatches)) {
-      yesterdayMatches.forEach(ym => {
-        if (isMatchForDate(ym, selectedDate) && !existingIds.has(String(ym.id))) {
-          existingIds.add(String(ym.id));
-          list.push(ym);
-        }
-      });
+      if (selectedDate === todayIso && Array.isArray(todayMatches)) {
+        todayMatches.forEach(tm => {
+          if (isMatchForDate(tm, selectedDate)) addMatch(tm);
+        });
+      } else if (selectedDate === yesterdayIso && Array.isArray(yesterdayMatches)) {
+        yesterdayMatches.forEach(ym => {
+          if (isMatchForDate(ym, selectedDate)) addMatch(ym);
+        });
+      }
     }
 
     return list;
-  }, [historicalResults, todayMatches, yesterdayMatches, selectedDate]);
+  }, [historicalResults, historical30d, todayMatches, yesterdayMatches, selectedDate, isSearchMode]);
 
   // Extract unique leagues
   const leagueOptions = useMemo(() => {
@@ -196,11 +216,11 @@ export default function ResultsProofPage({
     ];
   }, [activeResults, leaguePerformance]);
 
-  // Filter results strictly matching selected date
+  // Filter results: bypass selectedDate if in search mode
   const filteredResults = useMemo(() => {
     return activeResults.filter(m => {
-      // Strict date isolation: match must belong to selectedDate
-      if (!isMatchForDate(m, selectedDate)) return false;
+      // Strict date isolation ONLY if NOT in search mode
+      if (!isSearchMode && !isMatchForDate(m, selectedDate)) return false;
 
       // Must be an audited completed match with verified scores or winner
       const isCompleted = m.isCompleted || m.status === 'FT' || m.status?.includes('FT') || m.status?.includes('Final') || m.actualScore || (m.homeScore != null && m.awayScore != null);
@@ -210,7 +230,8 @@ export default function ResultsProofPage({
         const q = searchQuery.toLowerCase();
         const home = (m.home || '').toLowerCase();
         const away = (m.away || '').toLowerCase();
-        if (!home.includes(q) && !away.includes(q)) return false;
+        const league = (m.league || '').toLowerCase();
+        if (!home.includes(q) && !away.includes(q) && !league.includes(q)) return false;
       }
 
       if (leagueFilter !== 'All' && m.league !== leagueFilter) return false;
@@ -264,7 +285,13 @@ export default function ResultsProofPage({
       }
       return 0;
     });
-  }, [activeResults, searchQuery, leagueFilter, statusFilter, sortField, sortDirection]);
+  }, [activeResults, searchQuery, leagueFilter, statusFilter, sortField, sortDirection, isSearchMode, selectedDate]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredResults.length / pageSize));
+  const paginatedResults = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredResults.slice(start, start + pageSize);
+  }, [filteredResults, currentPage, pageSize]);
 
   // Compute stats
   const stats = useMemo(() => {
@@ -428,21 +455,36 @@ export default function ResultsProofPage({
 
         </div>
 
-        <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
-          <span>Showing <strong>{filteredResults.length}</strong> audited outcomes for {selectedDate}</span>
-          {(searchQuery || leagueFilter !== 'All' || statusFilter !== 'ALL') && (
+        {isSearchMode ? (
+          <div className="flex items-center justify-between text-xs text-teal-950 bg-teal-50 p-2.5 rounded-lg border border-teal-200">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-teal-900">🔍 Team Search Active:</span>
+              <span>Found <strong>{filteredResults.length}</strong> matches for "<strong>{searchQuery}</strong>" across all dates (single-date filter bypassed).</span>
+            </div>
             <button
-              onClick={() => {
-                setSearchQuery('');
-                setLeagueFilter('All');
-                setStatusFilter('ALL');
-              }}
-              className="text-indigo-600 hover:text-indigo-800 font-medium underline cursor-pointer"
+              onClick={() => setSearchQuery('')}
+              className="text-teal-700 hover:text-teal-950 font-bold underline cursor-pointer ml-2"
             >
-              Reset filters
+              Clear Search
             </button>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
+            <span>Showing <strong>{filteredResults.length}</strong> audited outcomes for {selectedDate}</span>
+            {(searchQuery || leagueFilter !== 'All' || statusFilter !== 'ALL') && (
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setLeagueFilter('All');
+                  setStatusFilter('ALL');
+                }}
+                className="text-indigo-600 hover:text-indigo-800 font-medium underline cursor-pointer"
+              >
+                Reset filters
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Compact Results Table */}
@@ -634,7 +676,7 @@ export default function ResultsProofPage({
                 </td>
               </tr>
             ) : (
-              filteredResults.map((m, idx) => {
+              paginatedResults.map((m, idx) => {
                 const hG = m.homeScore ?? m.goals?.home;
                 const aG = m.awayScore ?? m.goals?.away;
                 const actualWinner = m.actualWinner || (hG != null && aG != null ? (hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW') : 'DRAW');
@@ -756,6 +798,60 @@ export default function ResultsProofPage({
             )}
           </tbody>
         </table>
+
+        {/* Pagination Bar */}
+        {filteredResults.length > pageSize && (
+          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 bg-slate-50 border-t border-slate-200 text-xs">
+            <span className="text-slate-500 font-medium">
+              Showing <strong className="text-slate-800">{(currentPage - 1) * pageSize + 1}</strong> to{' '}
+              <strong className="text-slate-800">{Math.min(currentPage * pageSize, filteredResults.length)}</strong> of{' '}
+              <strong className="text-slate-800">{filteredResults.length}</strong> audited matches
+              {isSearchMode && <span className="text-teal-700 font-semibold ml-1.5">(across all dates)</span>}
+            </span>
+
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 text-slate-700 font-medium transition-colors cursor-pointer disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                  .map((p, idx, arr) => {
+                    const prev = arr[idx - 1];
+                    const showEllipsis = prev && p - prev > 1;
+                    return (
+                      <React.Fragment key={p}>
+                        {showEllipsis && <span className="px-1 text-slate-400">...</span>}
+                        <button
+                          onClick={() => setCurrentPage(p)}
+                          className={`w-7 h-7 rounded text-xs font-semibold transition-colors cursor-pointer ${
+                            currentPage === p
+                              ? 'bg-teal-600 text-white shadow-xs'
+                              : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      </React.Fragment>
+                    );
+                  })}
+              </div>
+
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 text-slate-700 font-medium transition-colors cursor-pointer disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Pre-Kickoff Snapshot Ledger Panel ── */}

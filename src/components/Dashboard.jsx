@@ -800,6 +800,9 @@ export default function Dashboard() {
                 betSlips={betSlips}
                 activeSlipId={activeSlipId}
                 aiSwarm={state?.aiSwarm}
+                historicalMatches={historical30d}
+                yesterdayMatches={state.yesterdayMatches}
+                todayCompletedMatches={state.todayCompletedMatches}
                 />
               </>
             )}
@@ -854,6 +857,7 @@ export default function Dashboard() {
                     ? filteredAuditedDateResults
                     : []
                 }
+                historical30d={historical30d}
                 todayMatches={filteredTodayCompletedMatches}
                 yesterdayMatches={filteredYesterdayMatches}
                 leaguePerformance={state.trainingStats?.leaguePerformance || []}
@@ -896,6 +900,7 @@ export default function Dashboard() {
               <DeepResearchPage
                 selectedMatch={activeResearchMatch}
                 matches={matches}
+                historicalMatches={historical30d}
                 tzSettings={tzSettings}
                 onSelectMatch={setActiveResearchMatch}
                 onBackToFixtures={() => setActivePage('fixtures')}

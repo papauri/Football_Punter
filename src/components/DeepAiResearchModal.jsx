@@ -18,7 +18,9 @@ import {
   ShieldAlert,
   BarChart3,
   Zap,
-  Award
+  Award,
+  Swords,
+  Trophy
 } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { safeToFixed, safeParseFloat } from '../utils/numberUtils';
@@ -100,6 +102,16 @@ export default function DeepAiResearchModal({ match, onClose, onPatchSuccess, tz
 
   if (!match) return null;
 
+  const dossier = researchData?.masterTacticalDossier || researchData?.tacticalDiagnosis?.masterTacticalDossier;
+  const executiveVerdict = researchData?.executiveVerdict || dossier?.executiveVerdict || researchData?.tacticalDiagnosis?.executiveVerdict;
+  const systemicClash = dossier?.systemicClash;
+  const turningPoints = dossier?.decisiveTurningPoints || [];
+  const phases = Array.isArray(dossier?.chronologicalPhases) 
+    ? dossier.chronologicalPhases 
+    : Object.values(dossier?.chronologicalPhases || dossier?.matchPhases || {});
+  const calibration = dossier?.modelCalibrationLessons;
+  const defeatBreakdown = dossier?.forensicDefeatDiagnosis || dossier?.forensicDefeatBreakdown;
+  const keyPlayerImpact = dossier?.keyPlayerImpact || [];
   const archetype = researchData?.archetype || researchData?.lossForensics?.lossArchetype || researchData?.tacticalDiagnosis?.primaryRootCause;
   const tactical = researchData?.tacticalDiagnosis;
   const clash = researchData?.analytics?.tacticalClash;
@@ -179,64 +191,253 @@ export default function DeepAiResearchModal({ match, onClose, onPatchSuccess, tz
           ) : researchData ? (
             <div className="space-y-4">
               
-              {/* 1. EXECUTIVE FORENSIC LOSS CARD ("How The Team Actually Lost") */}
-              {forensics && (
-                <div className="rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-950/40 via-slate-900 to-slate-950 p-4 sm:p-5 shadow-lg">
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
-                          <Flame className="w-3 h-3 text-amber-400" />
-                          {forensics.losingTeam ? `Root Cause: How ${forensics.losingTeam} Lost` : `Draw Equilibrium Post-Mortem`}
-                        </span>
-                        {forensics.lossArchetype && (
-                          <span className="text-[10px] font-mono text-slate-400 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
-                            {forensics.lossArchetype.split('_').join(' ')}
-                          </span>
-                        )}
-                      </div>
-                      <h4 className="text-sm sm:text-base font-bold text-white mt-1.5 leading-snug">
-                        {forensics.primaryLossReason}
-                      </h4>
-                    </div>
-                  </div>
+              {/* 1. MASTER AGENT EXECUTIVE STRATEGIC VERDICT */}
+              <div className="rounded-xl border border-teal-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 p-4 sm:p-5 shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
 
-                  {/* Super Analyst Prose */}
-                  <div className="text-xs text-slate-300 leading-relaxed bg-slate-950/80 p-3.5 rounded-lg border border-slate-800 mb-3">
-                    <p>{forensics.howTheyLost}</p>
-                  </div>
-
-                  {/* Turning point highlight */}
-                  {forensics.turningPoint && (
-                    <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/25 text-xs text-amber-200 mb-3 flex items-start gap-2.5">
-                      <Zap className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                      <div>
-                        <strong className="text-amber-300 font-semibold block text-[11px] uppercase tracking-wide">Decisive Match Turning Point</strong>
-                        <span>{forensics.turningPoint}</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Tactical Flaws Checklist */}
-                  {forensics.tacticalFlaws && forensics.tacticalFlaws.length > 0 && (
-                    <div className="space-y-1.5 pt-1 border-t border-slate-800/80">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                        Structural Breakdown Factors:
+                <div className="relative z-10">
+                  <div className="flex flex-wrap items-center justify-between gap-2.5 mb-3 pb-3 border-b border-slate-800">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30 flex items-center gap-1.5">
+                        <Trophy className="w-3.5 h-3.5 text-teal-400" />
+                        UEFA Pro Master Tactical Dossier
                       </span>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                        {forensics.tacticalFlaws.map((flaw, idx) => (
-                          <div key={idx} className="flex items-start gap-2 p-2 rounded bg-slate-950/60 border border-slate-800 text-slate-300 text-[11px]">
-                            <span className="text-rose-400 font-bold shrink-0">✕</span>
-                            <span>{flaw}</span>
-                          </div>
-                        ))}
+                      {defeatBreakdown?.rootCauseCategory && (
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-amber-300 border border-amber-500/30">
+                          {defeatBreakdown.rootCauseCategory.split('_').join(' ')}
+                        </span>
+                      )}
+                      {forensics?.lossArchetype && !defeatBreakdown?.rootCauseCategory && (
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-amber-300 border border-amber-500/30">
+                          {forensics.lossArchetype.split('_').join(' ')}
+                        </span>
+                      )}
+                    </div>
+
+                    <span className="text-[11px] font-mono text-slate-400">
+                      {researchData?.actualScore ? `Final Score: ${researchData.actualScore}` : 'Tactical Audit'}
+                    </span>
+                  </div>
+
+                  <h4 className="text-sm sm:text-base font-bold text-white mb-2 flex items-center gap-2">
+                    <Brain className="w-4 h-4 text-teal-400 shrink-0" />
+                    <span>
+                      {defeatBreakdown?.losingTeam 
+                        ? `Forensic Autopsy: How ${defeatBreakdown.losingTeam} Lost to ${defeatBreakdown.winner}`
+                        : forensics?.losingTeam
+                        ? `Forensic Autopsy: How ${forensics.losingTeam} Lost`
+                        : `Tactical Synthesis: ${match.home} vs ${match.away}`}
+                    </span>
+                  </h4>
+
+                  {/* Master Analyst Prose */}
+                  <div className="text-xs text-slate-200 leading-relaxed bg-slate-950/80 p-3.5 rounded-lg border border-slate-800/90 mb-3 whitespace-pre-line">
+                    <p>{executiveVerdict || defeatBreakdown?.masterDiagnosis || forensics?.howTheyLost || 'Deep tactical forensic analysis synthesized from match data.'}</p>
+                  </div>
+
+                  {/* Top Analytical Highlights */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                    <div className="bg-slate-950/60 p-2.5 rounded-lg border border-slate-800">
+                      <span className="text-[10px] font-mono text-slate-400 uppercase block mb-0.5">Primary Inflection Point</span>
+                      <span className="font-semibold text-amber-300">
+                        {forensics?.turningPoint || (turningPoints[0] ? `${turningPoints[0].minute} ${turningPoints[0].title}` : 'Dynamic game-state swing')}
+                      </span>
+                    </div>
+                    <div className="bg-slate-950/60 p-2.5 rounded-lg border border-slate-800">
+                      <span className="text-[10px] font-mono text-slate-400 uppercase block mb-0.5">Fatal Concession Zone</span>
+                      <span className="font-semibold text-rose-300">
+                        {defeatBreakdown?.fatalConcessionZone || 'Defensive transition half-spaces'}
+                      </span>
+                    </div>
+                    <div className="bg-slate-950/60 p-2.5 rounded-lg border border-slate-800">
+                      <span className="text-[10px] font-mono text-slate-400 uppercase block mb-0.5">Model Poisson Calibration</span>
+                      <span className="font-semibold text-teal-300">
+                        {calibration?.calibratedPoissonAdjustment || 'Poisson variance re-weighted'}
+                      </span>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* 2. SYSTEMIC CLASH & MANAGERIAL BLUEPRINT */}
+              {systemicClash && (
+                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+                    <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                      <Swords className="w-3.5 h-3.5 text-indigo-400" />
+                      Systemic Clash &amp; Managerial Blueprint
+                    </h4>
+                    <span className="text-[10px] font-mono text-slate-400 uppercase">Tactical Matchup</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    {/* Home Blueprint */}
+                    <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 text-xs">
+                      <div className="flex items-center justify-between mb-2">
+                        <strong className="text-white font-bold">{systemicClash.homeDetails?.club || systemicClash.homeDetails?.team || systemicClash.home?.team || match.home}</strong>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-teal-950 text-teal-300 border border-teal-800/60">
+                          {systemicClash.homeDetails?.system || systemicClash.homeDetails?.shape || systemicClash.home?.shape || '4-3-3'}
+                        </span>
                       </div>
+                      <div className="space-y-1.5 text-[11px] text-slate-300">
+                        <div>
+                          <span className="font-semibold text-slate-400">Manager: </span>
+                          <span className="font-bold text-white">{systemicClash.homeDetails?.manager || systemicClash.home?.manager || 'Head Coach'}</span>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-slate-400">In Possession: </span>
+                          <span>{systemicClash.homeDetails?.inPossession || systemicClash.home?.inPossession}</span>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-slate-400">Out of Possession: </span>
+                          <span>{systemicClash.homeDetails?.outOfPossession || systemicClash.home?.outOfPossession}</span>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-slate-400">Key Strengths: </span>
+                          <span>{systemicClash.homeDetails?.keyStrengths || systemicClash.home?.pressingProfile}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Away Blueprint */}
+                    <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 text-xs">
+                      <div className="flex items-center justify-between mb-2">
+                        <strong className="text-white font-bold">{systemicClash.awayDetails?.club || systemicClash.awayDetails?.team || systemicClash.away?.team || match.away}</strong>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-950 text-indigo-300 border border-indigo-800/60">
+                          {systemicClash.awayDetails?.system || systemicClash.awayDetails?.shape || systemicClash.away?.shape || '4-3-3'}
+                        </span>
+                      </div>
+                      <div className="space-y-1.5 text-[11px] text-slate-300">
+                        <div>
+                          <span className="font-semibold text-slate-400">Manager: </span>
+                          <span className="font-bold text-white">{systemicClash.awayDetails?.manager || systemicClash.away?.manager || 'Head Coach'}</span>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-slate-400">In Possession: </span>
+                          <span>{systemicClash.awayDetails?.inPossession || systemicClash.away?.inPossession}</span>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-slate-400">Out of Possession: </span>
+                          <span>{systemicClash.awayDetails?.outOfPossession || systemicClash.away?.outOfPossession}</span>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-slate-400">Key Strengths: </span>
+                          <span>{systemicClash.awayDetails?.keyStrengths || systemicClash.away?.pressingProfile}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {(systemicClash.keyTacticalBattle || systemicClash.tacticalDynamic) && (
+                    <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800 text-xs text-slate-300">
+                      <strong className="text-white block font-semibold mb-0.5">Clash Dynamic Synthesis:</strong>
+                      <p>{systemicClash.keyTacticalBattle || systemicClash.tacticalDynamic}</p>
+                      {systemicClash.possessionDynamic && (
+                        <p className="mt-1 text-slate-400 font-mono text-[11px]">{systemicClash.possessionDynamic}</p>
+                      )}
                     </div>
                   )}
                 </div>
               )}
 
-              {/* 2. REAL BOX-SCORE STATISTICAL COMPARISON GRID */}
+              {/* 3. DECISIVE GAME-STATE TURNING POINTS */}
+              {turningPoints && turningPoints.length > 0 && (
+                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-amber-400" />
+                    Decisive Game-State Turning Points
+                  </h4>
+                  <div className="space-y-2.5">
+                    {turningPoints.map((tp, idx) => (
+                      <div key={idx} className="p-3 rounded-lg border border-slate-800 bg-slate-950/70">
+                        <div className="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded font-mono font-bold text-xs bg-slate-800 text-white border border-slate-700">
+                              {tp.minute}
+                            </span>
+                            <span className="font-bold text-white text-xs">
+                              {tp.title}
+                            </span>
+                          </div>
+                          <span className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded font-semibold ${
+                            tp.type === 'RED_CARD' ? 'bg-rose-950/60 text-rose-300 border border-rose-800/60' :
+                            tp.type === 'PENALTY' ? 'bg-amber-950/60 text-amber-300 border border-amber-800/60' :
+                            tp.type === 'GOAL' ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-800/60' :
+                            'bg-slate-800 text-slate-300'
+                          }`}>
+                            {tp.type}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-300 leading-relaxed mb-1.5">
+                          {tp.narrative || tp.description}
+                        </p>
+                        {(tp.tacticalImpact || tp.impact) && (
+                          <div className="text-[11px] font-semibold text-slate-400 bg-slate-900 p-2 rounded border border-slate-800 flex items-start gap-1.5">
+                            <ArrowRight className="w-3.5 h-3.5 text-teal-400 shrink-0 mt-0.5" />
+                            <span><strong className="text-slate-200">Tactical Impact:</strong> {tp.tacticalImpact || tp.impact}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 4. CHRONOLOGICAL MATCH PHASES */}
+              {phases && phases.length > 0 && (
+                <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-teal-400" />
+                    Chronological Match Phases
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                    {phases.map((ph, idx) => (
+                      <div key={idx} className="p-3 rounded-lg bg-slate-950 border border-slate-800 text-xs flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="font-mono font-bold text-xs text-teal-300 bg-teal-950 px-2 py-0.5 rounded border border-teal-800/60">
+                              {ph.label || ph.phase}
+                            </span>
+                            {ph.dominantSide && (
+                              <span className="text-[10px] font-mono text-slate-400 uppercase">
+                                {ph.dominantSide}
+                              </span>
+                            )}
+                          </div>
+                          <strong className="text-white block font-semibold mb-1 text-[11px]">{ph.title}</strong>
+                          <p className="text-[11px] text-slate-400 leading-relaxed mb-2">{ph.narrative || ph.dynamic}</p>
+                        </div>
+                        {(ph.tacticalDynamic || ph.turningFactor || ph.keyFactor) && (
+                          <div className="pt-2 border-t border-slate-800 text-[10px] text-slate-500">
+                            <strong className="text-slate-300">Dynamic:</strong> {ph.tacticalDynamic || ph.turningFactor || ph.keyFactor}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 5. FORENSIC DEFEAT BREAKDOWN & STRUCTURAL VULNERABILITIES */}
+              {(defeatBreakdown?.structuralFlaws?.length > 0 || defeatBreakdown?.tacticalFlaws?.length > 0 || forensics?.tacticalFlaws?.length > 0) && (
+                <div className="bg-slate-900/90 border border-rose-900/40 rounded-xl p-4">
+                  <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                    <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />
+                    Structural Tactical Breakdown Factors
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    {(defeatBreakdown?.structuralFlaws || defeatBreakdown?.tacticalFlaws || forensics?.tacticalFlaws || []).map((flaw, idx) => (
+                      <div key={idx} className="flex items-start gap-2 p-2.5 rounded-lg bg-slate-950 border border-rose-900/30 text-slate-300 text-[11px]">
+                        <span className="text-rose-400 font-bold shrink-0">✕</span>
+                        <span>{flaw}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 6. REAL BOX-SCORE STATISTICAL COMPARISON GRID */}
               {boxScore && boxScore.home && boxScore.away && (
                 <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4">
                   <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3 flex items-center justify-between">
@@ -314,7 +515,7 @@ export default function DeepAiResearchModal({ match, onClose, onPatchSuccess, tz
                 </div>
               )}
 
-              {/* 3. MATCH TIMELINE */}
+              {/* 7. MATCH TIMELINE */}
               {timeline && timeline.length > 0 && (
                 <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4">
                   <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
@@ -341,7 +542,7 @@ export default function DeepAiResearchModal({ match, onClose, onPatchSuccess, tz
                 </div>
               )}
 
-              {/* 4. EVOLVING TEAM TREND MEMORY LEDGER */}
+              {/* 8. EVOLVING TEAM TREND MEMORY LEDGER */}
               {teamTrends && (teamTrends.home || teamTrends.away) && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* Home Team Trends */}
@@ -430,7 +631,36 @@ export default function DeepAiResearchModal({ match, onClose, onPatchSuccess, tz
                 </div>
               )}
 
-              {/* 5. TACTICAL CLASH METRICS */}
+              {/* 9. SUPERMODEL PREDICTIVE CALIBRATION LESSONS */}
+              {calibration && (
+                <div className="bg-gradient-to-br from-indigo-950/80 via-slate-900 to-slate-950 border border-indigo-700/50 rounded-xl p-4 text-xs">
+                  <h4 className="font-bold text-white text-xs uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                    <Target className="w-3.5 h-3.5 text-teal-400" />
+                    <span>Predictive Calibration Lessons</span>
+                  </h4>
+                  
+                  <div className="space-y-2">
+                    <div className="p-2.5 rounded bg-slate-950/80 border border-indigo-900/40">
+                      <span className="text-[10px] text-indigo-300 block">Analytical Residual</span>
+                      <span className="text-white font-semibold">{calibration.analyticalResidual}</span>
+                    </div>
+
+                    <div className="p-2.5 rounded bg-slate-950/80 border border-indigo-900/40">
+                      <span className="text-[10px] text-teal-300 block">Calibrated Poisson Adjustment</span>
+                      <span className="text-teal-200 font-semibold">{calibration.calibratedPoissonAdjustment}</span>
+                    </div>
+
+                    {calibration.futureBettingEdgeRule && (
+                      <div className="p-2.5 rounded bg-teal-950/40 border border-teal-800/50 text-teal-200">
+                        <strong className="text-[10px] uppercase block text-teal-300 font-bold mb-1">Unstoppable Edge Rule:</strong>
+                        <p className="text-[11px] leading-relaxed">{calibration.futureBettingEdgeRule}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* 10. TACTICAL CLASH METRICS */}
               {clash && (
                 <div className="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
                   <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-2.5 flex items-center gap-2">
@@ -458,7 +688,7 @@ export default function DeepAiResearchModal({ match, onClose, onPatchSuccess, tz
                 </div>
               )}
 
-              {/* 6. RECOMMENDED PARAMETER DELTAS */}
+              {/* 11. RECOMMENDED PARAMETER DELTAS */}
               {deltas && (
                 <div className="bg-slate-900/80 p-4 rounded-xl border border-slate-800">
                   <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-2 flex items-center gap-2">

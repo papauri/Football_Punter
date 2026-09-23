@@ -33,7 +33,8 @@ import {
   Award,
   Lock,
   Clock,
-  Calendar
+  Calendar,
+  History
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
 import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey, getLocalizedTodayKey, formatFriendlyDateOption } from '../utils/dateUtils';
@@ -61,6 +62,9 @@ export const getMatchPick = (m) => {
 
 export default function FixturesTablePage({
   matches = [],
+  historicalMatches = [],
+  yesterdayMatches = [],
+  todayCompletedMatches = [],
   bankrollEuro = 1000,
   leaguePerformance = [],
   tzSettings,
@@ -92,6 +96,8 @@ export default function FixturesTablePage({
   const [expandedMatchId, setExpandedMatchId] = useState(null);
   const [copiedAccaSlip, setCopiedAccaSlip] = useState(false);
   const [isAccaLoaded, setIsAccaLoaded] = useState(false);
+  const [historyPage, setHistoryPage] = useState(1);
+  const historyPageSize = 5;
 
   // Live countdown tick — updates every 30s so row timers stay fresh
   const [nowTick, setNowTick] = useState(() => Date.now());
@@ -832,9 +838,12 @@ export default function FixturesTablePage({
       }
 
       if (selectedDate !== 'All') {
-        const timeVal = m.timestamp || m.utcDate || m.dateIso || m.date;
-        const mDate = timeVal ? getLocalizedDateKey(timeVal, tzSettings) : 'Upcoming';
-        if (mDate !== selectedDate) return false;
+        const isClubSearch = searchQuery.trim().length >= 2;
+        if (!isClubSearch) {
+          const timeVal = m.timestamp || m.utcDate || m.dateIso || m.date;
+          const mDate = timeVal ? getLocalizedDateKey(timeVal, tzSettings) : 'Upcoming';
+          if (mDate !== selectedDate) return false;
+        }
       }
 
       // Strict League Pruning (Signal-to-Noise Ratio filter)
@@ -856,6 +865,48 @@ export default function FixturesTablePage({
       return tierObj?.tier === 3 || tierObj === 'TIER_3';
     }).length;
   }, [matches]);
+
+  const isSearchActive = searchQuery.trim().length >= 2;
+
+  useEffect(() => {
+    setHistoryPage(1);
+  }, [searchQuery]);
+
+  const recentCompletedMatches = useMemo(() => {
+    if (!isSearchActive) return [];
+    const q = searchQuery.toLowerCase().trim();
+    const map = new Map();
+
+    const addMatch = (m) => {
+      if (!m || !m.id) return;
+      const isCompleted = m.isCompleted || m.status === 'FT' || m.status?.includes('FT') || m.status?.includes('Final') || m.actualScore || (m.homeScore != null && m.awayScore != null);
+      if (!isCompleted) return;
+      const home = (m.home || '').toLowerCase();
+      const away = (m.away || '').toLowerCase();
+      if (home.includes(q) || away.includes(q)) {
+        if (!map.has(String(m.id))) {
+          map.set(String(m.id), m);
+        }
+      }
+    };
+
+    if (Array.isArray(historicalMatches)) historicalMatches.forEach(addMatch);
+    if (Array.isArray(yesterdayMatches)) yesterdayMatches.forEach(addMatch);
+    if (Array.isArray(todayCompletedMatches)) todayCompletedMatches.forEach(addMatch);
+    if (Array.isArray(matches)) matches.forEach(addMatch);
+
+    return Array.from(map.values()).sort((a, b) => {
+      const tA = a.timestamp || (a.utcDate ? new Date(a.utcDate).getTime() : 0);
+      const tB = b.timestamp || (b.utcDate ? new Date(b.utcDate).getTime() : 0);
+      return tB - tA; // newest first
+    });
+  }, [searchQuery, isSearchActive, historicalMatches, yesterdayMatches, todayCompletedMatches, matches]);
+
+  const historyTotalPages = Math.max(1, Math.ceil(recentCompletedMatches.length / historyPageSize));
+  const paginatedHistoryMatches = useMemo(() => {
+    const start = (historyPage - 1) * historyPageSize;
+    return recentCompletedMatches.slice(start, start + historyPageSize);
+  }, [recentCompletedMatches, historyPage, historyPageSize]);
 
   // 2. Pre-calculate if any true unanimous match exists in the base filtered set
   const { hasUnanimous, maxBaseConfidence } = useMemo(() => {
@@ -2016,6 +2067,120 @@ export default function FixturesTablePage({
               <span>View {formatFriendlyDateOption(nearestUpcomingDateKey, null, tzSettings)} Slate</span>
               <ArrowRight className="w-3 h-3 text-indigo-600" />
             </button>
+          )}
+        </div>
+      )}
+
+      {/* ── Searched Club Recent Form & Completed Matches Ledger ── */}
+      {isSearchActive && recentCompletedMatches.length > 0 && (
+        <div className="bg-white border border-teal-200 rounded-xl shadow-xs overflow-hidden mb-4 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="flex flex-wrap items-center justify-between px-4 py-3 bg-gradient-to-r from-teal-50 via-white to-teal-50 border-b border-teal-200 gap-2">
+            <div className="flex items-center gap-2">
+              <History className="w-4 h-4 text-teal-700" />
+              <span className="font-bold text-teal-950 text-sm">
+                Recent Form &amp; Completed Matches: <span className="text-teal-700 font-extrabold">{searchQuery}</span>
+              </span>
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-teal-100 text-teal-800 font-semibold">
+                {recentCompletedMatches.length} past games
+              </span>
+            </div>
+            <div className="text-[11px] text-teal-800 font-medium">
+              Showing historical results with instant 1-click Master Tactical Analysis
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50/70 text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
+                  <th className="py-2.5 px-3">Date</th>
+                  <th className="py-2.5 px-3">Competition</th>
+                  <th className="py-2.5 px-3">Matchup</th>
+                  <th className="py-2.5 px-3 text-center">Score</th>
+                  <th className="py-2.5 px-3 text-center">Smart Pick</th>
+                  <th className="py-2.5 px-3 text-center">Tactical Analysis</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {paginatedHistoryMatches.map((m) => {
+                  const hG = m.homeScore ?? m.goals?.home ?? 0;
+                  const aG = m.awayScore ?? m.goals?.away ?? 0;
+                  const actualWinner = m.actualWinner || (hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW');
+                  const scoreDisplay = `${hG} - ${aG}`;
+                  const isHit = m.isHit === true;
+                  const isMiss = m.isHit === false;
+
+                  return (
+                    <tr key={m.id || m.espnEventId} className="hover:bg-teal-50/30 transition-colors">
+                      <td className="py-2.5 px-3 whitespace-nowrap text-slate-500 font-mono text-[11px]">
+                        {formatRelativeDayTime(m, tzSettings)}
+                      </td>
+                      <td className="py-2.5 px-3 whitespace-nowrap font-medium text-slate-600 text-[11px]">
+                        {m.league || 'League'}
+                      </td>
+                      <td className="py-2.5 px-3 whitespace-nowrap">
+                        <span className={`font-semibold ${m.home?.toLowerCase().includes(searchQuery.toLowerCase()) ? 'text-teal-900 font-bold' : 'text-slate-800'}`}>
+                          {m.home}
+                        </span>
+                        <span className="text-slate-400 mx-1.5">vs</span>
+                        <span className={`font-semibold ${m.away?.toLowerCase().includes(searchQuery.toLowerCase()) ? 'text-teal-900 font-bold' : 'text-slate-800'}`}>
+                          {m.away}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 whitespace-nowrap text-center">
+                        <span className="font-mono font-bold px-2 py-0.5 bg-slate-100 border border-slate-200 rounded text-slate-900 text-xs">
+                          {scoreDisplay}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 whitespace-nowrap text-center text-[11px]">
+                        <span className={`px-2 py-0.5 rounded font-semibold ${
+                          isHit ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
+                          isMiss ? 'bg-rose-50 text-rose-800 border border-rose-200' :
+                          'bg-slate-100 text-slate-700 border border-slate-200'
+                        }`}>
+                          {m.smartMarket?.pickLabel || m.predictedWinner || 'Analyzed'}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 whitespace-nowrap text-center">
+                        <button
+                          onClick={() => onOpenDeepResearch && onOpenDeepResearch(m)}
+                          className="px-2.5 py-1 rounded text-xs font-semibold bg-teal-600 hover:bg-teal-700 text-white transition-colors cursor-pointer shadow-2xs"
+                          title="Open Master Football Analyst post-mortem"
+                        >
+                          Analysis
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* History Pagination Bar */}
+          {recentCompletedMatches.length > historyPageSize && (
+            <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 border-t border-slate-200 text-xs">
+              <span className="text-slate-500 font-medium">
+                Page <strong className="text-slate-700">{historyPage}</strong> of{' '}
+                <strong className="text-slate-700">{historyTotalPages}</strong> ({recentCompletedMatches.length} total completed games)
+              </span>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setHistoryPage(p => Math.max(1, p - 1))}
+                  disabled={historyPage === 1}
+                  className="px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 text-slate-700 font-medium transition-colors cursor-pointer disabled:cursor-not-allowed text-xs"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => setHistoryPage(p => Math.min(historyTotalPages, p + 1))}
+                  disabled={historyPage === historyTotalPages}
+                  className="px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 text-slate-700 font-medium transition-colors cursor-pointer disabled:cursor-not-allowed text-xs"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           )}
         </div>
       )}

@@ -1,7 +1,7 @@
 {
   "Arsenal": {
     "team": "Arsenal",
-    "updatedAt": "2026-09-23T17:17:50.543Z",
+    "updatedAt": "2026-09-23T17:48:59.406Z",
     "matchesCount": 3,
     "record": {
       "wins": 1,
@@ -80,7 +80,7 @@
   },
   "Chelsea": {
     "team": "Chelsea",
-    "updatedAt": "2026-09-23T17:17:50.044Z",
+    "updatedAt": "2026-09-23T17:48:59.284Z",
     "matchesCount": 3,
     "record": {
       "wins": 2,
@@ -100,8 +100,8 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 33.3,
+      "lateCapitulationRisk": "HIGH",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 8.2,
       "setPieceVulnerability": 3.5
@@ -110,10 +110,10 @@
       "Lethal transition efficiency on vertical counter-attacks (<45% possession)"
     ],
     "recurringLossDrivers": [
-      "Occasional finishing variance when facing elite shot-stoppers"
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 3 matches"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "⚡ Counter Specialist",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401867655",
@@ -126,7 +126,7 @@
         "shots": 7,
         "shotsOnTarget": 1,
         "xG": 0.61,
-        "lossReason": "Clinical Transition Disparity: Manchester City capitalized on high-leverage moments (1 goals from 4 SOT)."
+        "lossReason": "Executive Tactical Verdict: Manchester City dismantled Chelsea 0-1 by ruthlessly exploiting structural and situational vulnerabilities. Manchester City generated 1.49 xG across 9 shots (4 on target) with 55.9% possession, systematically pinning Chelsea (44.1% possession, 0.61 xG). Manchester City's breakthrough via Antoine Semenyo (72') established insurmountable tactical momentum. While Chelsea attempted late adjustments, Manchester City's defensive discipline and transitional speed rendered the victory completely authoritative."
       },
       {
         "matchId": "adhoc_1790183734288",
@@ -158,7 +158,7 @@
   },
   "FC Twente": {
     "team": "FC Twente",
-    "updatedAt": "2026-09-23T17:17:49.795Z",
+    "updatedAt": "2026-09-23T17:48:59.210Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -211,7 +211,7 @@
   },
   "PSV Eindhoven": {
     "team": "PSV Eindhoven",
-    "updatedAt": "2026-09-23T17:17:49.813Z",
+    "updatedAt": "2026-09-23T17:48:59.210Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -271,13 +271,13 @@
         "shots": 11,
         "shotsOnTarget": 4,
         "xG": 1.59,
-        "lossReason": "Late-Game Rest-Defense Capitulation: PSV Eindhoven conceded in crunch time (79') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: FC Twente dismantled PSV Eindhoven 3-2 by ruthlessly exploiting structural and situational vulnerabilities. FC Twente generated 2.35 xG across 21 shots (5 on target) with 39.8% possession, systematically pinning PSV Eindhoven (60.2% possession, 1.59 xG). FC Twente's breakthrough via Younes Taha (14') established insurmountable tactical momentum. While PSV Eindhoven attempted late adjustments, FC Twente's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Fiorentina": {
     "team": "Fiorentina",
-    "updatedAt": "2026-09-23T17:17:50.587Z",
+    "updatedAt": "2026-09-23T17:48:59.482Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -343,7 +343,7 @@
   },
   "Napoli": {
     "team": "Napoli",
-    "updatedAt": "2026-09-23T17:17:50.587Z",
+    "updatedAt": "2026-09-23T17:48:59.482Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -396,7 +396,7 @@
   },
   "Deportivo": {
     "team": "Deportivo",
-    "updatedAt": "2026-09-23T17:17:49.779Z",
+    "updatedAt": "2026-09-23T17:48:58.998Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -449,7 +449,7 @@
   },
   "Real Betis": {
     "team": "Real Betis",
-    "updatedAt": "2026-09-23T17:17:49.779Z",
+    "updatedAt": "2026-09-23T17:48:58.998Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -501,7 +501,7 @@
   },
   "Frosinone": {
     "team": "Frosinone",
-    "updatedAt": "2026-09-23T17:17:50.416Z",
+    "updatedAt": "2026-09-23T17:48:59.236Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -554,7 +554,7 @@
   },
   "Como": {
     "team": "Como",
-    "updatedAt": "2026-09-23T17:17:50.416Z",
+    "updatedAt": "2026-09-23T17:48:59.236Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -574,8 +574,8 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 50,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 7.2,
       "counterAttackLethality": 5.5,
       "setPieceVulnerability": 3.5
@@ -585,10 +585,11 @@
       "High box penetration: 7 shots on target/game"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 2 matches",
       "Defensive frailty: conceding 1.5 goals/game on average"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "🔥 Scoring Machine",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401915441",
@@ -614,13 +615,13 @@
         "shots": 27,
         "shotsOnTarget": 8,
         "xG": 3.43,
-        "lossReason": "Finishing Inefficiency & Goalkeeping Outlier: Como created 3.43 xG but converted only 0 goal."
+        "lossReason": "Executive Tactical Verdict: Frosinone dismantled Como 2-0 by ruthlessly exploiting structural and situational vulnerabilities. Frosinone generated 2.66 xG across 22 shots (6 on target) with 35.2% possession, systematically pinning Como (64.8% possession, 3.43 xG). Frosinone's breakthrough via Giacomo Calo (14') established insurmountable tactical momentum. While Como attempted late adjustments, Frosinone's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Fenerbahce": {
     "team": "Fenerbahce",
-    "updatedAt": "2026-09-23T17:17:50.181Z",
+    "updatedAt": "2026-09-23T17:48:59.138Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -686,7 +687,7 @@
   },
   "AS Roma": {
     "team": "AS Roma",
-    "updatedAt": "2026-09-23T17:17:49.858Z",
+    "updatedAt": "2026-09-23T17:48:59.070Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -738,7 +739,7 @@
   },
   "Celtic": {
     "team": "Celtic",
-    "updatedAt": "2026-09-23T17:17:50.321Z",
+    "updatedAt": "2026-09-23T17:48:59.369Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -758,8 +759,8 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 7.2,
       "counterAttackLethality": 5.5,
       "setPieceVulnerability": 3.5
@@ -768,11 +769,12 @@
       "Territorial dominance with high possession volume (59% avg)"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 2 of last 2 matches",
       "Vulnerable to compact low-block congestion when dominating possession",
       "Defensive frailty: conceding 2 goals/game on average"
     ],
     "tacticalIdentity": "Positional Attacking Overload",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401915581",
@@ -785,7 +787,7 @@
         "shots": 16,
         "shotsOnTarget": 4,
         "xG": 1.84,
-        "lossReason": "High Defensive Line Counter Exploitation: Celtic's aggressive press was repeatedly punctured by vertical outlets."
+        "lossReason": "Executive Tactical Verdict: Ferencvaros dismantled Celtic 1-3 by ruthlessly exploiting structural and situational vulnerabilities. Ferencvaros generated 2.26 xG across 14 shots (6 on target) with 37.2% possession, systematically pinning Celtic (62.8% possession, 1.84 xG). Ferencvaros's breakthrough via Bamidele Isa Yusuf (20') established insurmountable tactical momentum. While Celtic attempted late adjustments, Ferencvaros's defensive discipline and transitional speed rendered the victory completely authoritative."
       },
       {
         "matchId": "401878375",
@@ -798,13 +800,13 @@
         "shots": 5,
         "shotsOnTarget": 1,
         "xG": 0.51,
-        "lossReason": "Clinical Transition Disparity: Rangers capitalized on high-leverage moments (1 goals from 8 SOT)."
+        "lossReason": "Executive Tactical Verdict: Rangers dismantled Celtic 0-1 by ruthlessly exploiting structural and situational vulnerabilities. Rangers generated 2.83 xG across 15 shots (8 on target) with 44.9% possession, systematically pinning Celtic (55.1% possession, 0.51 xG). Rangers's breakthrough via Ryan Naderi (33') established insurmountable tactical momentum. While Celtic attempted late adjustments, Rangers's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Rangers": {
     "team": "Rangers",
-    "updatedAt": "2026-09-23T17:17:50.171Z",
+    "updatedAt": "2026-09-23T17:48:59.261Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -857,7 +859,7 @@
   },
   "Bayern Munich": {
     "team": "Bayern Munich",
-    "updatedAt": "2026-09-23T17:17:50.508Z",
+    "updatedAt": "2026-09-23T17:48:59.488Z",
     "matchesCount": 3,
     "record": {
       "wins": 3,
@@ -936,7 +938,7 @@
   },
   "Bodo/Glimt": {
     "team": "Bodo/Glimt",
-    "updatedAt": "2026-09-23T17:17:49.864Z",
+    "updatedAt": "2026-09-23T17:48:59.488Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -956,8 +958,8 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 8.2,
       "setPieceVulnerability": 3.5
@@ -966,10 +968,11 @@
       "Lethal transition efficiency on vertical counter-attacks (<34.4% possession)"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
       "Defensive frailty: conceding 5 goals/game on average"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401915443",
@@ -982,13 +985,13 @@
         "shots": 3,
         "shotsOnTarget": 0,
         "xG": 0.15,
-        "lossReason": "Disciplinary Breakdown: Bodo/Glimt compromised match structure following a pivotal red card (87')."
+        "lossReason": "Executive Tactical Verdict: Bayern Munich dismantled Bodo/Glimt 5-0 by ruthlessly exploiting structural and situational vulnerabilities. Bayern Munich generated 4.37 xG across 25 shots (12 on target) with 65.6% possession, systematically pinning Bodo/Glimt (34.4% possession, 0.15 xG). The match pivoted irrevocably in the 87' when Odin Bjørtuft was dismissed, shattering Bodo/Glimt's tactical shape. Bayern Munich's breakthrough via Jamal Musiala (47') established insurmountable tactical momentum. While Bodo/Glimt attempted late adjustments, Bayern Munich's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Shakhtar Donetsk": {
     "team": "Shakhtar Donetsk",
-    "updatedAt": "2026-09-23T17:17:49.813Z",
+    "updatedAt": "2026-09-23T17:48:59.110Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -1040,7 +1043,7 @@
   },
   "Villarreal": {
     "team": "Villarreal",
-    "updatedAt": "2026-09-23T17:17:49.785Z",
+    "updatedAt": "2026-09-23T17:48:59.021Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -1093,7 +1096,7 @@
   },
   "Levante": {
     "team": "Levante",
-    "updatedAt": "2026-09-23T17:17:49.785Z",
+    "updatedAt": "2026-09-23T17:48:59.021Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -1140,13 +1143,13 @@
         "shots": 6,
         "shotsOnTarget": 1,
         "xG": 0.56,
-        "lossReason": "Late-Game Rest-Defense Capitulation: Levante conceded in crunch time (86') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Villarreal dismantled Levante 3-1 by ruthlessly exploiting structural and situational vulnerabilities. Villarreal generated 2.87 xG across 21 shots (7 on target) with 62.2% possession, systematically pinning Levante (37.8% possession, 0.56 xG). Villarreal's breakthrough via Ayoze Pérez (41') established insurmountable tactical momentum. While Levante attempted late adjustments, Villarreal's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Feyenoord Rotterdam": {
     "team": "Feyenoord Rotterdam",
-    "updatedAt": "2026-09-23T17:17:50.351Z",
+    "updatedAt": "2026-09-23T17:48:59.389Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -1199,7 +1202,7 @@
   },
   "FC Utrecht": {
     "team": "FC Utrecht",
-    "updatedAt": "2026-09-23T17:17:50.351Z",
+    "updatedAt": "2026-09-23T17:48:59.389Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -1219,8 +1222,8 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 8.2,
       "setPieceVulnerability": 6.5
@@ -1229,10 +1232,11 @@
       "Lethal transition efficiency on vertical counter-attacks (<43.2% possession)"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
       "Defensive frailty: conceding 5 goals/game on average"
     ],
     "tacticalIdentity": "Compact Low-Block & Counter",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401875596",
@@ -1245,13 +1249,13 @@
         "shots": 6,
         "shotsOnTarget": 2,
         "xG": 0.82,
-        "lossReason": "Clinical Transition Disparity: Feyenoord Rotterdam capitalized on high-leverage moments (5 goals from 12 SOT)."
+        "lossReason": "Executive Tactical Verdict: Feyenoord Rotterdam dismantled FC Utrecht 5-0 by ruthlessly exploiting structural and situational vulnerabilities. Feyenoord Rotterdam generated 4.27 xG across 23 shots (12 on target) with 56.8% possession, systematically pinning FC Utrecht (43.2% possession, 0.82 xG). Feyenoord Rotterdam's breakthrough via Anis Hadj Moussa (6') established insurmountable tactical momentum. While FC Utrecht attempted late adjustments, Feyenoord Rotterdam's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Santa Clara": {
     "team": "Santa Clara",
-    "updatedAt": "2026-09-23T17:17:50.274Z",
+    "updatedAt": "2026-09-23T17:48:59.255Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -1303,7 +1307,7 @@
   },
   "Braga": {
     "team": "Braga",
-    "updatedAt": "2026-09-23T17:17:50.274Z",
+    "updatedAt": "2026-09-23T17:48:59.255Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -1355,7 +1359,7 @@
   },
   "Getafe": {
     "team": "Getafe",
-    "updatedAt": "2026-09-23T17:17:49.803Z",
+    "updatedAt": "2026-09-23T17:48:58.981Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -1408,41 +1412,55 @@
   },
   "Málaga": {
     "team": "Málaga",
-    "updatedAt": "2026-09-23T17:17:49.803Z",
-    "matchesCount": 1,
+    "updatedAt": "2026-09-23T17:48:58.981Z",
+    "matchesCount": 2,
     "record": {
       "wins": 0,
-      "draws": 0,
+      "draws": 1,
       "losses": 1,
       "winRate": 0
     },
     "metrics": {
-      "avgPossession": 55.5,
-      "avgShots": 11,
-      "avgShotsOnTarget": 4,
+      "avgPossession": 52.8,
+      "avgShots": 5.5,
+      "avgShotsOnTarget": 2,
       "avgGoalsScored": 0,
-      "avgGoalsConceded": 1,
-      "avgXgCreated": 1.59,
-      "avgXgConceded": 0.95,
-      "cleanSheets": 0,
-      "failedToScore": 1
+      "avgGoalsConceded": 0.5,
+      "avgXgCreated": 0.85,
+      "avgXgConceded": 0.47,
+      "cleanSheets": 1,
+      "failedToScore": 2
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 100,
+      "lateCapitulationIndex": 50,
       "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 5.5,
       "setPieceVulnerability": 3.5
     },
     "recurringWinDrivers": [
-      "Lethal transition efficiency on vertical counter-attacks (<55.5% possession)"
+      "Lethal transition efficiency on vertical counter-attacks (<52.8% possession)"
     ],
     "recurringLossDrivers": [
-      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches"
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 2 matches",
+      "Attacking profligacy: failed to score in 2 of last 2 matches"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
     "badge": "⚠️ Late Conceder",
     "recentMatches": [
+      {
+        "matchId": "401882851",
+        "opponent": "Espanyol",
+        "venue": "HOME",
+        "result": "DRAW",
+        "score": "0-0",
+        "date": "2026-10-09",
+        "possession": 50,
+        "shots": 0,
+        "shotsOnTarget": 0,
+        "xG": 0.1,
+        "lossReason": null
+      },
       {
         "matchId": "401882861",
         "opponent": "Getafe",
@@ -1454,13 +1472,13 @@
         "shots": 11,
         "shotsOnTarget": 4,
         "xG": 1.59,
-        "lossReason": "Late-Game Rest-Defense Capitulation: Málaga conceded in crunch time (85') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Getafe dismantled Málaga 1-0 by ruthlessly exploiting structural and situational vulnerabilities. Getafe generated 2.82 xG across 20 shots (7 on target) with 44.5% possession, systematically pinning Málaga (55.5% possession, 1.59 xG). Getafe's breakthrough via Ivan Azón (85') established insurmountable tactical momentum. While Málaga attempted late adjustments, Getafe's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Manchester United": {
     "team": "Manchester United",
-    "updatedAt": "2026-09-23T17:17:49.886Z",
+    "updatedAt": "2026-09-23T17:48:59.030Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -1513,7 +1531,7 @@
   },
   "Sabah FK": {
     "team": "Sabah FK",
-    "updatedAt": "2026-09-23T17:17:49.886Z",
+    "updatedAt": "2026-09-23T17:48:59.030Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -1533,8 +1551,8 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 8.2,
       "setPieceVulnerability": 3.5
@@ -1543,10 +1561,11 @@
       "Lethal transition efficiency on vertical counter-attacks (<42.2% possession)"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
       "Defensive frailty: conceding 4 goals/game on average"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401915442",
@@ -1559,13 +1578,13 @@
         "shots": 11,
         "shotsOnTarget": 0,
         "xG": 0.55,
-        "lossReason": "Clinical Transition Disparity: Manchester United capitalized on high-leverage moments (4 goals from 10 SOT)."
+        "lossReason": "Executive Tactical Verdict: Manchester United dismantled Sabah FK 4-0 by ruthlessly exploiting structural and situational vulnerabilities. Manchester United generated 3.65 xG across 21 shots (10 on target) with 57.8% possession, systematically pinning Sabah FK (42.2% possession, 0.55 xG). Manchester United's breakthrough via Matheus Cunha (27') established insurmountable tactical momentum. While Sabah FK attempted late adjustments, Manchester United's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Amed SFK": {
     "team": "Amed SFK",
-    "updatedAt": "2026-09-23T17:17:50.515Z",
+    "updatedAt": "2026-09-23T17:48:59.410Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -1618,7 +1637,7 @@
   },
   "Besiktas": {
     "team": "Besiktas",
-    "updatedAt": "2026-09-23T17:17:50.515Z",
+    "updatedAt": "2026-09-23T17:48:59.410Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -1638,8 +1657,8 @@
       "failedToScore": 0
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 50,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 7.2,
       "counterAttackLethality": 5.5,
       "setPieceVulnerability": 3.5
@@ -1649,11 +1668,12 @@
       "High box penetration: 7.5 shots on target/game"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 2 matches",
       "Vulnerable to compact low-block congestion when dominating possession",
       "Defensive frailty: conceding 2 goals/game on average"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "🔥 Scoring Machine",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401915591",
@@ -1679,13 +1699,13 @@
         "shots": 21,
         "shotsOnTarget": 8,
         "xG": 3.13,
-        "lossReason": "Finishing Inefficiency & Goalkeeping Outlier: Besiktas created 3.13 xG but converted only 2 goal."
+        "lossReason": "Executive Tactical Verdict: Amed SFK dismantled Besiktas 3-2 by ruthlessly exploiting structural and situational vulnerabilities. Amed SFK generated 2.58 xG across 10 shots (8 on target) with 30.5% possession, systematically pinning Besiktas (69.5% possession, 3.13 xG). The match pivoted irrevocably in the 84' when Amadou Cissé was dismissed, shattering Besiktas's tactical shape. Amed SFK's breakthrough via Gift Orban (13') established insurmountable tactical momentum. While Besiktas attempted late adjustments, Amed SFK's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Marseille": {
     "team": "Marseille",
-    "updatedAt": "2026-09-23T17:17:50.392Z",
+    "updatedAt": "2026-09-23T17:48:59.452Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -1705,7 +1725,7 @@
       "failedToScore": 0
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 50,
+      "lateCapitulationIndex": 100,
       "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 8.2,
@@ -1715,7 +1735,7 @@
       "Lethal transition efficiency on vertical counter-attacks (<42.5% possession)"
     ],
     "recurringLossDrivers": [
-      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 2 matches",
+      "Chronic late-game capitulation: conceded in 75'+ in 2 of last 2 matches",
       "Defensive frailty: conceding 3 goals/game on average"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
@@ -1732,7 +1752,7 @@
         "shots": 14,
         "shotsOnTarget": 3,
         "xG": 1.48,
-        "lossReason": "Late-Game Rest-Defense Capitulation: Marseille conceded in crunch time (81') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Besiktas dismantled Marseille 4-1 by ruthlessly exploiting structural and situational vulnerabilities. Besiktas generated 2.72 xG across 18 shots (7 on target) with 54.3% possession, systematically pinning Marseille (45.7% possession, 1.48 xG). Besiktas's breakthrough via Ilhan Fakili (15') established insurmountable tactical momentum. While Marseille attempted late adjustments, Besiktas's defensive discipline and transitional speed rendered the victory completely authoritative."
       },
       {
         "matchId": "401876449",
@@ -1745,13 +1765,13 @@
         "shots": 12,
         "shotsOnTarget": 4,
         "xG": 1.64,
-        "lossReason": "Disciplinary Breakdown: Marseille compromised match structure following a pivotal red card (77')."
+        "lossReason": "Executive Tactical Verdict: Paris Saint-Germain dismantled Marseille 1-2 by ruthlessly exploiting structural and situational vulnerabilities. Paris Saint-Germain generated 4.15 xG across 31 shots (10 on target) with 60.6% possession, systematically pinning Marseille (39.4% possession, 1.64 xG). The match pivoted irrevocably in the 77' when Timothy Weah was dismissed, shattering Marseille's tactical shape. Paris Saint-Germain's breakthrough via Ferran Torres (66') established insurmountable tactical momentum. While Marseille attempted late adjustments, Paris Saint-Germain's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Paris Saint-Germain": {
     "team": "Paris Saint-Germain",
-    "updatedAt": "2026-09-23T17:17:50.345Z",
+    "updatedAt": "2026-09-23T17:48:59.534Z",
     "matchesCount": 2,
     "record": {
       "wins": 2,
@@ -1817,7 +1837,7 @@
   },
   "Bolivia": {
     "team": "Bolivia",
-    "updatedAt": "2026-09-23T17:17:50.428Z",
+    "updatedAt": "2026-09-23T17:48:59.426Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -1870,7 +1890,7 @@
   },
   "Brazil": {
     "team": "Brazil",
-    "updatedAt": "2026-09-23T17:17:50.428Z",
+    "updatedAt": "2026-09-23T17:48:59.426Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -1890,8 +1910,8 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 7.2,
       "counterAttackLethality": 5.5,
       "setPieceVulnerability": 3.5
@@ -1900,10 +1920,10 @@
       "Territorial dominance with high possession volume (57.6% avg)"
     ],
     "recurringLossDrivers": [
-      "Occasional finishing variance when facing elite shot-stoppers"
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "684663",
@@ -1916,13 +1936,13 @@
         "shots": 10,
         "shotsOnTarget": 3,
         "xG": 1.28,
-        "lossReason": "Finishing Inefficiency & Goalkeeping Outlier: Brazil created 1.28 xG but converted only 0 goal."
+        "lossReason": "Executive Tactical Verdict: Bolivia dismantled Brazil 1-0 by ruthlessly exploiting structural and situational vulnerabilities. Bolivia generated 3.75 xG across 23 shots (10 on target) with 42.4% possession, systematically pinning Brazil (57.6% possession, 1.28 xG). Bolivia's breakthrough via Miguel Terceros (45'+4') established insurmountable tactical momentum. While Brazil attempted late adjustments, Bolivia's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Parma": {
     "team": "Parma",
-    "updatedAt": "2026-09-23T17:17:50.484Z",
+    "updatedAt": "2026-09-23T17:48:59.557Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -1974,7 +1994,7 @@
   },
   "Genoa": {
     "team": "Genoa",
-    "updatedAt": "2026-09-23T17:17:50.484Z",
+    "updatedAt": "2026-09-23T17:48:59.557Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -2034,13 +2054,13 @@
         "shots": 12,
         "shotsOnTarget": 5,
         "xG": 1.9,
-        "lossReason": "Late-Game Rest-Defense Capitulation: Genoa conceded in crunch time (80') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Parma dismantled Genoa 2-1 by ruthlessly exploiting structural and situational vulnerabilities. Parma generated 0.77 xG across 5 shots (2 on target) with 42.2% possession, systematically pinning Genoa (57.8% possession, 1.9 xG). Parma's breakthrough via José Romero (38') established insurmountable tactical momentum. While Genoa attempted late adjustments, Parma's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "AJ Auxerre": {
     "team": "AJ Auxerre",
-    "updatedAt": "2026-09-23T17:17:50.474Z",
+    "updatedAt": "2026-09-23T17:48:59.472Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -2092,7 +2112,7 @@
   },
   "Brest": {
     "team": "Brest",
-    "updatedAt": "2026-09-23T17:17:50.474Z",
+    "updatedAt": "2026-09-23T17:48:59.472Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2139,13 +2159,13 @@
         "shots": 8,
         "shotsOnTarget": 2,
         "xG": 0.92,
-        "lossReason": "Late-Game Rest-Defense Capitulation: Brest conceded in crunch time (83') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: AJ Auxerre dismantled Brest 2-1 by ruthlessly exploiting structural and situational vulnerabilities. AJ Auxerre generated 1.59 xG across 11 shots (4 on target) with 51.9% possession, systematically pinning Brest (48.1% possession, 0.92 xG). AJ Auxerre's breakthrough via Pathé Mboup (23') established insurmountable tactical momentum. While Brest attempted late adjustments, AJ Auxerre's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Vitória de Guimaraes": {
     "team": "Vitória de Guimaraes",
-    "updatedAt": "2026-09-23T17:17:50.357Z",
+    "updatedAt": "2026-09-23T17:48:59.562Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2198,7 +2218,7 @@
   },
   "Moreirense": {
     "team": "Moreirense",
-    "updatedAt": "2026-09-23T17:17:50.357Z",
+    "updatedAt": "2026-09-23T17:48:59.562Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2250,7 +2270,7 @@
   },
   "Estrela": {
     "team": "Estrela",
-    "updatedAt": "2026-09-23T17:17:50.613Z",
+    "updatedAt": "2026-09-23T17:48:59.272Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2270,8 +2290,8 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 7.2,
       "counterAttackLethality": 5.5,
       "setPieceVulnerability": 3.5
@@ -2280,11 +2300,12 @@
       "Territorial dominance with high possession volume (59.2% avg)"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
       "Vulnerable to compact low-block congestion when dominating possession",
       "Defensive frailty: conceding 2 goals/game on average"
     ],
     "tacticalIdentity": "Compact Low-Block & Counter",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401885437",
@@ -2297,13 +2318,13 @@
         "shots": 16,
         "shotsOnTarget": 2,
         "xG": 1.32,
-        "lossReason": "Low-Block Asphyxiation: Estrela monopolized 59.2% possession but generated zero penetration."
+        "lossReason": "Executive Tactical Verdict: Académico de Viseu dismantled Estrela 0-2 by ruthlessly exploiting structural and situational vulnerabilities. Académico de Viseu generated 1.44 xG across 8 shots (4 on target) with 40.8% possession, systematically pinning Estrela (59.2% possession, 1.32 xG). Académico de Viseu's breakthrough via André Clóvis (10') established insurmountable tactical momentum. While Estrela attempted late adjustments, Académico de Viseu's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Académico de Viseu": {
     "team": "Académico de Viseu",
-    "updatedAt": "2026-09-23T17:17:50.613Z",
+    "updatedAt": "2026-09-23T17:48:59.272Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -2355,7 +2376,7 @@
   },
   "SC Paderborn 07": {
     "team": "SC Paderborn 07",
-    "updatedAt": "2026-09-23T17:17:49.828Z",
+    "updatedAt": "2026-09-23T17:48:59.196Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -2408,7 +2429,7 @@
   },
   "TSG Hoffenheim": {
     "team": "TSG Hoffenheim",
-    "updatedAt": "2026-09-23T17:17:50.369Z",
+    "updatedAt": "2026-09-23T17:48:59.468Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -2428,7 +2449,7 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 50,
+      "lateCapitulationIndex": 100,
       "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 7.2,
       "counterAttackLethality": 5.5,
@@ -2438,7 +2459,7 @@
       "Territorial dominance with high possession volume (66.7% avg)"
     ],
     "recurringLossDrivers": [
-      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 2 matches",
+      "Chronic late-game capitulation: conceded in 75'+ in 2 of last 2 matches",
       "Vulnerable to compact low-block congestion when dominating possession",
       "Defensive frailty: conceding 2.5 goals/game on average"
     ],
@@ -2456,7 +2477,7 @@
         "shots": 21,
         "shotsOnTarget": 5,
         "xG": 2.35,
-        "lossReason": "Late-Game Rest-Defense Capitulation: TSG Hoffenheim conceded in crunch time (84') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: OFI CRETE dismantled TSG Hoffenheim 2-0 by ruthlessly exploiting structural and situational vulnerabilities. OFI CRETE generated 1.23 xG across 9 shots (3 on target) with 32.8% possession, systematically pinning TSG Hoffenheim (67.2% possession, 2.35 xG). OFI CRETE's breakthrough via Aitor Cantalapiedra (30') established insurmountable tactical momentum. While TSG Hoffenheim attempted late adjustments, OFI CRETE's defensive discipline and transitional speed rendered the victory completely authoritative."
       },
       {
         "matchId": "401884782",
@@ -2469,13 +2490,13 @@
         "shots": 23,
         "shotsOnTarget": 2,
         "xG": 1.67,
-        "lossReason": "Low-Block Asphyxiation: TSG Hoffenheim monopolized 66.2% possession but generated zero penetration."
+        "lossReason": "Executive Tactical Verdict: SC Paderborn 07 dismantled TSG Hoffenheim 3-1 by ruthlessly exploiting structural and situational vulnerabilities. SC Paderborn 07 generated 1.95 xG across 13 shots (5 on target) with 33.8% possession, systematically pinning TSG Hoffenheim (66.2% possession, 1.67 xG). SC Paderborn 07's breakthrough via Santiago Castaneda (29') established insurmountable tactical momentum. While TSG Hoffenheim attempted late adjustments, SC Paderborn 07's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Levadiakos": {
     "team": "Levadiakos",
-    "updatedAt": "2026-09-23T17:17:50.454Z",
+    "updatedAt": "2026-09-23T17:48:59.440Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2521,13 +2542,13 @@
         "shots": 8,
         "shotsOnTarget": 4,
         "xG": 1.44,
-        "lossReason": "Late-Game Rest-Defense Capitulation: Levadiakos conceded in crunch time (90'+2') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Olympiacos dismantled Levadiakos 0-1 by ruthlessly exploiting structural and situational vulnerabilities. Olympiacos generated 1.68 xG across 18 shots (3 on target) with 70.8% possession, systematically pinning Levadiakos (29.2% possession, 1.44 xG). Olympiacos's breakthrough via Manolis Saliakas (90'+2') established insurmountable tactical momentum. While Levadiakos attempted late adjustments, Olympiacos's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Olympiacos": {
     "team": "Olympiacos",
-    "updatedAt": "2026-09-23T17:17:50.454Z",
+    "updatedAt": "2026-09-23T17:48:59.440Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -2579,7 +2600,7 @@
   },
   "NEC Nijmegen": {
     "team": "NEC Nijmegen",
-    "updatedAt": "2026-09-23T17:17:50.145Z",
+    "updatedAt": "2026-09-23T17:48:59.394Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -2626,7 +2647,7 @@
         "shots": 11,
         "shotsOnTarget": 3,
         "xG": 1.33,
-        "lossReason": "Late-Game Rest-Defense Capitulation: NEC Nijmegen conceded in crunch time (82') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Juventus dismantled NEC Nijmegen 5-0 by ruthlessly exploiting structural and situational vulnerabilities. Juventus generated 2.37 xG across 11 shots (7 on target) with 47.9% possession, systematically pinning NEC Nijmegen (52.1% possession, 1.33 xG). Juventus's breakthrough via Nico González (9') established insurmountable tactical momentum. While NEC Nijmegen attempted late adjustments, Juventus's defensive discipline and transitional speed rendered the victory completely authoritative."
       },
       {
         "matchId": "401875594",
@@ -2645,7 +2666,7 @@
   },
   "Go Ahead Eagles": {
     "team": "Go Ahead Eagles",
-    "updatedAt": "2026-09-23T17:17:49.822Z",
+    "updatedAt": "2026-09-23T17:48:59.200Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2698,7 +2719,7 @@
   },
   "AZ Alkmaar": {
     "team": "AZ Alkmaar",
-    "updatedAt": "2026-09-23T17:17:49.808Z",
+    "updatedAt": "2026-09-23T17:48:59.123Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -2751,7 +2772,7 @@
   },
   "Telstar": {
     "team": "Telstar",
-    "updatedAt": "2026-09-23T17:17:49.808Z",
+    "updatedAt": "2026-09-23T17:48:59.123Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2771,8 +2792,8 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 8.2,
       "setPieceVulnerability": 3.5
@@ -2781,10 +2802,10 @@
       "Lethal transition efficiency on vertical counter-attacks (<38% possession)"
     ],
     "recurringLossDrivers": [
-      "Occasional finishing variance when facing elite shot-stoppers"
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401875595",
@@ -2797,13 +2818,13 @@
         "shots": 3,
         "shotsOnTarget": 1,
         "xG": 0.41,
-        "lossReason": "Clinical Transition Disparity: AZ Alkmaar capitalized on high-leverage moments (1 goals from 8 SOT)."
+        "lossReason": "Executive Tactical Verdict: AZ Alkmaar dismantled Telstar 1-0 by ruthlessly exploiting structural and situational vulnerabilities. AZ Alkmaar generated 2.93 xG across 17 shots (8 on target) with 62% possession, systematically pinning Telstar (38% possession, 0.41 xG). AZ Alkmaar's breakthrough via Mexx Meerdink (19') established insurmountable tactical momentum. While Telstar attempted late adjustments, AZ Alkmaar's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Aston Villa": {
     "team": "Aston Villa",
-    "updatedAt": "2026-09-23T17:17:50.086Z",
+    "updatedAt": "2026-09-23T17:48:59.534Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2823,8 +2844,8 @@
       "failedToScore": 0
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 8.2,
       "setPieceVulnerability": 3.5
@@ -2833,10 +2854,11 @@
       "Lethal transition efficiency on vertical counter-attacks (<39.2% possession)"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
       "Defensive frailty: conceding 2 goals/game on average"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401873624",
@@ -2849,13 +2871,13 @@
         "shots": 15,
         "shotsOnTarget": 4,
         "xG": 1.79,
-        "lossReason": "Clinical Transition Disparity: Paris Saint-Germain capitalized on high-leverage moments (2 goals from 6 SOT)."
+        "lossReason": "Executive Tactical Verdict: Paris Saint-Germain dismantled Aston Villa 2-1 by ruthlessly exploiting structural and situational vulnerabilities. Paris Saint-Germain generated 2.16 xG across 12 shots (6 on target) with 60.8% possession, systematically pinning Aston Villa (39.2% possession, 1.79 xG). Paris Saint-Germain's breakthrough via Khvicha Kvaratskhelia (20') established insurmountable tactical momentum. While Aston Villa attempted late adjustments, Paris Saint-Germain's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Erzurum BB": {
     "team": "Erzurum BB",
-    "updatedAt": "2026-09-23T17:17:50.499Z",
+    "updatedAt": "2026-09-23T17:48:59.119Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -2907,7 +2929,7 @@
   },
   "Samsunspor": {
     "team": "Samsunspor",
-    "updatedAt": "2026-09-23T17:17:50.499Z",
+    "updatedAt": "2026-09-23T17:48:59.119Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2927,8 +2949,8 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 7.2,
       "counterAttackLethality": 5.5,
       "setPieceVulnerability": 3.5
@@ -2937,10 +2959,11 @@
       "Territorial dominance with high possession volume (58.1% avg)"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
       "Vulnerable to compact low-block congestion when dominating possession"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401888285",
@@ -2953,13 +2976,13 @@
         "shots": 8,
         "shotsOnTarget": 2,
         "xG": 0.92,
-        "lossReason": "Low-Block Asphyxiation: Samsunspor monopolized 58.1% possession but generated zero penetration."
+        "lossReason": "Executive Tactical Verdict: Erzurum BB dismantled Samsunspor 1-0 by ruthlessly exploiting structural and situational vulnerabilities. Erzurum BB generated 0.92 xG across 8 shots (2 on target) with 41.9% possession, systematically pinning Samsunspor (58.1% possession, 0.92 xG). Erzurum BB's breakthrough via Miguel Cardoso (45') established insurmountable tactical momentum. While Samsunspor attempted late adjustments, Erzurum BB's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Nice": {
     "team": "Nice",
-    "updatedAt": "2026-09-23T17:17:50.376Z",
+    "updatedAt": "2026-09-23T17:48:59.492Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -3007,7 +3030,7 @@
         "shots": 17,
         "shotsOnTarget": 6,
         "xG": 2.41,
-        "lossReason": "Late-Game Rest-Defense Capitulation: Nice conceded in crunch time (78') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Lens dismantled Nice 3-1 by ruthlessly exploiting structural and situational vulnerabilities. Lens generated 1.84 xG across 16 shots (4 on target) with 42.2% possession, systematically pinning Nice (57.8% possession, 2.41 xG). Lens's breakthrough via Florian Thauvin (25') established insurmountable tactical momentum. While Nice attempted late adjustments, Lens's defensive discipline and transitional speed rendered the victory completely authoritative."
       },
       {
         "matchId": "401876452",
@@ -3026,7 +3049,7 @@
   },
   "Lille": {
     "team": "Lille",
-    "updatedAt": "2026-09-23T17:17:50.376Z",
+    "updatedAt": "2026-09-23T17:48:59.492Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3046,8 +3069,8 @@
       "failedToScore": 0
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 7.2,
       "counterAttackLethality": 5.5,
       "setPieceVulnerability": 3.5
@@ -3057,11 +3080,12 @@
       "High box penetration: 8 shots on target/game"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
       "Vulnerable to compact low-block congestion when dominating possession",
       "Defensive frailty: conceding 2 goals/game on average"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401876452",
@@ -3074,13 +3098,13 @@
         "shots": 21,
         "shotsOnTarget": 8,
         "xG": 3.13,
-        "lossReason": "Finishing Inefficiency & Goalkeeping Outlier: Lille created 3.13 xG but converted only 1 goal."
+        "lossReason": "Executive Tactical Verdict: Nice dismantled Lille 2-1 by ruthlessly exploiting structural and situational vulnerabilities. Nice generated 1.54 xG across 10 shots (4 on target) with 41.4% possession, systematically pinning Lille (58.6% possession, 3.13 xG). Nice's breakthrough via Nathan Ngoy (22') established insurmountable tactical momentum. While Lille attempted late adjustments, Nice's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Levski Sofia": {
     "team": "Levski Sofia",
-    "updatedAt": "2026-09-23T17:17:50.623Z",
+    "updatedAt": "2026-09-23T17:48:59.078Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3100,8 +3124,8 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 5.5,
       "setPieceVulnerability": 3.5
@@ -3110,10 +3134,10 @@
       "Lethal transition efficiency on vertical counter-attacks (<49.9% possession)"
     ],
     "recurringLossDrivers": [
-      "Occasional finishing variance when facing elite shot-stoppers"
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401915584",
@@ -3126,13 +3150,13 @@
         "shots": 14,
         "shotsOnTarget": 0,
         "xG": 0.7,
-        "lossReason": "Clinical Transition Disparity: RB Salzburg capitalized on high-leverage moments (1 goals from 7 SOT)."
+        "lossReason": "Executive Tactical Verdict: RB Salzburg dismantled Levski Sofia 0-1 by ruthlessly exploiting structural and situational vulnerabilities. RB Salzburg generated 2.42 xG across 12 shots (7 on target) with 50.1% possession, systematically pinning Levski Sofia (49.9% possession, 0.7 xG). RB Salzburg's breakthrough via Haris Tabakovic (39') established insurmountable tactical momentum. While Levski Sofia attempted late adjustments, RB Salzburg's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "RB Salzburg": {
     "team": "RB Salzburg",
-    "updatedAt": "2026-09-23T17:17:50.623Z",
+    "updatedAt": "2026-09-23T17:48:59.078Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -3185,7 +3209,7 @@
   },
   "Estoril": {
     "team": "Estoril",
-    "updatedAt": "2026-09-23T17:17:50.313Z",
+    "updatedAt": "2026-09-23T17:48:59.520Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3233,13 +3257,13 @@
         "shots": 14,
         "shotsOnTarget": 6,
         "xG": 2.26,
-        "lossReason": "Late-Game Rest-Defense Capitulation: Estoril conceded in crunch time (89') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Casa Pia dismantled Estoril 1-2 by ruthlessly exploiting structural and situational vulnerabilities. Casa Pia generated 1.33 xG across 11 shots (3 on target) with 46.8% possession, systematically pinning Estoril (53.2% possession, 2.26 xG). Casa Pia's breakthrough via Ricard Sánchez (70') established insurmountable tactical momentum. While Estoril attempted late adjustments, Casa Pia's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Casa Pia": {
     "team": "Casa Pia",
-    "updatedAt": "2026-09-23T17:17:50.313Z",
+    "updatedAt": "2026-09-23T17:48:59.520Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -3291,7 +3315,7 @@
   },
   "Al Diriyah": {
     "team": "Al Diriyah",
-    "updatedAt": "2026-09-23T17:17:49.957Z",
+    "updatedAt": "2026-09-23T17:48:59.061Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3343,7 +3367,7 @@
   },
   "Abha": {
     "team": "Abha",
-    "updatedAt": "2026-09-23T17:17:49.957Z",
+    "updatedAt": "2026-09-23T17:48:59.061Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3395,21 +3419,21 @@
   },
   "Atlético Madrid": {
     "team": "Atlético Madrid",
-    "updatedAt": "2026-09-23T17:17:49.879Z",
-    "matchesCount": 1,
+    "updatedAt": "2026-09-23T17:48:58.991Z",
+    "matchesCount": 2,
     "record": {
-      "wins": 1,
+      "wins": 2,
       "draws": 0,
       "losses": 0,
       "winRate": 100
     },
     "metrics": {
-      "avgPossession": 60.9,
-      "avgShots": 18,
-      "avgShotsOnTarget": 9,
+      "avgPossession": 54.5,
+      "avgShots": 15,
+      "avgShotsOnTarget": 7,
       "avgGoalsScored": 2,
       "avgGoalsConceded": 1,
-      "avgXgCreated": 3.24,
+      "avgXgCreated": 2.57,
       "avgXgConceded": 0.95,
       "cleanSheets": 0,
       "failedToScore": 0
@@ -3417,13 +3441,13 @@
     "tacticalIndices": {
       "lateCapitulationIndex": 0,
       "lateCapitulationRisk": "LOW",
-      "lowBlockFrictionIndex": 7.2,
+      "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 5.5,
       "setPieceVulnerability": 3.5
     },
     "recurringWinDrivers": [
-      "Territorial dominance with high possession volume (60.9% avg)",
-      "High box penetration: 9 shots on target/game"
+      "Lethal transition efficiency on vertical counter-attacks (<54.5% possession)",
+      "High box penetration: 7 shots on target/game"
     ],
     "recurringLossDrivers": [
       "Occasional finishing variance when facing elite shot-stoppers"
@@ -3431,6 +3455,19 @@
     "tacticalIdentity": "Balanced Structural Mid-Block",
     "badge": "🔥 Scoring Machine",
     "recentMatches": [
+      {
+        "matchId": "adhoc_1790184463825",
+        "opponent": "Real Madrid",
+        "venue": "HOME",
+        "result": "WIN",
+        "score": "2-1",
+        "date": "2026-09-23",
+        "possession": 48,
+        "shots": 12,
+        "shotsOnTarget": 5,
+        "xG": 1.9,
+        "lossReason": null
+      },
       {
         "matchId": "401882865",
         "opponent": "Real Madrid",
@@ -3448,41 +3485,67 @@
   },
   "Real Madrid": {
     "team": "Real Madrid",
-    "updatedAt": "2026-09-23T17:17:49.879Z",
-    "matchesCount": 1,
+    "updatedAt": "2026-09-23T17:48:58.991Z",
+    "matchesCount": 3,
     "record": {
-      "wins": 0,
+      "wins": 1,
       "draws": 0,
-      "losses": 1,
-      "winRate": 0
+      "losses": 2,
+      "winRate": 33.3
     },
     "metrics": {
-      "avgPossession": 39.1,
-      "avgShots": 8,
-      "avgShotsOnTarget": 3,
-      "avgGoalsScored": 1,
-      "avgGoalsConceded": 2,
-      "avgXgCreated": 1.18,
-      "avgXgConceded": 1.9,
-      "cleanSheets": 0,
+      "avgPossession": 51,
+      "avgShots": 10,
+      "avgShotsOnTarget": 3.7,
+      "avgGoalsScored": 1.67,
+      "avgGoalsConceded": 1.33,
+      "avgXgCreated": 1.45,
+      "avgXgConceded": 1.27,
+      "cleanSheets": 1,
       "failedToScore": 0
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 33.3,
+      "lateCapitulationRisk": "HIGH",
       "lowBlockFrictionIndex": 4.5,
-      "counterAttackLethality": 8.2,
+      "counterAttackLethality": 5.5,
       "setPieceVulnerability": 3.5
     },
     "recurringWinDrivers": [
-      "Lethal transition efficiency on vertical counter-attacks (<39.1% possession)"
+      "Lethal transition efficiency on vertical counter-attacks (<51% possession)"
     ],
     "recurringLossDrivers": [
-      "Defensive frailty: conceding 2 goals/game on average"
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 3 matches"
     ],
     "tacticalIdentity": "Rapid Vertical Transition Attack",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
+      {
+        "matchId": "adhoc_1790184463825",
+        "opponent": "Atlético Madrid",
+        "venue": "AWAY",
+        "result": "LOSS",
+        "score": "1-2",
+        "date": "2026-09-23",
+        "possession": 52,
+        "shots": 9,
+        "shotsOnTarget": 3,
+        "xG": 1.23,
+        "lossReason": "Clinical Transition Disparity: Atlético Madrid capitalized on high-leverage moments (2 goals from 5 SOT)."
+      },
+      {
+        "matchId": "adhoc_1790183862984",
+        "opponent": "Mallorca",
+        "venue": "HOME",
+        "result": "WIN",
+        "score": "3-0",
+        "date": "2026-09-23",
+        "possession": 62,
+        "shots": 13,
+        "shotsOnTarget": 5,
+        "xG": 1.95,
+        "lossReason": null
+      },
       {
         "matchId": "401882865",
         "opponent": "Atlético Madrid",
@@ -3494,13 +3557,13 @@
         "shots": 8,
         "shotsOnTarget": 3,
         "xG": 1.18,
-        "lossReason": "Disciplinary Breakdown: Real Madrid compromised match structure following a pivotal red card (52')."
+        "lossReason": "Executive Tactical Verdict: Atlético Madrid dismantled Real Madrid 2-1 by ruthlessly exploiting structural and situational vulnerabilities. Atlético Madrid generated 3.24 xG across 18 shots (9 on target) with 60.9% possession, systematically pinning Real Madrid (39.1% possession, 1.18 xG). The match pivoted irrevocably in the 52' when Dean Huijsen was dismissed, shattering Real Madrid's tactical shape. Atlético Madrid's breakthrough via Alejandro Grimaldo (53') established insurmountable tactical momentum. While Real Madrid attempted late adjustments, Atlético Madrid's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Bosnia-Herzegovina": {
     "team": "Bosnia-Herzegovina",
-    "updatedAt": "2026-09-23T17:17:50.634Z",
+    "updatedAt": "2026-09-23T17:48:59.574Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3553,7 +3616,7 @@
   },
   "Italy": {
     "team": "Italy",
-    "updatedAt": "2026-09-23T17:17:50.634Z",
+    "updatedAt": "2026-09-23T17:48:59.574Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3605,7 +3668,7 @@
   },
   "FC Porto": {
     "team": "FC Porto",
-    "updatedAt": "2026-09-23T17:17:50.363Z",
+    "updatedAt": "2026-09-23T17:48:59.505Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -3658,7 +3721,7 @@
   },
   "Benfica": {
     "team": "Benfica",
-    "updatedAt": "2026-09-23T17:17:50.363Z",
+    "updatedAt": "2026-09-23T17:48:59.505Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3678,8 +3741,8 @@
       "failedToScore": 0
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 5.5,
       "setPieceVulnerability": 3.5
@@ -3688,10 +3751,11 @@
       "Lethal transition efficiency on vertical counter-attacks (<55% possession)"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
       "Defensive frailty: conceding 3 goals/game on average"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401885433",
@@ -3704,13 +3768,13 @@
         "shots": 12,
         "shotsOnTarget": 3,
         "xG": 1.38,
-        "lossReason": "Disciplinary Breakdown: Benfica compromised match structure following a pivotal red card (35')."
+        "lossReason": "Executive Tactical Verdict: FC Porto dismantled Benfica 3-1 by ruthlessly exploiting structural and situational vulnerabilities. FC Porto generated 2.82 xG across 20 shots (7 on target) with 45% possession, systematically pinning Benfica (55% possession, 1.38 xG). The match pivoted irrevocably in the 35' when Clément Lenglet was dismissed, shattering Benfica's tactical shape. FC Porto's breakthrough via Gabri Veiga (31') established insurmountable tactical momentum. While Benfica attempted late adjustments, FC Porto's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Club Brugge": {
     "team": "Club Brugge",
-    "updatedAt": "2026-09-23T17:17:50.551Z",
+    "updatedAt": "2026-09-23T17:48:59.420Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -3763,7 +3827,7 @@
   },
   "Racing Genk": {
     "team": "Racing Genk",
-    "updatedAt": "2026-09-23T17:17:50.551Z",
+    "updatedAt": "2026-09-23T17:48:59.420Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3783,8 +3847,8 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 8.2,
       "setPieceVulnerability": 3.5
@@ -3793,10 +3857,11 @@
       "Lethal transition efficiency on vertical counter-attacks (<39.3% possession)"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
       "Defensive frailty: conceding 3 goals/game on average"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401878980",
@@ -3809,13 +3874,13 @@
         "shots": 19,
         "shotsOnTarget": 2,
         "xG": 1.47,
-        "lossReason": "Clinical Transition Disparity: Club Brugge capitalized on high-leverage moments (3 goals from 7 SOT)."
+        "lossReason": "Executive Tactical Verdict: Club Brugge dismantled Racing Genk 3-0 by ruthlessly exploiting structural and situational vulnerabilities. Club Brugge generated 3.02 xG across 24 shots (7 on target) with 60.7% possession, systematically pinning Racing Genk (39.3% possession, 1.47 xG). Club Brugge's breakthrough via Carlos Forbs (15') established insurmountable tactical momentum. While Racing Genk attempted late adjustments, Club Brugge's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Peru": {
     "team": "Peru",
-    "updatedAt": "2026-09-23T17:17:50.034Z",
+    "updatedAt": "2026-09-23T17:48:59.374Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3861,13 +3926,13 @@
         "shots": 12,
         "shotsOnTarget": 3,
         "xG": 1.38,
-        "lossReason": "Late-Game Rest-Defense Capitulation: Peru conceded in crunch time (78') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Paraguay dismantled Peru 0-1 by ruthlessly exploiting structural and situational vulnerabilities. Paraguay generated 1.65 xG across 7 shots (5 on target) with 45.5% possession, systematically pinning Peru (54.5% possession, 1.38 xG). Paraguay's breakthrough via Matías Galarza (78') established insurmountable tactical momentum. While Peru attempted late adjustments, Paraguay's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Paraguay": {
     "team": "Paraguay",
-    "updatedAt": "2026-09-23T17:17:50.035Z",
+    "updatedAt": "2026-09-23T17:48:59.374Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -3920,7 +3985,7 @@
   },
   "Eyupspor": {
     "team": "Eyupspor",
-    "updatedAt": "2026-09-23T17:17:50.181Z",
+    "updatedAt": "2026-09-23T17:48:59.138Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3968,13 +4033,13 @@
         "shots": 17,
         "shotsOnTarget": 6,
         "xG": 2.41,
-        "lossReason": "Late-Game Rest-Defense Capitulation: Eyupspor conceded in crunch time (80') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Fenerbahce dismantled Eyupspor 8-0 by ruthlessly exploiting structural and situational vulnerabilities. Fenerbahce generated 4.58 xG across 24 shots (13 on target) with 54.6% possession, systematically pinning Eyupspor (45.4% possession, 2.41 xG). Fenerbahce's breakthrough via Mason Greenwood (4') established insurmountable tactical momentum. While Eyupspor attempted late adjustments, Fenerbahce's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Schalke 04": {
     "team": "Schalke 04",
-    "updatedAt": "2026-09-23T17:17:50.460Z",
+    "updatedAt": "2026-09-23T17:48:59.218Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4026,7 +4091,7 @@
   },
   "SV Elversberg": {
     "team": "SV Elversberg",
-    "updatedAt": "2026-09-23T17:17:50.460Z",
+    "updatedAt": "2026-09-23T17:48:59.218Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4078,7 +4143,7 @@
   },
   "Spain": {
     "team": "Spain",
-    "updatedAt": "2026-09-23T17:17:50.436Z",
+    "updatedAt": "2026-09-23T17:48:59.240Z",
     "matchesCount": 2,
     "record": {
       "wins": 2,
@@ -4144,7 +4209,7 @@
   },
   "England": {
     "team": "England",
-    "updatedAt": "2026-09-23T17:17:50.296Z",
+    "updatedAt": "2026-09-23T17:48:59.170Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4191,13 +4256,13 @@
         "shots": 9,
         "shotsOnTarget": 4,
         "xG": 1.49,
-        "lossReason": "Late-Game Rest-Defense Capitulation: England conceded in crunch time (86') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Spain dismantled England 2-1 by ruthlessly exploiting structural and situational vulnerabilities. Spain generated 2.36 xG across 16 shots (6 on target) with 65.1% possession, systematically pinning England (34.9% possession, 1.49 xG). Spain's breakthrough via Nico Williams (47') established insurmountable tactical momentum. While England attempted late adjustments, Spain's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Neom SC": {
     "team": "Neom SC",
-    "updatedAt": "2026-09-23T17:17:50.225Z",
+    "updatedAt": "2026-09-23T17:48:59.330Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -4250,7 +4315,7 @@
   },
   "Al Fateh": {
     "team": "Al Fateh",
-    "updatedAt": "2026-09-23T17:17:50.225Z",
+    "updatedAt": "2026-09-23T17:48:59.330Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4298,13 +4363,13 @@
         "shots": 13,
         "shotsOnTarget": 7,
         "xG": 2.47,
-        "lossReason": "Late-Game Rest-Defense Capitulation: Al Fateh conceded in crunch time (79') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Neom SC dismantled Al Fateh 4-2 by ruthlessly exploiting structural and situational vulnerabilities. Neom SC generated 2.61 xG across 21 shots (6 on target) with 62.5% possession, systematically pinning Al Fateh (37.5% possession, 2.47 xG). Neom SC's breakthrough via Alexandre Lacazette (16') established insurmountable tactical momentum. While Al Fateh attempted late adjustments, Neom SC's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "KV Kortrijk": {
     "team": "KV Kortrijk",
-    "updatedAt": "2026-09-23T17:17:49.994Z",
+    "updatedAt": "2026-09-23T17:48:59.540Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -4356,7 +4421,7 @@
   },
   "Waasland-Beveren": {
     "team": "Waasland-Beveren",
-    "updatedAt": "2026-09-23T17:17:49.994Z",
+    "updatedAt": "2026-09-23T17:48:59.540Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4376,8 +4441,8 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 7.2,
       "counterAttackLethality": 5.5,
       "setPieceVulnerability": 3.5
@@ -4386,10 +4451,10 @@
       "Territorial dominance with high possession volume (56.7% avg)"
     ],
     "recurringLossDrivers": [
-      "Occasional finishing variance when facing elite shot-stoppers"
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401878979",
@@ -4402,13 +4467,13 @@
         "shots": 7,
         "shotsOnTarget": 1,
         "xG": 0.61,
-        "lossReason": "Disciplinary Breakdown: Waasland-Beveren compromised match structure following a pivotal red card (32')."
+        "lossReason": "Executive Tactical Verdict: KV Kortrijk dismantled Waasland-Beveren 1-0 by ruthlessly exploiting structural and situational vulnerabilities. KV Kortrijk generated 2.04 xG across 20 shots (4 on target) with 43.3% possession, systematically pinning Waasland-Beveren (56.7% possession, 0.61 xG). The match pivoted irrevocably in the 32' when Johannes Schenk was dismissed, shattering Waasland-Beveren's tactical shape. KV Kortrijk's breakthrough via Jamie Roche (52') established insurmountable tactical momentum. While Waasland-Beveren attempted late adjustments, KV Kortrijk's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Slavia Prague": {
     "team": "Slavia Prague",
-    "updatedAt": "2026-09-23T17:17:49.839Z",
+    "updatedAt": "2026-09-23T17:48:59.222Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4428,8 +4493,8 @@
       "failedToScore": 0
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 8.2,
       "setPieceVulnerability": 6.5
@@ -4439,10 +4504,11 @@
       "High box penetration: 5 shots on target/game"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
       "Defensive frailty: conceding 3 goals/game on average"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "🔥 Scoring Machine",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401915440",
@@ -4455,13 +4521,13 @@
         "shots": 18,
         "shotsOnTarget": 5,
         "xG": 2.2,
-        "lossReason": "Disciplinary Breakdown: Slavia Prague compromised match structure following a pivotal red card (49')."
+        "lossReason": "Executive Tactical Verdict: Lens dismantled Slavia Prague 2-3 by ruthlessly exploiting structural and situational vulnerabilities. Lens generated 3.38 xG across 26 shots (8 on target) with 62.7% possession, systematically pinning Slavia Prague (37.3% possession, 2.2 xG). The match pivoted irrevocably in the 49' when Mikulás Konecny was dismissed, shattering Slavia Prague's tactical shape. Lens's breakthrough via Danijel Sturm (51') established insurmountable tactical momentum. While Slavia Prague attempted late adjustments, Lens's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Lens": {
     "team": "Lens",
-    "updatedAt": "2026-09-23T17:17:50.075Z",
+    "updatedAt": "2026-09-23T17:48:59.222Z",
     "matchesCount": 2,
     "record": {
       "wins": 2,
@@ -4527,7 +4593,7 @@
   },
   "Kalamata": {
     "team": "Kalamata",
-    "updatedAt": "2026-09-23T17:17:49.971Z",
+    "updatedAt": "2026-09-23T17:48:59.526Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4547,8 +4613,8 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 8.2,
       "setPieceVulnerability": 3.5
@@ -4557,10 +4623,10 @@
       "Lethal transition efficiency on vertical counter-attacks (<35.4% possession)"
     ],
     "recurringLossDrivers": [
-      "Occasional finishing variance when facing elite shot-stoppers"
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches"
     ],
     "tacticalIdentity": "Compact Low-Block & Counter",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401896820",
@@ -4573,13 +4639,13 @@
         "shots": 13,
         "shotsOnTarget": 4,
         "xG": 1.69,
-        "lossReason": "Finishing Inefficiency & Goalkeeping Outlier: Kalamata created 1.69 xG but converted only 0 goal."
+        "lossReason": "Executive Tactical Verdict: Panathinaikos dismantled Kalamata 0-1 by ruthlessly exploiting structural and situational vulnerabilities. Panathinaikos generated 2 xG across 14 shots (5 on target) with 64.6% possession, systematically pinning Kalamata (35.4% possession, 1.69 xG). Panathinaikos's breakthrough via Andrews Tetteh (33') established insurmountable tactical momentum. While Kalamata attempted late adjustments, Panathinaikos's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Panathinaikos": {
     "team": "Panathinaikos",
-    "updatedAt": "2026-09-23T17:17:49.971Z",
+    "updatedAt": "2026-09-23T17:48:59.526Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -4632,7 +4698,7 @@
   },
   "Venezuela": {
     "team": "Venezuela",
-    "updatedAt": "2026-09-23T17:17:50.333Z",
+    "updatedAt": "2026-09-23T17:48:59.099Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4680,13 +4746,13 @@
         "shots": 11,
         "shotsOnTarget": 8,
         "xG": 2.63,
-        "lossReason": "Late-Game Rest-Defense Capitulation: Venezuela conceded in crunch time (78') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Colombia dismantled Venezuela 3-6 by ruthlessly exploiting structural and situational vulnerabilities. Colombia generated 2.99 xG across 13 shots (9 on target) with 63.7% possession, systematically pinning Venezuela (36.3% possession, 2.63 xG). Colombia's breakthrough via Telasco Segovia (3') established insurmountable tactical momentum. While Venezuela attempted late adjustments, Colombia's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Colombia": {
     "team": "Colombia",
-    "updatedAt": "2026-09-23T17:17:50.333Z",
+    "updatedAt": "2026-09-23T17:48:59.099Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -4739,7 +4805,7 @@
   },
   "OFI CRETE": {
     "team": "OFI CRETE",
-    "updatedAt": "2026-09-23T17:17:50.369Z",
+    "updatedAt": "2026-09-23T17:48:59.467Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -4804,7 +4870,7 @@
   },
   "Volos NFC": {
     "team": "Volos NFC",
-    "updatedAt": "2026-09-23T17:17:50.011Z",
+    "updatedAt": "2026-09-23T17:48:59.384Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4824,8 +4890,8 @@
       "failedToScore": 0
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 8.2,
       "setPieceVulnerability": 6.5
@@ -4834,10 +4900,11 @@
       "Lethal transition efficiency on vertical counter-attacks (<39.9% possession)"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
       "Defensive frailty: conceding 2 goals/game on average"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401896758",
@@ -4850,13 +4917,13 @@
         "shots": 12,
         "shotsOnTarget": 4,
         "xG": 1.64,
-        "lossReason": "Disciplinary Breakdown: Volos NFC compromised match structure following a pivotal red card (90'+4')."
+        "lossReason": "Executive Tactical Verdict: AEK Athens dismantled Volos NFC 1-2 by ruthlessly exploiting structural and situational vulnerabilities. AEK Athens generated 1.07 xG across 11 shots (2 on target) with 60.1% possession, systematically pinning Volos NFC (39.9% possession, 1.64 xG). The match pivoted irrevocably in the 90'+4' when Georgios Mygas was dismissed, shattering Volos NFC's tactical shape. AEK Athens's breakthrough via Luka Jovic (61') established insurmountable tactical momentum. While Volos NFC attempted late adjustments, AEK Athens's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "AEK Athens": {
     "team": "AEK Athens",
-    "updatedAt": "2026-09-23T17:17:50.011Z",
+    "updatedAt": "2026-09-23T17:48:59.384Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -4908,7 +4975,7 @@
   },
   "Sint-Truidense": {
     "team": "Sint-Truidense",
-    "updatedAt": "2026-09-23T17:17:50.536Z",
+    "updatedAt": "2026-09-23T17:48:59.162Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4928,8 +4995,8 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 5.5,
       "setPieceVulnerability": 3.5
@@ -4938,10 +5005,11 @@
       "Lethal transition efficiency on vertical counter-attacks (<51.6% possession)"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
       "Defensive frailty: conceding 2 goals/game on average"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401878981",
@@ -4954,13 +5022,13 @@
         "shots": 17,
         "shotsOnTarget": 3,
         "xG": 1.63,
-        "lossReason": "Finishing Inefficiency & Goalkeeping Outlier: Sint-Truidense created 1.63 xG but converted only 0 goal."
+        "lossReason": "Executive Tactical Verdict: KVC Westerlo dismantled Sint-Truidense 0-2 by ruthlessly exploiting structural and situational vulnerabilities. KVC Westerlo generated 3.03 xG across 19 shots (8 on target) with 48.4% possession, systematically pinning Sint-Truidense (51.6% possession, 1.63 xG). KVC Westerlo's breakthrough via Norman Bassette (36') established insurmountable tactical momentum. While Sint-Truidense attempted late adjustments, KVC Westerlo's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "KVC Westerlo": {
     "team": "KVC Westerlo",
-    "updatedAt": "2026-09-23T17:17:50.536Z",
+    "updatedAt": "2026-09-23T17:48:59.162Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -5013,7 +5081,7 @@
   },
   "Kosovo": {
     "team": "Kosovo",
-    "updatedAt": "2026-09-23T17:17:50.063Z",
+    "updatedAt": "2026-09-23T17:48:59.548Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5033,8 +5101,8 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 8.2,
       "setPieceVulnerability": 3.5
@@ -5043,10 +5111,10 @@
       "Lethal transition efficiency on vertical counter-attacks (<42.7% possession)"
     ],
     "recurringLossDrivers": [
-      "Occasional finishing variance when facing elite shot-stoppers"
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches"
     ],
     "tacticalIdentity": "Compact Low-Block & Counter",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "761953",
@@ -5059,13 +5127,13 @@
         "shots": 11,
         "shotsOnTarget": 2,
         "xG": 1.07,
-        "lossReason": "Clinical Transition Disparity: Türkiye capitalized on high-leverage moments (1 goals from 3 SOT)."
+        "lossReason": "Executive Tactical Verdict: Türkiye dismantled Kosovo 0-1 by ruthlessly exploiting structural and situational vulnerabilities. Türkiye generated 1.38 xG across 12 shots (3 on target) with 57.3% possession, systematically pinning Kosovo (42.7% possession, 1.07 xG). Türkiye's breakthrough via Kerem Aktürkoglu (53') established insurmountable tactical momentum. While Kosovo attempted late adjustments, Türkiye's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Türkiye": {
     "team": "Türkiye",
-    "updatedAt": "2026-09-23T17:17:50.064Z",
+    "updatedAt": "2026-09-23T17:48:59.549Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -5117,7 +5185,7 @@
   },
   "Manchester City": {
     "team": "Manchester City",
-    "updatedAt": "2026-09-23T17:17:50.543Z",
+    "updatedAt": "2026-09-23T17:48:59.406Z",
     "matchesCount": 3,
     "record": {
       "wins": 2,
@@ -5137,8 +5205,8 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 33.3,
+      "lateCapitulationRisk": "HIGH",
       "lowBlockFrictionIndex": 7.2,
       "counterAttackLethality": 5.5,
       "setPieceVulnerability": 3.5
@@ -5149,10 +5217,11 @@
       "Solid defensive organization (2 clean sheets in last 3 matches)"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 3 matches",
       "Vulnerable to compact low-block congestion when dominating possession"
     ],
     "tacticalIdentity": "Aggressive High-Press & Gegenpress",
-    "badge": "🔥 Scoring Machine",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401875219",
@@ -5165,7 +5234,7 @@
         "shots": 12,
         "shotsOnTarget": 5,
         "xG": 1.9,
-        "lossReason": "Finishing Inefficiency & Goalkeeping Outlier: Manchester City created 1.9 xG but converted only 0 goal."
+        "lossReason": "Executive Tactical Verdict: Arsenal dismantled Manchester City 3-0 by ruthlessly exploiting structural and situational vulnerabilities. Arsenal generated 1.75 xG across 9 shots (5 on target) with 41.3% possession, systematically pinning Manchester City (58.7% possession, 1.9 xG). Arsenal's breakthrough via Riccardo Calafiori (1') established insurmountable tactical momentum. While Manchester City attempted late adjustments, Arsenal's defensive discipline and transitional speed rendered the victory completely authoritative."
       },
       {
         "matchId": "401914260",
@@ -5197,7 +5266,7 @@
   },
   "Argentina": {
     "team": "Argentina",
-    "updatedAt": "2026-09-23T17:17:50.571Z",
+    "updatedAt": "2026-09-23T17:48:59.432Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -5217,8 +5286,8 @@
       "failedToScore": 2
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 5.5,
       "setPieceVulnerability": 3.5
@@ -5227,10 +5296,11 @@
       "Lethal transition efficiency on vertical counter-attacks (<46.1% possession)"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 2 of last 2 matches",
       "Attacking profligacy: failed to score in 2 of last 2 matches"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "684665",
@@ -5243,7 +5313,7 @@
         "shots": 8,
         "shotsOnTarget": 0,
         "xG": 0.4,
-        "lossReason": "Disciplinary Breakdown: Argentina compromised match structure following a pivotal red card (31')."
+        "lossReason": "Executive Tactical Verdict: Ecuador dismantled Argentina 1-0 by ruthlessly exploiting structural and situational vulnerabilities. Ecuador generated 1.59 xG across 11 shots (4 on target) with 42.6% possession, systematically pinning Argentina (57.4% possession, 0.4 xG). The match pivoted irrevocably in the 31' when Nicolás Otamendi was dismissed, shattering Argentina's tactical shape. Ecuador's breakthrough via Enner Valencia (45'+13') established insurmountable tactical momentum. While Argentina attempted late adjustments, Ecuador's defensive discipline and transitional speed rendered the victory completely authoritative."
       },
       {
         "matchId": "760517",
@@ -5256,13 +5326,13 @@
         "shots": 2,
         "shotsOnTarget": 0,
         "xG": 0.1,
-        "lossReason": "Disciplinary Breakdown: Argentina compromised match structure following a pivotal red card (90'+3')."
+        "lossReason": "Executive Tactical Verdict: Spain dismantled Argentina 1-0 by ruthlessly exploiting structural and situational vulnerabilities. Spain generated 4.12 xG across 20 shots (12 on target) with 65.1% possession, systematically pinning Argentina (34.9% possession, 0.1 xG). The match pivoted irrevocably in the 90'+3' when Enzo Fernández was dismissed, shattering Argentina's tactical shape. Spain's breakthrough via Ferran Torres (106') established insurmountable tactical momentum. While Argentina attempted late adjustments, Spain's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Ecuador": {
     "team": "Ecuador",
-    "updatedAt": "2026-09-23T17:17:50.571Z",
+    "updatedAt": "2026-09-23T17:48:59.432Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -5314,7 +5384,7 @@
   },
   "Antwerp": {
     "team": "Antwerp",
-    "updatedAt": "2026-09-23T17:17:50.579Z",
+    "updatedAt": "2026-09-23T17:48:59.181Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5334,8 +5404,8 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 5.5,
       "setPieceVulnerability": 3.5
@@ -5344,10 +5414,11 @@
       "Lethal transition efficiency on vertical counter-attacks (<49.1% possession)"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
       "Defensive frailty: conceding 2 goals/game on average"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401878982",
@@ -5360,13 +5431,13 @@
         "shots": 7,
         "shotsOnTarget": 1,
         "xG": 0.61,
-        "lossReason": "Disciplinary Breakdown: Antwerp compromised match structure following a pivotal red card (69')."
+        "lossReason": "Executive Tactical Verdict: Union St.-Gilloise dismantled Antwerp 0-2 by ruthlessly exploiting structural and situational vulnerabilities. Union St.-Gilloise generated 3.91 xG across 21 shots (11 on target) with 50.9% possession, systematically pinning Antwerp (49.1% possession, 0.61 xG). The match pivoted irrevocably in the 69' when Bahmed Deuff was dismissed, shattering Antwerp's tactical shape. Union St.-Gilloise's breakthrough via Mateo Biondic (51') established insurmountable tactical momentum. While Antwerp attempted late adjustments, Union St.-Gilloise's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Union St.-Gilloise": {
     "team": "Union St.-Gilloise",
-    "updatedAt": "2026-09-23T17:17:50.579Z",
+    "updatedAt": "2026-09-23T17:48:59.446Z",
     "matchesCount": 2,
     "record": {
       "wins": 2,
@@ -5433,7 +5504,7 @@
   },
   "Borussia Dortmund": {
     "team": "Borussia Dortmund",
-    "updatedAt": "2026-09-23T17:17:50.508Z",
+    "updatedAt": "2026-09-23T17:48:59.131Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5453,8 +5524,8 @@
       "failedToScore": 0
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 8.2,
       "setPieceVulnerability": 3.5
@@ -5463,10 +5534,11 @@
       "Lethal transition efficiency on vertical counter-attacks (<38.8% possession)"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
       "Defensive frailty: conceding 2 goals/game on average"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401873679",
@@ -5479,13 +5551,13 @@
         "shots": 8,
         "shotsOnTarget": 3,
         "xG": 1.18,
-        "lossReason": "Disciplinary Breakdown: Borussia Dortmund compromised match structure following a pivotal red card (90')."
+        "lossReason": "Executive Tactical Verdict: Bayern Munich dismantled Borussia Dortmund 1-2 by ruthlessly exploiting structural and situational vulnerabilities. Bayern Munich generated 3.65 xG across 21 shots (10 on target) with 61.2% possession, systematically pinning Borussia Dortmund (38.8% possession, 1.18 xG). The match pivoted irrevocably in the 90' when Ramy Bensebaini was dismissed, shattering Borussia Dortmund's tactical shape. Bayern Munich's breakthrough via Nathaniel Brown (28') established insurmountable tactical momentum. While Borussia Dortmund attempted late adjustments, Bayern Munich's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Juventus": {
     "team": "Juventus",
-    "updatedAt": "2026-09-23T17:17:50.442Z",
+    "updatedAt": "2026-09-23T17:48:59.569Z",
     "matchesCount": 2,
     "record": {
       "wins": 2,
@@ -5552,7 +5624,7 @@
   },
   "Atalanta": {
     "team": "Atalanta",
-    "updatedAt": "2026-09-23T17:17:50.442Z",
+    "updatedAt": "2026-09-23T17:48:59.569Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5599,13 +5671,13 @@
         "shots": 11,
         "shotsOnTarget": 2,
         "xG": 1.07,
-        "lossReason": "Late-Game Rest-Defense Capitulation: Atalanta conceded in crunch time (77') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Juventus dismantled Atalanta 2-0 by ruthlessly exploiting structural and situational vulnerabilities. Juventus generated 2 xG across 14 shots (5 on target) with 52.1% possession, systematically pinning Atalanta (47.9% possession, 1.07 xG). Juventus's breakthrough via Francisco Conceição (28') established insurmountable tactical momentum. While Atalanta attempted late adjustments, Juventus's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Goztepe": {
     "team": "Goztepe",
-    "updatedAt": "2026-09-23T17:17:49.982Z",
+    "updatedAt": "2026-09-23T17:48:59.205Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5658,7 +5730,7 @@
   },
   "Caykur Rizespor": {
     "team": "Caykur Rizespor",
-    "updatedAt": "2026-09-23T17:17:49.982Z",
+    "updatedAt": "2026-09-23T17:48:59.205Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5710,7 +5782,7 @@
   },
   "Viktoria Plzen": {
     "team": "Viktoria Plzen",
-    "updatedAt": "2026-09-23T17:17:50.422Z",
+    "updatedAt": "2026-09-23T17:48:59.446Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5730,8 +5802,8 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 5.5,
       "setPieceVulnerability": 3.5
@@ -5741,10 +5813,11 @@
       "High box penetration: 5 shots on target/game"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
       "Defensive frailty: conceding 3 goals/game on average"
     ],
     "tacticalIdentity": "Compact Low-Block & Counter",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401915580",
@@ -5757,13 +5830,13 @@
         "shots": 14,
         "shotsOnTarget": 5,
         "xG": 2,
-        "lossReason": "Finishing Inefficiency & Goalkeeping Outlier: Viktoria Plzen created 2 xG but converted only 0 goal."
+        "lossReason": "Executive Tactical Verdict: Union St.-Gilloise dismantled Viktoria Plzen 0-3 by ruthlessly exploiting structural and situational vulnerabilities. Union St.-Gilloise generated 4.48 xG across 22 shots (13 on target) with 51.4% possession, systematically pinning Viktoria Plzen (48.6% possession, 2 xG). Union St.-Gilloise's breakthrough via Relebohile Mofokeng (17') established insurmountable tactical momentum. While Viktoria Plzen attempted late adjustments, Union St.-Gilloise's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Real Sociedad": {
     "team": "Real Sociedad",
-    "updatedAt": "2026-09-23T17:17:50.408Z",
+    "updatedAt": "2026-09-23T17:48:59.232Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -5783,8 +5856,8 @@
       "failedToScore": 0
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 50,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 5.5,
       "setPieceVulnerability": 3.5
@@ -5794,10 +5867,11 @@
       "High box penetration: 5.5 shots on target/game"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 2 matches",
       "Defensive frailty: conceding 2 goals/game on average"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "🔥 Scoring Machine",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401882858",
@@ -5823,13 +5897,13 @@
         "shots": 16,
         "shotsOnTarget": 5,
         "xG": 2.1,
-        "lossReason": "Finishing Inefficiency & Goalkeeping Outlier: Real Sociedad created 2.1 xG but converted only 1 goal."
+        "lossReason": "Executive Tactical Verdict: AFC Bournemouth dismantled Real Sociedad 1-2 by ruthlessly exploiting structural and situational vulnerabilities. AFC Bournemouth generated 1.33 xG across 11 shots (3 on target) with 38.3% possession, systematically pinning Real Sociedad (61.7% possession, 2.1 xG). AFC Bournemouth's breakthrough via Justin Kluivert (11') established insurmountable tactical momentum. While Real Sociedad attempted late adjustments, AFC Bournemouth's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "AFC Bournemouth": {
     "team": "AFC Bournemouth",
-    "updatedAt": "2026-09-23T17:17:50.408Z",
+    "updatedAt": "2026-09-23T17:48:59.232Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -5881,7 +5955,7 @@
   },
   "Asteras Tripoli": {
     "team": "Asteras Tripoli",
-    "updatedAt": "2026-09-23T17:17:50.000Z",
+    "updatedAt": "2026-09-23T17:48:59.362Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5933,7 +6007,7 @@
   },
   "Czechia": {
     "team": "Czechia",
-    "updatedAt": "2026-09-23T17:17:50.386Z",
+    "updatedAt": "2026-09-23T17:48:59.324Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5985,7 +6059,7 @@
   },
   "Denmark": {
     "team": "Denmark",
-    "updatedAt": "2026-09-23T17:17:50.386Z",
+    "updatedAt": "2026-09-23T17:48:59.324Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6038,7 +6112,7 @@
   },
   "Pisa": {
     "team": "Pisa",
-    "updatedAt": "2026-09-23T17:17:50.529Z",
+    "updatedAt": "2026-09-23T17:48:59.357Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6085,13 +6159,13 @@
         "shots": 6,
         "shotsOnTarget": 0,
         "xG": 0.3,
-        "lossReason": "Late-Game Rest-Defense Capitulation: Pisa conceded in crunch time (90'+2') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Fiorentina dismantled Pisa 3-0 by ruthlessly exploiting structural and situational vulnerabilities. Fiorentina generated 2.47 xG across 13 shots (7 on target) with 53.2% possession, systematically pinning Pisa (46.8% possession, 0.3 xG). Fiorentina's breakthrough via Mateo Pellegrino (40') established insurmountable tactical momentum. While Pisa attempted late adjustments, Fiorentina's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Al Riyadh": {
     "team": "Al Riyadh",
-    "updatedAt": "2026-09-23T17:17:50.560Z",
+    "updatedAt": "2026-09-23T17:48:59.184Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -6144,7 +6218,7 @@
   },
   "Al Kholood": {
     "team": "Al Kholood",
-    "updatedAt": "2026-09-23T17:17:50.560Z",
+    "updatedAt": "2026-09-23T17:48:59.184Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6192,13 +6266,13 @@
         "shots": 14,
         "shotsOnTarget": 3,
         "xG": 1.48,
-        "lossReason": "Late-Game Rest-Defense Capitulation: Al Kholood conceded in crunch time (89') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Al Riyadh dismantled Al Kholood 2-0 by ruthlessly exploiting structural and situational vulnerabilities. Al Riyadh generated 1.85 xG across 11 shots (5 on target) with 39.5% possession, systematically pinning Al Kholood (60.5% possession, 1.48 xG). Al Riyadh's breakthrough via Abdul Keita (65') established insurmountable tactical momentum. While Al Kholood attempted late adjustments, Al Riyadh's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Georgia": {
     "team": "Georgia",
-    "updatedAt": "2026-09-23T17:17:50.598Z",
+    "updatedAt": "2026-09-23T17:48:59.074Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6250,7 +6324,7 @@
   },
   "Greece": {
     "team": "Greece",
-    "updatedAt": "2026-09-23T17:17:50.598Z",
+    "updatedAt": "2026-09-23T17:48:59.074Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6302,7 +6376,7 @@
   },
   "Norwich City": {
     "team": "Norwich City",
-    "updatedAt": "2026-09-23T17:17:50.302Z",
+    "updatedAt": "2026-09-23T17:48:59.379Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6349,13 +6423,13 @@
         "shots": 4,
         "shotsOnTarget": 0,
         "xG": 0.2,
-        "lossReason": "Late-Game Rest-Defense Capitulation: Norwich City conceded in crunch time (90') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Manchester City dismantled Norwich City 5-0 by ruthlessly exploiting structural and situational vulnerabilities. Manchester City generated 2.26 xG across 14 shots (6 on target) with 65.9% possession, systematically pinning Norwich City (34.1% possession, 0.2 xG). Manchester City's breakthrough via Floyd Samba (29') established insurmountable tactical momentum. While Norwich City attempted late adjustments, Manchester City's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "VfL Osnabruck": {
     "team": "VfL Osnabruck",
-    "updatedAt": "2026-09-23T17:17:50.493Z",
+    "updatedAt": "2026-09-23T17:48:59.335Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6402,13 +6476,13 @@
         "shots": 5,
         "shotsOnTarget": 2,
         "xG": 0.77,
-        "lossReason": "Late-Game Rest-Defense Capitulation: VfL Osnabruck conceded in crunch time (86') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Bayern Munich dismantled VfL Osnabruck 1-4 by ruthlessly exploiting structural and situational vulnerabilities. Bayern Munich generated 3.44 xG across 22 shots (9 on target) with 67.2% possession, systematically pinning VfL Osnabruck (32.8% possession, 0.77 xG). Bayern Munich's breakthrough via Robin Meißner (5') established insurmountable tactical momentum. While VfL Osnabruck attempted late adjustments, Bayern Munich's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "AC Milan": {
     "team": "AC Milan",
-    "updatedAt": "2026-09-23T17:17:50.645Z",
+    "updatedAt": "2026-09-23T17:48:59.515Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -6460,7 +6534,7 @@
   },
   "Lecce": {
     "team": "Lecce",
-    "updatedAt": "2026-09-23T17:17:50.645Z",
+    "updatedAt": "2026-09-23T17:48:59.515Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6480,8 +6554,8 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 8.2,
       "setPieceVulnerability": 3.5
@@ -6490,10 +6564,11 @@
       "Lethal transition efficiency on vertical counter-attacks (<31.2% possession)"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
       "Defensive frailty: conceding 3 goals/game on average"
     ],
     "tacticalIdentity": "Compact Low-Block & Counter",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401874944",
@@ -6506,13 +6581,13 @@
         "shots": 6,
         "shotsOnTarget": 3,
         "xG": 1.08,
-        "lossReason": "Finishing Inefficiency & Goalkeeping Outlier: Lecce created 1.08 xG but converted only 0 goal."
+        "lossReason": "Executive Tactical Verdict: AC Milan dismantled Lecce 3-0 by ruthlessly exploiting structural and situational vulnerabilities. AC Milan generated 1.54 xG across 10 shots (4 on target) with 68.8% possession, systematically pinning Lecce (31.2% possession, 1.08 xG). AC Milan's breakthrough via Christian Pulisic (14') established insurmountable tactical momentum. While Lecce attempted late adjustments, AC Milan's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Panetolikos": {
     "team": "Panetolikos",
-    "updatedAt": "2026-09-23T17:17:50.025Z",
+    "updatedAt": "2026-09-23T17:48:59.157Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6559,13 +6634,13 @@
         "shots": 2,
         "shotsOnTarget": 1,
         "xG": 0.36,
-        "lossReason": "Late-Game Rest-Defense Capitulation: Panetolikos conceded in crunch time (90'+8') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: PAOK dismantled Panetolikos 1-3 by ruthlessly exploiting structural and situational vulnerabilities. PAOK generated 2.1 xG across 16 shots (5 on target) with 43.7% possession, systematically pinning Panetolikos (56.3% possession, 0.36 xG). PAOK's breakthrough via Taha Ali (33') established insurmountable tactical momentum. While Panetolikos attempted late adjustments, PAOK's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "PAOK": {
     "team": "PAOK",
-    "updatedAt": "2026-09-23T17:17:50.025Z",
+    "updatedAt": "2026-09-23T17:48:59.157Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -6618,7 +6693,7 @@
   },
   "Chile": {
     "team": "Chile",
-    "updatedAt": "2026-09-23T17:17:50.327Z",
+    "updatedAt": "2026-09-23T17:48:59.311Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6670,7 +6745,7 @@
   },
   "Uruguay": {
     "team": "Uruguay",
-    "updatedAt": "2026-09-23T17:17:50.327Z",
+    "updatedAt": "2026-09-23T17:48:59.311Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6722,7 +6797,7 @@
   },
   "RB Leipzig": {
     "team": "RB Leipzig",
-    "updatedAt": "2026-09-23T17:17:50.469Z",
+    "updatedAt": "2026-09-23T17:48:59.477Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -6742,7 +6817,7 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 50,
+      "lateCapitulationIndex": 100,
       "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 5.5,
@@ -6752,7 +6827,7 @@
       "Lethal transition efficiency on vertical counter-attacks (<49.5% possession)"
     ],
     "recurringLossDrivers": [
-      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 2 matches",
+      "Chronic late-game capitulation: conceded in 75'+ in 2 of last 2 matches",
       "Defensive frailty: conceding 3 goals/game on average"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
@@ -6769,7 +6844,7 @@
         "shots": 12,
         "shotsOnTarget": 3,
         "xG": 1.38,
-        "lossReason": "Finishing Inefficiency & Goalkeeping Outlier: RB Leipzig created 1.38 xG but converted only 0 goal."
+        "lossReason": "Executive Tactical Verdict: Bayer Leverkusen dismantled RB Leipzig 2-0 by ruthlessly exploiting structural and situational vulnerabilities. Bayer Leverkusen generated 2.46 xG across 18 shots (6 on target) with 50.8% possession, systematically pinning RB Leipzig (49.2% possession, 1.38 xG). Bayer Leverkusen's breakthrough via Patrik Schick (44') established insurmountable tactical momentum. While RB Leipzig attempted late adjustments, Bayer Leverkusen's defensive discipline and transitional speed rendered the victory completely authoritative."
       },
       {
         "matchId": "401915441",
@@ -6782,13 +6857,13 @@
         "shots": 14,
         "shotsOnTarget": 4,
         "xG": 1.74,
-        "lossReason": "Late-Game Rest-Defense Capitulation: RB Leipzig conceded in crunch time (90') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Como dismantled RB Leipzig 4-1 by ruthlessly exploiting structural and situational vulnerabilities. Como generated 2.26 xG across 14 shots (6 on target) with 50.3% possession, systematically pinning RB Leipzig (49.7% possession, 1.74 xG). Como's breakthrough via Martin Baturina (15') established insurmountable tactical momentum. While RB Leipzig attempted late adjustments, Como's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Sudtirol": {
     "team": "Sudtirol",
-    "updatedAt": "2026-09-23T17:17:50.290Z",
+    "updatedAt": "2026-09-23T17:48:59.153Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6834,13 +6909,13 @@
         "shots": 5,
         "shotsOnTarget": 2,
         "xG": 0.77,
-        "lossReason": "Late-Game Rest-Defense Capitulation: Sudtirol conceded in crunch time (87') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Genoa dismantled Sudtirol 1-0 by ruthlessly exploiting structural and situational vulnerabilities. Genoa generated 2.91 xG across 27 shots (6 on target) with 53% possession, systematically pinning Sudtirol (47% possession, 0.77 xG). Genoa's breakthrough via Johan Vásquez (87') established insurmountable tactical momentum. While Sudtirol attempted late adjustments, Genoa's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Valencia": {
     "team": "Valencia",
-    "updatedAt": "2026-09-23T17:17:49.833Z",
+    "updatedAt": "2026-09-23T17:48:59.005Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6888,13 +6963,13 @@
         "shots": 22,
         "shotsOnTarget": 5,
         "xG": 2.4,
-        "lossReason": "Late-Game Rest-Defense Capitulation: Valencia conceded in crunch time (75') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Real Sociedad dismantled Valencia 2-3 by ruthlessly exploiting structural and situational vulnerabilities. Real Sociedad generated 2.61 xG across 21 shots (6 on target) with 45.9% possession, systematically pinning Valencia (54.1% possession, 2.4 xG). The match pivoted irrevocably in the 90'+6' when Orri Óskarsson was dismissed, shattering Valencia's tactical shape. Real Sociedad's breakthrough via Luka Sucic (26') established insurmountable tactical momentum. While Valencia attempted late adjustments, Real Sociedad's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Ferencvaros": {
     "team": "Ferencvaros",
-    "updatedAt": "2026-09-23T17:17:50.321Z",
+    "updatedAt": "2026-09-23T17:48:59.369Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -6947,7 +7022,7 @@
   },
   "Bayer Leverkusen": {
     "team": "Bayer Leverkusen",
-    "updatedAt": "2026-09-23T17:17:50.469Z",
+    "updatedAt": "2026-09-23T17:48:59.477Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -7000,7 +7075,7 @@
   },
   "Ukraine": {
     "team": "Ukraine",
-    "updatedAt": "2026-09-23T17:17:50.215Z",
+    "updatedAt": "2026-09-23T17:48:59.174Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -7053,7 +7128,7 @@
   },
   "Iceland": {
     "team": "Iceland",
-    "updatedAt": "2026-09-23T17:17:50.215Z",
+    "updatedAt": "2026-09-23T17:48:59.174Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -7100,13 +7175,13 @@
         "shots": 6,
         "shotsOnTarget": 3,
         "xG": 1.08,
-        "lossReason": "Late-Game Rest-Defense Capitulation: Iceland conceded in crunch time (84') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Ukraine dismantled Iceland 2-1 by ruthlessly exploiting structural and situational vulnerabilities. Ukraine generated 1.95 xG across 13 shots (5 on target) with 60.1% possession, systematically pinning Iceland (39.9% possession, 1.08 xG). Ukraine's breakthrough via Albert Gudmundsson (30') established insurmountable tactical momentum. While Iceland attempted late adjustments, Ukraine's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Crystal Palace": {
     "team": "Crystal Palace",
-    "updatedAt": "2026-09-23T17:17:50.134Z",
+    "updatedAt": "2026-09-23T17:48:59.436Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -7159,7 +7234,7 @@
   },
   "Lech Poznan": {
     "team": "Lech Poznan",
-    "updatedAt": "2026-09-23T17:17:50.134Z",
+    "updatedAt": "2026-09-23T17:48:59.436Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -7179,8 +7254,8 @@
       "failedToScore": 1
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
       "counterAttackLethality": 5.5,
       "setPieceVulnerability": 3.5
@@ -7190,10 +7265,11 @@
       "High box penetration: 6 shots on target/game"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
       "Defensive frailty: conceding 4 goals/game on average"
     ],
     "tacticalIdentity": "Compact Low-Block & Counter",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401915569",
@@ -7206,13 +7282,13 @@
         "shots": 17,
         "shotsOnTarget": 6,
         "xG": 2.41,
-        "lossReason": "Disciplinary Breakdown: Lech Poznan compromised match structure following a pivotal red card (87')."
+        "lossReason": "Executive Tactical Verdict: Crystal Palace dismantled Lech Poznan 4-0 by ruthlessly exploiting structural and situational vulnerabilities. Crystal Palace generated 2.36 xG across 16 shots (6 on target) with 52.7% possession, systematically pinning Lech Poznan (47.3% possession, 2.41 xG). The match pivoted irrevocably in the 87' when Radoslaw Murawski was dismissed, shattering Lech Poznan's tactical shape. Crystal Palace's breakthrough via Yéremy Pino (10') established insurmountable tactical momentum. While Lech Poznan attempted late adjustments, Crystal Palace's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Lillestrom": {
     "team": "Lillestrom",
-    "updatedAt": "2026-09-23T17:17:51.662Z",
+    "updatedAt": "2026-09-23T17:48:59.497Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -7232,8 +7308,8 @@
       "failedToScore": 0
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 0,
-      "lateCapitulationRisk": "LOW",
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 7.2,
       "counterAttackLethality": 5.5,
       "setPieceVulnerability": 6.5
@@ -7243,11 +7319,12 @@
       "High box penetration: 6 shots on target/game"
     ],
     "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
       "Vulnerable to compact low-block congestion when dominating possession",
       "Defensive frailty: conceding 2 goals/game on average"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
-    "badge": "⚔️ Competitive Shape",
+    "badge": "⚠️ Late Conceder",
     "recentMatches": [
       {
         "matchId": "401915570",
@@ -7260,13 +7337,13 @@
         "shots": 25,
         "shotsOnTarget": 6,
         "xG": 2.81,
-        "lossReason": "Finishing Inefficiency & Goalkeeping Outlier: Lillestrom created 2.81 xG but converted only 1 goal."
+        "lossReason": "Executive Tactical Verdict: Torreense dismantled Lillestrom 1-2 by ruthlessly exploiting structural and situational vulnerabilities. Torreense generated 1.33 xG across 11 shots (3 on target) with 33% possession, systematically pinning Lillestrom (67% possession, 2.81 xG). The match pivoted irrevocably in the 85' when Nuha Jatta was dismissed, shattering Lillestrom's tactical shape. Torreense's breakthrough via Alejandro Alfaro (23') established insurmountable tactical momentum. While Lillestrom attempted late adjustments, Torreense's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Torreense": {
     "team": "Torreense",
-    "updatedAt": "2026-09-23T17:17:51.662Z",
+    "updatedAt": "2026-09-23T17:48:59.497Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -7318,7 +7395,7 @@
   },
   "Sweden": {
     "team": "Sweden",
-    "updatedAt": "2026-09-23T17:17:50.207Z",
+    "updatedAt": "2026-09-23T17:48:59.415Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -7371,7 +7448,7 @@
   },
   "Poland": {
     "team": "Poland",
-    "updatedAt": "2026-09-23T17:17:50.282Z",
+    "updatedAt": "2026-09-23T17:48:59.460Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -7432,13 +7509,13 @@
         "shots": 15,
         "shotsOnTarget": 7,
         "xG": 2.57,
-        "lossReason": "Late-Game Rest-Defense Capitulation: Poland conceded in crunch time (88') after defensive fatigue set in."
+        "lossReason": "Executive Tactical Verdict: Sweden dismantled Poland 3-2 by ruthlessly exploiting structural and situational vulnerabilities. Sweden generated 1.75 xG across 9 shots (5 on target) with 32.9% possession, systematically pinning Poland (67.1% possession, 2.57 xG). Sweden's breakthrough via Anthony Elanga (19') established insurmountable tactical momentum. While Poland attempted late adjustments, Sweden's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Wales": {
     "team": "Wales",
-    "updatedAt": "2026-09-23T17:17:50.282Z",
+    "updatedAt": "2026-09-23T17:48:59.460Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -7485,6 +7562,111 @@
         "shotsOnTarget": 4,
         "xG": 1.64,
         "lossReason": null
+      }
+    ]
+  },
+  "Espanyol": {
+    "team": "Espanyol",
+    "updatedAt": "2026-09-23T17:17:31.870Z",
+    "matchesCount": 1,
+    "record": {
+      "wins": 0,
+      "draws": 1,
+      "losses": 0,
+      "winRate": 0
+    },
+    "metrics": {
+      "avgPossession": 50,
+      "avgShots": 0,
+      "avgShotsOnTarget": 0,
+      "avgGoalsScored": 0,
+      "avgGoalsConceded": 0,
+      "avgXgCreated": 0.1,
+      "avgXgConceded": 0,
+      "cleanSheets": 1,
+      "failedToScore": 1
+    },
+    "tacticalIndices": {
+      "lateCapitulationIndex": 0,
+      "lateCapitulationRisk": "LOW",
+      "lowBlockFrictionIndex": 4.5,
+      "counterAttackLethality": 5.5,
+      "setPieceVulnerability": 3.5
+    },
+    "recurringWinDrivers": [
+      "Lethal transition efficiency on vertical counter-attacks (<50% possession)"
+    ],
+    "recurringLossDrivers": [
+      "Occasional finishing variance when facing elite shot-stoppers"
+    ],
+    "tacticalIdentity": "Balanced Structural Mid-Block",
+    "badge": "⚔️ Competitive Shape",
+    "recentMatches": [
+      {
+        "matchId": "401882851",
+        "opponent": "Málaga",
+        "venue": "AWAY",
+        "result": "DRAW",
+        "score": "0-0",
+        "date": "2026-10-09",
+        "possession": 50,
+        "shots": 0,
+        "shotsOnTarget": 0,
+        "xG": 0.1,
+        "lossReason": null
+      }
+    ]
+  },
+  "Mallorca": {
+    "team": "Mallorca",
+    "updatedAt": "2026-09-23T17:17:42.984Z",
+    "matchesCount": 1,
+    "record": {
+      "wins": 0,
+      "draws": 0,
+      "losses": 1,
+      "winRate": 0
+    },
+    "metrics": {
+      "avgPossession": 38,
+      "avgShots": 6,
+      "avgShotsOnTarget": 2,
+      "avgGoalsScored": 0,
+      "avgGoalsConceded": 3,
+      "avgXgCreated": 0.82,
+      "avgXgConceded": 2.85,
+      "cleanSheets": 0,
+      "failedToScore": 1
+    },
+    "tacticalIndices": {
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
+      "lowBlockFrictionIndex": 4.5,
+      "counterAttackLethality": 8.2,
+      "setPieceVulnerability": 3.5
+    },
+    "recurringWinDrivers": [
+      "Lethal transition efficiency on vertical counter-attacks (<38% possession)"
+    ],
+    "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
+      "Defensive frailty: conceding 3 goals/game on average"
+    ],
+    "tacticalIdentity": "Balanced Structural Mid-Block",
+    "badge": "⚠️ Late Conceder",
+    "recentMatches": [
+      {
+        "matchId": "adhoc_1790183862984",
+        "opponent": "Real Madrid",
+        "venue": "AWAY",
+        "result": "LOSS",
+        "score": "0-3",
+        "date": "2026-09-23",
+        "possession": 38,
+        "shots": 6,
+        "shotsOnTarget": 2,
+        "xG": 0.82,
+        "lossReason": "Late-Game Rest-Defense Capitulation: Mallorca conceded in crunch time (81') after defensive fatigue set in."
       }
     ]
   }
