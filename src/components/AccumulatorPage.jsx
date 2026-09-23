@@ -25,6 +25,7 @@ import {
   SlidersHorizontal
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
+import InfoTooltip from './InfoTooltip';
 import { safeParseFloat, safeToFixed } from '../utils/numberUtils';
 import { formatRelativeDayTime } from '../utils/dateUtils';
 import { resolveMatchOdds, resolveMatchProb } from '../utils/oddsUtils';
@@ -1239,13 +1240,14 @@ export default function AccumulatorPage({
       )}
 
       {/* 3. Autonomous Presets Generator Bar (Strict Outrights Only & 100% AI Consensus) */}
-      <div className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 shadow-xs">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-amber-500" />
+      <div className="bg-white border border-slate-200 rounded-xl p-2.5 sm:p-3 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2.5 mb-2.5">
+          <div className="flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              Autonomous Acca Generator (Proven Edge)
+              Autonomous Acca Generator
             </h3>
+            <InfoTooltip title="Autonomous Acca Generator" content="Builds mathematically optimized accumulators enforcing positive mathematical edge (+EV) and unanimous AI model consensus." />
           </div>
           <span className="text-[11px] text-slate-500">
             Historical Win Rate: <strong className="text-slate-800">{strategyWinRate}</strong>
@@ -1442,15 +1444,15 @@ export default function AccumulatorPage({
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-9">
-                  <th className="py-1.5 px-2.5 w-10 text-center">#</th>
-                  <th className="py-1.5 px-2.5 min-w-[150px]">Fixture</th>
-                  <th className="py-1.5 px-2.5 min-w-[120px]">Status</th>
-                  <th className="py-1.5 px-2.5 min-w-[150px]">Selection</th>
-                  <th className="py-1.5 px-2.5 w-20 text-center">Odds</th>
-                  <th className="py-1.5 px-2.5 w-24 text-center">Probability</th>
-                  <th className="py-1.5 px-2.5 w-24 text-center">Value (EV)</th>
-                  <th className="py-1.5 px-2.5 w-14 text-center">Remove</th>
+                <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
+                  <th className="py-1 px-1.5 w-8 text-center">#</th>
+                  <th className="py-1 px-2 min-w-[140px]">Fixture</th>
+                  <th className="py-1 px-2 min-w-[110px]">Status</th>
+                  <th className="py-1 px-2 min-w-[130px]">Selection</th>
+                  <th className="py-1 px-1.5 w-16 text-center">Odds</th>
+                  <th className="py-1 px-1.5 w-20 text-center">Probability</th>
+                  <th className="py-1 px-1.5 w-20 text-center">Value (EV)</th>
+                  <th className="py-1 px-1.5 w-12 text-center">Remove</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -1459,24 +1461,24 @@ export default function AccumulatorPage({
                   const isDC = leg.status.isProtectedDC;
 
                   return (
-                    <tr key={leg.pickId || leg.id || idx} className={`hover:bg-slate-50/80 transition-colors h-11 ${leg.status.isTrap ? 'bg-rose-50/40' : 'bg-white'}`}>
-                      <td className="py-1.5 px-2.5 text-center font-bold text-slate-400">
+                    <tr key={leg.pickId || leg.id || idx} className={`hover:bg-slate-50/80 transition-colors h-9 md:h-10 ${leg.status.isTrap ? 'bg-rose-50/40' : 'bg-white'}`}>
+                      <td className="py-1 px-1.5 text-center font-bold text-slate-400 text-xs">
                         {leg.legNum}
                       </td>
-                      <td className="py-1.5 px-2.5">
-                        <div className="font-semibold text-slate-900 leading-tight">
+                      <td className="py-1 px-2">
+                        <div className="font-semibold text-slate-900 leading-tight text-[11.5px]">
                           {leg.home} vs {leg.away}
                         </div>
-                        <div className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1.5">
+                        <div className="text-[9.5px] text-slate-400 leading-tight flex items-center gap-1">
                           <span>{leg.league}</span>
                           <span>•</span>
                           <span>{leg.time}</span>
                         </div>
                       </td>
-                      <td className="py-1.5 px-2.5">
+                      <td className="py-1 px-2">
                         <span 
                           title={b.title}
-                          className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${
+                          className={`inline-block px-1.5 py-0.2 rounded text-[10px] font-bold ${
                             b.type === 'danger' ? 'bg-rose-100 text-rose-800 border border-rose-200' :
                             b.type === 'warning' ? 'bg-amber-100 text-amber-900 border border-amber-200' :
                             b.type === 'protected' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
@@ -1488,39 +1490,39 @@ export default function AccumulatorPage({
                           {b.label}
                         </span>
                       </td>
-                      <td className="py-1.5 px-2.5">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded text-[11px] border border-slate-200">
+                      <td className="py-1 px-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-slate-800 bg-slate-100 px-1.5 py-0.2 rounded text-[10.5px] border border-slate-200">
                             {leg.market}
                           </span>
                           {isDC ? (
                             <button
                               type="button"
                               onClick={() => handleConvertToOutright(leg)}
-                              className="text-[10px] font-bold px-1.5 py-0.5 rounded border border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer flex items-center gap-0.5"
+                              className="text-[9.5px] font-bold px-1.5 py-0.2 rounded border border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer flex items-center gap-0.5"
                               title="Convert non-outright Double Chance pick to straight outright win"
                             >
                               <span>Convert to Outright</span>
                             </button>
                           ) : (
-                            <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">
+                            <span className="text-[9.5px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 py-0.2 rounded">
                               Straight Win
                             </span>
                           )}
                         </div>
                       </td>
-                      <td className="py-1.5 px-2.5 text-center font-mono font-bold text-slate-800">
+                      <td className="py-1 px-1.5 text-center font-mono font-bold text-slate-800 text-[11px]">
                         {safeToFixed(leg.odds, 2)}
                       </td>
-                      <td className="py-1.5 px-2.5 text-center font-mono text-emerald-700 font-semibold">
+                      <td className="py-1 px-1.5 text-center font-mono text-emerald-700 font-semibold text-[10.5px]">
                         {safeToFixed(leg.prob, 1)}%
                       </td>
-                      <td className="py-1.5 px-2.5 text-center font-mono font-bold">
+                      <td className="py-1 px-1.5 text-center font-mono font-bold text-[10.5px]">
                         <span className={leg.status.ev > 0 ? 'text-emerald-600' : 'text-slate-400'}>
                           {leg.status.ev > 0 ? '+' : ''}{safeToFixed(leg.status.ev * 100, 1)}%
                         </span>
                       </td>
-                      <td className="py-1.5 px-2.5 text-center">
+                      <td className="py-1 px-1.5 text-center">
                         <button
                           type="button"
                           onClick={() => onRemovePick(leg.pickId || leg.id)}

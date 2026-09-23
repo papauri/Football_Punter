@@ -258,10 +258,10 @@ export default function BinaryPicksPage({
     <div className="space-y-4">
       
       {/* Top Banner */}
-      <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
-        <div>
+      <div className="bg-white border border-slate-200 rounded-xl p-2.5 sm:p-3 shadow-xs flex flex-wrap items-center justify-between gap-2.5 text-xs">
+        <div className="flex items-center gap-1.5">
           <div className="font-bold text-slate-800 text-sm">Value Bets & Staking</div>
-          <div className="text-slate-500 text-[11px]">Strict mathematical edges against bookmaker implied probability</div>
+          <InfoTooltip title="Value Bets & Staking" content="Strict mathematical edges against bookmaker implied probability based on Poisson probability and fractional Kelly staking." />
         </div>
 
         <div className="flex items-center gap-2">
@@ -412,20 +412,20 @@ export default function BinaryPicksPage({
       <div className="bg-white border border-slate-200 rounded-lg overflow-x-auto shadow-2xs">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 select-none h-9">
+            <tr className="bg-slate-50 border-b border-slate-200 select-none h-8">
               {/* Kickoff Day & Time */}
               <th 
                 onClick={() => handleSort('time')}
-                className={`py-2 px-3 min-w-[155px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
-                  sortField === 'time' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                className={`py-1 px-2 min-w-[140px] text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'time' ? 'text-indigo-800 bg-indigo-50/60' : 'text-slate-500'
                 }`}
                 title="Click to sort by Kickoff Day & Time"
               >
                 <div className="flex items-center gap-1">
                   <Calendar className="w-3 h-3 text-indigo-600" />
-                  <span>Kickoff (Day & Time)</span>
+                  <span>Kickoff</span>
                   {sortField === 'time' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -435,15 +435,15 @@ export default function BinaryPicksPage({
               {/* League */}
               <th 
                 onClick={() => handleSort('league')}
-                className={`py-2 px-3 min-w-[130px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
-                  sortField === 'league' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                className={`py-1 px-2 min-w-[110px] text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'league' ? 'text-indigo-800 bg-indigo-50/60' : 'text-slate-500'
                 }`}
                 title="Click to sort by League"
               >
                 <div className="flex items-center gap-1">
                   <span>League</span>
                   {sortField === 'league' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -453,15 +453,15 @@ export default function BinaryPicksPage({
               {/* Fixture */}
               <th 
                 onClick={() => handleSort('fixture')}
-                className={`py-2 px-3 min-w-[190px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
-                  sortField === 'fixture' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                className={`py-1 px-2 min-w-[170px] text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'fixture' ? 'text-indigo-800 bg-indigo-50/60' : 'text-slate-500'
                 }`}
                 title="Click to sort by Fixture (A-Z / Z-A)"
               >
                 <div className="flex items-center gap-1">
                   <span>Fixture</span>
                   {sortField === 'fixture' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -471,15 +471,15 @@ export default function BinaryPicksPage({
               {/* Market Pick */}
               <th 
                 onClick={() => handleSort('market')}
-                className={`py-2 px-2.5 min-w-[140px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
-                  sortField === 'market' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                className={`py-1 px-2 min-w-[120px] text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'market' ? 'text-indigo-800 bg-indigo-50/60' : 'text-slate-500'
                 }`}
                 title="Click to sort by Market Pick"
               >
                 <div className="flex items-center gap-1">
                   <span>Market Pick</span>
                   {sortField === 'market' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -489,15 +489,15 @@ export default function BinaryPicksPage({
               {/* Odds */}
               <th 
                 onClick={() => handleSort('odds')}
-                className={`py-2 px-2 w-20 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
-                  sortField === 'odds' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                className={`py-1 px-1.5 w-16 text-center text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'odds' ? 'text-indigo-800 bg-indigo-50/60' : 'text-slate-500'
                 }`}
                 title="Click to sort by Decimal Odds"
               >
                 <div className="flex items-center justify-center gap-1">
                   <span>Odds</span>
                   {sortField === 'odds' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -507,8 +507,8 @@ export default function BinaryPicksPage({
               {/* Prob */}
               <th 
                 onClick={() => handleSort('prob')}
-                className={`py-2 px-2 w-20 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
-                  sortField === 'prob' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                className={`py-1 px-1.5 w-16 text-center text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'prob' ? 'text-indigo-800 bg-indigo-50/60' : 'text-slate-500'
                 }`}
                 title="Click to sort by Model Probability"
               >
@@ -517,7 +517,7 @@ export default function BinaryPicksPage({
                     <span>Prob</span>
                   </InfoTooltip>
                   {sortField === 'prob' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -527,8 +527,8 @@ export default function BinaryPicksPage({
               {/* Implied */}
               <th 
                 onClick={() => handleSort('implied')}
-                className={`py-2 px-2 w-20 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
-                  sortField === 'implied' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                className={`py-1 px-1.5 w-16 text-center text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'implied' ? 'text-indigo-800 bg-indigo-50/60' : 'text-slate-500'
                 }`}
                 title="Click to sort by Implied Probability"
               >
@@ -537,7 +537,7 @@ export default function BinaryPicksPage({
                     <span>Implied</span>
                   </InfoTooltip>
                   {sortField === 'implied' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -547,8 +547,8 @@ export default function BinaryPicksPage({
               {/* Edge */}
               <th 
                 onClick={() => handleSort('edge')}
-                className={`py-2 px-2 w-24 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
-                  sortField === 'edge' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                className={`py-1 px-1.5 w-20 text-center text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'edge' ? 'text-indigo-800 bg-indigo-50/60' : 'text-slate-500'
                 }`}
                 title="Click to sort by Edge (+EV)"
               >
@@ -557,7 +557,7 @@ export default function BinaryPicksPage({
                     <span>Edge</span>
                   </InfoTooltip>
                   {sortField === 'edge' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -567,8 +567,8 @@ export default function BinaryPicksPage({
               {/* Kelly */}
               <th 
                 onClick={() => handleSort('kelly')}
-                className={`py-2 px-2 w-24 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
-                  sortField === 'kelly' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                className={`py-1 px-1.5 w-20 text-center text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'kelly' ? 'text-indigo-800 bg-indigo-50/60' : 'text-slate-500'
                 }`}
                 title="Click to sort by Kelly sizing"
               >
@@ -577,7 +577,7 @@ export default function BinaryPicksPage({
                     <span>Kelly</span>
                   </KellyTooltip>
                   {sortField === 'kelly' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -585,7 +585,7 @@ export default function BinaryPicksPage({
               </th>
 
               {/* Actions */}
-              <th className="py-2 px-2.5 w-32 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+              <th className="py-1 px-2 w-28 text-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -594,7 +594,7 @@ export default function BinaryPicksPage({
           <tbody className="divide-y divide-slate-100">
             {binaryPicks.length === 0 ? (
               <tr>
-                <td colSpan={10} className="py-12 text-center text-slate-400">
+                <td colSpan={10} className="py-8 text-center text-slate-400 text-xs">
                   No value picks match the selected filters.
                 </td>
               </tr>
@@ -606,28 +606,28 @@ export default function BinaryPicksPage({
                 return (
                   <tr 
                     key={p.id || idx} 
-                    className={`hover:bg-indigo-50/20 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} h-11`}
+                    className={`hover:bg-indigo-50/20 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} h-9 md:h-10`}
                   >
                     {/* Kickoff Day & Time */}
-                    <td className="py-2 px-3 whitespace-nowrap">
+                    <td className="py-1 px-2 whitespace-nowrap">
                       <div className="flex flex-col">
-                        <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs">
-                          <Calendar className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                        <div className="flex items-center gap-1 font-bold text-slate-900 text-[11px]">
+                          <Calendar className="w-3 h-3 text-indigo-600 shrink-0" />
                           <span>{p.time}</span>
                           {p.isLive && (
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse">
-                              <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+                            <span className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse">
+                              <span className="w-1 h-1 rounded-full bg-white"></span>
                               LIVE {p.liveMinute ? `${p.liveMinute}'` : ''}
                             </span>
                           )}
                         </div>
                         {p.dt?.day && (p.time?.startsWith('Today') || p.time?.startsWith('Tomorrow')) && (
-                          <span className="text-[10px] text-slate-400 pl-5 font-medium">
+                          <span className="text-[9.5px] text-slate-400 pl-4 font-medium leading-tight">
                             {p.dt.day}, {p.dt.date}
                           </span>
                         )}
                         {p.broadcast && (
-                          <span className="text-[9px] text-indigo-700 font-semibold pl-5 pt-0.5 truncate max-w-[140px]" title={`Broadcast: ${p.broadcast}`}>
+                          <span className="text-[8.5px] text-indigo-700 font-semibold pl-4 pt-0.5 truncate max-w-[130px] leading-tight" title={`Broadcast: ${p.broadcast}`}>
                             📺 {p.broadcast.split(',')[0]}
                           </span>
                         )}
@@ -635,9 +635,9 @@ export default function BinaryPicksPage({
                     </td>
 
                     {/* League */}
-                    <td className="py-2 px-3">
+                    <td className="py-1 px-2">
                       <span 
-                        className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[11px] truncate max-w-[130px] border border-slate-200"
+                        className="inline-block px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[10px] truncate max-w-[110px] border border-slate-200"
                         title={p.league}
                       >
                         {p.league || 'Soccer'}
@@ -645,28 +645,28 @@ export default function BinaryPicksPage({
                     </td>
 
                     {/* Fixture */}
-                    <td className="py-2 px-3 min-w-[190px]">
-                      <div className="font-semibold text-slate-900 flex items-center gap-1.5 flex-wrap">
+                    <td className="py-1 px-2 min-w-[170px]">
+                      <div className="font-semibold text-slate-900 flex items-center gap-1 flex-wrap text-[11.5px]">
                         <span className="text-slate-900 font-bold">{p.home}</span>
-                        <span className="text-[10px] text-slate-400 font-normal">vs</span>
+                        <span className="text-[9.5px] text-slate-400 font-normal">vs</span>
                         <span className="text-slate-900 font-bold">{p.away}</span>
                         {p.isLive && (
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(p.match); }}
-                            className="inline-flex items-center gap-1 text-[9px] font-extrabold bg-rose-600 hover:bg-rose-700 text-white px-2 py-0.5 rounded-full shadow-xs animate-pulse cursor-pointer shrink-0"
+                            className="inline-flex items-center gap-0.5 text-[8.5px] font-extrabold bg-rose-600 hover:bg-rose-700 text-white px-1.5 py-0.2 rounded-full shadow-xs animate-pulse cursor-pointer shrink-0"
                             title="Match is LIVE NOW! Click to Watch Stream"
                           >
-                            <Play className="w-2 h-2 fill-white text-white" />
-                            <span>Watch Now</span>
+                            <Play className="w-1.5 h-1.5 fill-white text-white" />
+                            <span>Live</span>
                           </button>
                         )}
                       </div>
                     </td>
 
                     {/* Pick */}
-                    <td className="py-2 px-2.5 whitespace-nowrap">
-                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold border ${
+                    <td className="py-1 px-2 whitespace-nowrap">
+                      <span className={`inline-block px-2 py-0.5 rounded-full text-[10.5px] font-bold border ${
                         isElite 
                           ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
                           : 'bg-indigo-50 text-indigo-700 border-indigo-200'
@@ -676,23 +676,23 @@ export default function BinaryPicksPage({
                     </td>
 
                     {/* Bookmaker Odds */}
-                    <td className="py-2 px-2 text-center font-mono font-bold text-slate-800 text-xs whitespace-nowrap">
+                    <td className="py-1 px-1.5 text-center font-mono font-bold text-slate-800 text-[11px] whitespace-nowrap">
                       {safeToFixed(p.marketOdds, 2)}
                     </td>
 
                     {/* Prob */}
-                    <td className="py-2 px-2 text-center whitespace-nowrap">
+                    <td className="py-1 px-1.5 text-center whitespace-nowrap">
                       <ConfidenceGauge confidence={p.modelProb} size="sm" />
                     </td>
 
                     {/* Implied */}
-                    <td className="py-2 px-2 text-center font-mono text-slate-500 text-xs whitespace-nowrap">
+                    <td className="py-1 px-1.5 text-center font-mono text-slate-500 text-[10.5px] whitespace-nowrap">
                       {safeToFixed(p.impliedProb, 1)}%
                     </td>
 
                     {/* Edge */}
-                    <td className="py-2 px-2 text-center font-mono whitespace-nowrap">
-                      <span className={`inline-block px-1.5 py-0.5 rounded font-bold text-xs ${
+                    <td className="py-1 px-1.5 text-center font-mono whitespace-nowrap">
+                      <span className={`inline-block px-1.5 py-0.5 rounded font-bold text-[10.5px] ${
                         p.edge >= 8 
                           ? 'bg-emerald-100 text-emerald-800' 
                           : p.edge > 3 
@@ -704,13 +704,13 @@ export default function BinaryPicksPage({
                     </td>
 
                     {/* Kelly Sizing */}
-                    <td className="py-2 px-2 text-center whitespace-nowrap">
+                    <td className="py-1 px-1.5 text-center whitespace-nowrap">
                       <KellyTooltip showIcon={false} align="center">
-                        <div className="cursor-help inline-block">
-                          <span className="font-mono font-bold text-slate-800 text-xs block hover:text-indigo-600 transition-colors">
+                        <div className="cursor-help inline-block leading-tight">
+                          <span className="font-mono font-bold text-slate-800 text-[11px] block hover:text-indigo-600 transition-colors">
                             {p.kellyUnits > 0 ? `${p.kellyUnits}u` : 'No bet'}
                           </span>
-                          <span className="text-[10px] text-slate-400 block font-mono">
+                          <span className="text-[9px] text-slate-400 block font-mono">
                             1/4 Kelly
                           </span>
                         </div>
@@ -718,33 +718,33 @@ export default function BinaryPicksPage({
                     </td>
 
                     {/* Actions */}
-                    <td className="py-2 px-2.5 text-center whitespace-nowrap">
-                      <div className="flex items-center justify-center gap-1.5">
+                    <td className="py-1 px-2 text-center whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-1">
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(p.match); }}
-                          className={`px-2 py-1 rounded text-[11px] font-bold transition-all cursor-pointer inline-flex items-center gap-1 ${
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer inline-flex items-center gap-0.5 ${
                             p.isLive
-                              ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm ring-2 ring-rose-400 animate-pulse'
+                              ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-xs animate-pulse'
                               : 'border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700'
                           }`}
                           title="Watch Match Live & In-Play Radar Simulator"
                         >
-                          <Play className={`w-3 h-3 ${p.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
-                          <span>{p.isLive ? 'Watch Now' : 'Watch'}</span>
+                          <Play className={`w-2.5 h-2.5 ${p.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
+                          <span>{p.isLive ? 'Live' : 'Watch'}</span>
                         </button>
 
                         <button
                           onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(p.match); }}
-                          className="px-2 py-1 rounded text-[11px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
+                          className="px-1.5 py-0.5 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
                           title="Open Analysis"
                         >
-                          Analysis
+                          Intel
                         </button>
 
                         <button
                           onClick={(e) => { e.stopPropagation(); onAddToSlip && onAddToSlip(p.match); }}
-                          className={`px-2 py-1 rounded text-[11px] font-bold transition-colors cursor-pointer border ${
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-colors cursor-pointer border ${
                             isSlipAdded
                               ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
                               : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'

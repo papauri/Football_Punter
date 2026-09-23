@@ -236,26 +236,26 @@ export default function ScoresTablePage({
     <div className="space-y-4">
       
       {/* Top Bar with Accuracy Summary */}
-      <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
-        <div>
+      <div className="bg-white border border-slate-200 rounded-xl p-2.5 sm:p-3 shadow-xs flex flex-wrap items-center justify-between gap-2.5 text-xs">
+        <div className="flex items-center gap-1.5">
           <div className="font-bold text-slate-800 text-sm">Statistical Scoreline Model</div>
-          <div className="text-slate-500 text-[11px]">Dynamic expected hit rates for currently filtered matches</div>
+          <InfoTooltip title="Statistical Scoreline Model" content="Dynamic expected hit rates and Poisson predicted score distributions for currently filtered matches." />
         </div>
 
         <div className="flex items-center gap-2">
           {aggregateStats ? (
             <>
-              <div className="bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-md text-center">
-                <div className="text-[10px] text-slate-400 font-semibold uppercase">Exp. Exact Score Hit</div>
-                <div className="font-bold text-slate-800 font-mono text-xs">{aggregateStats.exactScore}%</div>
+              <div className="bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-md text-center">
+                <div className="text-[9.5px] text-slate-400 font-semibold uppercase">Exp. Exact Score</div>
+                <div className="font-bold text-slate-800 font-mono text-[11px]">{aggregateStats.exactScore}%</div>
               </div>
-              <div className="bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-md text-center">
-                <div className="text-[10px] text-slate-400 font-semibold uppercase">Exp. O/U 2.5 Hit</div>
-                <div className="font-bold text-emerald-700 font-mono text-xs">{aggregateStats.over25}%</div>
+              <div className="bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-md text-center">
+                <div className="text-[9.5px] text-slate-400 font-semibold uppercase">Exp. O/U 2.5</div>
+                <div className="font-bold text-emerald-700 font-mono text-[11px]">{aggregateStats.over25}%</div>
               </div>
-              <div className="bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-md text-center">
-                <div className="text-[10px] text-slate-400 font-semibold uppercase">Exp. BTTS Hit</div>
-                <div className="font-bold text-indigo-700 font-mono text-xs">{aggregateStats.btts}%</div>
+              <div className="bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-md text-center">
+                <div className="text-[9.5px] text-slate-400 font-semibold uppercase">Exp. BTTS</div>
+                <div className="font-bold text-indigo-700 font-mono text-[11px]">{aggregateStats.btts}%</div>
               </div>
             </>
           ) : (
@@ -394,20 +394,20 @@ export default function ScoresTablePage({
       <div className="bg-white border border-slate-200 rounded-lg overflow-x-auto shadow-2xs">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 select-none h-9">
+            <tr className="bg-slate-50 border-b border-slate-200 select-none h-8">
               {/* Kickoff Day & Time */}
               <th 
                 onClick={() => handleSort('time')}
-                className={`py-2 px-3 min-w-[155px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
-                  sortField === 'time' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                className={`py-1 px-2 min-w-[140px] text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'time' ? 'text-indigo-800 bg-indigo-50/60' : 'text-slate-500'
                 }`}
                 title="Click to sort by Kickoff Day & Time"
               >
                 <div className="flex items-center gap-1">
                   <Calendar className="w-3 h-3 text-indigo-600" />
-                  <span>Kickoff (Day & Time)</span>
+                  <span>Kickoff</span>
                   {sortField === 'time' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -417,15 +417,15 @@ export default function ScoresTablePage({
               {/* League */}
               <th 
                 onClick={() => handleSort('league')}
-                className={`py-2 px-3 min-w-[130px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
-                  sortField === 'league' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                className={`py-1 px-2 min-w-[110px] text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'league' ? 'text-indigo-800 bg-indigo-50/60' : 'text-slate-500'
                 }`}
                 title="Click to sort by League"
               >
                 <div className="flex items-center gap-1">
                   <span>League</span>
                   {sortField === 'league' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -435,15 +435,15 @@ export default function ScoresTablePage({
               {/* Fixture */}
               <th 
                 onClick={() => handleSort('fixture')}
-                className={`py-2 px-3 min-w-[190px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
-                  sortField === 'fixture' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                className={`py-1 px-2 min-w-[170px] text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'fixture' ? 'text-indigo-800 bg-indigo-50/60' : 'text-slate-500'
                 }`}
                 title="Click to sort by Fixture"
               >
                 <div className="flex items-center gap-1">
                   <span>Fixture</span>
                   {sortField === 'fixture' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -453,15 +453,15 @@ export default function ScoresTablePage({
               {/* Top Projected Scores */}
               <th 
                 onClick={() => handleSort('top_score')}
-                className={`py-2 px-2.5 min-w-[150px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
-                  sortField === 'top_score' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                className={`py-1 px-2 min-w-[130px] text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'top_score' ? 'text-indigo-800 bg-indigo-50/60' : 'text-slate-500'
                 }`}
                 title="Click to sort by Top Scoreline Probability"
               >
                 <div className="flex items-center gap-1">
                   <span>Proj. Scores</span>
                   {sortField === 'top_score' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -471,8 +471,8 @@ export default function ScoresTablePage({
               {/* O1.5 */}
               <th 
                 onClick={() => handleSort('over15')}
-                className={`py-2 px-2 w-20 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
-                  sortField === 'over15' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                className={`py-1 px-1.5 w-16 text-center text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'over15' ? 'text-indigo-800 bg-indigo-50/60' : 'text-slate-500'
                 }`}
                 title="Click to sort by Over 1.5 Goals Probability"
               >
@@ -481,7 +481,7 @@ export default function ScoresTablePage({
                     <span>O1.5</span>
                   </InfoTooltip>
                   {sortField === 'over15' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -491,8 +491,8 @@ export default function ScoresTablePage({
               {/* O2.5 */}
               <th 
                 onClick={() => handleSort('over25')}
-                className={`py-2 px-2 w-20 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
-                  sortField === 'over25' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                className={`py-1 px-1.5 w-16 text-center text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'over25' ? 'text-indigo-800 bg-indigo-50/60' : 'text-slate-500'
                 }`}
                 title="Click to sort by Over 2.5 Goals Probability"
               >
@@ -501,7 +501,7 @@ export default function ScoresTablePage({
                     <span>O2.5</span>
                   </InfoTooltip>
                   {sortField === 'over25' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -511,8 +511,8 @@ export default function ScoresTablePage({
               {/* BTTS */}
               <th 
                 onClick={() => handleSort('btts')}
-                className={`py-2 px-2 w-20 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
-                  sortField === 'btts' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                className={`py-1 px-1.5 w-16 text-center text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'btts' ? 'text-indigo-800 bg-indigo-50/60' : 'text-slate-500'
                 }`}
                 title="Click to sort by Both Teams to Score (Yes) Probability"
               >
@@ -521,7 +521,7 @@ export default function ScoresTablePage({
                     <span>BTTS</span>
                   </InfoTooltip>
                   {sortField === 'btts' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -531,8 +531,8 @@ export default function ScoresTablePage({
               {/* Total xG */}
               <th 
                 onClick={() => handleSort('xg')}
-                className={`py-2 px-2 w-20 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
-                  sortField === 'xg' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                className={`py-1 px-1.5 w-16 text-center text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'xg' ? 'text-indigo-800 bg-indigo-50/60' : 'text-slate-500'
                 }`}
                 title="Click to sort by Combined Expected Goals (xG)"
               >
@@ -541,7 +541,7 @@ export default function ScoresTablePage({
                     <span>Total xG</span>
                   </InfoTooltip>
                   {sortField === 'xg' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -551,15 +551,15 @@ export default function ScoresTablePage({
               {/* Best Value Total */}
               <th 
                 onClick={() => handleSort('best_value')}
-                className={`py-2 px-2.5 min-w-[130px] text-left text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
-                  sortField === 'best_value' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                className={`py-1 px-2 min-w-[120px] text-left text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'best_value' ? 'text-indigo-800 bg-indigo-50/60' : 'text-slate-500'
                 }`}
                 title="Click to sort by Best Value Edge"
               >
                 <div className="flex items-center gap-1">
                   <span>Best Value</span>
                   {sortField === 'best_value' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -567,7 +567,7 @@ export default function ScoresTablePage({
               </th>
 
               {/* Actions */}
-              <th className="py-2 px-2.5 w-28 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+              <th className="py-1 px-2 w-28 text-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -576,7 +576,7 @@ export default function ScoresTablePage({
           <tbody className="divide-y divide-slate-100">
             {filteredMatches.length === 0 ? (
               <tr>
-                <td colSpan={10} className="py-12 text-center text-slate-400">
+                <td colSpan={10} className="py-8 text-center text-slate-400 text-xs">
                   No scorelines match the active filter criteria.
                 </td>
               </tr>
@@ -599,28 +599,28 @@ export default function ScoresTablePage({
                 return (
                   <tr 
                     key={m.id || idx} 
-                    className={`hover:bg-indigo-50/20 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} h-11`}
+                    className={`hover:bg-indigo-50/20 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} h-9 md:h-10`}
                   >
                     {/* Kickoff Day & Time */}
-                    <td className="py-2 px-3 whitespace-nowrap">
+                    <td className="py-1 px-2 whitespace-nowrap">
                       <div className="flex flex-col">
-                        <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs">
-                          <Calendar className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                        <div className="flex items-center gap-1 font-bold text-slate-900 text-[11px]">
+                          <Calendar className="w-3 h-3 text-indigo-600 shrink-0" />
                           <span>{relativeText}</span>
                           {m.isLive && (
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse">
-                              <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+                            <span className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse">
+                              <span className="w-1 h-1 rounded-full bg-white"></span>
                               LIVE {m.liveMinute ? `${m.liveMinute}'` : ''}
                             </span>
                           )}
                         </div>
                         {dt.day && (relativeText.startsWith('Today') || relativeText.startsWith('Tomorrow')) && (
-                          <span className="text-[10px] text-slate-400 pl-5 font-medium">
+                          <span className="text-[9.5px] text-slate-400 pl-4 font-medium leading-tight">
                             {dt.day}, {dt.date}
                           </span>
                         )}
                         {m.broadcast && (
-                          <span className="text-[9px] text-indigo-700 font-semibold pl-5 pt-0.5 truncate max-w-[130px]" title={`Broadcast: ${m.broadcast}`}>
+                          <span className="text-[8.5px] text-indigo-700 font-semibold pl-4 pt-0.5 truncate max-w-[130px] leading-tight" title={`Broadcast: ${m.broadcast}`}>
                             📺 {m.broadcast.split(',')[0]}
                           </span>
                         )}
@@ -628,9 +628,9 @@ export default function ScoresTablePage({
                     </td>
 
                     {/* League */}
-                    <td className="py-2 px-3">
+                    <td className="py-1 px-2">
                       <span 
-                        className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[11px] truncate max-w-[130px] border border-slate-200"
+                        className="inline-block px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[10px] truncate max-w-[110px] border border-slate-200"
                         title={m.league}
                       >
                         {m.league || 'Soccer'}
@@ -638,21 +638,21 @@ export default function ScoresTablePage({
                     </td>
 
                     {/* Fixture */}
-                    <td className="py-2 px-3 min-w-[190px]">
-                      <div className="font-semibold text-slate-900 flex items-center gap-1.5 flex-wrap">
+                    <td className="py-1 px-2 min-w-[170px]">
+                      <div className="font-semibold text-slate-900 flex items-center gap-1 flex-wrap text-[11.5px]">
                         <span className="text-slate-900 font-bold">{m.home}</span>
-                        <span className="text-[10px] text-slate-400 font-normal">vs</span>
+                        <span className="text-[9.5px] text-slate-400 font-normal">vs</span>
                         <span className="text-slate-900 font-bold">{m.away}</span>
                       </div>
                     </td>
 
                     {/* Top 3 Exact Scores */}
-                    <td className="py-2 px-2.5">
-                      <div className="flex items-center gap-1.5 flex-wrap">
+                    <td className="py-1 px-2">
+                      <div className="flex items-center gap-1 flex-wrap">
                         {topScores.slice(0, 3).map((sc, scIdx) => (
                           <span 
                             key={scIdx} 
-                            className={`px-1.5 py-0.5 rounded text-[11px] font-mono border ${
+                            className={`px-1 py-0.2 rounded text-[10px] font-mono border ${
                               scIdx === 0 
                                 ? 'bg-indigo-50 text-indigo-800 font-bold border-indigo-200' 
                                 : 'bg-slate-100 text-slate-700 border-slate-200'
@@ -665,66 +665,66 @@ export default function ScoresTablePage({
                     </td>
 
                     {/* O/U 1.5 */}
-                    <td className="py-2 px-2 text-center font-mono text-xs whitespace-nowrap">
+                    <td className="py-1 px-1.5 text-center font-mono text-[11px] whitespace-nowrap">
                       <span className={over15 > 70 ? 'text-emerald-700 font-bold' : 'text-slate-600'}>
                         {safeToFixed(over15, 0)}%
                       </span>
                     </td>
 
                     {/* O/U 2.5 */}
-                    <td className="py-2 px-2 text-center font-mono text-xs whitespace-nowrap">
-                      <span className={`px-1.5 py-0.5 rounded text-[11px] font-bold border ${over25 >= 55 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : under25 >= 55 ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                    <td className="py-1 px-1.5 text-center font-mono whitespace-nowrap">
+                      <span className={`px-1.5 py-0.2 rounded text-[10.5px] font-bold border ${over25 >= 55 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : under25 >= 55 ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
                         {over25 >= 50 ? `O ${safeToFixed(over25, 0)}%` : `U ${safeToFixed(under25, 0)}%`}
                       </span>
                     </td>
 
                     {/* BTTS */}
-                    <td className="py-2 px-2 text-center font-mono text-xs whitespace-nowrap">
-                      <span className={`px-1.5 py-0.5 rounded text-[11px] font-bold border ${bttsYes >= 55 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                    <td className="py-1 px-1.5 text-center font-mono whitespace-nowrap">
+                      <span className={`px-1.5 py-0.2 rounded text-[10.5px] font-bold border ${bttsYes >= 55 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
                         {bttsYes >= 50 ? `Yes ${safeToFixed(bttsYes, 0)}%` : `No ${safeToFixed(100 - bttsYes, 0)}%`}
                       </span>
                     </td>
 
                     {/* Total xG */}
-                    <td className="py-2 px-2 text-center font-mono text-xs font-bold text-slate-800 whitespace-nowrap">
+                    <td className="py-1 px-1.5 text-center font-mono text-[11px] font-bold text-slate-800 whitespace-nowrap">
                       {totalXg}
                     </td>
 
                     {/* Best Value Total */}
-                    <td className="py-2 px-2.5 whitespace-nowrap">
-                      <div className="flex flex-col">
-                        <span className="font-bold text-slate-800 text-[11px]">
+                    <td className="py-1 px-2 whitespace-nowrap">
+                      <div className="flex flex-col leading-tight">
+                        <span className="font-bold text-slate-800 text-[10.5px]">
                           {bestValuePick}
                         </span>
-                        <span className="text-[10px] text-emerald-700 font-semibold font-mono">
-                          Edge: +{safeToFixed(Math.abs(over25 - 50) * 0.4, 1)}%
+                        <span className="text-[9px] text-emerald-700 font-semibold font-mono">
+                          +{safeToFixed(Math.abs(over25 - 50) * 0.4, 1)}%
                         </span>
                       </div>
                     </td>
 
                     {/* Analysis & Slip Action */}
-                    <td className="py-2 px-2.5 text-center whitespace-nowrap">
-                      <div className="flex items-center justify-center gap-1.5">
+                    <td className="py-1 px-2 text-center whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-1">
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(m); }}
-                          className={`px-2 py-1 rounded text-[11px] font-bold border transition-all cursor-pointer inline-flex items-center gap-1 ${
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer inline-flex items-center gap-0.5 ${
                             m.isLive
                               ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
                               : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
                           }`}
                           title={m.isLive ? "Watch Match LIVE NOW in Iframe" : "Watch Match Live & In-Play Radar Simulator"}
                         >
-                          <Play className={`w-3 h-3 ${m.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
-                          <span>{m.isLive ? 'Watch Now' : 'Watch'}</span>
+                          <Play className={`w-2.5 h-2.5 ${m.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
+                          <span>{m.isLive ? 'Live' : 'Watch'}</span>
                         </button>
 
                         <button
                           onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(m); }}
-                          className="px-2 py-1 rounded text-[11px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
+                          className="px-1.5 py-0.5 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
                           title="Open Analysis"
                         >
-                          Analysis
+                          Intel
                         </button>
                         {onAddToSlip && (
                           <button
@@ -734,10 +734,10 @@ export default function ScoresTablePage({
                               const estOdds = (100 / Math.max(10, pickProb - 5)).toFixed(2);
                               onAddToSlip(m, 'OVER_UNDER', bestValuePick, estOdds, pickProb);
                             }}
-                            className="px-2 py-1 rounded text-[11px] font-bold border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors cursor-pointer"
+                            className="px-1.5 py-0.5 rounded text-[10px] font-bold border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors cursor-pointer"
                             title={`Add ${bestValuePick} to Slip`}
                           >
-                            + Add
+                            + Slip
                           </button>
                         )}
                       </div>

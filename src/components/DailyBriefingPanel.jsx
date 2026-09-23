@@ -9,6 +9,7 @@ import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey, getLoca
 import { resolveMatchOdds, getOddsProviderLabel, calculatePotentialReturn } from '../utils/oddsUtils';
 import KellyTooltip from './KellyTooltip';
 import ConfidenceGauge from './ConfidenceGauge';
+import InfoTooltip from './InfoTooltip';
 
 // ── Countdown hook: live ticking ms-to-kickoff per match ──────────────────
 function useCountdowns() {
@@ -187,12 +188,14 @@ export default function DailyBriefingPanel({
                   ? `Autonomous Matchday Briefing • Today's Slate`
                   : `Next Matchday Slate • ${targetDateFormatted}`}
               </h2>
+              <InfoTooltip
+                title={isToday ? "Matchday Briefing" : "Next Matchday Slate"}
+                content={isToday
+                  ? "Predictions freeze strictly 60 minutes before kickoff into the tamper-proof ledger. High-conviction picks highlighted with Kelly bankroll stakes."
+                  : `No fixtures scheduled for today in covered leagues. Displaying the next verified matchday (${targetDateFormatted}) with localized kickoff clocks & AI directives.`
+                }
+              />
             </div>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              {isToday
-                ? 'Predictions freeze strictly 60 minutes before kickoff into the tamper-proof ledger. High-conviction picks highlighted with Kelly bankroll stakes.'
-                : `No fixtures scheduled for today in covered leagues. Displaying the next verified matchday (${targetDateFormatted}) with localized kickoff clocks & AI directives.`}
-            </p>
           </div>
 
           {/* Right Toolbar / Collapse Toggle */}
@@ -261,15 +264,15 @@ export default function DailyBriefingPanel({
           <div className="w-full overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-9">
-                  <th className="py-2 px-3 w-10 text-center">#</th>
-                  <th className="py-2 px-3 w-36 text-center">Kickoff &amp; Clock</th>
-                  <th className="py-2 px-3 min-w-[200px]">Fixture</th>
-                  <th className="py-2 px-3 min-w-[130px]">League</th>
-                  <th className="py-2 px-3 w-36 text-center">Model Pick</th>
-                  <th className="py-2 px-3 w-28 text-center">Confidence</th>
-                  <th className="py-2 px-3 w-44 text-center">LiveScore Odds &amp; Return</th>
-                  <th className="py-2 px-3 w-36 text-center">Actions</th>
+                <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
+                  <th className="py-1 px-1.5 w-8 text-center">#</th>
+                  <th className="py-1 px-2 w-32 text-center">Kickoff &amp; Clock</th>
+                  <th className="py-1 px-2 min-w-[170px]">Fixture</th>
+                  <th className="py-1 px-2 min-w-[110px]">League</th>
+                  <th className="py-1 px-2 w-28 text-center">Model Pick</th>
+                  <th className="py-1 px-1.5 w-24 text-center">Confidence</th>
+                  <th className="py-1 px-1.5 w-36 text-center">Odds &amp; Return</th>
+                  <th className="py-1 px-2 w-28 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -298,29 +301,29 @@ export default function DailyBriefingPanel({
                     return (
                       <tr
                         key={m.id || idx}
-                        className={`hover:bg-slate-50/70 transition-colors ${
+                        className={`hover:bg-slate-50/70 transition-colors h-9 md:h-10 ${
                           isReadyToBet ? 'bg-emerald-50/30' : idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'
                         }`}
                       >
                         {/* # */}
-                        <td className="py-2.5 px-3 text-center text-slate-400 font-mono text-[11px]">
+                        <td className="py-1 px-1.5 text-center text-slate-400 font-mono text-[10px]">
                           {idx + 1}
                         </td>
 
                         {/* Kickoff & Clock */}
-                        <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                          <div className="font-semibold text-slate-800 text-xs">
+                        <td className="py-1 px-2 text-center whitespace-nowrap">
+                          <div className="font-bold text-slate-800 text-[11px] leading-tight">
                             {kickoffStr}
                           </div>
-                          <div className="mt-1">
+                          <div className="mt-0.5">
                             {m.isLive ? (
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-rose-600 text-white border border-rose-700 shadow-xs animate-pulse">
-                                <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+                              <span className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white border border-rose-700 shadow-xs animate-pulse">
+                                <span className="w-1 h-1 rounded-full bg-white"></span>
                                 LIVE {m.liveMinute ? `${m.liveMinute}'` : ''}
                               </span>
                             ) : (
-                              <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold border ${countdown.color}`}>
-                                {countdown.isWindow && <Lock className="w-2.5 h-2.5" />}
+                              <span className={`inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-bold border ${countdown.color}`}>
+                                {countdown.isWindow && <Lock className="w-2 h-2" />}
                                 {countdown.label}
                               </span>
                             )}
@@ -328,27 +331,27 @@ export default function DailyBriefingPanel({
                         </td>
 
                         {/* Fixture */}
-                        <td className="py-2.5 px-3">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className={isHome ? 'font-bold text-slate-900 text-xs' : 'font-medium text-slate-700 text-xs'}>
+                        <td className="py-1 px-2">
+                          <div className="flex items-center gap-1 flex-wrap leading-tight text-[11.5px]">
+                            <span className={isHome ? 'font-bold text-slate-900' : 'font-medium text-slate-700'}>
                               {m.home}
                             </span>
-                            <span className="text-slate-400 font-normal text-[11px]">vs</span>
-                            <span className={!isHome && pick === 'AWAY' ? 'font-bold text-slate-900 text-xs' : 'font-medium text-slate-700 text-xs'}>
+                            <span className="text-slate-400 font-normal text-[9.5px]">vs</span>
+                            <span className={!isHome && pick === 'AWAY' ? 'font-bold text-slate-900' : 'font-medium text-slate-700'}>
                               {m.away}
                             </span>
                             {m.isLive && (
-                              <span className="text-[9px] bg-rose-600 text-white font-extrabold px-1.5 py-0.2 rounded shadow-xs animate-pulse">
+                              <span className="text-[8.5px] bg-rose-600 text-white font-extrabold px-1 py-0.2 rounded shadow-xs animate-pulse">
                                 LIVE
                               </span>
                             )}
                             {isUnanimous && (
-                              <span className="text-[9px] bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.2 rounded font-bold shrink-0">
+                              <span className="text-[8.5px] bg-amber-100 text-amber-900 border border-amber-300 px-1 py-0.2 rounded font-bold shrink-0">
                                 👑 6/6
                               </span>
                             )}
                             {isTrap && (
-                              <span className="text-[9px] bg-rose-100 text-rose-800 border border-rose-300 px-1.5 py-0.2 rounded font-bold shrink-0">
+                              <span className="text-[8.5px] bg-rose-100 text-rose-800 border border-rose-300 px-1 py-0.2 rounded font-bold shrink-0">
                                 ⚠️ Risk
                               </span>
                             )}
@@ -356,14 +359,14 @@ export default function DailyBriefingPanel({
                         </td>
 
                         {/* League */}
-                        <td className="py-2.5 px-3 text-slate-500 text-[11px] truncate max-w-[140px]">
+                        <td className="py-1 px-2 text-slate-500 text-[10px] truncate max-w-[120px]">
                           {m.league}
                         </td>
 
                         {/* Top Pick */}
-                        <td className="py-2.5 px-3 text-center">
-                          <div className="inline-flex flex-col items-center">
-                            <span className={`px-2 py-0.5 rounded text-[11px] font-bold border ${
+                        <td className="py-1 px-2 text-center">
+                          <div className="inline-flex flex-col items-center leading-tight">
+                            <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold border ${
                               isPass ? 'bg-slate-100 text-slate-600 border-slate-300'
                               : isHome ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                               : pick === 'AWAY' ? 'bg-blue-50 text-blue-800 border-blue-300'
@@ -372,7 +375,7 @@ export default function DailyBriefingPanel({
                               {isPass ? 'PASS' : pickTeam}
                             </span>
                             {smartMarketLabel && (
-                              <span className="text-[10px] text-slate-500 mt-0.5 truncate max-w-[120px]">
+                              <span className="text-[9px] text-slate-400 mt-0.5 truncate max-w-[110px]">
                                 {smartMarketLabel}
                               </span>
                             )}
@@ -380,51 +383,51 @@ export default function DailyBriefingPanel({
                         </td>
 
                         {/* Confidence */}
-                        <td className="py-2.5 px-3 text-center">
+                        <td className="py-1 px-1.5 text-center">
                           <ConfidenceGauge confidence={conf} size="sm" />
                         </td>
 
                         {/* LiveScore Bet Odds & Potential Return */}
-                        <td className="py-2.5 px-3 text-center">
+                        <td className="py-1 px-1.5 text-center">
                           <KellyTooltip showIcon={false} align="right">
-                            <div className="flex flex-col items-center cursor-help">
+                            <div className="flex flex-col items-center cursor-help leading-tight">
                               <div className="inline-flex items-center gap-1">
-                                <span className="text-[11px] font-mono font-bold text-slate-800 bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded" title={`${oddsProvider} Odds`}>
+                                <span className="text-[10.5px] font-mono font-bold text-slate-800 bg-slate-100 border border-slate-200 px-1 py-0.2 rounded" title={`${oddsProvider} Odds`}>
                                   @{safeToFixed(matchOdds, 2)}
                                 </span>
-                                <span className="text-[11px] font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded" title="Recommended Wager">
+                                <span className="text-[10.5px] font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1 py-0.2 rounded" title="Recommended Wager">
                                   €{stakeEuro.toFixed(0)}
                                 </span>
                               </div>
-                              <div className="text-[10px] font-medium text-slate-600 mt-0.5 whitespace-nowrap">
-                                Returns <strong className="text-emerald-700 font-mono">€{returns.payoutStr}</strong> <span className="text-slate-400 font-mono">({returns.profitStr})</span>
+                              <div className="text-[9.5px] font-medium text-slate-600 mt-0.5 whitespace-nowrap">
+                                Returns <strong className="text-emerald-700 font-mono">€{returns.payoutStr}</strong>
                               </div>
                             </div>
                           </KellyTooltip>
                         </td>
 
                         {/* Actions (Watch Now + Slip) */}
-                        <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                          <div className="inline-flex items-center gap-1.5 justify-center">
+                        <td className="py-1 px-2 text-center whitespace-nowrap">
+                          <div className="inline-flex items-center gap-1 justify-center">
                             <button
                               type="button"
                               onClick={() => onOpenWatchLive && onOpenWatchLive(m)}
-                              className={`px-2 py-1 rounded-md text-[11px] font-bold border transition-all cursor-pointer inline-flex items-center gap-1 ${
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer inline-flex items-center gap-0.5 ${
                                 m.isLive
                                   ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
                                   : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
                               }`}
                               title={m.isLive ? "Watch Match LIVE NOW in Iframe" : "Watch Match Live & In-Play Radar Simulator"}
                             >
-                              <Play className={`w-3 h-3 ${m.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
-                              <span>{m.isLive ? 'Watch Now' : 'Watch'}</span>
+                              <Play className={`w-2.5 h-2.5 ${m.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
+                              <span>{m.isLive ? 'Live' : 'Watch'}</span>
                             </button>
 
                             {onAddToSlip && !isPass ? (
                               <button
                                 type="button"
                                 onClick={() => onAddToSlip(m)}
-                                className={`px-2 py-1 rounded-md text-[11px] font-bold border transition-colors cursor-pointer inline-flex items-center gap-1 ${
+                                className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer inline-flex items-center gap-0.5 ${
                                   inSlip
                                     ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-300'
                                     : 'bg-slate-900 hover:bg-slate-800 text-white border-slate-900'
@@ -432,12 +435,12 @@ export default function DailyBriefingPanel({
                               >
                                 {inSlip ? (
                                   <>
-                                    <Check className="w-3 h-3" />
-                                    <span>In Slip</span>
+                                    <Check className="w-2.5 h-2.5" />
+                                    <span>Slip</span>
                                   </>
                                 ) : (
                                   <>
-                                    <Plus className="w-3 h-3" />
+                                    <Plus className="w-2.5 h-2.5" />
                                     <span>+ Slip</span>
                                   </>
                                 )}

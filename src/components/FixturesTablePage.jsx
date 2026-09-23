@@ -1293,38 +1293,42 @@ export default function FixturesTablePage({
       {dailySwarmAcca && dailySwarmAcca.legs.length > 0 && (
         <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
           {/* Header & Actions Bar */}
-          <div className="p-4 sm:p-5 border-b border-slate-200">
-            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-              <div className="space-y-1.5 max-w-2xl">
-                <div className="flex items-center gap-2 flex-wrap text-xs">
-                  <span className="bg-slate-900 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-md flex items-center gap-1">
-                    <Award className="w-3.5 h-3.5 text-slate-300" /> Council Acca
+          <div className="p-3 sm:p-3.5 border-b border-slate-200">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
+              <div className="space-y-1 max-w-2xl">
+                <div className="flex items-center gap-1.5 flex-wrap text-xs">
+                  <span className="bg-slate-900 text-white text-[10.5px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
+                    <Award className="w-3 h-3 text-slate-300" /> Council Acca
                   </span>
-                  <span className="bg-slate-100 text-slate-700 border border-slate-200 text-[11px] font-semibold px-2.5 py-0.5 rounded-md">
+                  <span className="bg-slate-100 text-slate-700 border border-slate-200 text-[10.5px] font-semibold px-2 py-0.5 rounded-md">
                     {filteredCouncilStats.count === dailySwarmAcca.legs.length 
                       ? `${filteredCouncilStats.count} Legs`
                       : `${filteredCouncilStats.count} / ${dailySwarmAcca.legs.length} Legs`}
                   </span>
-                  <span className="bg-slate-100 text-slate-800 border border-slate-200 text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-md">
+                  <span className="bg-slate-100 text-slate-800 border border-slate-200 text-[10.5px] font-mono font-bold px-2 py-0.5 rounded-md">
                     {safeToFixed(filteredCouncilStats.combinedOdds, 2)}x Combined Odds
                   </span>
-                  <span className="bg-slate-100 text-slate-800 border border-slate-200 text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-md">
+                  <span className="bg-slate-100 text-slate-800 border border-slate-200 text-[10.5px] font-mono font-semibold px-2 py-0.5 rounded-md">
                     {safeToFixed(filteredCouncilStats.avgWinRate, 1)}% Avg Hit Rate
                   </span>
-                  <span className="text-slate-400 text-[11px] font-medium hidden sm:inline">
+                  <span className="text-slate-400 text-[10.5px] font-medium hidden sm:inline">
                     • LiveScore Bet Benchmark
                   </span>
                 </div>
 
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                  <span>Highest Win Rate Council Selections</span>
-                  <span className="text-[11px] font-medium px-2 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded-md">
-                    100% Unanimous Straight Outrights
-                  </span>
-                </h2>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  Synthesized across all 6 autonomous AI agents (Dixon-Coles Poisson, Elo Dominance, Trend Impulse, Contrarian Disruption, Parity, and Value). Straight outright wins only — filtered by your preferred date, league, and hit rate.
-                </p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                    <span>Highest Win Rate Council Selections</span>
+                    <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
+                      100% Unanimous Straight Outrights
+                    </span>
+                  </h2>
+                  <InfoTooltip
+                    title="Council Selections Engine"
+                    content="Synthesized across all 6 autonomous AI agents (Dixon-Coles Poisson, Elo Dominance, Trend Impulse, Contrarian Disruption, Parity, and Value). Straight outright wins only — filtered by your preferred date, league, and hit rate."
+                    align="left"
+                  />
+                </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto shrink-0">
@@ -1332,7 +1336,7 @@ export default function FixturesTablePage({
                   type="button"
                   onClick={handleLoadDailyAccaToSlip}
                   disabled={filteredCouncilStats.count === 0}
-                  className="flex-1 sm:flex-initial px-3.5 py-2 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                  className="flex-1 sm:flex-initial px-3 py-1.5 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                 >
                   {isAccaLoaded ? (
                     <>
@@ -1351,7 +1355,7 @@ export default function FixturesTablePage({
                   type="button"
                   onClick={handleCopyDailyAcca}
                   disabled={filteredCouncilStats.count === 0}
-                  className="flex-1 sm:flex-initial px-3 py-2 bg-white hover:bg-slate-50 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-slate-700 border border-slate-300 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                  className="flex-1 sm:flex-initial px-2.5 py-1.5 bg-white hover:bg-slate-50 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-slate-700 border border-slate-300 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                   title="Copy formatted bet slip for LiveScore Bet"
                 >
                   {copiedAccaSlip ? (
@@ -1373,7 +1377,7 @@ export default function FixturesTablePage({
                     if (onNavigate) onNavigate('acca');
                     else if (onSelectMarketMode) onSelectMarketMode('acca');
                   }}
-                  className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                  className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
                 >
                   <span>View Slip</span>
                   <ArrowRight className="w-3.5 h-3.5 text-slate-500" />
@@ -1383,7 +1387,7 @@ export default function FixturesTablePage({
                   href="https://www.livescorebet.com/ie/sports/football"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-2.5 py-2 text-slate-400 hover:text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center"
+                  className="px-2 py-1.5 text-slate-400 hover:text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center"
                   title="Open LiveScore Bet Ireland"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -1393,8 +1397,8 @@ export default function FixturesTablePage({
           </div>
 
           {/* Dedicated Filter Toolbar for Council Selections */}
-          <div className="px-4 py-2.5 bg-slate-50/70 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2.5 text-xs">
-            <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[240px]">
+          <div className="px-3 py-2 bg-slate-50/70 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div className="flex flex-wrap items-center gap-1.5 flex-1 min-w-[240px]">
               {/* Search Club or League */}
               <div className="relative flex-1 min-w-[130px] max-w-xs">
                 <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -1422,7 +1426,7 @@ export default function FixturesTablePage({
                 value={councilDate}
                 onChange={setCouncilDate}
                 options={councilDateOptions}
-                selectClassName="bg-white border-slate-200 py-1 text-xs shadow-none"
+                selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
               />
 
               {/* League Filter */}
@@ -1431,7 +1435,7 @@ export default function FixturesTablePage({
                 value={councilLeague}
                 onChange={setCouncilLeague}
                 options={councilLeagueOptions}
-                selectClassName="bg-white border-slate-200 py-1 text-xs shadow-none"
+                selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
               />
 
               {/* Outcome / Pick Filter */}
@@ -1444,7 +1448,7 @@ export default function FixturesTablePage({
                   { value: 'HOME', label: `Home Win (${homePicksCount})` },
                   { value: 'AWAY', label: `Away Win (${awayPicksCount})` }
                 ]}
-                selectClassName="bg-white border-slate-200 py-1 text-xs shadow-none"
+                selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
               />
 
               {/* Min Win Rate Filter */}
@@ -1459,7 +1463,7 @@ export default function FixturesTablePage({
                   { value: '75', label: '≥ 75% Win Rate' },
                   { value: '80', label: '≥ 80% Win Rate' }
                 ]}
-                selectClassName="bg-white border-slate-200 py-1 text-xs shadow-none"
+                selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
               />
             </div>
 
@@ -1482,11 +1486,11 @@ export default function FixturesTablePage({
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider h-9 select-none">
+                <tr className="bg-slate-50/80 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider h-8 select-none">
                   {/* Leg Number / Default Order (Sortable) */}
                   <th 
                     onClick={() => handleCouncilSort('idx')}
-                    className="py-2 px-3 w-12 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
+                    className="py-1 px-2.5 w-10 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
                     title="Click to reset to default order"
                   >
                     <div className="inline-flex items-center justify-center gap-0.5">
@@ -1502,15 +1506,15 @@ export default function FixturesTablePage({
                   {/* Fixture (Sortable) */}
                   <th 
                     onClick={() => handleCouncilSort('fixture')}
-                    className="py-2 px-3 min-w-[200px] cursor-pointer hover:bg-slate-100 transition-colors group"
+                    className="py-1 px-2.5 min-w-[190px] cursor-pointer hover:bg-slate-100 transition-colors group"
                     title="Click to sort alphabetically by Club / Fixture"
                   >
                     <div className="inline-flex items-center gap-1">
                       <span className={councilSortField === 'fixture' ? 'text-slate-900 font-bold' : ''}>Fixture</span>
                       {councilSortField === 'fixture' ? (
-                        councilSortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-slate-700" /> : <ArrowDown className="w-3 h-3 text-slate-700" />
+                        councilSortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-700" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-700" />
                       ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                       )}
                     </div>
                   </th>
@@ -1518,15 +1522,15 @@ export default function FixturesTablePage({
                   {/* League (Sortable) */}
                   <th 
                     onClick={() => handleCouncilSort('league')}
-                    className="py-2 px-3 min-w-[130px] cursor-pointer hover:bg-slate-100 transition-colors group"
+                    className="py-1 px-2.5 min-w-[120px] cursor-pointer hover:bg-slate-100 transition-colors group"
                     title="Click to sort by Competition / League"
                   >
                     <div className="inline-flex items-center gap-1">
                       <span className={councilSortField === 'league' ? 'text-slate-900 font-bold' : ''}>League</span>
                       {councilSortField === 'league' ? (
-                        councilSortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-slate-700" /> : <ArrowDown className="w-3 h-3 text-slate-700" />
+                        councilSortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-700" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-700" />
                       ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                       )}
                     </div>
                   </th>
@@ -1534,15 +1538,15 @@ export default function FixturesTablePage({
                   {/* Kickoff & Day (Sortable) */}
                   <th 
                     onClick={() => handleCouncilSort('time')}
-                    className="py-2 px-3 min-w-[125px] text-center cursor-pointer hover:bg-slate-100 transition-colors group"
+                    className="py-1 px-2.5 min-w-[120px] text-center cursor-pointer hover:bg-slate-100 transition-colors group"
                     title="Click to sort chronologically by Kickoff Day & Time"
                   >
                     <div className="inline-flex items-center justify-center gap-1">
-                      <span className={councilSortField === 'time' ? 'text-slate-900 font-bold' : ''}>Kickoff & Day</span>
+                      <span className={councilSortField === 'time' ? 'text-slate-900 font-bold' : ''}>Kickoff</span>
                       {councilSortField === 'time' ? (
-                        councilSortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-slate-700" /> : <ArrowDown className="w-3 h-3 text-slate-700" />
+                        councilSortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-700" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-700" />
                       ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                       )}
                     </div>
                   </th>
@@ -1550,15 +1554,15 @@ export default function FixturesTablePage({
                   {/* Council Pick (Sortable) */}
                   <th 
                     onClick={() => handleCouncilSort('pick')}
-                    className="py-2 px-3 min-w-[160px] cursor-pointer hover:bg-slate-100 transition-colors group"
+                    className="py-1 px-2.5 min-w-[150px] cursor-pointer hover:bg-slate-100 transition-colors group"
                     title="Click to sort by Selected Winner"
                   >
                     <div className="inline-flex items-center gap-1">
                       <span className={councilSortField === 'pick' ? 'text-slate-900 font-bold' : ''}>Council Pick</span>
                       {councilSortField === 'pick' ? (
-                        councilSortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-slate-700" /> : <ArrowDown className="w-3 h-3 text-slate-700" />
+                        councilSortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-700" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-700" />
                       ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                       )}
                     </div>
                   </th>
@@ -1566,15 +1570,15 @@ export default function FixturesTablePage({
                   {/* Odds (Sortable) */}
                   <th 
                     onClick={() => handleCouncilSort('odds')}
-                    className="py-2 px-3 w-20 text-right cursor-pointer hover:bg-slate-100 transition-colors group"
+                    className="py-1 px-2.5 w-16 text-right cursor-pointer hover:bg-slate-100 transition-colors group"
                     title="Click to sort by Market Odds"
                   >
                     <div className="inline-flex items-center justify-end gap-1 w-full">
                       <span className={councilSortField === 'odds' ? 'text-slate-900 font-bold' : ''}>Odds</span>
                       {councilSortField === 'odds' ? (
-                        councilSortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-slate-700" /> : <ArrowDown className="w-3 h-3 text-slate-700" />
+                        councilSortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-700" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-700" />
                       ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                       )}
                     </div>
                   </th>
@@ -1582,15 +1586,15 @@ export default function FixturesTablePage({
                   {/* Win Rate (Sortable) */}
                   <th 
                     onClick={() => handleCouncilSort('prob')}
-                    className="py-2 px-3 w-24 text-right cursor-pointer hover:bg-slate-100 transition-colors group"
+                    className="py-1 px-2.5 w-20 text-right cursor-pointer hover:bg-slate-100 transition-colors group"
                     title="Click to sort by Win Rate Probability"
                   >
                     <div className="inline-flex items-center justify-end gap-1 w-full">
                       <span className={councilSortField === 'prob' ? 'text-slate-900 font-bold' : ''}>Win Rate</span>
                       {councilSortField === 'prob' ? (
-                        councilSortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-slate-700" /> : <ArrowDown className="w-3 h-3 text-slate-700" />
+                        councilSortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-700" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-700" />
                       ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                       )}
                     </div>
                   </th>
@@ -1598,15 +1602,15 @@ export default function FixturesTablePage({
                   {/* Consensus (Sortable) */}
                   <th 
                     onClick={() => handleCouncilSort('consensus')}
-                    className="py-2 px-3 w-32 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
+                    className="py-1 px-2.5 w-28 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
                     title="Click to sort by Council Agreement Score"
                   >
                     <div className="inline-flex items-center justify-center gap-1">
                       <span className={councilSortField === 'consensus' ? 'text-slate-900 font-bold' : ''}>Consensus</span>
                       {councilSortField === 'consensus' ? (
-                        councilSortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-slate-700" /> : <ArrowDown className="w-3 h-3 text-slate-700" />
+                        councilSortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-700" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-700" />
                       ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                       )}
                     </div>
                   </th>
@@ -1614,15 +1618,15 @@ export default function FixturesTablePage({
                   {/* Slip (Sortable) */}
                   <th 
                     onClick={() => handleCouncilSort('slip')}
-                    className="py-2 px-3 w-24 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
+                    className="py-1 px-2.5 w-28 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
                     title="Click to sort by Slip Inclusion"
                   >
                     <div className="inline-flex items-center justify-center gap-1">
-                      <span className={councilSortField === 'slip' ? 'text-slate-900 font-bold' : ''}>Slip</span>
+                      <span className={councilSortField === 'slip' ? 'text-slate-900 font-bold' : ''}>Actions</span>
                       {councilSortField === 'slip' ? (
-                        councilSortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-slate-700" /> : <ArrowDown className="w-3 h-3 text-slate-700" />
+                        councilSortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-700" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-700" />
                       ) : (
-                        <ArrowUpDown className="w-3 h-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                       )}
                     </div>
                   </th>
@@ -1631,8 +1635,8 @@ export default function FixturesTablePage({
               <tbody className="divide-y divide-slate-100">
                 {filteredCouncilLegs.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="py-8 text-center text-slate-500">
-                      <div className="max-w-md mx-auto space-y-2">
+                    <td colSpan={9} className="py-6 text-center text-slate-500">
+                      <div className="max-w-md mx-auto space-y-1.5">
                         <p className="font-semibold text-xs text-slate-700">No council selections match the selected filters</p>
                         <p className="text-[11px] text-slate-400">
                           Try adjusting your Date, League, or Win Rate filters to view all {dailySwarmAcca.legs.length} council selections.
@@ -1640,7 +1644,7 @@ export default function FixturesTablePage({
                         <button
                           type="button"
                           onClick={handleResetCouncilFilters}
-                          className="mt-2 px-3 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md transition-colors cursor-pointer"
+                          className="mt-1 px-2.5 py-1 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md transition-colors cursor-pointer"
                         >
                           Reset Filters
                         </button>
@@ -1660,24 +1664,24 @@ export default function FixturesTablePage({
                         className="hover:bg-slate-50/70 transition-colors"
                       >
                         {/* Leg Number */}
-                        <td className="py-2.5 px-3 text-center text-slate-400 font-mono text-[11px]">
+                        <td className="py-1.5 px-2.5 text-center text-slate-400 font-mono text-[10.5px]">
                           {idx + 1}
                         </td>
 
                         {/* Fixture */}
-                        <td className="py-2.5 px-3">
-                          <div className="font-semibold text-slate-900 text-xs">
+                        <td className="py-1.5 px-2.5">
+                          <div className="font-semibold text-slate-900 text-[11.5px] leading-tight">
                             <span className={isHome ? 'font-bold text-slate-900' : 'text-slate-700'}>{leg.home}</span>
-                            <span className="text-slate-400 font-normal mx-1.5 text-[11px]">vs</span>
+                            <span className="text-slate-400 font-normal mx-1 text-[10.5px]">vs</span>
                             <span className={!isHome ? 'font-bold text-slate-900' : 'text-slate-700'}>{leg.away}</span>
                           </div>
                         </td>
 
                         {/* League */}
-                        <td className="py-2.5 px-3 text-slate-500 text-[11px] truncate max-w-[150px]">
+                        <td className="py-1.5 px-2.5 text-slate-500 text-[10.5px] truncate max-w-[140px]">
                           <div>{leg.league}</div>
                           {(leg.broadcast || leg.match?.broadcast) && (
-                            <div className="text-[10px] text-indigo-600 font-medium truncate flex items-center gap-1 mt-0.5" title={leg.broadcast || leg.match?.broadcast}>
+                            <div className="text-[9.5px] text-indigo-600 font-medium truncate flex items-center gap-1 mt-0.5" title={leg.broadcast || leg.match?.broadcast}>
                               <Tv className="w-2.5 h-2.5 shrink-0" />
                               <span>{(leg.broadcast || leg.match?.broadcast).split(',')[0]}</span>
                             </div>
@@ -1685,23 +1689,23 @@ export default function FixturesTablePage({
                         </td>
 
                         {/* Kickoff stating Day and Time */}
-                        <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                        <td className="py-1.5 px-2.5 text-center whitespace-nowrap">
                           {leg.isLive || leg.match?.isLive ? (
                             <div>
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-300 animate-pulse">
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[9.5px] font-bold bg-rose-100 text-rose-700 border border-rose-300 animate-pulse">
                                 <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
                                 LIVE {leg.liveMinute || leg.match?.liveMinute || "In-Play"}
                               </span>
-                              <div className="font-mono font-bold text-slate-900 text-xs mt-0.5">
+                              <div className="font-mono font-bold text-slate-900 text-[11px] mt-0.5">
                                 {leg.liveScore || leg.match?.liveScore || '1 - 0'}
                               </div>
                             </div>
                           ) : (
                             <>
-                              <div className="font-semibold text-slate-800 text-xs">
+                              <div className="font-semibold text-slate-800 text-[11px] leading-tight">
                                 {kickoff.day}
                               </div>
-                              <div className="text-slate-400 font-mono text-[10px] mt-0.5">
+                              <div className="text-slate-400 font-mono text-[9.5px]">
                                 {kickoff.time}
                               </div>
                               {(() => {
@@ -1709,8 +1713,8 @@ export default function FixturesTablePage({
                                 if (!c) return null;
                                 return (
                                   <div className="mt-0.5">
-                                    <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold border ${c.color}`}>
-                                      {c.isWindow && <Lock className="w-2.5 h-2.5" />}
+                                    <span className={`inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-bold border ${c.color}`}>
+                                      {c.isWindow && <Lock className="w-2 h-2" />}
                                       {c.label}
                                     </span>
                                   </div>
@@ -1721,60 +1725,60 @@ export default function FixturesTablePage({
                         </td>
 
                         {/* Pick */}
-                        <td className="py-2.5 px-3">
-                          <div className="inline-flex items-center gap-1.5 flex-wrap">
-                            <span className="font-semibold text-slate-900 text-xs">
+                        <td className="py-1.5 px-2.5">
+                          <div className="inline-flex items-center gap-1 flex-wrap">
+                            <span className="font-semibold text-slate-900 text-[11.5px]">
                               {pickTeam}
                             </span>
-                            <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                            <span className="text-[9.5px] font-medium text-slate-500 bg-slate-100 px-1 py-0.2 rounded border border-slate-200">
                               {isHome ? 'Home Win' : 'Away Win'}
                             </span>
                           </div>
                           {leg.inPlayPrediction && (
-                            <div className="text-[10px] text-emerald-700 font-medium font-mono mt-0.5">
+                            <div className="text-[9.5px] text-emerald-700 font-medium font-mono mt-0.5">
                               Live Proj: {leg.inPlayPrediction.projectedFinalScore}
                             </div>
                           )}
                         </td>
 
                         {/* Odds */}
-                        <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 text-xs">
+                        <td className="py-1.5 px-2.5 text-right font-mono font-bold text-slate-900 text-[11px]">
                           {safeToFixed(leg.odds, 2)}x
                         </td>
 
                         {/* Win Rate */}
-                        <td className="py-2.5 px-3 text-right font-mono font-semibold text-slate-800 text-xs">
+                        <td className="py-1.5 px-2.5 text-right font-mono font-semibold text-slate-800 text-[11px]">
                           {safeToFixed(leg.prob, 0)}%
                         </td>
 
                         {/* Consensus */}
-                        <td className="py-2.5 px-3 text-center">
-                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                            <Check className="w-3 h-3 text-slate-400" />
+                        <td className="py-1.5 px-2.5 text-center">
+                          <span className="inline-flex items-center gap-1 text-[9.5px] font-medium text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                            <Check className="w-2.5 h-2.5 text-slate-400" />
                             6/6 Unanimous
                           </span>
                         </td>
 
                         {/* Actions (Watch + Slip) */}
-                        <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                        <td className="py-1.5 px-2.5 text-center whitespace-nowrap">
                           <div className="inline-flex items-center gap-1">
                             <button
                               type="button"
                               onClick={() => onOpenWatchLive && onOpenWatchLive(leg.match || leg)}
-                              className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded border shadow-2xs transition-colors cursor-pointer ${
+                              className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded border shadow-2xs transition-colors cursor-pointer ${
                                 (leg.match?.isLive || leg.isLive)
                                   ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 animate-pulse font-extrabold'
                                   : 'text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border-indigo-200'
                               }`}
                               title={(leg.match?.isLive || leg.isLive) ? "Watch Match LIVE NOW in Iframe" : "Watch live in iframe player"}
                             >
-                              <Play className={`w-3 h-3 ${(leg.match?.isLive || leg.isLive) ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
+                              <Play className={`w-2.5 h-2.5 ${(leg.match?.isLive || leg.isLive) ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
                               <span>{(leg.match?.isLive || leg.isLive) ? 'Watch Now' : 'Watch'}</span>
                             </button>
 
                             {inSlip ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded border border-slate-200">
-                                <Check className="w-3 h-3 text-slate-400" />
+                              <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                                <Check className="w-2.5 h-2.5 text-slate-400" />
                                 In Slip
                               </span>
                             ) : (
@@ -1785,9 +1789,9 @@ export default function FixturesTablePage({
                                     onAddToSlip(leg.match, leg.pick, leg.market, leg.odds, leg.prob);
                                   }
                                 }}
-                                className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 px-2 py-1 rounded border border-slate-300 shadow-2xs transition-colors cursor-pointer"
+                                className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 px-1.5 py-0.5 rounded border border-slate-300 shadow-2xs transition-colors cursor-pointer"
                               >
-                                <Plus className="w-3 h-3 text-slate-400" />
+                                <Plus className="w-2.5 h-2.5 text-slate-400" />
                                 Add
                               </button>
                             )}
@@ -1802,7 +1806,7 @@ export default function FixturesTablePage({
           </div>
 
           {/* Table Summary Footer */}
-          <div className="px-4 py-3 bg-slate-50/60 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
+          <div className="px-3 py-2 bg-slate-50/60 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
             <div className="flex items-center gap-4 flex-wrap">
               <span>Total Legs: <strong className="text-slate-900">{filteredCouncilStats.count}</strong></span>
               <span>Combined Odds: <strong className="text-slate-900 font-mono">{safeToFixed(filteredCouncilStats.combinedOdds, 2)}x</strong></span>
@@ -1817,54 +1821,56 @@ export default function FixturesTablePage({
       )}
 
       {/* Top Banner & Toolbar */}
-      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs space-y-4">
+      <div className="bg-white border border-slate-200 rounded-xl p-3 sm:p-3.5 shadow-xs space-y-3">
         
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
-          <div>
-            <div className="font-bold text-slate-900 text-base flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
               <span>Match Predictions</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold">
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold">
                 {matches.length} Matches
               </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Win, draw, and goal probabilities for upcoming fixtures.
-            </p>
+            </h1>
+            <InfoTooltip
+              title="Match Predictions Engine"
+              content="Win, draw, and goal probabilities for upcoming fixtures calculated with Dixon-Coles Poisson distributions, Elo dominance, and calibrated market odds."
+              align="left"
+            />
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <button
               onClick={handleCalibrateLineups}
               disabled={calibratingLineups}
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5 shadow-2xs"
+              className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1 shadow-2xs"
               title="Scan confirmed official Starting XIs from ESPN and tactically weight Dixon-Coles models"
             >
               <Zap className={`w-3.5 h-3.5 text-emerald-600 ${calibratingLineups ? 'animate-spin' : ''}`} />
-              <span>{calibratingLineups ? 'Calibrating XIs...' : 'Calibrate Starting XIs'}</span>
+              <span>{calibratingLineups ? 'Calibrating XIs...' : 'Calibrate XIs'}</span>
             </button>
 
             <button
               onClick={() => setShowStrategyProofModal(true)}
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+              className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
               title="View 23,453-record empirical backtest and quantitative strategy proof (76%–83%)"
             >
               <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
-              <span>Strategy Proof (23.4k Backtest)</span>
+              <span>Strategy Proof (23.4k)</span>
             </button>
 
             <button
               onClick={() => onTriggerRetrain && onTriggerRetrain()}
               disabled={isRetraining}
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2 shadow-2xs"
+              className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5 shadow-2xs"
             >
               <Cpu className={`w-3.5 h-3.5 text-indigo-600 ${isRetraining ? 'animate-spin' : ''}`} />
-              <span>{isRetraining ? 'Updating...' : 'Update Predictions'}</span>
+              <span>{isRetraining ? 'Updating...' : 'Update'}</span>
             </button>
           </div>
         </div>
 
         {/* Feedback Alert for Lineup Calibration */}
         {lineupCalibrateResult && (
-          <div className="px-3.5 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between shadow-2xs animate-in fade-in duration-200">
+          <div className="px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between shadow-2xs animate-in fade-in duration-200">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <span className="font-medium">{lineupCalibrateResult}</span>
@@ -1879,11 +1885,11 @@ export default function FixturesTablePage({
         )}
 
         {/* Strategy & Conviction Control Panel */}
-        <div className="bg-slate-50/90 rounded-xl p-3 border border-slate-200/90 flex flex-col gap-2.5">
-          <div className="flex flex-wrap items-center justify-between gap-2.5">
+        <div className="bg-slate-50/90 rounded-xl p-2.5 border border-slate-200/90 flex flex-col gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             {/* Pick Quality / Confidence Level Pills */}
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mr-1">Pick Quality:</span>
+              <span className="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mr-1">Quality:</span>
               <button
                 type="button"
                 onClick={() => {
@@ -1892,7 +1898,7 @@ export default function FixturesTablePage({
                     setFilterMode('All');
                   }
                 }}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                className={`px-2 py-0.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   convictionMode === 'ALL'
                     ? 'bg-slate-900 text-white shadow-2xs'
                     : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
@@ -1907,17 +1913,17 @@ export default function FixturesTablePage({
                   setConvictionMode('HIGH');
                   setFilterMode('All');
                 }}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-2 py-0.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 ${
                   convictionMode === 'HIGH'
                     ? 'bg-indigo-600 text-white shadow-2xs'
                     : 'bg-white text-indigo-700 hover:bg-indigo-50 border border-indigo-200'
                 }`}
                 title="Filter to matches where our models project 60%+ win probability (78%+ empirical win rate)"
               >
-                <Target className="w-3.5 h-3.5" />
+                <Target className="w-3 h-3" />
                 <span>Top Picks (60%+)</span>
-                <span className={`px-1.5 py-0.2 rounded text-[10px] font-mono font-bold ${convictionMode === 'HIGH' ? 'bg-indigo-800 text-indigo-100' : 'bg-indigo-100 text-indigo-800'}`}>
-                  78.8% Hit Rate
+                <span className={`px-1 py-0.2 rounded text-[9.5px] font-mono font-bold ${convictionMode === 'HIGH' ? 'bg-indigo-800 text-indigo-100' : 'bg-indigo-100 text-indigo-800'}`}>
+                  78.8%
                 </span>
               </button>
               <button
@@ -1926,17 +1932,17 @@ export default function FixturesTablePage({
                   setConvictionMode('ELITE');
                   setFilterMode('All');
                 }}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-2 py-0.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 ${
                   convictionMode === 'ELITE'
                     ? 'bg-amber-600 text-white shadow-2xs'
                     : 'bg-white text-amber-800 hover:bg-amber-50 border border-amber-200'
                 }`}
                 title="Highest-confidence picks: 68%+ probability or unanimous agreement across all 6 AI Council models (84%+ verified accuracy)"
               >
-                <Award className="w-3.5 h-3.5" />
-                <span>Elite Picks (68%+ or Consensus)</span>
-                <span className={`px-1.5 py-0.2 rounded text-[10px] font-mono font-bold ${convictionMode === 'ELITE' ? 'bg-amber-700 text-amber-100' : 'bg-amber-100 text-amber-800'}`}>
-                  84.3% Hit Rate
+                <Award className="w-3 h-3" />
+                <span>Elite Picks (68%+)</span>
+                <span className={`px-1 py-0.2 rounded text-[9.5px] font-mono font-bold ${convictionMode === 'ELITE' ? 'bg-amber-700 text-amber-100' : 'bg-amber-100 text-amber-800'}`}>
+                  84.3%
                 </span>
               </button>
               <button
@@ -1945,7 +1951,7 @@ export default function FixturesTablePage({
                   setConvictionMode('UNANIMOUS');
                   setFilterMode('All');
                 }}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-2 py-0.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 ${
                   convictionMode === 'UNANIMOUS'
                     ? 'bg-purple-600 text-white shadow-2xs'
                     : 'bg-white text-purple-800 hover:bg-purple-50 border border-purple-200'
@@ -1962,18 +1968,18 @@ export default function FixturesTablePage({
               <button
                 type="button"
                 onClick={handleToggleStrictPruning}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 border ${
+                className={`px-2 py-0.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 border ${
                   strictLeaguePruning
                     ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
                     : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100'
                 }`}
                 title="Focus on major, highly predictable leagues (Premier League, La Liga, Serie A, Champions League) and exclude low-reliability divisions."
               >
-                <Zap className={`w-3.5 h-3.5 ${strictLeaguePruning ? 'text-emerald-600' : 'text-slate-400'}`} />
-                <span>Major Leagues Only: {strictLeaguePruning ? 'ON' : 'OFF'}</span>
+                <Zap className={`w-3 h-3 ${strictLeaguePruning ? 'text-emerald-600' : 'text-slate-400'}`} />
+                <span>Major Leagues: {strictLeaguePruning ? 'ON' : 'OFF'}</span>
                 {strictLeaguePruning && (
-                  <span className="text-[10px] font-normal text-emerald-700">
-                    ({prunedNoiseMatchesCount} excluded)
+                  <span className="text-[9.5px] font-normal text-emerald-700">
+                    ({prunedNoiseMatchesCount} excl.)
                   </span>
                 )}
               </button>
@@ -1983,11 +1989,11 @@ export default function FixturesTablePage({
           <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200/70 text-xs">
             {/* Bet Type Selection */}
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mr-1">Bet Type:</span>
+              <span className="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mr-1">Bet Type:</span>
               {[
                 { 
                   id: 'SMART_ADAPTIVE', 
-                  label: '🛡️ Smart Safety (Recommended)', 
+                  label: '🛡️ Smart Safety', 
                   desc: 'Auto-selects Draw-No-Bet or Double Chance when draw risk is high, protecting your stake.' 
                 },
                 { 
@@ -2010,7 +2016,7 @@ export default function FixturesTablePage({
                   key={mode.id}
                   type="button"
                   onClick={() => setMarketMode(mode.id)}
-                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${
+                  className={`px-2 py-0.5 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${
                     marketMode === mode.id
                       ? 'bg-indigo-600 text-white font-semibold shadow-2xs'
                       : 'bg-white text-slate-600 hover:bg-slate-200/70 border border-slate-200'
@@ -2026,7 +2032,7 @@ export default function FixturesTablePage({
                 <button
                   type="button"
                   onClick={() => setFilterByMarketOnly(!filterByMarketOnly)}
-                  className={`ml-1 px-2.5 py-1 rounded-md text-[11px] font-semibold border transition-all cursor-pointer flex items-center gap-1 ${
+                  className={`ml-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold border transition-all cursor-pointer flex items-center gap-1 ${
                     filterByMarketOnly
                       ? 'bg-amber-100 text-amber-900 border-amber-400 font-bold shadow-2xs'
                       : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100'
@@ -2038,22 +2044,27 @@ export default function FixturesTablePage({
                 </button>
               )}
             </div>
-            <span className="text-[11px] text-slate-500">
-              Safety bets boost historical win rate to <strong className="text-emerald-700 font-bold">78.3% – 83.6%</strong>
-            </span>
+            <div className="flex items-center gap-1 text-[11px] text-slate-500">
+              <span>Safety Hit Rate: <strong className="text-emerald-700 font-bold">78.3% – 83.6%</strong></span>
+              <InfoTooltip
+                title="Adaptive Safety Bet Strategy"
+                content="Auto-selects Draw-No-Bet (DNB) or Double Chance (1X/X2) when model draw probability is ≥24.0%, protecting your initial stake against draw stalemates."
+                align="right"
+              />
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2.5">
           {/* Left: Search Box */}
-          <div className="relative flex-1 min-w-[140px] max-w-sm">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <div className="relative flex-1 min-w-[130px] max-w-sm">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               placeholder="Search club or league..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 text-slate-800 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-colors"
+              className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 text-slate-800 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-colors"
             />
           </div>
           
@@ -2206,31 +2217,33 @@ export default function FixturesTablePage({
       {/* ── Searched Club Recent Form & Completed Matches Ledger ── */}
       {isSearchActive && recentCompletedMatches.length > 0 && (
         <div className="bg-white border border-teal-200 rounded-xl shadow-xs overflow-hidden mb-4 animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="flex flex-wrap items-center justify-between px-4 py-3 bg-gradient-to-r from-teal-50 via-white to-teal-50 border-b border-teal-200 gap-2">
-            <div className="flex items-center gap-2">
-              <History className="w-4 h-4 text-teal-700" />
-              <span className="font-bold text-teal-950 text-sm">
-                Recent Form &amp; Completed Matches: <span className="text-teal-700 font-extrabold">{searchQuery}</span>
+          <div className="flex flex-wrap items-center justify-between px-3 py-2 bg-gradient-to-r from-teal-50 via-white to-teal-50 border-b border-teal-200 gap-2">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <History className="w-3.5 h-3.5 text-teal-700" />
+              <span className="font-bold text-teal-950 text-xs sm:text-sm">
+                Recent Form: <span className="text-teal-700 font-extrabold">{searchQuery}</span>
               </span>
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-teal-100 text-teal-800 font-semibold">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal-100 text-teal-800 font-semibold">
                 {recentCompletedMatches.length} past games
               </span>
-            </div>
-            <div className="text-[11px] text-teal-800 font-medium">
-              Showing historical results with instant 1-click Master Tactical Analysis
+              <InfoTooltip
+                title="Historical Form & Performance"
+                content="Historical match results and predictions for this club with instant 1-click tactical post-mortem analysis."
+                align="left"
+              />
             </div>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50/70 text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
-                  <th className="py-2.5 px-3">Date</th>
-                  <th className="py-2.5 px-3">Competition</th>
-                  <th className="py-2.5 px-3">Matchup</th>
-                  <th className="py-2.5 px-3 text-center">Score</th>
-                  <th className="py-2.5 px-3 text-center">Smart Pick</th>
-                  <th className="py-2.5 px-3 text-center">Tactical Analysis</th>
+                <tr className="border-b border-slate-200 bg-slate-50/70 text-[10px] text-slate-500 uppercase tracking-wider font-bold h-8 select-none">
+                  <th className="py-1 px-2.5">Date</th>
+                  <th className="py-1 px-2.5">Competition</th>
+                  <th className="py-1 px-2.5">Matchup</th>
+                  <th className="py-1 px-2.5 text-center">Score</th>
+                  <th className="py-1 px-2.5 text-center">Smart Pick</th>
+                  <th className="py-1 px-2.5 text-center">Tactical Analysis</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -2244,28 +2257,28 @@ export default function FixturesTablePage({
 
                   return (
                     <tr key={m.id || m.espnEventId} className="hover:bg-teal-50/30 transition-colors">
-                      <td className="py-2.5 px-3 whitespace-nowrap text-slate-500 font-mono text-[11px]">
+                      <td className="py-1.5 px-2.5 whitespace-nowrap text-slate-500 font-mono text-[10.5px]">
                         {formatRelativeDayTime(m, tzSettings)}
                       </td>
-                      <td className="py-2.5 px-3 whitespace-nowrap font-medium text-slate-600 text-[11px]">
+                      <td className="py-1.5 px-2.5 whitespace-nowrap font-medium text-slate-600 text-[10.5px]">
                         {m.league || 'League'}
                       </td>
-                      <td className="py-2.5 px-3 whitespace-nowrap">
+                      <td className="py-1.5 px-2.5 whitespace-nowrap text-[11.5px]">
                         <span className={`font-semibold ${m.home?.toLowerCase().includes(searchQuery.toLowerCase()) ? 'text-teal-900 font-bold' : 'text-slate-800'}`}>
                           {m.home}
                         </span>
-                        <span className="text-slate-400 mx-1.5">vs</span>
+                        <span className="text-slate-400 mx-1">vs</span>
                         <span className={`font-semibold ${m.away?.toLowerCase().includes(searchQuery.toLowerCase()) ? 'text-teal-900 font-bold' : 'text-slate-800'}`}>
                           {m.away}
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 whitespace-nowrap text-center">
-                        <span className="font-mono font-bold px-2 py-0.5 bg-slate-100 border border-slate-200 rounded text-slate-900 text-xs">
+                      <td className="py-1.5 px-2.5 whitespace-nowrap text-center">
+                        <span className="font-mono font-bold px-1.5 py-0.2 bg-slate-100 border border-slate-200 rounded text-slate-900 text-[11px]">
                           {scoreDisplay}
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 whitespace-nowrap text-center text-[11px]">
-                        <span className={`px-2 py-0.5 rounded font-semibold ${
+                      <td className="py-1.5 px-2.5 whitespace-nowrap text-center text-[10.5px]">
+                        <span className={`px-1.5 py-0.2 rounded font-semibold ${
                           isHit ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
                           isMiss ? 'bg-rose-50 text-rose-800 border border-rose-200' :
                           'bg-slate-100 text-slate-700 border border-slate-200'
@@ -2273,13 +2286,13 @@ export default function FixturesTablePage({
                           {m.smartMarket?.pickLabel || m.predictedWinner || 'Analyzed'}
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 whitespace-nowrap text-center">
+                      <td className="py-1.5 px-2.5 whitespace-nowrap text-center">
                         <button
                           onClick={() => onOpenDeepResearch && onOpenDeepResearch(m)}
-                          className="px-2.5 py-1 rounded text-xs font-semibold bg-teal-600 hover:bg-teal-700 text-white transition-colors cursor-pointer shadow-2xs"
+                          className="px-2 py-0.5 rounded text-[10.5px] font-semibold bg-teal-600 hover:bg-teal-700 text-white transition-colors cursor-pointer shadow-2xs"
                           title="Open Master Football Analyst post-mortem"
                         >
-                          Analysis
+                          Deep Analysis
                         </button>
                       </td>
                     </tr>
@@ -2322,21 +2335,21 @@ export default function FixturesTablePage({
         <div className="w-full overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead className="hidden md:table-header-group">
-              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-10">
+              <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
                 {/* Time */}
                 <th 
                   onClick={() => handleSort('time')}
-                  className={`py-1.5 px-2 w-24 text-center cursor-pointer transition-colors group select-none ${
+                  className={`py-1 px-1.5 w-24 text-center cursor-pointer transition-colors group select-none ${
                     sortField === 'time' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
                   title="Click to sort by Kickoff Time"
                 >
-                  <div className="inline-flex items-center justify-center gap-1">
+                  <div className="inline-flex items-center justify-center gap-0.5">
                     <span className={sortField === 'time' ? 'text-indigo-600 font-bold' : ''}>Time</span>
                     {sortField === 'time' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                      sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                     ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                     )}
                   </div>
                 </th>
@@ -2344,7 +2357,7 @@ export default function FixturesTablePage({
                 {/* Fixture */}
                 <th 
                   onClick={() => handleSort('fixture')}
-                  className={`py-1.5 px-2 min-w-[180px] cursor-pointer transition-colors group select-none ${
+                  className={`py-1 px-1.5 min-w-[170px] cursor-pointer transition-colors group select-none ${
                     sortField === 'fixture' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
                   title="Click to sort by Teams / Competition"
@@ -2352,9 +2365,9 @@ export default function FixturesTablePage({
                   <div className="inline-flex items-center gap-1">
                     <span className={sortField === 'fixture' ? 'text-indigo-600 font-bold' : ''}>Fixture</span>
                     {sortField === 'fixture' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                      sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                     ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                     )}
                   </div>
                 </th>
@@ -2362,17 +2375,17 @@ export default function FixturesTablePage({
                 {/* Lineup */}
                 <th 
                   onClick={() => handleSort('lineup')}
-                  className={`py-1.5 px-2 w-20 text-center cursor-pointer transition-colors group select-none ${
+                  className={`py-1 px-1.5 w-16 text-center cursor-pointer transition-colors group select-none ${
                     sortField === 'lineup' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
                   title="Click to sort by Confirmed XI status"
                 >
-                  <div className="inline-flex items-center justify-center gap-1">
+                  <div className="inline-flex items-center justify-center gap-0.5">
                     <span className={sortField === 'lineup' ? 'text-indigo-600 font-bold' : ''}>Lineup</span>
                     {sortField === 'lineup' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                      sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                     ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                     )}
                   </div>
                 </th>
@@ -2380,17 +2393,17 @@ export default function FixturesTablePage({
                 {/* Prediction */}
                 <th 
                   onClick={() => handleSort('prediction')}
-                  className={`py-1.5 px-2 w-28 text-center cursor-pointer transition-colors group select-none ${
+                  className={`py-1 px-1.5 w-24 text-center cursor-pointer transition-colors group select-none ${
                     sortField === 'prediction' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
                   title="Click to sort by AI Pick Outcome"
                 >
-                  <div className="inline-flex items-center justify-center gap-1">
-                    <span className={sortField === 'prediction' ? 'text-indigo-600 font-bold' : ''}>Prediction</span>
+                  <div className="inline-flex items-center justify-center gap-0.5">
+                    <span className={sortField === 'prediction' ? 'text-indigo-600 font-bold' : ''}>Pick</span>
                     {sortField === 'prediction' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                      sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                     ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                     )}
                   </div>
                 </th>
@@ -2398,17 +2411,17 @@ export default function FixturesTablePage({
                 {/* 1 | X | 2 Probs */}
                 <th 
                   onClick={() => handleSort('probs')}
-                  className={`py-1.5 px-2 w-36 text-center cursor-pointer transition-colors group select-none ${
+                  className={`py-1 px-1.5 w-32 text-center cursor-pointer transition-colors group select-none ${
                     ['probs', 'home_prob', 'draw_prob', 'away_prob'].includes(sortField) ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
                   title="Click to sort by Win Probability"
                 >
-                  <div className="inline-flex items-center justify-center gap-1">
-                    <span className={['probs', 'home_prob', 'draw_prob', 'away_prob'].includes(sortField) ? 'text-indigo-600 font-bold' : ''}>Probabilities (1·X·2)</span>
+                  <div className="inline-flex items-center justify-center gap-0.5">
+                    <span className={['probs', 'home_prob', 'draw_prob', 'away_prob'].includes(sortField) ? 'text-indigo-600 font-bold' : ''}>1·X·2 Probs</span>
                     {['probs', 'home_prob', 'draw_prob', 'away_prob'].includes(sortField) ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                      sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                     ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                     )}
                   </div>
                 </th>
@@ -2416,19 +2429,19 @@ export default function FixturesTablePage({
                 {/* Conf */}
                 <th 
                   onClick={() => handleSort('conf')}
-                  className={`py-1.5 px-2 w-24 text-center cursor-pointer transition-colors group select-none ${
+                  className={`py-1 px-1.5 w-20 text-center cursor-pointer transition-colors group select-none ${
                     sortField === 'conf' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
                   title="Click to sort by Confidence"
                 >
-                  <div className="inline-flex items-center justify-center gap-1">
+                  <div className="inline-flex items-center justify-center gap-0.5">
                     <InfoTooltip title="Confidence" content="Model confidence in the predicted outcome.">
-                      <span className={sortField === 'conf' ? 'text-indigo-600 font-bold' : ''}>Confidence</span>
+                      <span className={sortField === 'conf' ? 'text-indigo-600 font-bold' : ''}>Conf</span>
                     </InfoTooltip>
                     {sortField === 'conf' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                      sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                     ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                     )}
                   </div>
                 </th>
@@ -2436,19 +2449,19 @@ export default function FixturesTablePage({
                 {/* Score/xG */}
                 <th 
                   onClick={() => handleSort('xg')}
-                  className={`py-1.5 px-2 w-24 text-center cursor-pointer transition-colors group select-none ${
+                  className={`py-1 px-1.5 w-20 text-center cursor-pointer transition-colors group select-none ${
                     sortField === 'xg' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
                   title="Click to sort by Expected Goals (xG)"
                 >
-                  <div className="inline-flex items-center justify-center gap-1">
+                  <div className="inline-flex items-center justify-center gap-0.5">
                     <InfoTooltip title="Score & xG" content="Projected scoreline and expected goals (xG).">
-                      <span className={sortField === 'xg' ? 'text-indigo-600 font-bold' : ''}>Score & xG</span>
+                      <span className={sortField === 'xg' ? 'text-indigo-600 font-bold' : ''}>Score/xG</span>
                     </InfoTooltip>
                     {sortField === 'xg' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                      sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                     ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                     )}
                   </div>
                 </th>
@@ -2456,25 +2469,25 @@ export default function FixturesTablePage({
                 {/* LiveScore Bet Odds & Potential Return */}
                 <th 
                   onClick={() => handleSort('kelly')}
-                  className={`py-1.5 px-2 w-44 text-left cursor-pointer transition-colors group select-none ${
+                  className={`py-1 px-1.5 w-40 text-left cursor-pointer transition-colors group select-none ${
                     sortField === 'kelly' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
                   title="Click to sort by Value Bet"
                 >
-                  <div className="inline-flex items-center gap-1">
+                  <div className="inline-flex items-center gap-0.5">
                     <InfoTooltip title="LiveScore Odds & Potential Return" content="Recommended market, benchmark odds, Kelly stake, and calculated potential returns.">
-                      <span className={sortField === 'kelly' ? 'text-indigo-600 font-bold' : ''}>Odds &amp; Return</span>
+                      <span className={sortField === 'kelly' ? 'text-indigo-600 font-bold' : ''}>Odds & Return</span>
                     </InfoTooltip>
                     {sortField === 'kelly' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                      sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                     ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                     )}
                   </div>
                 </th>
 
                 {/* Actions */}
-                <th className="py-1.5 px-2 w-48 text-center">Actions</th>
+                <th className="py-1 px-1.5 w-44 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="flex flex-col md:table-row-group divide-y divide-slate-100">
@@ -2590,32 +2603,32 @@ export default function FixturesTablePage({
                   return (
                     <React.Fragment key={m.id || idx}>
                       <tr 
-                        className={`flex flex-col md:table-row hover:bg-indigo-50/30 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'} md:h-12 cursor-pointer md:cursor-default`}
+                        className={`flex flex-col md:table-row hover:bg-indigo-50/30 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'} md:h-10 cursor-pointer md:cursor-default`}
                         onClick={() => { if (window.innerWidth < 768) toggleExpand(m.id || idx); }}
                       >
                         {/* ---------------- MOBILE VIEW ---------------- */}
-                        <td className="md:hidden p-3 block">
-                          <div className="flex justify-between items-start mb-2">
+                        <td className="md:hidden p-2.5 block">
+                          <div className="flex justify-between items-start mb-1.5">
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="font-semibold text-slate-700 font-mono text-[10px]">
                                 {formatMatchKickoff(m)}
                               </span>
                               {m.isLive ? (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse">
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse">
                                   <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
                                   LIVE {m.liveMinute ? `${m.liveMinute}'` : ''} {m.liveScore ? `(${m.liveScore.home}-${m.liveScore.away})` : ''}
                                 </span>
                               ) : countdown ? (
-                                <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold border ${countdown.color}`}>
-                                  {countdown.isWindow && <Lock className="w-2.5 h-2.5" />}
+                                <span className={`inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-bold border ${countdown.color}`}>
+                                  {countdown.isWindow && <Lock className="w-2 h-2" />}
                                   {countdown.label}
                                 </span>
                               ) : null}
-                              <span className="text-[10px] text-slate-400">
+                              <span className="text-[9.5px] text-slate-400">
                                 {m.league}
                               </span>
                               {m.broadcast && (
-                                <span className="text-[9px] text-indigo-700 font-semibold bg-indigo-50 border border-indigo-200 px-1 rounded flex items-center gap-0.5">
+                                <span className="text-[8.5px] text-indigo-700 font-semibold bg-indigo-50 border border-indigo-200 px-1 rounded flex items-center gap-0.5">
                                   📺 {m.broadcast.split(',')[0]}
                                 </span>
                               )}
@@ -2625,48 +2638,48 @@ export default function FixturesTablePage({
                           <div className="flex justify-between items-center mb-1">
                             <div className="flex flex-col flex-1">
                               <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="font-bold text-slate-900">{m.home}</span>
+                                <span className="font-bold text-slate-900 text-xs">{m.home}</span>
                                 {isUnanimous && (
                                   <span 
-                                    className="text-[9px] bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.2 rounded font-bold shrink-0" 
+                                    className="text-[8.5px] bg-amber-100 text-amber-900 border border-amber-300 px-1 py-0.2 rounded font-bold shrink-0" 
                                     title={`6-Agent Unanimous Consensus (All 6 AI agents agree · Historical Strategy Win Rate: ${unanimousRateDisplay})`}
                                   >
                                     👑 Unanimous
                                   </span>
                                 )}
                                 {leagueTierObj && (
-                                  <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded border shadow-2xs ${leagueTierObj.badgeStyle}`} title={`${leagueTierObj.label} (${leagueTierObj.expectedHighConvictionWinRate} hit rate)`}>
+                                  <span className={`text-[8.5px] font-bold px-1 py-0.2 rounded border shadow-2xs ${leagueTierObj.badgeStyle}`} title={`${leagueTierObj.label} (${leagueTierObj.expectedHighConvictionWinRate} hit rate)`}>
                                     {leagueTierObj.badgeShort}
                                   </span>
                                 )}
                                 {isDnbAdvised && (
-                                  <span className="text-[9px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-1.5 py-0.2 rounded font-bold" title={`Draw Risk ${safeToFixed(drawProb, 1)}% ≥ 24.0% — DNB protects stake`}>
+                                  <span className="text-[8.5px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-1 py-0.2 rounded font-bold" title={`Draw Risk ${safeToFixed(drawProb, 1)}% ≥ 24.0% — DNB protects stake`}>
                                     🛡️ DNB
                                   </span>
                                 )}
-                                {isTrap && <span className="text-[9px] bg-rose-100 text-rose-700 border border-rose-300 px-1 rounded font-bold">⚠️ Upset Risk</span>}
-                                {isDerivative && <span className="text-[9px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-1 rounded font-bold">🛡️ {m.smartMarket?.pick}</span>}
+                                {isTrap && <span className="text-[8.5px] bg-rose-100 text-rose-700 border border-rose-300 px-1 rounded font-bold">⚠️ Risk</span>}
+                                {isDerivative && <span className="text-[8.5px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-1 rounded font-bold">🛡️ {m.smartMarket?.pick}</span>}
                               </div>
-                              <span className="font-bold text-slate-900">{m.away}</span>
+                              <span className="font-bold text-slate-900 text-xs">{m.away}</span>
                             </div>
                             <div className="flex flex-col items-end">
-                              <span className="text-[9px] uppercase font-bold text-slate-400 mb-0.5">Top Pick</span>
-                              <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-bold border shadow-xs ${getWinnerBadgeClass(predictedWinner)}`}>
+                              <span className="text-[8.5px] uppercase font-bold text-slate-400 mb-0.5">Top Pick</span>
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10.5px] font-bold border shadow-xs ${getWinnerBadgeClass(predictedWinner)}`}>
                                 <span>{predictedWinner === 'HOME' ? `${m.home?.slice(0, 10)} WIN` : predictedWinner === 'AWAY' ? `${m.away?.slice(0, 10)} WIN` : 'DRAW'}</span>
-                                <span className="text-[10px] font-mono opacity-80">@{safeToFixed(matchOdds, 2)}</span>
+                                <span className="text-[9.5px] font-mono opacity-80">@{safeToFixed(matchOdds, 2)}</span>
                               </span>
                             </div>
                           </div>
                           
-                          <div className="flex items-center justify-between pt-2 border-t border-slate-100 mt-2">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-[10px] font-mono font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
+                          <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 mt-1.5">
+                            <div className="flex items-center gap-1 flex-wrap">
+                              <span className="text-[9.5px] font-mono font-bold text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded">
                                 {score}
                               </span>
-                              <span className="text-[10px] font-mono font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">
+                              <span className="text-[9.5px] font-mono font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.2 rounded border border-indigo-100">
                                 {smartMarketDisplay} @{safeToFixed(matchOdds, 2)}
                               </span>
-                              <span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200" title={`Wager €${rowStake.toFixed(0)} based on €${bankrollEuro} bankroll`}>
+                              <span className="text-[9.5px] font-mono font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200" title={`Wager €${rowStake.toFixed(0)} based on €${bankrollEuro} bankroll`}>
                                 💰 €{rowStake.toFixed(0)} → €{returns.payoutStr} ({returns.profitStr})
                               </span>
                             </div>
@@ -2677,14 +2690,14 @@ export default function FixturesTablePage({
                                   e.stopPropagation();
                                   if (onOpenWatchLive) onOpenWatchLive(m);
                                 }}
-                                className={`px-2.5 py-1 rounded text-[10px] font-bold border transition-all cursor-pointer inline-flex items-center gap-1 ${
+                                className={`px-2 py-0.5 rounded text-[9.5px] font-bold border transition-all cursor-pointer inline-flex items-center gap-1 ${
                                   m.isLive
                                     ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
                                     : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
                                 }`}
                                 title={m.isLive ? "Watch Match LIVE NOW in Iframe" : "Watch Live in Iframe Player"}
                               >
-                                <Play className={`w-2.5 h-2.5 ${m.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
+                                <Play className={`w-2 h-2 ${m.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
                                 <span>{m.isLive ? 'Watch Now' : 'Watch'}</span>
                               </button>
                               <button
@@ -2692,33 +2705,33 @@ export default function FixturesTablePage({
                                   e.stopPropagation();
                                   if (onAddToSlip) onAddToSlip(m);
                                 }}
-                                className={`p-1.5 rounded-full transition-all cursor-pointer ${
+                                className={`p-1 rounded-full transition-all cursor-pointer ${
                                   isSlipAdded
                                     ? 'bg-rose-100 text-rose-600 hover:bg-rose-200'
                                     : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
                                 }`}
                               >
-                                {isSlipAdded ? <Trash2 className="w-4 h-4" /> : <Target className="w-4 h-4" />}
+                                {isSlipAdded ? <Trash2 className="w-3.5 h-3.5" /> : <Target className="w-3.5 h-3.5" />}
                               </button>
                             </div>
                           </div>
                           
                           {!isExpanded && (
-                            <div className="text-[10px] text-slate-400 mt-2 text-center uppercase tracking-wider font-semibold">
-                              Tap for details <ChevronDown className="w-3 h-3 inline-block ml-0.5" />
+                            <div className="text-[9.5px] text-slate-400 mt-1 text-center uppercase tracking-wider font-semibold">
+                              Tap for details <ChevronDown className="w-2.5 h-2.5 inline-block ml-0.5" />
                             </div>
                           )}
                         </td>
 
                         {/* ---------------- DESKTOP CELLS ---------------- */}
                         {/* Time / Status */}
-                        <td className="hidden md:table-cell py-1.5 px-2 text-center">
-                          <span className="font-semibold text-slate-700 font-mono text-xs block">
+                        <td className="hidden md:table-cell py-1 px-1.5 text-center">
+                          <span className="font-semibold text-slate-700 font-mono text-[11px] block">
                             {formatMatchKickoff(m)}
                           </span>
                           {m.isLive ? (
                             <span 
-                              className="inline-flex items-center justify-center gap-1 px-1.5 py-0.5 mt-0.5 rounded text-[10px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse max-w-[95px] mx-auto"
+                              className="inline-flex items-center justify-center gap-1 px-1 py-0.2 mt-0.5 rounded text-[9px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse max-w-[85px] mx-auto"
                               title={`Match currently live: ${m.liveMinute || 0}' (${m.liveScore?.home ?? 0}-${m.liveScore?.away ?? 0})`}
                             >
                               <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
@@ -2726,73 +2739,73 @@ export default function FixturesTablePage({
                             </span>
                           ) : countdown ? (
                             <span 
-                              className={`inline-flex items-center justify-center gap-0.5 px-1.5 py-0.5 mt-0.5 rounded text-[10px] font-bold border max-w-[95px] mx-auto ${countdown.color}`}
+                              className={`inline-flex items-center justify-center gap-0.5 px-1 py-0.2 mt-0.5 rounded text-[9px] font-bold border max-w-[85px] mx-auto ${countdown.color}`}
                               title={countdown.isWindow ? "Pre-kickoff lock window (≤60m): Prediction is locked & frozen" : "Time until match kickoff"}
                             >
-                              {countdown.isWindow && <Lock className="w-2.5 h-2.5 shrink-0" />}
+                              {countdown.isWindow && <Lock className="w-2 h-2 shrink-0" />}
                               <span>{countdown.label}</span>
                             </span>
                           ) : (
-                            <span className="text-[10px] text-slate-400 block truncate max-w-[65px] mx-auto">
+                            <span className="text-[9.5px] text-slate-400 block truncate max-w-[65px] mx-auto">
                               {m.league?.split(' ')[0] || 'Soccer'}
                             </span>
                           )}
                           {m.broadcast && (
-                            <span className="text-[9px] text-indigo-600 font-semibold block truncate max-w-[90px] mx-auto mt-0.5" title={`Broadcast: ${m.broadcast}`}>
+                            <span className="text-[8.5px] text-indigo-600 font-semibold block truncate max-w-[90px] mx-auto mt-0.5" title={`Broadcast: ${m.broadcast}`}>
                               📺 {m.broadcast.split(',')[0]}
                             </span>
                           )}
                         </td>
 
                         {/* Fixture / Teams */}
-                        <td className="hidden md:table-cell py-1.5 px-2">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-semibold text-slate-900 truncate">
+                        <td className="hidden md:table-cell py-1 px-1.5">
+                          <div className="flex items-center gap-1">
+                            <span className="font-semibold text-slate-900 truncate text-[11.5px]">
                               {m.home} vs {m.away}
                             </span>
                             {m.isLive && (
                               <button
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(m); }}
-                                className="inline-flex items-center gap-1 text-[9px] font-extrabold bg-rose-600 hover:bg-rose-700 text-white px-2 py-0.5 rounded-full shadow-xs animate-pulse cursor-pointer shrink-0"
+                                className="inline-flex items-center gap-0.5 text-[8.5px] font-extrabold bg-rose-600 hover:bg-rose-700 text-white px-1.5 py-0.2 rounded-full shadow-xs animate-pulse cursor-pointer shrink-0"
                                 title="Match is LIVE NOW! Click to Watch Stream"
                               >
-                                <Play className="w-2 h-2 fill-white text-white" />
-                                <span>Watch Now</span>
+                                <Play className="w-1.5 h-1.5 fill-white text-white" />
+                                <span>Watch</span>
                               </button>
                             )}
                             {isUnanimous ? (
                               <span 
-                                className="inline-flex items-center text-[9px] font-bold bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded border border-amber-300 shrink-0" 
+                                className="inline-flex items-center text-[8.5px] font-bold bg-amber-100 text-amber-900 px-1 py-0.2 rounded border border-amber-300 shrink-0" 
                                 title={`6-Agent Unanimous Consensus (All 6 AI agents agree · Historical Strategy Win Rate: ${unanimousRateDisplay})`}
                               >
                                 👑 Unanimous
                               </span>
                             ) : isTrap ? (
-                              <span className="inline-flex items-center text-[9px] font-bold bg-rose-100 text-rose-800 px-1.5 py-0.2 rounded border border-rose-300 shrink-0" title="Upset Potential Flagged by Council">
+                              <span className="inline-flex items-center text-[8.5px] font-bold bg-rose-100 text-rose-800 px-1 py-0.2 rounded border border-rose-300 shrink-0" title="Upset Potential Flagged by Council">
                                 ⚠️ Risk
                               </span>
                             ) : isDnbAdvised ? (
-                              <span className="inline-flex items-center text-[9px] font-bold bg-indigo-50 text-indigo-700 px-1.5 py-0.2 rounded border border-indigo-200 shrink-0" title="Draw-No-Bet Protection Advised">
+                              <span className="inline-flex items-center text-[8.5px] font-bold bg-indigo-50 text-indigo-700 px-1 py-0.2 rounded border border-indigo-200 shrink-0" title="Draw-No-Bet Protection Advised">
                                 🛡️ DNB
                               </span>
                             ) : m.teamTrends?.home?.badge ? (
-                              <span className="inline-flex items-center text-[9px] font-bold bg-slate-100 text-slate-700 px-1.5 py-0.2 rounded border border-slate-200 shrink-0" title={m.teamTrends.home.tacticalIdentity}>
+                              <span className="inline-flex items-center text-[8.5px] font-bold bg-slate-100 text-slate-700 px-1 py-0.2 rounded border border-slate-200 shrink-0" title={m.teamTrends.home.tacticalIdentity}>
                                 {m.teamTrends.home.badge}
                               </span>
                             ) : null}
                           </div>
-                          <div className="text-[10px] text-slate-500 truncate max-w-[170px]">
+                          <div className="text-[9.5px] text-slate-500 truncate max-w-[170px]">
                             {m.league}
                           </div>
                         </td>
 
                         {/* Lineup XI Badge Button */}
-                        <td className="hidden md:table-cell py-1.5 px-2 text-center">
+                        <td className="hidden md:table-cell py-1 px-1.5 text-center">
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); onOpenLineup && onOpenLineup(m); }}
-                            className={`px-2 py-0.5 rounded text-[10px] font-semibold border transition-colors cursor-pointer inline-block ${
+                            className={`px-1.5 py-0.2 rounded text-[9.5px] font-semibold border transition-colors cursor-pointer inline-block ${
                               m.lineupAdjusted
                                 ? 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100 font-bold'
                                 : hasLineup
@@ -2806,88 +2819,88 @@ export default function FixturesTablePage({
                         </td>
 
                         {/* AI Prediction Pick */}
-                        <td className="hidden md:table-cell py-1.5 px-2 text-center">
+                        <td className="hidden md:table-cell py-1 px-1.5 text-center">
                           {renderMarketPrediction(m, predictedWinner, homeProb, drawProb, awayProb, matchOdds)}
                         </td>
 
                         {/* Probabilities 1 | X | 2 */}
-                        <td className="hidden md:table-cell py-1.5 px-2 text-center">
-                          <div className="flex items-center justify-center gap-1.5 text-xs font-mono">
-                            <span className={`px-1 rounded ${homeProb > awayProb && homeProb > drawProb ? 'font-bold text-emerald-700 bg-emerald-50' : 'text-slate-600'}`}>
+                        <td className="hidden md:table-cell py-1 px-1.5 text-center">
+                          <div className="flex items-center justify-center gap-1 text-[11px] font-mono">
+                            <span className={`px-0.5 rounded ${homeProb > awayProb && homeProb > drawProb ? 'font-bold text-emerald-700 bg-emerald-50' : 'text-slate-600'}`}>
                               {safeToFixed(homeProb, 0)}%
                             </span>
                             <span className="text-slate-300">|</span>
-                            <span className={`px-1 rounded ${drawProb > homeProb && drawProb > awayProb ? 'font-bold text-amber-700 bg-amber-50' : 'text-slate-600'}`}>
+                            <span className={`px-0.5 rounded ${drawProb > homeProb && drawProb > awayProb ? 'font-bold text-amber-700 bg-amber-50' : 'text-slate-600'}`}>
                               {safeToFixed(drawProb, 0)}%
                             </span>
                             <span className="text-slate-300">|</span>
-                            <span className={`px-1 rounded ${awayProb > homeProb && awayProb > drawProb ? 'font-bold text-blue-700 bg-blue-50' : 'text-slate-600'}`}>
+                            <span className={`px-0.5 rounded ${awayProb > homeProb && awayProb > drawProb ? 'font-bold text-blue-700 bg-blue-50' : 'text-slate-600'}`}>
                               {safeToFixed(awayProb, 0)}%
                             </span>
                           </div>
                         </td>
 
                         {/* Confidence */}
-                        <td className="hidden md:table-cell py-1.5 px-2 text-center">
+                        <td className="hidden md:table-cell py-1 px-1.5 text-center">
                           <ConfidenceGauge confidence={conf} size="sm" />
                         </td>
 
                         {/* Score/xG */}
-                        <td className="hidden md:table-cell py-1.5 px-2 text-center">
-                          <span className="font-bold text-slate-800 text-xs font-mono block">
+                        <td className="hidden md:table-cell py-1 px-1.5 text-center">
+                          <span className="font-bold text-slate-800 text-[11.5px] font-mono block">
                             {score}
                           </span>
-                          <span className="text-[10px] text-slate-500 font-mono block">
+                          <span className="text-[9.5px] text-slate-500 font-mono block">
                             xG {safeToFixed(homeXg, 1, '1.5')}-{safeToFixed(awayXg, 1, '1.1')}
                           </span>
                         </td>
 
                         {/* LiveScore Bet Odds & Potential Return */}
-                        <td className="hidden md:table-cell py-1.5 px-2">
-                          <div className="text-[11px]">
+                        <td className="hidden md:table-cell py-1 px-1.5">
+                          <div className="text-[10.5px]">
                             <div className="flex items-center gap-1">
-                              <span className="font-semibold text-slate-800 truncate max-w-[105px]" title={smartMarketDisplay}>
+                              <span className="font-semibold text-slate-800 truncate max-w-[100px]" title={smartMarketDisplay}>
                                 {smartMarketDisplay}
                               </span>
-                              <span className="text-[10px] font-bold font-mono text-indigo-700 bg-indigo-50 border border-indigo-200 px-1 py-0.2 rounded shrink-0" title={`${oddsProvider} Odds`}>
+                              <span className="text-[9.5px] font-bold font-mono text-indigo-700 bg-indigo-50 border border-indigo-200 px-1 py-0.2 rounded shrink-0" title={`${oddsProvider} Odds`}>
                                 @{safeToFixed(matchOdds, 2)}
                               </span>
                             </div>
                             <div className="mt-0.5 flex items-center gap-1 flex-wrap">
                               <KellyTooltip showIcon={false} align="right">
-                                <span className="text-[10px] text-emerald-800 font-bold font-mono bg-emerald-50/90 border border-emerald-200 px-1.5 py-0.2 rounded cursor-help hover:bg-emerald-100 transition-colors" title={`Recommended wager based on €${bankrollEuro} bankroll (${kellyDisplay})`}>
+                                <span className="text-[9.5px] text-emerald-800 font-bold font-mono bg-emerald-50/90 border border-emerald-200 px-1 py-0.2 rounded cursor-help hover:bg-emerald-100 transition-colors" title={`Recommended wager based on €${bankrollEuro} bankroll (${kellyDisplay})`}>
                                   💰 €{rowStake.toFixed(0)}
                                 </span>
                               </KellyTooltip>
-                              <span className="text-[10px] font-semibold text-slate-600 font-mono whitespace-nowrap">
-                                → <strong className="text-emerald-700">€{returns.payoutStr}</strong> <span className="text-slate-400 font-normal">({returns.profitStr})</span>
+                              <span className="text-[9.5px] font-semibold text-slate-600 font-mono whitespace-nowrap">
+                                → <strong className="text-emerald-700">€{returns.payoutStr}</strong>
                               </span>
                             </div>
                           </div>
                         </td>
 
                         {/* Actions */}
-                        <td className="hidden md:table-cell py-1.5 px-2 text-center">
-                          <div className="flex items-center justify-center gap-1.5">
+                        <td className="hidden md:table-cell py-1 px-1.5 text-center">
+                          <div className="flex items-center justify-center gap-1">
                             {/* Watch Live in Iframe Player */}
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(m); }}
-                              className={`px-2.5 py-1 rounded text-[11px] font-bold border transition-all cursor-pointer inline-flex items-center gap-1 shadow-xs ${
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer inline-flex items-center gap-1 shadow-xs ${
                                 m.isLive
                                   ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-rose-200 animate-pulse font-extrabold'
                                   : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
                               }`}
                               title={m.isLive ? "Watch Match LIVE NOW in Iframe" : "Watch Match Live & In-Play Radar Simulator"}
                             >
-                              <Play className={`w-3 h-3 ${m.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
+                              <Play className={`w-2.5 h-2.5 ${m.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
                               <span>{m.isLive ? 'Watch Now' : 'Watch'}</span>
                             </button>
 
                             {/* Deep Analysis Page */}
                             <button
                               onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(m); }}
-                              className="px-2 py-1 rounded text-[11px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
+                              className="px-1.5 py-0.5 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
                               title="Open Analysis"
                             >
                               Analysis
@@ -2896,7 +2909,7 @@ export default function FixturesTablePage({
                             {/* Add to Slip Slip */}
                             <button
                               onClick={(e) => { e.stopPropagation(); onAddToSlip && onAddToSlip(m); }}
-                              className={`px-2 py-1 rounded text-[11px] font-medium transition-colors cursor-pointer border ${
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors cursor-pointer border ${
                                 isSlipAdded
                                   ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
                                   : 'bg-white text-slate-700 hover:bg-purple-50 hover:text-purple-700 border-slate-200 hover:border-purple-200'
@@ -2909,7 +2922,7 @@ export default function FixturesTablePage({
                             {/* Expand Row Details */}
                             <button
                               onClick={(e) => { e.stopPropagation(); toggleExpand(m.id || idx); }}
-                              className="px-1.5 py-1 rounded text-[11px] font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+                              className="px-1 py-0.5 rounded text-[10px] font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
                               title="Toggle tactical analysis details"
                             >
                               {isExpanded ? 'Hide' : 'Tactics'}
