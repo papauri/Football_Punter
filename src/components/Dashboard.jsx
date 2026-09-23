@@ -22,6 +22,7 @@ import LogsPage from './LogsPage';
 import ErrorBoundary from './ErrorBoundary';
 import PropsSpecialsPage from './PropsSpecialsPage';
 import StrategyProofModal from './StrategyProofModal';
+import DailyBriefingPanel from './DailyBriefingPanel';
 import { resolveMatchOdds, resolveMatchProb } from '../utils/oddsUtils';
 import { isLeagueBlacklisted } from '../utils/leagueUtils';
 
@@ -757,7 +758,14 @@ export default function Dashboard() {
             )}
             {/* Page Routing */}
             {activePage === 'fixtures' && (
-              <FixturesTablePage
+              <>
+                <DailyBriefingPanel
+                  matches={matches}
+                  onAddToSlip={handleToggleAccaPick}
+                  accaMatchIds={new Set(accaPicks.map(p => p.id))}
+                  bankrollEuro={state.bankrollEuro || 1000}
+                />
+                <FixturesTablePage
                 matches={matches}
                 leaguePerformance={state.trainingStats?.leaguePerformance || []}
                 tzSettings={tzSettings}
@@ -778,7 +786,8 @@ export default function Dashboard() {
                 betSlips={betSlips}
                 activeSlipId={activeSlipId}
                 aiSwarm={state?.aiSwarm}
-              />
+                />
+              </>
             )}
 
             {activePage === 'scores' && (

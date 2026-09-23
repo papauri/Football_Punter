@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { 
   Search,
   Trash2, 
@@ -30,7 +30,9 @@ import {
   Shield,
   X,
   Flame,
-  Award
+  Award,
+  Lock,
+  Clock
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
 import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey } from '../utils/dateUtils';
@@ -80,14 +82,44 @@ export default function FixturesTablePage({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLeague, setSelectedLeague] = useState('All');
   const [selectedDate, setSelectedDate] = useState('All');
-  const [selectedOutcome, setSelectedOutcome] = useState('ALL'); // 'ALL', 'WIN_LOSE', 'DRAW', 'HOME', 'AWAY'
-  const [filterMode, setFilterMode] = useState('All'); // 'All', 'UNANIMOUS', 'WIN_LOSE_ONLY', 'DRAW_ONLY', 'HIGH_CONFIDENCE', 'ELITE', etc.
+  const [selectedOutcome, setSelectedOutcome] = useState('ALL');
+  const [filterMode, setFilterMode] = useState('All');
   const [sortField, setSortField] = useState('probs');
-  const [sortDirection, setSortDirection] = useState('desc'); // 'asc' | 'desc'
+  const [sortDirection, setSortDirection] = useState('desc');
   const [sortBy, setSortBy] = useState('probs_desc');
   const [expandedMatchId, setExpandedMatchId] = useState(null);
   const [copiedAccaSlip, setCopiedAccaSlip] = useState(false);
   const [isAccaLoaded, setIsAccaLoaded] = useState(false);
+
+  // Live countdown tick — updates every 30s so row timers stay fresh
+  const [nowTick, setNowTick] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNowTick(Date.now()), 30000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Returns countdown badge info for a match's kickoff timestamp
+  const formatKickoffCountdown = (m) => {
+    if (!m.timestamp) return null;
+    const ms = m.timestamp - nowTick;
+    if (ms <= 0) return null; // already started / live
+    const totalMins = Math.floor(ms / 60000);
+    const hours = Math.floor(totalMins / 60);
+    const mins = totalMins % 60;
+    const inSnapshotWindow = ms <= 60 * 60 * 1000;
+    if (totalMins > 6 * 60) return null; // don't show for distant fixtures
+    return {
+      label: inSnapshotWindow
+        ? (totalMins <= 10 ? `${totalMins}m — BET NOW` : `🔒 ${totalMins}m`)
+        : hours > 0 ? `${hours}h ${mins}m` : `${totalMins}m`,
+      isWindow: inSnapshotWindow,
+      color: inSnapshotWindow && totalMins <= 30
+        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+        : inSnapshotWindow
+        ? 'bg-amber-100 text-amber-800 border-amber-300'
+        : 'bg-slate-100 text-slate-600 border-slate-200',
+    };
+  };
 
   // Strategic Enhancements: Lineup Impact, Confidence Level, Bet Safety Mode, Major League Filter
   const [convictionMode, setConvictionMode] = useState('ALL'); // 'ALL' | 'HIGH' (>=60%) | 'ELITE' (>=68% or Consensus) | 'UNANIMOUS'
@@ -1476,6 +1508,18 @@ export default function FixturesTablePage({
                           <div className="text-slate-400 font-mono text-[10px] mt-0.5">
                             {kickoff.time}
                           </div>
+                          {(() => {
+                            const c = formatKickoffCountdown(leg.match || leg);
+                            if (!c) return null;
+                            return (
+                              <div className="mt-0.5">
+                                <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold border ${c.color}`}>
+                                  {c.isWindow && <Lock className="w-2.5 h-2.5" />}
+                                  {c.label}
+                                </span>
+                              </div>
+                            );
+                          })()}
                         </td>
 
                         {/* Pick */}
@@ -2138,6 +2182,7 @@ export default function FixturesTablePage({
 
                   const leagueTierObj = m.leagueTier || getLeaguePredictabilityTier(m.league);
                   const isDnbAdvised = m.smartMarket?.dnbProtection?.isAdvised || m.smartMarket?.marketType === 'DRAW_NO_BET' || drawProb >= 24.0;
+                  const countdown = formatKickoffCountdown(m);
 
                   return (
                     <React.Fragment key={m.id || idx}>
@@ -2148,10 +2193,16 @@ export default function FixturesTablePage({
                         {/* ---------------- MOBILE VIEW ---------------- */}
                         <td className="md:hidden p-3 block">
                           <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <span className="font-semibold text-slate-700 font-mono text-[10px] mr-2">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-semibold text-slate-700 font-mono text-[10px]">
                                 {formatMatchKickoff(m)}
                               </span>
+                              {countdown && (
+                                <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold border ${countdown.color}`}>
+                                  {countdown.isWindow && <Lock className="w-2.5 h-2.5" />}
+                                  {countdown.label}
+                                </span>
+                              )}
                               <span className="text-[10px] text-slate-400">
                                 {m.league}
                               </span>
@@ -2194,13 +2245,18 @@ export default function FixturesTablePage({
                           </div>
                           
                           <div className="flex items-center justify-between pt-2 border-t border-slate-100 mt-2">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="text-[10px] font-mono font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
                                 {score}
                               </span>
                               <span className="text-[10px] font-mono font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">
                                 {smartMarketDisplay}
                               </span>
+                              {kellyDisplay && kellyDisplay !== '—' && (
+                                <span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                                  💰 {kellyDisplay}
+                                </span>
+                              )}
                             </div>
                             <button
                               onClick={(e) => {
@@ -2230,9 +2286,19 @@ export default function FixturesTablePage({
                           <span className="font-semibold text-slate-700 font-mono text-xs block">
                             {formatMatchKickoff(m)}
                           </span>
-                          <span className="text-[10px] text-slate-400 block truncate max-w-[65px] mx-auto">
-                            {m.league?.split(' ')[0] || 'Soccer'}
-                          </span>
+                          {countdown ? (
+                            <span 
+                              className={`inline-flex items-center justify-center gap-0.5 px-1.5 py-0.5 mt-0.5 rounded text-[10px] font-bold border max-w-[95px] mx-auto ${countdown.color}`}
+                              title={countdown.isWindow ? "Pre-kickoff lock window (≤60m): Prediction is locked & frozen" : "Time until match kickoff"}
+                            >
+                              {countdown.isWindow && <Lock className="w-2.5 h-2.5 shrink-0" />}
+                              <span>{countdown.label}</span>
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-slate-400 block truncate max-w-[65px] mx-auto">
+                              {m.league?.split(' ')[0] || 'Soccer'}
+                            </span>
+                          )}
                         </td>
 
                         {/* Fixture / Teams */}
@@ -2325,8 +2391,8 @@ export default function FixturesTablePage({
                               {smartMarketDisplay}
                             </span>
                             <KellyTooltip showIcon={false} align="right">
-                              <span className="text-[10px] text-emerald-700 font-medium block font-mono cursor-help hover:underline">
-                                Kelly: {kellyDisplay}
+                              <span className="inline-flex items-center gap-1 text-[10px] text-emerald-800 font-semibold font-mono bg-emerald-50/90 border border-emerald-200 px-1.5 py-0.2 rounded mt-0.5 cursor-help hover:bg-emerald-100 transition-colors">
+                                💰 {kellyDisplay}
                               </span>
                             </KellyTooltip>
                           </div>
