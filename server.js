@@ -1,6 +1,5 @@
 import express from 'express';
 import { createServer as createHttpServer } from 'http';
-import compression from 'compression';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -15,6 +14,15 @@ async function startServer() {
   const httpServer = createHttpServer(app);
   const PORT = parseInt(process.env.PORT || '3000', 10);
 
+  // Optional compression with graceful fallback if package is not installed
+  try {
+    const compressionModule = await import('compression');
+    const compression = compressionModule.default || compressionModule;
+    app.use(compression());
+  } catch (e) {
+    // Compression is optional; continue cleanly
+  }
+
   // Permissive CORS for AI Studio / Webview / Cloud Workstations preview
   app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
@@ -26,7 +34,6 @@ async function startServer() {
     next();
   });
 
-  app.use(compression());
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
