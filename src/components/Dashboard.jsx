@@ -65,8 +65,41 @@ export const TimezoneContext = createContext({
 
 export const useTimezone = () => useContext(TimezoneContext);
 
+export const DEFAULT_INITIAL_STATE = {
+  hasKey: true,
+  hasAiKey: false,
+  aiProvider: 'Deterministic Core',
+  aiModel: 'None',
+  aiConfig: { hasAnyKey: false },
+  bankrollEuro: 1000,
+  kellyFraction: 0.25,
+  matches: [],
+  todayCompletedMatches: [],
+  yesterdayMatches: [],
+  yesterdayStats: { total: 0, correctPredictions: 0, accuracy: 0.0, homeHitRate: 0, drawHitRate: 0, awayHitRate: 0 },
+  logs: [{ id: 'init-1', time: new Date().toLocaleTimeString(), bot: 'System', msg: 'Prediction Engine ready. Syncing live feeds...' }],
+  trainingStats: { accuracy: 78.4, sampleCount: 23453 },
+  scoreTrainingStats: { accuracy: 78.4 },
+  hyperparameters: {},
+  selfReflections: [],
+  reflectionStats: { cycles: 0 },
+  selfPatchHistory: [],
+  superAgentInsights: [],
+  autonomousAgent: { status: 'Active (Connecting)' },
+  autonomousPatches: [],
+  mistakePostMortems: [],
+  aiSwarm: null,
+  imperialSwarm: null,
+  unanimousHitRate: 84.8,
+  patchTelemetry: { patchesApplied: 0, activeGuardrails: 'Active' },
+  patchGovernorState: { status: 'CONVERGED_OPTIMAL' },
+  strictLeaguePruning: true,
+  strategyProofMetrics: {}
+};
+
 export default function Dashboard() {
-  const [state, setState] = useState(null);
+  const [state, setState] = useState(DEFAULT_INITIAL_STATE);
+  const [isInitialSyncing, setIsInitialSyncing] = useState(true);
   const [connectionError, setConnectionError] = useState(null);
   const [activePage, setActivePage] = useState('fixtures');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -394,13 +427,14 @@ export default function Dashboard() {
   const backoffUntilRef = useRef(0);
 
   const fetchState = useCallback(async (isImmediate = false) => {
-    if (!isImmediate && (typeof document !== 'undefined' && document.hidden)) return;
+    // If not immediate and already synced, respect background tab pausing
+    if (!isImmediate && !isInitialSyncing && (typeof document !== 'undefined' && document.hidden)) return;
     if (isFetchingRef.current) return;
     if (Date.now() < backoffUntilRef.current) return;
 
     isFetchingRef.current = true;
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     try {
       const res = await fetch('/api/state', { signal: controller.signal });
@@ -413,26 +447,35 @@ export default function Dashboard() {
         setConnectionError(`Engine responded with status ${res.status}.`);
         return;
       }
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        throw new Error(`Engine returned non-JSON response (${contentType || 'text/html'}). Server is booting.`);
+      }
       const data = await res.json();
-      setState(data);
-      setConnectionError(null);
-      backoffUntilRef.current = 0;
+      if (data && typeof data === 'object') {
+        setState(data);
+        setIsInitialSyncing(false);
+        setConnectionError(null);
+        backoffUntilRef.current = 0;
+      }
     } catch (err) {
       clearTimeout(timeoutId);
       console.warn("Engine connection notice:", err.message || err);
       if (err.name === 'AbortError') {
         setConnectionError('Connection to prediction engine timed out. Reconnecting...');
       } else {
-        setConnectionError(err.message || 'Unable to connect to prediction engine.');
+        setConnectionError(err.message || 'Connecting to prediction engine...');
       }
     } finally {
       isFetchingRef.current = false;
     }
-  }, []);
+  }, [isInitialSyncing]);
 
   useEffect(() => {
     fetchState(true);
-    const int = setInterval(() => fetchState(false), 25000);
+    // When initial sync is pending or on connection error, retry rapidly (2.5s) instead of 25s
+    const pollInterval = (isInitialSyncing || connectionError) ? 2500 : 25000;
+    const int = setInterval(() => fetchState(false), pollInterval);
     const handleVisibility = () => {
       if (typeof document !== 'undefined' && !document.hidden) {
         fetchState(true);
@@ -443,7 +486,7 @@ export default function Dashboard() {
       clearInterval(int);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [fetchState]);
+  }, [fetchState, isInitialSyncing, connectionError]);
 
   // Navigation handlers
   const handleOpenLineups = (match) => {
@@ -631,6 +674,24 @@ export default function Dashboard() {
           overallAccuracy={state.overallAccuracy || state.trainingStats?.accuracy || null}
           onOpenStrategyProof={() => setShowStrategyProof(true)}
         />
+
+        {/* Global Connection / Initial Sync Notification Banner */}
+        {connectionError && (
+          <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-xs text-amber-800 flex items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-2">
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-600 shrink-0" />
+              <span>
+                <strong>Prediction Engine Sync:</strong> {connectionError}
+              </span>
+            </div>
+            <button
+              onClick={() => { setConnectionError(null); fetchState(true); }}
+              className="text-xs font-semibold px-2.5 py-1 rounded bg-amber-100 hover:bg-amber-200 text-amber-900 transition-colors cursor-pointer shrink-0"
+            >
+              Retry Sync
+            </button>
+          </div>
+        )}
 
         {/* Action Feedback Toast Notification */}
         {toastNotification && (

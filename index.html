@@ -6,6 +6,16 @@
     <title>Live Match Scraper & AI Prediction Engine</title>
     <meta name="description" content="Football match predictions, value bets, and bet slips powered by statistical models and AI consensus." />
     <script>
+      // Safe error and unhandled rejection shield for iframe and cloud sandboxes (e.g. Google AI Studio)
+      window.addEventListener('error', function(event) {
+        if (event && (
+          event.message?.includes('WebSocket') ||
+          event.message?.includes('vite:ws') ||
+          String(event.error)?.includes('WebSocket')
+        )) {
+          event.preventDefault();
+        }
+      });
       window.addEventListener('unhandledrejection', function(event) {
         if (event && event.reason && (
           event.reason.message?.includes('WebSocket') || 

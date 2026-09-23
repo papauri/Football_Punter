@@ -504,6 +504,9 @@ class SoccerEngine {
     this.kellyFraction = 0.25; // Quarter Kelly (Syndicate safe default)
     this.lineupCache = new Map();
 
+    // Instantaneous cold start: load pre-cached fixtures immediately
+    this.loadFixturesFromDisk();
+
     // Defer heavy historical ingestion & background routines so server boots instantaneously
     setTimeout(() => {
       this.loadTrainingDataFromDisk();
@@ -2418,6 +2421,41 @@ class SoccerEngine {
     this.log('TrainingEngine', `Realistic data-driven predictability matrix applied. Average empirical confidence offset: ${avgBoost > 0 ? '+' : ''}${avgBoost.toFixed(2)}%`);
   }
 
+  loadFixturesFromDisk() {
+    try {
+      const filePath = path.join(process.cwd(), 'fixtures_cache.json');
+      if (!fs.existsSync(filePath)) {
+        return;
+      }
+      const raw = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      if (Array.isArray(raw?.matches) && raw.matches.length > 0) {
+        this.matches = raw.matches;
+        if (Array.isArray(raw.yesterdayMatches)) this.yesterdayMatches = raw.yesterdayMatches;
+        if (Array.isArray(raw.todayCompletedMatches)) this.todayCompletedMatches = raw.todayCompletedMatches;
+        this.log('FixturesCache', `Instantaneous boot: pre-seeded ${this.matches.length} fixtures from disk cache.`);
+      }
+    } catch (err) {
+      console.warn('[FixturesCache] Notice loading fixtures cache:', err.message);
+    }
+  }
+
+  saveFixturesToDisk() {
+    try {
+      if (!Array.isArray(this.matches) || this.matches.length === 0) return;
+      const filePath = path.join(process.cwd(), 'fixtures_cache.json');
+      const payload = {
+        matches: this.matches,
+        yesterdayMatches: this.yesterdayMatches || [],
+        todayCompletedMatches: this.todayCompletedMatches || [],
+        cachedAt: new Date().toISOString()
+      };
+      fs.writeFileSync(filePath, JSON.stringify(payload, null, 2), 'utf8');
+      this.log('FixturesCache', `Successfully cached ${this.matches.length} fixtures to disk.`);
+    } catch (err) {
+      console.warn('[FixturesCache] Notice saving fixtures cache:', err.message);
+    }
+  }
+
   loadTrainingDataFromDisk() {
     try {
       const filePath = path.join(process.cwd(), 'training_data.json');
@@ -3410,6 +3448,7 @@ class SoccerEngine {
       if (this.matches.length === 0) { console.log("--- TRIGGERING SECONDARY ---"); await this.scrapeSecondaryLiveFeeds(); console.log("--- AFTER SECONDARY matches length:", this.matches.length); }
       this.evaluateYesterdayMatches();
       this.runTrainingCycle();
+      this.saveFixturesToDisk();
 
       // Trigger self-reflection cycle on initial load
       setTimeout(() => this.runSelfPromptingReflectionCycle(), 3000);
@@ -7846,6 +7885,7 @@ Output format: {"home": 45.5, "draw": 25.5, "away": 29.0, "reason": "Home team r
 
   getState() {
     const aiConfig = this.getAiConfigPublic();
+    const swarmState = this.swarmOrchestrator ? this.swarmOrchestrator.getState() : null;
     return {
       hasKey: true,
       hasAiKey: aiConfig.hasAnyKey,
@@ -7856,10 +7896,11 @@ Output format: {"home": 45.5, "draw": 25.5, "away": 29.0, "reason": "Home team r
       kellyFraction: this.kellyFraction || 0.25,
       matches: [...this.matches].sort((a,b) => (b.hasPrediction ? 1 : 0) - (a.hasPrediction ? 1 : 0)).map(m => {
         const sw = this.swarmOrchestrator ? this.swarmOrchestrator.getSwarmDataForMatch(m.id || m.espnEventId || `${m.home}-${m.away}`) : null;
+        const synth = sw?.synthesis || m.aiSwarm || null;
         return {
           ...m,
-          aiSwarm: sw?.synthesis || m.aiSwarm,
-          imperialSwarm: sw?.synthesis || m.imperialSwarm
+          aiSwarm: synth,
+          imperialSwarm: synth
         };
       }),
       todayCompletedMatches: this.todayCompletedMatches || [],
@@ -7897,8 +7938,8 @@ Output format: {"home": 45.5, "draw": 25.5, "away": 29.0, "reason": "Home team r
           dateIso: dateIso
         };
       }),
-      aiSwarm: this.swarmOrchestrator ? this.swarmOrchestrator.getState() : null,
-      imperialSwarm: this.swarmOrchestrator ? this.swarmOrchestrator.getState() : null,
+      aiSwarm: swarmState,
+      imperialSwarm: swarmState,
       hasActiveAiKey: Boolean(this.hasActiveAiKey()),
       superAgentStatus: this.hasActiveAiKey() ? 'ONLINE_ACTIVE' : 'STANDBY_OFFLINE_SAFE',
       superAgentRole: 'Supervisory AI Agent (Qualitative Scout & Research Synthesis)',

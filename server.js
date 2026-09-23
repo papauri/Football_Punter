@@ -88,10 +88,21 @@ async function startServer() {
 
     // Populate predictions for historical matches so the chart has real accuracy data
     const populated = recentMatches.map(m => {
-        const dcProbs = engine.computeDixonColesProbabilities(m.home, m.away, { league: m.league });
         const hG = m.homeScore ?? m.goals?.home;
         const aG = m.awayScore ?? m.goals?.away;
         const actualWinner = m.actualWinner || (hG != null && aG != null ? (hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW') : 'DRAW');
+
+        if (m.predictedWinner && m.prob && m.confidence) {
+          const isHit = m.isHit !== undefined ? m.isHit : (m.predictedWinner === actualWinner);
+          return {
+            ...m,
+            actualWinner,
+            actualScore: (hG != null && aG != null) ? `${hG}-${aG}` : m.actualScore,
+            isHit
+          };
+        }
+
+        const dcProbs = engine.computeDixonColesProbabilities(m.home, m.away, { league: m.league });
         const smartHit = (hG != null && aG != null) ? engine.evaluateHit(dcProbs, hG, aG) : null;
         const isHit = smartHit !== null ? smartHit : (dcProbs.predictedWinner === actualWinner);
         const isPush = smartHit === null && (dcProbs.smartMarket?.pick?.includes('DNB') || false);
@@ -585,15 +596,13 @@ app.get('/api/state', (req, res) => {
     app.get('*', (req, res) => {
       res.sendFile(path.join(distDir, 'index.html'));
     });
-  } else {
     // If not production or if dist/ is missing, run Vite middleware seamlessly
+    const disableHmr = process.env.DISABLE_HMR === 'true' || Boolean(process.env.PORT) || process.env.NODE_ENV === 'production';
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
         allowedHosts: true,
-        hmr: {
-          server: httpServer,
-        },
+        hmr: disableHmr ? false : { server: httpServer },
       },
       appType: 'spa',
     });

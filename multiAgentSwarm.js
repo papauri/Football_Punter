@@ -1067,10 +1067,17 @@ export class AISwarmOrchestrator {
 
   getState() {
     if ((!this.directives?.topValueParlay || !this.directives?.antiFragileParlay) && this.engine?.matches?.length > 0) {
-      try {
-        this.runSimultaneousCycle();
-      } catch (e) {
-        console.error("Auto cycle in getState failed:", e);
+      if (!this._isAutoCyclePending) {
+        this._isAutoCyclePending = true;
+        setTimeout(async () => {
+          try {
+            await this.runSimultaneousCycle();
+          } catch (e) {
+            console.error("Auto cycle in background failed:", e);
+          } finally {
+            this._isAutoCyclePending = false;
+          }
+        }, 10);
       }
     }
 
