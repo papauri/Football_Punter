@@ -590,7 +590,7 @@ app.get('/api/state', (req, res) => {
   const distDir = path.join(__dirname, 'dist');
   const hasDist = fs.existsSync(path.join(distDir, 'index.html'));
 
-  if (hasDist && process.env.NODE_ENV === 'production') {
+  if (hasDist && (process.env.NODE_ENV === 'production' || process.env.SERVE_DIST === 'true')) {
     console.log('[Server] Serving pre-bundled production assets from /dist');
     app.use(express.static(distDir));
     app.get('*', (req, res) => {
@@ -598,11 +598,12 @@ app.get('/api/state', (req, res) => {
     });
   } else {
     console.log('[Server] Initializing Vite dev middleware');
+    const disableHmr = process.env.DISABLE_HMR === 'true' || Boolean(process.env.PORT) || process.env.NODE_ENV === 'production';
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
         allowedHosts: true,
-        hmr: false,
+        hmr: disableHmr ? false : { server: httpServer },
       },
       appType: 'spa',
     });
