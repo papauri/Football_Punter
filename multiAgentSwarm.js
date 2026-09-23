@@ -709,6 +709,9 @@ export class AISwarmOrchestrator {
           league: match.league,
           matchTime: match.time,
           date: match.date,
+          dateIso: match.dateIso,
+          utcDate: match.utcDate,
+          timestamp: match.timestamp,
           synthesis,
           agents
         };
@@ -794,7 +797,12 @@ export class AISwarmOrchestrator {
           swarmScore: l.synthesis.swarmScore,
           modelProb: modelProb ? Math.round(modelProb) : l.synthesis.swarmScore,
           agreement: `${l.synthesis.agreementPercentage}%`,
-          badge: l.synthesis.tierBadge
+          badge: l.synthesis.tierBadge,
+          date: origMatch?.date || l.date,
+          time: origMatch?.time || l.matchTime,
+          dateIso: origMatch?.dateIso || l.dateIso,
+          utcDate: origMatch?.utcDate || l.utcDate,
+          timestamp: origMatch?.timestamp || l.timestamp
         };
       };
 
@@ -831,7 +839,12 @@ export class AISwarmOrchestrator {
             swarmScore: s.synthesis.swarmScore || 70,
             isPrimeStable,
             stabilityScore: matchObj?.disruptionModel?.stabilityScore || 70,
-            sortScore: (s.synthesis.swarmScore || 60) + (isPrimeStable ? 15 : 0)
+            sortScore: (s.synthesis.swarmScore || 60) + (isPrimeStable ? 15 : 0),
+            date: matchObj?.date || s.date,
+            time: matchObj?.time || s.matchTime,
+            dateIso: matchObj?.dateIso || s.dateIso,
+            utcDate: matchObj?.utcDate || s.utcDate,
+            timestamp: matchObj?.timestamp || s.timestamp
           };
         })
         .sort((a, b) => b.sortScore - a.sortScore);
@@ -848,7 +861,12 @@ export class AISwarmOrchestrator {
           market: l.market,
           rawPick: l.rawPick,
           swarmScore: l.swarmScore,
-          badge: '👑 100% AI Consensus (Outright)'
+          badge: '👑 100% AI Consensus (Outright)',
+          date: l.date,
+          time: l.time,
+          dateIso: l.dateIso,
+          utcDate: l.utcDate,
+          timestamp: l.timestamp
         })),
         allLegs: antiFragileLegs.map(l => ({
           fixtureId: l.fixtureId,
@@ -860,7 +878,12 @@ export class AISwarmOrchestrator {
           market: l.market,
           rawPick: l.rawPick,
           swarmScore: l.swarmScore,
-          badge: '👑 100% AI Consensus (Outright)'
+          badge: '👑 100% AI Consensus (Outright)',
+          date: l.date,
+          time: l.time,
+          dateIso: l.dateIso,
+          utcDate: l.utcDate,
+          timestamp: l.timestamp
         })),
         totalQualifiedCount: antiFragileCandidates.length,
         combinedConfidence: Math.round(antiFragileLegs.slice(0, 3).reduce((acc, l) => acc * (Math.min(92, (l.swarmScore + 12)) / 100), 1) * 100),

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Bot, 
   Sparkles, 
@@ -17,22 +17,41 @@ import {
   Search, 
   MessageSquare,
   ArrowRight,
-  Plus
+  Plus,
+  Calendar,
+  Clock,
+  Filter,
+  ArrowUpDown,
+  Check,
+  RotateCcw,
+  X
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
-import { formatRelativeDayTime } from '../utils/dateUtils';
+import { formatRelativeDayTime, formatSafeDateTime, getLocalizedDateKey } from '../utils/dateUtils';
+import { useTimezone } from './Dashboard';
 
 export default function AISwarmCenter({ 
   state, 
   onRefreshState, 
   onAddToAcca,
   onOpenDeepResearch,
-  tzSettings = {}
+  tzSettings: tzSettingsProp
 }) {
+  const timezoneCtx = useTimezone ? useTimezone() : null;
+  const tzSettings = tzSettingsProp || timezoneCtx?.tzSettings || {};
   const [isTriggering, setIsTriggering] = useState(false);
   const [filterType, setFilterType] = useState('ALL'); // 'ALL' | 'UNANIMOUS' | 'TRAPS'
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedDebateId, setExpandedDebateId] = useState(null);
+
+  // Top Value Picks Filter & Sorting State
+  const [tvSearch, setTvSearch] = useState('');
+  const [tvLeagueFilter, setTvLeagueFilter] = useState('ALL');
+  const [tvDateFilter, setTvDateFilter] = useState('ALL');
+  const [tvPickFilter, setTvPickFilter] = useState('ALL');
+  const [tvSortField, setTvSortField] = useState('score'); // 'score' | 'kickoff' | 'league' | 'agreement'
+  const [tvSortOrder, setTvSortOrder] = useState('desc'); // 'asc' | 'desc'
+  const [addedLegIds, setAddedLegIds] = useState(new Set());
 
   const swarm = state?.aiSwarm || {
     isRunning: true,
@@ -90,6 +109,230 @@ export default function AISwarmCenter({
   });
 
   const parlay = swarm.directives?.topValueParlay;
+
+  // 1. Resolve raw candidate legs for Top Value Picks
+  const rawTopValuePicks = useMemo(() => {
+    if (parlay?.allLegs && parlay.allLegs.length > 0) return parlay.allLegs;
+    if (parlay?.legs && parlay.legs.length > 0) return parlay.legs;
+    if (swarm.directives?.unanimousDirectives && swarm.directives.unanimousDirectives.length > 0) {
+      return swarm.directives.unanimousDirectives.map(d => ({
+        fixtureId: d.fixtureId,
+        fixture: d.fixture,
+        home: d.home,
+        away: d.away,
+        league: d.league,
+        pick: d.synthesis?.masterVerdict || 'HOME',
+        swarmScore: d.synthesis?.swarmScore || 75,
+        agreement: `${d.synthesis?.agreementPercentage || 85}%`,
+        badge: d.synthesis?.tierBadge || 'UNANIMOUS',
+        date: d.date,
+        time: d.matchTime,
+        dateIso: d.dateIso,
+        utcDate: d.utcDate,
+        timestamp: d.timestamp
+      }));
+    }
+    return unanimousMatches.map(m => {
+      const sw = m.aiSwarm || m.imperialSwarm;
+      return {
+        fixtureId: m.id,
+        fixture: `${m.home} vs ${m.away}`,
+        home: m.home,
+        away: m.away,
+        league: m.league,
+        pick: sw?.masterVerdict || m.predictedWinner || 'HOME',
+        swarmScore: sw?.swarmScore ?? sw?.aiSwarmScore ?? 75,
+        agreement: `${sw?.agreementPercentage || 100}%`,
+        badge: sw?.tierBadge || 'UNANIMOUS',
+        date: m.date,
+        time: m.time,
+        dateIso: m.dateIso,
+        utcDate: m.utcDate,
+        timestamp: m.timestamp
+      };
+    });
+  }, [parlay, swarm.directives, unanimousMatches]);
+
+  // 2. Enrich legs with original match metadata, day & time formatting
+  const enrichedTopValueLegs = useMemo(() => {
+    return rawTopValuePicks.map((leg, index) => {
+      const origMatch = matches.find(m => 
+        (leg.fixtureId && String(m.id) === String(leg.fixtureId)) ||
+        `${m.home} vs ${m.away}` === leg.fixture ||
+        (m.home && m.away && m.home === leg.home && m.away === leg.away)
+      );
+
+      const matchCandidate = origMatch || leg;
+      const formattedDayTime = formatRelativeDayTime(matchCandidate, tzSettings);
+      const parsedDate = formatSafeDateTime(matchCandidate, null, tzSettings);
+      const dateKey = getLocalizedDateKey(matchCandidate, tzSettings);
+      const agreementNum = parseInt(String(leg.agreement || '').replace(/[^0-9]/g, ''), 10) || 85;
+      const swarmScoreNum = typeof leg.swarmScore === 'number' ? leg.swarmScore : (parseInt(leg.swarmScore, 10) || 75);
+      const legKey = leg.fixtureId ? String(leg.fixtureId) : `${leg.home}-${leg.away}-${index}`;
+
+      return {
+        ...leg,
+        id: legKey,
+        index: index + 1,
+        origMatch,
+        formattedDayTime,
+        parsedDate,
+        dateKey,
+        day: parsedDate.day,
+        date: parsedDate.date,
+        time: parsedDate.time,
+        fullDateTime: parsedDate.full,
+        timestamp: parsedDate.timestamp || (origMatch?.timestamp || 0),
+        agreementNum,
+        swarmScoreNum
+      };
+    });
+  }, [rawTopValuePicks, matches, tzSettings]);
+
+  // 3. Dropdown Options for Top Value table
+  const tvLeagueOptions = useMemo(() => {
+    const uniqueLeagues = Array.from(new Set(enrichedTopValueLegs.map(l => l.league).filter(Boolean))).sort();
+    return [
+      { value: 'ALL', label: `All Leagues (${enrichedTopValueLegs.length})` },
+      ...uniqueLeagues.map(l => ({
+        value: l,
+        label: `${l} (${enrichedTopValueLegs.filter(x => x.league === l).length})`
+      }))
+    ];
+  }, [enrichedTopValueLegs]);
+
+  const tvDateOptions = useMemo(() => {
+    const dateMap = new Map();
+    enrichedTopValueLegs.forEach(l => {
+      const key = l.dateKey || l.date || 'Upcoming';
+      if (!dateMap.has(key)) {
+        let label = key;
+        if (l.formattedDayTime?.startsWith('Today')) {
+          label = 'Today';
+        } else if (l.formattedDayTime?.startsWith('Tomorrow')) {
+          label = 'Tomorrow';
+        } else if (l.day && l.date) {
+          label = `${l.day}, ${l.date}`;
+        }
+        dateMap.set(key, { key, label, count: 0 });
+      }
+      dateMap.get(key).count++;
+    });
+
+    return [
+      { value: 'ALL', label: `All Dates (${enrichedTopValueLegs.length})` },
+      ...Array.from(dateMap.values()).map(d => ({
+        value: d.key,
+        label: `${d.label} (${d.count})`
+      }))
+    ];
+  }, [enrichedTopValueLegs]);
+
+  const tvPickOptions = [
+    { value: 'ALL', label: 'All Picks' },
+    { value: 'HOME', label: 'Home Wins' },
+    { value: 'AWAY', label: 'Away Wins' },
+    { value: 'DRAW', label: 'Draws' }
+  ];
+
+  // 4. Filter and Sort logic
+  const filteredTopValueLegs = useMemo(() => {
+    return enrichedTopValueLegs.filter(leg => {
+      if (tvLeagueFilter !== 'ALL' && leg.league !== tvLeagueFilter) return false;
+
+      if (tvDateFilter !== 'ALL') {
+        const matchDateKey = leg.dateKey || leg.date || 'Upcoming';
+        if (matchDateKey !== tvDateFilter && leg.date !== tvDateFilter) {
+          if (tvDateFilter === 'Today' && !leg.formattedDayTime?.startsWith('Today')) return false;
+          if (tvDateFilter === 'Tomorrow' && !leg.formattedDayTime?.startsWith('Tomorrow')) return false;
+          if (tvDateFilter !== 'Today' && tvDateFilter !== 'Tomorrow') return false;
+        }
+      }
+
+      if (tvPickFilter !== 'ALL') {
+        const p = String(leg.pick || '').toUpperCase();
+        if (!p.includes(tvPickFilter)) return false;
+      }
+
+      if (tvSearch.trim()) {
+        const q = tvSearch.toLowerCase().trim();
+        const matchFixture = String(leg.fixture || '').toLowerCase();
+        const matchHome = String(leg.home || '').toLowerCase();
+        const matchAway = String(leg.away || '').toLowerCase();
+        const matchLeague = String(leg.league || '').toLowerCase();
+        const matchPick = String(leg.pick || '').toLowerCase();
+        if (!matchFixture.includes(q) && !matchHome.includes(q) && !matchAway.includes(q) && !matchLeague.includes(q) && !matchPick.includes(q)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [enrichedTopValueLegs, tvLeagueFilter, tvDateFilter, tvPickFilter, tvSearch]);
+
+  const handleToggleTvSort = (field) => {
+    if (tvSortField === field) {
+      setTvSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setTvSortField(field);
+      setTvSortOrder(field === 'kickoff' || field === 'league' ? 'asc' : 'desc');
+    }
+  };
+
+  const sortedTopValueLegs = useMemo(() => {
+    return [...filteredTopValueLegs].sort((a, b) => {
+      let cmp = 0;
+      if (tvSortField === 'kickoff') {
+        cmp = (a.timestamp || 0) - (b.timestamp || 0);
+      } else if (tvSortField === 'league') {
+        cmp = String(a.league || '').localeCompare(String(b.league || ''));
+      } else if (tvSortField === 'agreement') {
+        cmp = (a.agreementNum || 0) - (b.agreementNum || 0);
+      } else {
+        cmp = (a.swarmScoreNum || 0) - (b.swarmScoreNum || 0);
+      }
+      return tvSortOrder === 'desc' ? -cmp : cmp;
+    });
+  }, [filteredTopValueLegs, tvSortField, tvSortOrder]);
+
+  const isTvFiltered = tvSearch.trim() !== '' || tvLeagueFilter !== 'ALL' || tvDateFilter !== 'ALL' || tvPickFilter !== 'ALL';
+  const resetTvFilters = () => {
+    setTvSearch('');
+    setTvLeagueFilter('ALL');
+    setTvDateFilter('ALL');
+    setTvPickFilter('ALL');
+  };
+
+  const handleAddLegToSlip = (leg) => {
+    const origMatch = leg.origMatch || matches.find(m => 
+      (leg.fixtureId && String(m.id) === String(leg.fixtureId)) || 
+      `${m.home} vs ${m.away}` === leg.fixture ||
+      (m.home && m.away && m.home === leg.home && m.away === leg.away)
+    );
+    if (origMatch && onAddToAcca) {
+      const estOdds = (100 / Math.max(10, leg.swarmScoreNum - 5)).toFixed(2);
+      onAddToAcca(origMatch, leg.pick, leg.pick, estOdds, leg.swarmScoreNum);
+      setAddedLegIds(prev => new Set([...prev, leg.id]));
+    }
+  };
+
+  const handleAddAllFilteredToSlip = () => {
+    if (!onAddToAcca) return;
+    const newAdded = new Set(addedLegIds);
+    sortedTopValueLegs.forEach(leg => {
+      const origMatch = leg.origMatch || matches.find(m => 
+        (leg.fixtureId && String(m.id) === String(leg.fixtureId)) || 
+        `${m.home} vs ${m.away}` === leg.fixture ||
+        (m.home && m.away && m.home === leg.home && m.away === leg.away)
+      );
+      if (origMatch) {
+        const estOdds = (100 / Math.max(10, leg.swarmScoreNum - 5)).toFixed(2);
+        onAddToAcca(origMatch, leg.pick, leg.pick, estOdds, leg.swarmScoreNum);
+        newAdded.add(leg.id);
+      }
+    });
+    setAddedLegIds(newAdded);
+  };
 
   const unanimousHitRate = telemetry?.unanimousHitRate || (typeof state?.unanimousHitRate === 'number' ? `${state.unanimousHitRate.toFixed(1)}%` : '76.2%');
   const liveUnanimousPercentage = matches.length > 0 ? Math.round((unanimousMatches.length / matches.length) * 100) : 0;
@@ -263,68 +506,402 @@ export default function AISwarmCenter({
         </div>
       </div>
 
-      {/* Top Value Swarm Parlay */}
-      {parlay && parlay.legs && parlay.legs.length >= 2 && (
-        <div className="bg-white border border-amber-200 rounded-xl p-3.5 shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2.5">
-            <div className="flex items-center gap-2.5">
-              <Award className="w-5 h-5 text-amber-600" />
+      {/* Top Value Picks Section: Filterable Table with Day & Time */}
+      {enrichedTopValueLegs.length > 0 ? (
+        <div className="bg-white border border-amber-300/80 rounded-xl p-3.5 sm:p-4 shadow-xs space-y-3">
+          
+          {/* Header Row */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-2 border-b border-amber-100">
+            <div className="flex items-start sm:items-center gap-2.5">
+              <div className="p-2 rounded-lg bg-amber-500 text-white shrink-0 shadow-xs">
+                <Award className="w-5 h-5" />
+              </div>
               <div>
-                <h3 className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 flex-wrap">
                   <span>Top Value Picks</span>
-                  <span className="text-[10px] bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded font-bold">
-                    👑 Unanimous Win Rate: {unanimousHitRate}
+                  <span className="text-[10px] bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full font-bold">
+                    👑 Unanimous Hit Rate: {unanimousHitRate}
                   </span>
-                  <span className="text-[10px] bg-amber-50 text-amber-800 border border-amber-300 px-2 py-0.5 rounded font-bold">
-                    {parlay.legs.length} Unanimous Legs
+                  <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded-full font-bold">
+                    {sortedTopValueLegs.length} {sortedTopValueLegs.length === 1 ? 'Pick' : 'Picks'}
+                    {isTvFiltered && ` (Filtered from ${enrichedTopValueLegs.length})`}
                   </span>
                 </h3>
-                <p className="text-[11px] text-slate-500">
-                  Constructed autonomously combining fixtures with unanimous agent alignment and zero trap vulnerability.
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Multi-agent consensus combining fixtures with unanimous council alignment, positive expectation, and zero contrarian trap vulnerability.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="text-right">
+            <div className="flex items-center gap-2.5 self-end lg:self-auto shrink-0">
+              <div className="text-right pr-2 border-r border-slate-200">
                 <span className="text-[10px] uppercase font-bold text-slate-400 block">Swarm Score</span>
-                <span className="text-sm font-black text-amber-700 font-mono">{parlay.combinedConfidence}%</span>
+                <span className="text-sm font-black text-amber-700 font-mono">{parlay?.combinedConfidence || 88}%</span>
               </div>
+
               {onAddToAcca && (
                 <button
-                  onClick={() => {
-                    parlay.legs.forEach(leg => {
-                      const origMatch = matches.find(m => m.id === leg.fixtureId || `${m.home} vs ${m.away}` === leg.fixture);
-                      if (origMatch) {
-                        const estOdds = (100 / Math.max(10, leg.swarmScore - 5)).toFixed(2);
-                        onAddToAcca(origMatch, leg.pick, leg.pick, estOdds, leg.swarmScore);
-                      }
-                    });
-                  }}
-                  className="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer flex items-center gap-1"
+                  onClick={handleAddAllFilteredToSlip}
+                  disabled={sortedTopValueLegs.length === 0}
+                  className="bg-amber-500 hover:bg-amber-600 disabled:bg-slate-200 disabled:text-slate-400 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+                  title="Add all currently filtered picks to your bet slip"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Add Legs to Acca</span>
+                  <span>Add ({sortedTopValueLegs.length}) to Slip</span>
                 </button>
               )}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-            {parlay.legs.map((leg, idx) => (
-              <div key={idx} className="p-2.5 bg-slate-50 rounded-lg border border-slate-200 flex flex-col justify-between text-xs">
-                <div className="flex items-center justify-between text-[10px] text-slate-400 mb-0.5">
-                  <span className="truncate max-w-[120px]">{leg.league}</span>
-                  <span className="text-amber-700 font-bold font-mono">{leg.agreement} Agreement</span>
-                </div>
-                <div className="font-bold text-slate-900 truncate my-0.5">{leg.fixture}</div>
-                <div className="flex items-center justify-between mt-1 pt-1 border-t border-slate-200 text-[11px]">
-                  <span className="font-semibold text-emerald-700">Pick: {leg.pick}</span>
-                  <span className="font-mono font-bold text-slate-600">{leg.swarmScore}/100</span>
-                </div>
+          {/* Filter Toolbar */}
+          <div className="flex flex-wrap items-center justify-between gap-2.5 pt-1 pb-1">
+            <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[240px]">
+              
+              {/* Search Filter */}
+              <div className="relative flex-1 min-w-[170px] max-w-xs">
+                <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  value={tvSearch}
+                  onChange={e => setTvSearch(e.target.value)}
+                  placeholder="Filter team, league, pick..."
+                  className="w-full pl-8 pr-7 py-1 text-xs bg-slate-50 text-slate-800 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 placeholder:text-slate-400"
+                />
+                {tvSearch && (
+                  <button
+                    onClick={() => setTvSearch('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
               </div>
-            ))}
+
+              {/* League Filter */}
+              <UniformDropdown
+                label="League"
+                value={tvLeagueFilter}
+                onChange={setTvLeagueFilter}
+                options={tvLeagueOptions}
+                className="text-xs"
+              />
+
+              {/* Date Filter */}
+              <UniformDropdown
+                label="Date"
+                value={tvDateFilter}
+                onChange={setTvDateFilter}
+                options={tvDateOptions}
+                icon={Calendar}
+                className="text-xs"
+              />
+
+              {/* Pick Type Filter */}
+              <UniformDropdown
+                label="Pick"
+                value={tvPickFilter}
+                onChange={setTvPickFilter}
+                options={tvPickOptions}
+                className="text-xs"
+              />
+            </div>
+
+            {/* Sort & Reset Actions */}
+            <div className="flex items-center gap-2">
+              <UniformDropdown
+                label="Sort By"
+                value={`${tvSortField}_${tvSortOrder}`}
+                onChange={(val) => {
+                  const [field, order] = val.split('_');
+                  setTvSortField(field);
+                  setTvSortOrder(order);
+                }}
+                options={[
+                  { value: 'score_desc', label: 'Swarm Score (Highest)' },
+                  { value: 'score_asc', label: 'Swarm Score (Lowest)' },
+                  { value: 'kickoff_asc', label: 'Kickoff (Earliest)' },
+                  { value: 'kickoff_desc', label: 'Kickoff (Latest)' },
+                  { value: 'agreement_desc', label: 'Agreement % (Highest)' },
+                  { value: 'league_asc', label: 'League (A-Z)' }
+                ]}
+                className="text-xs"
+              />
+
+              {isTvFiltered && (
+                <button
+                  onClick={resetTvFilters}
+                  className="px-2 py-1 text-[11px] font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg inline-flex items-center gap-1 transition-colors cursor-pointer"
+                  title="Reset all filters"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Reset</span>
+                </button>
+              )}
+            </div>
           </div>
+
+          {/* Top Value Picks Interactive Table */}
+          <div className="bg-white border border-slate-200 rounded-lg overflow-x-auto shadow-2xs">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200 select-none h-9">
+                  <th className="py-2 px-2.5 w-10 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    #
+                  </th>
+                  
+                  {/* Kickoff Day & Time (Sortable) */}
+                  <th
+                    onClick={() => handleToggleTvSort('kickoff')}
+                    className={`py-2 px-3 min-w-[155px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                      tvSortField === 'kickoff' ? 'text-amber-800 bg-amber-50/60' : 'text-slate-500'
+                    }`}
+                    title="Click to sort by Kickoff Day & Time"
+                  >
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3 text-indigo-500" />
+                      <span>Kickoff (Day & Time)</span>
+                      {tvSortField === 'kickoff' ? (
+                        <span className="text-amber-600 font-bold">{tvSortOrder === 'asc' ? '↑' : '↓'}</span>
+                      ) : (
+                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                      )}
+                    </div>
+                  </th>
+
+                  {/* League (Sortable) */}
+                  <th
+                    onClick={() => handleToggleTvSort('league')}
+                    className={`py-2 px-3 min-w-[130px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                      tvSortField === 'league' ? 'text-amber-800 bg-amber-50/60' : 'text-slate-500'
+                    }`}
+                    title="Click to sort by League"
+                  >
+                    <div className="flex items-center gap-1">
+                      <span>League</span>
+                      {tvSortField === 'league' ? (
+                        <span className="text-amber-600 font-bold">{tvSortOrder === 'asc' ? '↑' : '↓'}</span>
+                      ) : (
+                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                      )}
+                    </div>
+                  </th>
+
+                  {/* Fixture */}
+                  <th className="py-2 px-3 min-w-[200px] text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    Fixture
+                  </th>
+
+                  {/* Consensus Pick */}
+                  <th className="py-2 px-2.5 w-28 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    Consensus Pick
+                  </th>
+
+                  {/* Agreement (Sortable) */}
+                  <th
+                    onClick={() => handleToggleTvSort('agreement')}
+                    className={`py-2 px-2.5 w-28 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                      tvSortField === 'agreement' ? 'text-amber-800 bg-amber-50/60' : 'text-slate-500'
+                    }`}
+                    title="Click to sort by Council Agreement"
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      <span>Agreement</span>
+                      {tvSortField === 'agreement' ? (
+                        <span className="text-amber-600 font-bold">{tvSortOrder === 'asc' ? '↑' : '↓'}</span>
+                      ) : (
+                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                      )}
+                    </div>
+                  </th>
+
+                  {/* Swarm Score (Sortable) */}
+                  <th
+                    onClick={() => handleToggleTvSort('score')}
+                    className={`py-2 px-2.5 w-24 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                      tvSortField === 'score' ? 'text-amber-800 bg-amber-50/60' : 'text-slate-500'
+                    }`}
+                    title="Click to sort by Swarm Score"
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      <span>Score</span>
+                      {tvSortField === 'score' ? (
+                        <span className="text-amber-600 font-bold">{tvSortOrder === 'asc' ? '↑' : '↓'}</span>
+                      ) : (
+                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                      )}
+                    </div>
+                  </th>
+
+                  {/* Action */}
+                  <th className="py-2 px-2.5 w-24 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    Slip
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody className="divide-y divide-slate-100">
+                {sortedTopValueLegs.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="py-8 text-center text-slate-400">
+                      <Filter className="w-6 h-6 mx-auto mb-1.5 text-slate-300" />
+                      <div className="font-semibold text-slate-600">No Top Value Picks match the applied filters.</div>
+                      <button
+                        onClick={resetTvFilters}
+                        className="mt-2 text-xs text-amber-700 hover:text-amber-800 underline font-medium cursor-pointer"
+                      >
+                        Reset filters to view all {enrichedTopValueLegs.length} picks
+                      </button>
+                    </td>
+                  </tr>
+                ) : (
+                  sortedTopValueLegs.map((leg, idx) => {
+                    const isAdded = addedLegIds.has(leg.id);
+                    const pickUpper = String(leg.pick || '').toUpperCase();
+                    const isHome = pickUpper === 'HOME';
+                    const isAway = pickUpper === 'AWAY';
+                    const isDraw = pickUpper === 'DRAW';
+
+                    return (
+                      <tr 
+                        key={leg.id || idx}
+                        className={`hover:bg-amber-50/30 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} h-11`}
+                      >
+                        {/* Index */}
+                        <td className="py-2 px-2.5 text-center text-[11px] font-mono text-slate-400 font-semibold">
+                          {idx + 1}
+                        </td>
+
+                        {/* Kickoff Day & Time */}
+                        <td className="py-2 px-3 whitespace-nowrap">
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs">
+                              <Calendar className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                              <span>{leg.formattedDayTime}</span>
+                            </div>
+                            {leg.fullDateTime && (leg.formattedDayTime?.startsWith('Today') || leg.formattedDayTime?.startsWith('Tomorrow')) && (
+                              <span className="text-[10px] text-slate-400 pl-5 font-medium">
+                                {leg.day}, {leg.date}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* League */}
+                        <td className="py-2 px-3">
+                          <span 
+                            className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[11px] truncate max-w-[130px] border border-slate-200"
+                            title={leg.league}
+                          >
+                            {leg.league}
+                          </span>
+                        </td>
+
+                        {/* Fixture */}
+                        <td className="py-2 px-3 min-w-[200px]">
+                          <div className="font-semibold text-slate-900 flex items-center gap-1.5 flex-wrap">
+                            <span className={isHome ? 'font-black text-slate-950' : 'text-slate-800'}>
+                              {leg.home}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-normal">vs</span>
+                            <span className={isAway ? 'font-black text-slate-950' : 'text-slate-800'}>
+                              {leg.away}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Consensus Pick */}
+                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${
+                            isHome
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                              : isAway
+                              ? 'bg-blue-50 text-blue-800 border-blue-300'
+                              : isDraw
+                              ? 'bg-amber-50 text-amber-800 border-amber-300'
+                              : 'bg-indigo-50 text-indigo-800 border-indigo-300'
+                          }`}>
+                            {isHome ? 'HOME Win' : isAway ? 'AWAY Win' : isDraw ? 'DRAW' : leg.pick}
+                          </span>
+                        </td>
+
+                        {/* Agreement */}
+                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded font-bold font-mono text-[11px] bg-amber-50 text-amber-800 border border-amber-200">
+                            <span>👑</span>
+                            <span>{leg.agreement}</span>
+                          </span>
+                        </td>
+
+                        {/* Swarm Score */}
+                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
+                          <span className="inline-block px-2.5 py-0.5 rounded font-black font-mono text-xs bg-slate-100 text-slate-800 border border-slate-300">
+                            {leg.swarmScoreNum}/100
+                          </span>
+                        </td>
+
+                        {/* Action: Add to Slip */}
+                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
+                          <div className="flex items-center justify-center gap-1">
+                            {onAddToAcca && (
+                              <button
+                                onClick={() => handleAddLegToSlip(leg)}
+                                className={`px-2.5 py-1 rounded text-xs font-semibold shadow-2xs transition-all flex items-center gap-1 cursor-pointer ${
+                                  isAdded
+                                    ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                                    : 'bg-amber-500 hover:bg-amber-600 text-white'
+                                }`}
+                                title={isAdded ? 'Added to Slip' : 'Add to Slip / Acca'}
+                              >
+                                {isAdded ? (
+                                  <>
+                                    <Check className="w-3 h-3" />
+                                    <span>Added</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Plus className="w-3 h-3" />
+                                    <span>Slip</span>
+                                  </>
+                                )}
+                              </button>
+                            )}
+
+                            {onOpenDeepResearch && leg.origMatch && (
+                              <button
+                                onClick={() => onOpenDeepResearch(leg.origMatch)}
+                                className="p-1 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-200 transition-colors cursor-pointer"
+                                title="Open Deep AI Research"
+                              >
+                                <Sparkles className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      ) : (
+        <div className="bg-amber-50/60 border border-amber-200 rounded-xl p-4 text-center">
+          <Award className="w-8 h-8 text-amber-500 mx-auto mb-2" />
+          <h4 className="font-bold text-slate-900 text-xs">No Top Value Picks Available</h4>
+          <p className="text-[11px] text-slate-500 max-w-md mx-auto mt-1 mb-3">
+            The multi-agent swarm has not identified any unanimous non-trap selections in the current active fixture set.
+          </p>
+          <button
+            onClick={handleRunSwarmCycle}
+            disabled={isTriggering}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-xs cursor-pointer inline-flex items-center gap-1.5"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isTriggering ? 'animate-spin' : ''}`} />
+            <span>Run Swarm Cycle Now</span>
+          </button>
         </div>
       )}
 
@@ -536,10 +1113,13 @@ export default function AISwarmCenter({
                           <div className="font-semibold text-slate-900 truncate">
                             {m.home} vs {m.away}
                           </div>
-                          <div className="text-[10px] text-slate-400 flex items-center gap-1.5">
+                          <div className="text-[10px] text-slate-400 flex items-center gap-1.5 flex-wrap">
                             <span>{m.league}</span>
                             <span>•</span>
-                            <span>{m.time}</span>
+                            <span className="font-semibold text-slate-600 flex items-center gap-1">
+                              <Calendar className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
+                              {formatRelativeDayTime(m, tzSettings)}
+                            </span>
                           </div>
                         </td>
 
