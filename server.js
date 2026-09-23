@@ -596,13 +596,13 @@ app.get('/api/state', (req, res) => {
     app.get('*', (req, res) => {
       res.sendFile(path.join(distDir, 'index.html'));
     });
-    // If not production or if dist/ is missing, run Vite middleware seamlessly
-    const disableHmr = process.env.DISABLE_HMR === 'true' || Boolean(process.env.PORT) || process.env.NODE_ENV === 'production';
+  } else {
+    console.log('[Server] Initializing Vite dev middleware');
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
         allowedHosts: true,
-        hmr: disableHmr ? false : { server: httpServer },
+        hmr: false,
       },
       appType: 'spa',
     });
