@@ -233,6 +233,30 @@ app.get('/api/state', (req, res) => {
     }
   });
 
+  app.post('/api/in-play-prediction', async (req, res) => {
+    try {
+      const { matchId, liveMinute, liveHomeScore, liveAwayScore, homeRedCards, awayRedCards } = req.body || {};
+      let match = null;
+      if (matchId) {
+        match = (engine.matches || []).find(m => String(m.id) === String(matchId)) ||
+                (engine.todayCompletedMatches || []).find(m => String(m.id) === String(matchId));
+      }
+      if (!match) {
+        match = req.body?.match || { home: req.body?.home || 'Home', away: req.body?.away || 'Away' };
+      }
+      const inPlay = engine.calculateInPlayLivePrediction(
+        match,
+        liveMinute ?? match.liveMinute ?? 45,
+        liveHomeScore ?? match.liveHomeScore ?? (match.goals?.home ?? 0),
+        liveAwayScore ?? match.liveAwayScore ?? (match.goals?.away ?? 0),
+        { homeRedCards: homeRedCards || 0, awayRedCards: awayRedCards || 0 }
+      );
+      res.json({ success: true, inPlayPrediction: inPlay });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   app.post('/api/deep-ai-research', async (req, res) => {
     try {
       const { matchId, ...customOptions } = req.body || {};

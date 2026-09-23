@@ -34,7 +34,9 @@ import {
   Lock,
   Clock,
   Calendar,
-  History
+  History,
+  Tv,
+  Play
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
 import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey, getLocalizedTodayKey, formatFriendlyDateOption } from '../utils/dateUtils';
@@ -71,6 +73,7 @@ export default function FixturesTablePage({
   unanimousHitRate = 84.8,
   onOpenDeepResearch,
   onOpenLineup,
+  onOpenWatchLive,
   onAddToSlip,
   accaMatchIds = new Set(),
   onTriggerScrape,
@@ -186,7 +189,29 @@ export default function FixturesTablePage({
   const [councilSortField, setCouncilSortField] = useState('prob');
   const [councilSortDirection, setCouncilSortDirection] = useState('desc');
 
-  // Daily AI Swarm Accumulator (Highest Win Rate & Longest Acca Slate)
+  const todayKey = useMemo(() => getLocalizedTodayKey(tzSettings), [tzSettings]);
+
+  // Strict check for completed match — guarantee played matches NEVER appear in day winner slate
+  const isMatchCompleted = (m) => {
+    if (!m) return true;
+    if (m.isCompleted) return true;
+    const st = String(m.status || '').toUpperCase();
+    if (st === 'FT' || st === 'FINISHED' || st === 'FINAL' || st === 'STATUS_FULL_TIME' || st.includes('FULL TIME')) return true;
+    if (m.actualScore && !m.isLive && st !== 'LIVE' && !st.includes("'") && st !== 'HT') return true;
+    return false;
+  };
+
+  // Robust check for today upcoming or live in-play match
+  const isTodayUpcomingOrLive = (m) => {
+    if (!m) return false;
+    if (isMatchCompleted(m)) return false; // Strictly NEVER completed matches
+    if (m.isLive || (m.status && (m.status.includes("'") || m.status.includes('LIVE') || m.status === 'HT'))) return true;
+    const timeVal = m.timestamp || m.utcDate || m.dateIso || m.date;
+    const dKey = timeVal ? getLocalizedDateKey(timeVal, tzSettings) : null;
+    return dKey === todayKey;
+  };
+
+  // Daily AI Swarm Accumulator (Highest Win Rate & Longest Acca Slate — Strictly Today's Games)
   const dailySwarmAcca = useMemo(() => {
     if (!matches || matches.length === 0) return null;
 
@@ -206,6 +231,8 @@ export default function FixturesTablePage({
         (dLeg.home && dLeg.away && item.home && item.away && item.home.toLowerCase().includes(dLeg.home.toLowerCase()) && item.away.toLowerCase().includes(dLeg.away.toLowerCase()))
       );
       if (!m) return;
+      if (isMatchCompleted(m)) return; // Strictly exclude played matches
+      if (!isTodayUpcomingOrLive(m)) return; // Strictly today's games!
       if (isLeagueBlacklisted(m.league)) return;
       const sw = m.aiSwarm || m.imperialSwarm;
       const isTrap = sw?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap || m.disruptionModel?.isPassFlagged;
@@ -241,7 +268,13 @@ export default function FixturesTablePage({
           odds,
           ev,
           isUnanimous: true,
-          swarmScore: (sw?.swarmScore || 85) + 20
+          swarmScore: (sw?.swarmScore || 85) + 20,
+          isLive: Boolean(m.isLive || m.inPlayPrediction || (m.status && (m.status.includes("'") || m.status.includes('LIVE') || m.status === 'HT'))),
+          liveMinute: m.liveMinute || m.inPlayPrediction?.minuteDisplay || (m.status?.includes("'") ? m.status : null),
+          liveScore: m.liveScore || m.inPlayPrediction?.currentScore || (m.homeScore != null && m.awayScore != null ? `${m.homeScore}-${m.awayScore}` : null),
+          inPlayPrediction: m.inPlayPrediction,
+          broadcast: m.broadcast,
+          channels: m.channels
         });
       }
     });
@@ -250,6 +283,8 @@ export default function FixturesTablePage({
     matches.forEach(m => {
       const idStr = String(m.id);
       if (map.has(idStr)) return;
+      if (isMatchCompleted(m)) return; // Strictly exclude played matches
+      if (!isTodayUpcomingOrLive(m)) return; // Strictly today's games!
       if (isLeagueBlacklisted(m.league)) return;
 
       const sw = m.aiSwarm || m.imperialSwarm;
@@ -293,18 +328,26 @@ export default function FixturesTablePage({
         odds,
         ev,
         isUnanimous: true,
-        swarmScore: (sw?.swarmScore || 80) + 15
+        swarmScore: (sw?.swarmScore || 80) + 15,
+        isLive: Boolean(m.isLive || m.inPlayPrediction || (m.status && (m.status.includes("'") || m.status.includes('LIVE') || m.status === 'HT'))),
+        liveMinute: m.liveMinute || m.inPlayPrediction?.minuteDisplay || (m.status?.includes("'") ? m.status : null),
+        liveScore: m.liveScore || m.inPlayPrediction?.currentScore || (m.homeScore != null && m.awayScore != null ? `${m.homeScore}-${m.awayScore}` : null),
+        inPlayPrediction: m.inPlayPrediction,
+        broadcast: m.broadcast,
+        channels: m.channels
       });
     });
 
     let candidateLegs = Array.from(map.values());
 
-    // Fallback if slate has < 2 unanimous matches: add top non-trap outright favorites
+    // Fallback if today's slate has < 2 unanimous matches: add top non-trap outright favorites scheduled today
     if (candidateLegs.length < 2) {
       const existingIds = new Set(candidateLegs.map(l => String(l.id)));
       const backupMatches = matches
         .filter(m => {
           if (existingIds.has(String(m.id))) return false;
+          if (isMatchCompleted(m)) return false; // Strictly NEVER completed matches
+          if (!isTodayUpcomingOrLive(m)) return false; // Strictly today's games!
           if (isLeagueBlacklisted(m.league)) return false;
           const sw = m.aiSwarm || m.imperialSwarm;
           if (sw?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap || m.disruptionModel?.isPassFlagged) return false;
@@ -343,7 +386,57 @@ export default function FixturesTablePage({
           odds,
           ev,
           isUnanimous: false,
-          swarmScore: prob
+          swarmScore: prob,
+          isLive: Boolean(bm.isLive || bm.inPlayPrediction || (bm.status && (bm.status.includes("'") || bm.status.includes('LIVE') || bm.status === 'HT'))),
+          liveMinute: bm.liveMinute || bm.inPlayPrediction?.minuteDisplay || (bm.status?.includes("'") ? bm.status : null),
+          liveScore: bm.liveScore || bm.inPlayPrediction?.currentScore || (bm.homeScore != null && bm.awayScore != null ? `${bm.homeScore}-${bm.awayScore}` : null),
+          inPlayPrediction: bm.inPlayPrediction,
+          broadcast: bm.broadcast,
+          channels: bm.channels
+        });
+      }
+    }
+
+    // If today is completely finished or has no upcoming matches, gracefully fallback to next upcoming dates (STILL NEVER completed matches!)
+    if (candidateLegs.length === 0) {
+      const futureMatches = matches
+        .filter(m => !isMatchCompleted(m) && !isLeagueBlacklisted(m.league))
+        .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+      for (const fm of futureMatches) {
+        if (candidateLegs.length >= 3) break;
+        const sw = fm.aiSwarm || fm.imperialSwarm;
+        if (sw?.isContrarianTrap || fm.isMarketDivergence || fm.isFavoriteTrap) continue;
+        let pickVal = sw?.masterVerdict || (typeof fm.predictedWinner === 'string' ? fm.predictedWinner : fm.predictedWinner?.pick) || 'HOME';
+        if (pickVal !== 'HOME' && pickVal !== 'AWAY') {
+          const hp = safeParseFloat(fm.prob?.home, 0);
+          const ap = safeParseFloat(fm.prob?.away, 0);
+          pickVal = hp >= ap ? 'HOME' : 'AWAY';
+        }
+        const prob = resolveMatchProb(fm, pickVal);
+        const odds = resolveMatchOdds(fm, pickVal);
+        const ev = ((prob / 100) * odds) - 1;
+        candidateLegs.push({
+          id: fm.id,
+          match: fm,
+          home: fm.home,
+          away: fm.away,
+          league: fm.league,
+          time: fm.time,
+          date: fm.dateIso || fm.date,
+          pick: pickVal,
+          market: `${pickVal} Win (Outright)`,
+          prob,
+          odds,
+          ev,
+          isUnanimous: Boolean(sw?.is100Unanimous),
+          swarmScore: prob,
+          isLive: false,
+          liveMinute: null,
+          liveScore: null,
+          inPlayPrediction: null,
+          broadcast: fm.broadcast,
+          channels: fm.channels
         });
       }
     }
@@ -371,7 +464,7 @@ export default function FixturesTablePage({
       overallEv,
       allUnanimous: candidateLegs.every(l => l.isUnanimous)
     };
-  }, [matches, aiSwarm]);
+  }, [matches, aiSwarm, todayKey]);
 
   // Helper to extract localized date key for a council leg
   const getLegDateKey = (leg) => {
@@ -776,14 +869,12 @@ export default function FixturesTablePage({
     ];
   }, [matches, leaguePerformance]);
 
-  const todayKey = useMemo(() => getLocalizedTodayKey(tzSettings), [tzSettings]);
-
   // Extract unique date options with friendly localized labels
   const { dateOptions, nearestUpcomingDateKey, todayMatchCount, nearestUpcomingCount, totalActiveCount } = useMemo(() => {
     const dates = {};
     let todayCount = 0;
     matches.forEach(m => {
-      if (m.isCompleted || m.status === 'FT' || m.status === 'FINISHED') return;
+      if (isMatchCompleted(m)) return;
       const timeVal = m.timestamp || m.utcDate || m.dateIso || m.date;
       const dKey = timeVal ? getLocalizedDateKey(timeVal, tzSettings) : 'Upcoming';
       dates[dKey] = (dates[dKey] || 0) + 1;
@@ -799,7 +890,7 @@ export default function FixturesTablePage({
     const upcomingKeys = sortedKeys.filter(k => k !== 'Upcoming' && k >= todayKey && dates[k] > 0);
     const nearestKey = upcomingKeys[0] || null;
 
-    const totalActive = matches.filter(m => !m.isCompleted && m.status !== 'FT' && m.status !== 'FINISHED').length;
+    const totalActive = matches.filter(m => !isMatchCompleted(m)).length;
 
     const options = [
       { value: 'All', label: `All Upcoming Dates (${totalActive})` },
@@ -821,7 +912,7 @@ export default function FixturesTablePage({
   // 1. First, apply base filters (date, league, search, exclude finished)
   const baseMatches = useMemo(() => {
     return matches.filter(m => {
-      if (m.isCompleted || m.status === 'FT' || m.status === 'FINISHED') return false;
+      if (isMatchCompleted(m)) return false;
 
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -859,7 +950,7 @@ export default function FixturesTablePage({
 
   const prunedNoiseMatchesCount = useMemo(() => {
     return matches.filter(m => {
-      if (m.isCompleted || m.status === 'FT' || m.status === 'FINISHED') return false;
+      if (isMatchCompleted(m)) return false;
       if (isLeagueBlacklisted(m.league)) return true;
       const tierObj = m.leagueTier || getLeaguePredictabilityTier(m.league);
       return tierObj?.tier === 3 || tierObj === 'TIER_3';
@@ -1584,34 +1675,54 @@ export default function FixturesTablePage({
 
                         {/* League */}
                         <td className="py-2.5 px-3 text-slate-500 text-[11px] truncate max-w-[150px]">
-                          {leg.league}
+                          <div>{leg.league}</div>
+                          {(leg.broadcast || leg.match?.broadcast) && (
+                            <div className="text-[10px] text-indigo-600 font-medium truncate flex items-center gap-1 mt-0.5" title={leg.broadcast || leg.match?.broadcast}>
+                              <Tv className="w-2.5 h-2.5 shrink-0" />
+                              <span>{(leg.broadcast || leg.match?.broadcast).split(',')[0]}</span>
+                            </div>
+                          )}
                         </td>
 
                         {/* Kickoff stating Day and Time */}
                         <td className="py-2.5 px-3 text-center whitespace-nowrap">
-                          <div className="font-semibold text-slate-800 text-xs">
-                            {kickoff.day}
-                          </div>
-                          <div className="text-slate-400 font-mono text-[10px] mt-0.5">
-                            {kickoff.time}
-                          </div>
-                          {(() => {
-                            const c = formatKickoffCountdown(leg.match || leg);
-                            if (!c) return null;
-                            return (
-                              <div className="mt-0.5">
-                                <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold border ${c.color}`}>
-                                  {c.isWindow && <Lock className="w-2.5 h-2.5" />}
-                                  {c.label}
-                                </span>
+                          {leg.isLive || leg.match?.isLive ? (
+                            <div>
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-300 animate-pulse">
+                                <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
+                                LIVE {leg.liveMinute || leg.match?.liveMinute || "In-Play"}
+                              </span>
+                              <div className="font-mono font-bold text-slate-900 text-xs mt-0.5">
+                                {leg.liveScore || leg.match?.liveScore || '1 - 0'}
                               </div>
-                            );
-                          })()}
+                            </div>
+                          ) : (
+                            <>
+                              <div className="font-semibold text-slate-800 text-xs">
+                                {kickoff.day}
+                              </div>
+                              <div className="text-slate-400 font-mono text-[10px] mt-0.5">
+                                {kickoff.time}
+                              </div>
+                              {(() => {
+                                const c = formatKickoffCountdown(leg.match || leg);
+                                if (!c) return null;
+                                return (
+                                  <div className="mt-0.5">
+                                    <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold border ${c.color}`}>
+                                      {c.isWindow && <Lock className="w-2.5 h-2.5" />}
+                                      {c.label}
+                                    </span>
+                                  </div>
+                                );
+                              })()}
+                            </>
+                          )}
                         </td>
 
                         {/* Pick */}
                         <td className="py-2.5 px-3">
-                          <div className="inline-flex items-center gap-1.5">
+                          <div className="inline-flex items-center gap-1.5 flex-wrap">
                             <span className="font-semibold text-slate-900 text-xs">
                               {pickTeam}
                             </span>
@@ -1619,6 +1730,11 @@ export default function FixturesTablePage({
                               {isHome ? 'Home Win' : 'Away Win'}
                             </span>
                           </div>
+                          {leg.inPlayPrediction && (
+                            <div className="text-[10px] text-emerald-700 font-medium font-mono mt-0.5">
+                              Live Proj: {leg.inPlayPrediction.projectedFinalScore}
+                            </div>
+                          )}
                         </td>
 
                         {/* Odds */}
@@ -1639,27 +1755,39 @@ export default function FixturesTablePage({
                           </span>
                         </td>
 
-                        {/* Slip Toggle */}
-                        <td className="py-2.5 px-3 text-center">
-                          {inSlip ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded border border-slate-200">
-                              <Check className="w-3 h-3 text-slate-400" />
-                              In Slip
-                            </span>
-                          ) : (
+                        {/* Actions (Watch + Slip) */}
+                        <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                          <div className="inline-flex items-center gap-1">
                             <button
                               type="button"
-                              onClick={() => {
-                                if (onAddToSlip) {
-                                  onAddToSlip(leg.match, leg.pick, leg.market, leg.odds, leg.prob);
-                                }
-                              }}
-                              className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 px-2 py-1 rounded border border-slate-300 shadow-2xs transition-colors cursor-pointer"
+                              onClick={() => onOpenWatchLive && onOpenWatchLive(leg.match || leg)}
+                              className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded border border-indigo-200 shadow-2xs transition-colors cursor-pointer"
+                              title="Watch live in iframe player"
                             >
-                              <Plus className="w-3 h-3 text-slate-400" />
-                              Add
+                              <Play className="w-3 h-3 fill-indigo-600 text-indigo-600" />
+                              <span>Watch</span>
                             </button>
-                          )}
+
+                            {inSlip ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded border border-slate-200">
+                                <Check className="w-3 h-3 text-slate-400" />
+                                In Slip
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (onAddToSlip) {
+                                    onAddToSlip(leg.match, leg.pick, leg.market, leg.odds, leg.prob);
+                                  }
+                                }}
+                                className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 px-2 py-1 rounded border border-slate-300 shadow-2xs transition-colors cursor-pointer"
+                              >
+                                <Plus className="w-3 h-3 text-slate-400" />
+                                Add
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -2468,15 +2596,25 @@ export default function FixturesTablePage({
                               <span className="font-semibold text-slate-700 font-mono text-[10px]">
                                 {formatMatchKickoff(m)}
                               </span>
-                              {countdown && (
+                              {m.isLive ? (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+                                  LIVE {m.liveMinute ? `${m.liveMinute}'` : ''} {m.liveScore ? `(${m.liveScore.home}-${m.liveScore.away})` : ''}
+                                </span>
+                              ) : countdown ? (
                                 <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold border ${countdown.color}`}>
                                   {countdown.isWindow && <Lock className="w-2.5 h-2.5" />}
                                   {countdown.label}
                                 </span>
-                              )}
+                              ) : null}
                               <span className="text-[10px] text-slate-400">
                                 {m.league}
                               </span>
+                              {m.broadcast && (
+                                <span className="text-[9px] text-indigo-700 font-semibold bg-indigo-50 border border-indigo-200 px-1 rounded flex items-center gap-0.5">
+                                  📺 {m.broadcast.split(',')[0]}
+                                </span>
+                              )}
                             </div>
                             <ConfidenceGauge confidence={conf} size="sm" />
                           </div>
@@ -2528,19 +2666,33 @@ export default function FixturesTablePage({
                                 💰 €{rowStake.toFixed(0)} → €{returns.payoutStr} ({returns.profitStr})
                               </span>
                             </div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (onAddToSlip) onAddToSlip(m);
-                              }}
-                              className={`p-1.5 rounded-full transition-all cursor-pointer ${
-                                isSlipAdded
-                                  ? 'bg-rose-100 text-rose-600 hover:bg-rose-200'
-                                  : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
-                              }`}
-                            >
-                              {isSlipAdded ? <Trash2 className="w-4 h-4" /> : <Target className="w-4 h-4" />}
-                            </button>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (onOpenWatchLive) onOpenWatchLive(m);
+                                }}
+                                className="px-2 py-1 rounded text-[10px] font-bold border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors cursor-pointer inline-flex items-center gap-1"
+                                title="Watch Live in Iframe Player"
+                              >
+                                <Play className="w-2.5 h-2.5 fill-indigo-600 text-indigo-600" />
+                                <span>Watch</span>
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (onAddToSlip) onAddToSlip(m);
+                                }}
+                                className={`p-1.5 rounded-full transition-all cursor-pointer ${
+                                  isSlipAdded
+                                    ? 'bg-rose-100 text-rose-600 hover:bg-rose-200'
+                                    : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
+                                }`}
+                              >
+                                {isSlipAdded ? <Trash2 className="w-4 h-4" /> : <Target className="w-4 h-4" />}
+                              </button>
+                            </div>
                           </div>
                           
                           {!isExpanded && (
@@ -2556,7 +2708,15 @@ export default function FixturesTablePage({
                           <span className="font-semibold text-slate-700 font-mono text-xs block">
                             {formatMatchKickoff(m)}
                           </span>
-                          {countdown ? (
+                          {m.isLive ? (
+                            <span 
+                              className="inline-flex items-center justify-center gap-1 px-1.5 py-0.5 mt-0.5 rounded text-[10px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse max-w-[95px] mx-auto"
+                              title={`Match currently live: ${m.liveMinute || 0}' (${m.liveScore?.home ?? 0}-${m.liveScore?.away ?? 0})`}
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+                              <span>LIVE {m.liveMinute ? `${m.liveMinute}'` : ''}</span>
+                            </span>
+                          ) : countdown ? (
                             <span 
                               className={`inline-flex items-center justify-center gap-0.5 px-1.5 py-0.5 mt-0.5 rounded text-[10px] font-bold border max-w-[95px] mx-auto ${countdown.color}`}
                               title={countdown.isWindow ? "Pre-kickoff lock window (≤60m): Prediction is locked & frozen" : "Time until match kickoff"}
@@ -2567,6 +2727,11 @@ export default function FixturesTablePage({
                           ) : (
                             <span className="text-[10px] text-slate-400 block truncate max-w-[65px] mx-auto">
                               {m.league?.split(' ')[0] || 'Soccer'}
+                            </span>
+                          )}
+                          {m.broadcast && (
+                            <span className="text-[9px] text-indigo-600 font-semibold block truncate max-w-[90px] mx-auto mt-0.5" title={`Broadcast: ${m.broadcast}`}>
+                              📺 {m.broadcast.split(',')[0]}
                             </span>
                           )}
                         </td>
@@ -2685,6 +2850,17 @@ export default function FixturesTablePage({
                         {/* Actions */}
                         <td className="hidden md:table-cell py-1.5 px-2 text-center">
                           <div className="flex items-center justify-center gap-1.5">
+                            {/* Watch Live in Iframe Player */}
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(m); }}
+                              className="px-2 py-1 rounded text-[11px] font-bold border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors cursor-pointer inline-flex items-center gap-1"
+                              title="Watch Match Live & In-Play Radar Simulator"
+                            >
+                              <Play className="w-3 h-3 fill-indigo-600 text-indigo-600" />
+                              <span>Watch</span>
+                            </button>
+
                             {/* Deep Analysis Page */}
                             <button
                               onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(m); }}

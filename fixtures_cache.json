@@ -8,14 +8,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/88.png",
       "league": "LaLiga",
       "status": "Scheduled",
-      "time": "07:00 PM",
+      "time": "20:00",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T19:00Z",
       "timestamp": 1791572400000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -29,11 +29,6 @@
         "overUnder": 2.5,
         "details": "MCF +160"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401882851",
       "espnLeagueCode": "esp.1",
       "homeTeamId": "99",
@@ -47,14 +42,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/93.png",
       "league": "LaLiga",
       "status": "Scheduled",
-      "time": "12:00 PM",
+      "time": "13:00",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T12:00Z",
       "timestamp": 1791633600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -68,11 +63,6 @@
         "overUnder": 2.5,
         "details": "ATH +130"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401882849",
       "espnLeagueCode": "esp.1",
       "homeTeamId": "101",
@@ -86,14 +76,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/1068.png",
       "league": "LaLiga",
       "status": "Scheduled",
-      "time": "02:15 PM",
+      "time": "15:15",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T14:15Z",
       "timestamp": 1791641700000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -107,11 +97,6 @@
         "overUnder": 2.5,
         "details": "ATM -110"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401882856",
       "espnLeagueCode": "esp.1",
       "homeTeamId": "96",
@@ -125,14 +110,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2922.png",
       "league": "LaLiga",
       "status": "Scheduled",
-      "time": "04:30 PM",
+      "time": "17:30",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T16:30Z",
       "timestamp": 1791649800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -146,11 +131,6 @@
         "overUnder": 4.5,
         "details": "BAR -2000"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401882853",
       "espnLeagueCode": "esp.1",
       "homeTeamId": "83",
@@ -164,14 +144,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/102.png",
       "league": "LaLiga",
       "status": "Scheduled",
-      "time": "07:00 PM",
+      "time": "20:00",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T19:00Z",
       "timestamp": 1791658800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -185,11 +165,6 @@
         "overUnder": 3.5,
         "details": "RMA -380"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401882848",
       "espnLeagueCode": "esp.1",
       "homeTeamId": "86",
@@ -203,14 +178,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/85.png",
       "league": "LaLiga",
       "status": "Scheduled",
-      "time": "12:00 PM",
+      "time": "13:00",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T12:00Z",
       "timestamp": 1791720000000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -224,11 +199,6 @@
         "overUnder": 2.5,
         "details": "CEL +150"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401882854",
       "espnLeagueCode": "esp.1",
       "homeTeamId": "3751",
@@ -242,14 +212,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/90.png",
       "league": "LaLiga",
       "status": "Scheduled",
-      "time": "02:15 PM",
+      "time": "15:15",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T14:15Z",
       "timestamp": 1791728100000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -263,11 +233,6 @@
         "overUnder": 2.5,
         "details": "RSO -135"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401882847",
       "espnLeagueCode": "esp.1",
       "homeTeamId": "89",
@@ -281,14 +246,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/97.png",
       "league": "LaLiga",
       "status": "Scheduled",
-      "time": "04:30 PM",
+      "time": "17:30",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T16:30Z",
       "timestamp": 1791736200000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -302,11 +267,6 @@
         "overUnder": 2.5,
         "details": "BET -145"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401882855",
       "espnLeagueCode": "esp.1",
       "homeTeamId": "244",
@@ -320,14 +280,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/94.png",
       "league": "LaLiga",
       "status": "Scheduled",
-      "time": "07:00 PM",
+      "time": "20:00",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T19:00Z",
       "timestamp": 1791745200000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -341,11 +301,6 @@
         "overUnder": 2.5,
         "details": "RAC +105"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401882850",
       "espnLeagueCode": "esp.1",
       "homeTeamId": "87",
@@ -359,14 +314,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/243.png",
       "league": "LaLiga",
       "status": "Scheduled",
-      "time": "07:00 PM",
+      "time": "20:00",
       "date": "12/10/2026",
       "dateIso": "2026-10-12",
       "utcDate": "2026-10-12T19:00Z",
       "timestamp": 1791831600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -380,11 +335,6 @@
         "overUnder": 2.5,
         "details": "LEV +160"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401882852",
       "espnLeagueCode": "esp.1",
       "homeTeamId": "1538",
@@ -398,14 +348,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/137.png",
       "league": "Bundesliga",
       "status": "Scheduled",
-      "time": "06:30 PM",
+      "time": "19:30",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T18:30Z",
       "timestamp": 1791570600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -419,11 +369,6 @@
         "overUnder": 3.5,
         "details": "DOR -295"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401884781",
       "espnLeagueCode": "ger.1",
       "homeTeamId": "124",
@@ -437,14 +382,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/10388.png",
       "league": "Bundesliga",
       "status": "Scheduled",
-      "time": "01:30 PM",
+      "time": "14:30",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T13:30Z",
       "timestamp": 1791639000000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -458,11 +403,6 @@
         "overUnder": 2.5,
         "details": "FCU +115"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401884775",
       "espnLeagueCode": "ger.1",
       "homeTeamId": "598",
@@ -476,14 +416,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/132.png",
       "league": "Bundesliga",
       "status": "Scheduled",
-      "time": "01:30 PM",
+      "time": "14:30",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T13:30Z",
       "timestamp": 1791639000000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -497,11 +437,6 @@
         "overUnder": 4.5,
         "details": "MUN -500"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401884777",
       "espnLeagueCode": "ger.1",
       "homeTeamId": "3841",
@@ -515,14 +450,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/131.png",
       "league": "Bundesliga",
       "status": "Scheduled",
-      "time": "01:30 PM",
+      "time": "14:30",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T13:30Z",
       "timestamp": 1791639000000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -536,11 +471,6 @@
         "overUnder": 3.5,
         "details": "B04 +120"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401884776",
       "espnLeagueCode": "ger.1",
       "homeTeamId": "2950",
@@ -554,14 +484,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/134.png",
       "league": "Bundesliga",
       "status": "Scheduled",
-      "time": "01:30 PM",
+      "time": "14:30",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T13:30Z",
       "timestamp": 1791639000000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -575,11 +505,6 @@
         "overUnder": 3.5,
         "details": "VFB -180"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401884773",
       "espnLeagueCode": "ger.1",
       "homeTeamId": "3307",
@@ -593,21 +518,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/127.png",
       "league": "Bundesliga",
       "status": "Scheduled",
-      "time": "01:30 PM",
+      "time": "14:30",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T13:30Z",
       "timestamp": 1791639000000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401884779",
       "espnLeagueCode": "ger.1",
       "homeTeamId": "7911",
@@ -621,14 +541,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/125.png",
       "league": "Bundesliga",
       "status": "Scheduled",
-      "time": "04:30 PM",
+      "time": "17:30",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T16:30Z",
       "timestamp": 1791649800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -642,11 +562,6 @@
         "overUnder": 3.5,
         "details": "RBL -205"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401884780",
       "espnLeagueCode": "ger.1",
       "homeTeamId": "11420",
@@ -660,14 +575,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/268.png",
       "league": "Bundesliga",
       "status": "Scheduled",
-      "time": "01:30 PM",
+      "time": "14:30",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T13:30Z",
       "timestamp": 1791725400000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -681,11 +596,6 @@
         "overUnder": 3.5,
         "details": "KOE -110"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401884774",
       "espnLeagueCode": "ger.1",
       "homeTeamId": "122",
@@ -699,14 +609,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/133.png",
       "league": "Bundesliga",
       "status": "Scheduled",
-      "time": "03:30 PM",
+      "time": "16:30",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T15:30Z",
       "timestamp": 1791732600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -720,11 +630,6 @@
         "overUnder": 2.5,
         "details": "SCF -170"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401884778",
       "espnLeagueCode": "ger.1",
       "homeTeamId": "126",
@@ -738,14 +643,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/146.png",
       "league": "Eredivisie",
       "status": "Scheduled",
-      "time": "06:00 PM",
+      "time": "19:00",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T18:00Z",
       "timestamp": 1791568800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -759,11 +664,6 @@
         "overUnder": 4.5,
         "details": "PSV -450"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401875592",
       "espnLeagueCode": "ned.1",
       "homeTeamId": "148",
@@ -777,14 +677,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/151.png",
       "league": "Eredivisie",
       "status": "Scheduled",
-      "time": "02:30 PM",
+      "time": "15:30",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T14:30Z",
       "timestamp": 1791642600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -798,11 +698,6 @@
         "overUnder": 3.5,
         "details": "GAE -135"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401875590",
       "espnLeagueCode": "ned.1",
       "homeTeamId": "3706",
@@ -816,14 +711,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/140.png",
       "league": "Eredivisie",
       "status": "Scheduled",
-      "time": "04:45 PM",
+      "time": "17:45",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T16:45Z",
       "timestamp": 1791650700000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -837,11 +732,6 @@
         "overUnder": 3.5,
         "details": "FEY -120"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401875591",
       "espnLeagueCode": "ned.1",
       "homeTeamId": "142",
@@ -855,14 +745,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/152.png",
       "league": "Eredivisie",
       "status": "Scheduled",
-      "time": "06:00 PM",
+      "time": "19:00",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T18:00Z",
       "timestamp": 1791655200000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -876,11 +766,6 @@
         "overUnder": 3.5,
         "details": "TWE -245"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401875588",
       "espnLeagueCode": "ned.1",
       "homeTeamId": "143",
@@ -894,14 +779,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/147.png",
       "league": "Eredivisie",
       "status": "Scheduled",
-      "time": "07:00 PM",
+      "time": "20:00",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T19:00Z",
       "timestamp": 1791658800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -915,11 +800,6 @@
         "overUnder": 3.5,
         "details": "AJA -330"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401875589",
       "espnLeagueCode": "ned.1",
       "homeTeamId": "139",
@@ -933,14 +813,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/156.png",
       "league": "Eredivisie",
       "status": "Scheduled",
-      "time": "10:15 AM",
+      "time": "11:15",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T10:15Z",
       "timestamp": 1791713700000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -954,11 +834,6 @@
         "overUnder": 3.5,
         "details": "UTR -220"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401875587",
       "espnLeagueCode": "ned.1",
       "homeTeamId": "153",
@@ -972,14 +847,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/3736.png",
       "league": "Eredivisie",
       "status": "Scheduled",
-      "time": "12:30 PM",
+      "time": "13:30",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T12:30Z",
       "timestamp": 1791721800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -993,11 +868,6 @@
         "overUnder": 3.5,
         "details": "PEC -105"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401875586",
       "espnLeagueCode": "ned.1",
       "homeTeamId": "2565",
@@ -1011,14 +881,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2726.png",
       "league": "Eredivisie",
       "status": "Scheduled",
-      "time": "12:30 PM",
+      "time": "13:30",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T12:30Z",
       "timestamp": 1791721800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1032,11 +902,6 @@
         "overUnder": 3.5,
         "details": "TEL -105"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401875585",
       "espnLeagueCode": "ned.1",
       "homeTeamId": "3735",
@@ -1050,14 +915,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/145.png",
       "league": "Eredivisie",
       "status": "Scheduled",
-      "time": "02:45 PM",
+      "time": "15:45",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T14:45Z",
       "timestamp": 1791729900000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1071,11 +936,6 @@
         "overUnder": 3.5,
         "details": "GRO +145"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401875584",
       "espnLeagueCode": "ned.1",
       "homeTeamId": "2566",
@@ -1089,14 +949,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/167.png",
       "league": "Ligue 1",
       "status": "Scheduled",
-      "time": "06:45 PM",
+      "time": "19:45",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T18:45Z",
       "timestamp": 1791571500000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1110,11 +970,6 @@
         "overUnder": 3.5,
         "details": "RCL +115"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401876447",
       "espnLeagueCode": "fra.1",
       "homeTeamId": "175",
@@ -1128,14 +983,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/3236.png",
       "league": "Ligue 1",
       "status": "Scheduled",
-      "time": "03:15 PM",
+      "time": "16:15",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T15:15Z",
       "timestamp": 1791645300000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1149,11 +1004,6 @@
         "overUnder": 2.5,
         "details": "LILL -230"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401876446",
       "espnLeagueCode": "fra.1",
       "homeTeamId": "166",
@@ -1167,14 +1017,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/179.png",
       "league": "Ligue 1",
       "status": "Scheduled",
-      "time": "06:45 PM",
+      "time": "19:45",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T18:45Z",
       "timestamp": 1791657900000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1188,11 +1038,6 @@
         "overUnder": 2.5,
         "details": "MON -150"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401876444",
       "espnLeagueCode": "fra.1",
       "homeTeamId": "174",
@@ -1206,14 +1051,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/7868.png",
       "league": "Ligue 1",
       "status": "Scheduled",
-      "time": "06:45 PM",
+      "time": "19:45",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T18:45Z",
       "timestamp": 1791657900000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1227,11 +1072,6 @@
         "overUnder": 2.5,
         "details": "BRE -110"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401876448",
       "espnLeagueCode": "fra.1",
       "homeTeamId": "6997",
@@ -1245,14 +1085,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/6851.png",
       "league": "Ligue 1",
       "status": "Scheduled",
-      "time": "06:45 PM",
+      "time": "19:45",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T18:45Z",
       "timestamp": 1791657900000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1266,11 +1106,6 @@
         "overUnder": 2.5,
         "details": "PAR +130"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401876445",
       "espnLeagueCode": "fra.1",
       "homeTeamId": "273",
@@ -1284,14 +1119,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2697.png",
       "league": "Ligue 1",
       "status": "Scheduled",
-      "time": "06:45 PM",
+      "time": "19:45",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T18:45Z",
       "timestamp": 1791657900000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1305,11 +1140,6 @@
         "overUnder": 3.5,
         "details": "PSG -1000"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401876442",
       "espnLeagueCode": "fra.1",
       "homeTeamId": "160",
@@ -1323,14 +1153,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/180.png",
       "league": "Ligue 1",
       "status": "Scheduled",
-      "time": "01:00 PM",
+      "time": "14:00",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T13:00Z",
       "timestamp": 1791723600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1344,11 +1174,6 @@
         "overUnder": 2.5,
         "details": "NICE +120"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401876443",
       "espnLeagueCode": "fra.1",
       "homeTeamId": "2502",
@@ -1362,14 +1187,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/172.png",
       "league": "Ligue 1",
       "status": "Scheduled",
-      "time": "03:15 PM",
+      "time": "16:15",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T15:15Z",
       "timestamp": 1791731700000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1383,11 +1208,6 @@
         "overUnder": 3.5,
         "details": "REN -245"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401876441",
       "espnLeagueCode": "fra.1",
       "homeTeamId": "169",
@@ -1401,14 +1221,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/176.png",
       "league": "Ligue 1",
       "status": "Scheduled",
-      "time": "06:45 PM",
+      "time": "19:45",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T18:45Z",
       "timestamp": 1791744300000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1422,11 +1242,6 @@
         "overUnder": 2.5,
         "details": "OLM -110"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401876440",
       "espnLeagueCode": "fra.1",
       "homeTeamId": "170",
@@ -1440,14 +1255,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/3699.png",
       "league": "Primeira Liga",
       "status": "Scheduled",
-      "time": "05:45 PM",
+      "time": "18:45",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T17:45Z",
       "timestamp": 1791567900000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1461,11 +1276,6 @@
         "overUnder": 2.5,
         "details": "GVFC +105"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401885423",
       "espnLeagueCode": "por.1",
       "homeTeamId": "3696",
@@ -1479,14 +1289,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2250.png",
       "league": "Primeira Liga",
       "status": "Scheduled",
-      "time": "07:15 PM",
+      "time": "20:15",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T19:15Z",
       "timestamp": 1791573300000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1500,11 +1310,6 @@
         "overUnder": 2.5,
         "details": "SCP +115"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401885427",
       "espnLeagueCode": "por.1",
       "homeTeamId": "2994",
@@ -1518,14 +1323,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/12215.png",
       "league": "Primeira Liga",
       "status": "Scheduled",
-      "time": "02:30 PM",
+      "time": "15:30",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T14:30Z",
       "timestamp": 1791642600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1539,11 +1344,6 @@
         "overUnder": 2.5,
         "details": "CDSC -120"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401885426",
       "espnLeagueCode": "por.1",
       "homeTeamId": "21581",
@@ -1557,21 +1357,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/437.png",
       "league": "Primeira Liga",
       "status": "Scheduled",
-      "time": "05:00 PM",
+      "time": "18:00",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T17:00Z",
       "timestamp": 1791651600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401885424",
       "espnLeagueCode": "por.1",
       "homeTeamId": "552",
@@ -1585,14 +1380,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/12216.png",
       "league": "Primeira Liga",
       "status": "Scheduled",
-      "time": "07:30 PM",
+      "time": "20:30",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T19:30Z",
       "timestamp": 1791660600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1606,11 +1401,6 @@
         "overUnder": 2.5,
         "details": "ACV +125"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401885429",
       "espnLeagueCode": "por.1",
       "homeTeamId": "21607",
@@ -1624,14 +1414,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/3472.png",
       "league": "Primeira Liga",
       "status": "Scheduled",
-      "time": "02:30 PM",
+      "time": "15:30",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T14:30Z",
       "timestamp": 1791729000000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1645,11 +1435,6 @@
         "overUnder": 2.5,
         "details": "RAFC +135"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401885422",
       "espnLeagueCode": "por.1",
       "homeTeamId": "3822",
@@ -1663,21 +1448,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/5309.png",
       "league": "Primeira Liga",
       "status": "Scheduled",
-      "time": "05:00 PM",
+      "time": "18:00",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T17:00Z",
       "timestamp": 1791738000000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401885421",
       "espnLeagueCode": "por.1",
       "homeTeamId": "1929",
@@ -1691,14 +1471,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/21610.png",
       "league": "Primeira Liga",
       "status": "Scheduled",
-      "time": "07:30 PM",
+      "time": "20:30",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T19:30Z",
       "timestamp": 1791747000000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1712,11 +1492,6 @@
         "overUnder": 2.5,
         "details": "FCA +110"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401885428",
       "espnLeagueCode": "por.1",
       "homeTeamId": "15784",
@@ -1730,21 +1505,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/21613.png",
       "league": "Primeira Liga",
       "status": "Scheduled",
-      "time": "07:15 PM",
+      "time": "20:15",
       "date": "12/10/2026",
       "dateIso": "2026-10-12",
       "utcDate": "2026-10-12T19:15Z",
       "timestamp": 1791832500000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401885425",
       "espnLeagueCode": "por.1",
       "homeTeamId": "12698",
@@ -1764,8 +1534,8 @@
       "utcDate": "2026-10-10T11:30Z",
       "timestamp": 1791631800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1779,11 +1549,6 @@
         "overUnder": 2.5,
         "details": "ARS -280"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401879268",
       "espnLeagueCode": "eng.1",
       "homeTeamId": "359",
@@ -1803,8 +1568,8 @@
       "utcDate": "2026-10-10T14:00Z",
       "timestamp": 1791640800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1818,11 +1583,6 @@
         "overUnder": 2.5,
         "details": "BRE +150"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401878776",
       "espnLeagueCode": "eng.1",
       "homeTeamId": "362",
@@ -1842,8 +1602,8 @@
       "utcDate": "2026-10-10T14:00Z",
       "timestamp": 1791640800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1857,11 +1617,6 @@
         "overUnder": 3.5,
         "details": "CHE -120"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401878775",
       "espnLeagueCode": "eng.1",
       "homeTeamId": "363",
@@ -1881,8 +1636,8 @@
       "utcDate": "2026-10-10T14:00Z",
       "timestamp": 1791640800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1896,11 +1651,6 @@
         "overUnder": 2.5,
         "details": "FUL +150"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401879265",
       "espnLeagueCode": "eng.1",
       "homeTeamId": "373",
@@ -1920,8 +1670,8 @@
       "utcDate": "2026-10-10T14:00Z",
       "timestamp": 1791640800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1935,11 +1685,6 @@
         "overUnder": 2.5,
         "details": "BHA +145"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401878772",
       "espnLeagueCode": "eng.1",
       "homeTeamId": "366",
@@ -1959,8 +1704,8 @@
       "utcDate": "2026-10-10T16:30Z",
       "timestamp": 1791649800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -1974,11 +1719,6 @@
         "overUnder": 3.5,
         "details": "MAN -145"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401878773",
       "espnLeagueCode": "eng.1",
       "homeTeamId": "360",
@@ -1998,8 +1738,8 @@
       "utcDate": "2026-10-11T13:00Z",
       "timestamp": 1791723600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -2013,11 +1753,6 @@
         "overUnder": 2.5,
         "details": "CRY +160"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401879266",
       "espnLeagueCode": "eng.1",
       "homeTeamId": "384",
@@ -2037,8 +1772,8 @@
       "utcDate": "2026-10-11T13:00Z",
       "timestamp": 1791723600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -2052,11 +1787,6 @@
         "overUnder": 2.5,
         "details": "EVE +105"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401878774",
       "espnLeagueCode": "eng.1",
       "homeTeamId": "306",
@@ -2076,8 +1806,8 @@
       "utcDate": "2026-10-11T15:30Z",
       "timestamp": 1791732600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -2091,11 +1821,6 @@
         "overUnder": 2.5,
         "details": "MNC +135"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401879264",
       "espnLeagueCode": "eng.1",
       "homeTeamId": "364",
@@ -2115,8 +1840,8 @@
       "utcDate": "2026-10-12T19:00Z",
       "timestamp": 1791831600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -2130,11 +1855,6 @@
         "overUnder": 2.5,
         "details": "NEW +110"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401879267",
       "espnLeagueCode": "eng.1",
       "homeTeamId": "388",
@@ -2148,14 +1868,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/258.png",
       "league": "Scottish Premiership",
       "status": "Scheduled",
-      "time": "02:00 PM",
+      "time": "15:00",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T14:00Z",
       "timestamp": 1791640800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -2169,11 +1889,6 @@
         "overUnder": 2.5,
         "details": "HIBS +135"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401878373",
       "espnLeagueCode": "sco.1",
       "homeTeamId": "264",
@@ -2187,14 +1902,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/261.png",
       "league": "Scottish Premiership",
       "status": "Scheduled",
-      "time": "02:00 PM",
+      "time": "15:00",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T14:00Z",
       "timestamp": 1791640800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -2208,11 +1923,6 @@
         "overUnder": 2.5,
         "details": "FALK +100"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401878372",
       "espnLeagueCode": "sco.1",
       "homeTeamId": "254",
@@ -2226,14 +1936,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/250.png",
       "league": "Scottish Premiership",
       "status": "Scheduled",
-      "time": "02:00 PM",
+      "time": "15:00",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T14:00Z",
       "timestamp": 1791640800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -2247,11 +1957,6 @@
         "overUnder": 3.5,
         "details": "HOM -230"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401878371",
       "espnLeagueCode": "sco.1",
       "homeTeamId": "262",
@@ -2265,14 +1970,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/260.png",
       "league": "Scottish Premiership",
       "status": "Scheduled",
-      "time": "02:00 PM",
+      "time": "15:00",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T14:00Z",
       "timestamp": 1791640800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -2286,11 +1991,6 @@
         "overUnder": 3.5,
         "details": "RAN -750"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401878369",
       "espnLeagueCode": "sco.1",
       "homeTeamId": "257",
@@ -2304,14 +2004,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/256.png",
       "league": "Scottish Premiership",
       "status": "Scheduled",
-      "time": "11:00 AM",
+      "time": "12:00",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T11:00Z",
       "timestamp": 1791716400000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -2325,11 +2025,6 @@
         "overUnder": 3.5,
         "details": "CEL -185"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401878370",
       "espnLeagueCode": "sco.1",
       "homeTeamId": "266",
@@ -2343,14 +2038,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/267.png",
       "league": "Scottish Premiership",
       "status": "Scheduled",
-      "time": "01:00 PM",
+      "time": "14:00",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T13:00Z",
       "timestamp": 1791723600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -2364,11 +2059,6 @@
         "overUnder": 2.5,
         "details": "ABE +125"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401878374",
       "espnLeagueCode": "sco.1",
       "homeTeamId": "263",
@@ -2382,21 +2072,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/109.png",
       "league": "Serie A",
       "status": "Scheduled",
-      "time": "01:00 PM",
+      "time": "14:00",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T13:00Z",
       "timestamp": 1791637200000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401874947",
       "espnLeagueCode": "ita.1",
       "homeTeamId": "3263",
@@ -2410,21 +2095,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/115.png",
       "league": "Serie A",
       "status": "Scheduled",
-      "time": "04:00 PM",
+      "time": "17:00",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T16:00Z",
       "timestamp": 1791648000000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401875021",
       "espnLeagueCode": "ita.1",
       "homeTeamId": "110",
@@ -2438,21 +2118,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/4057.png",
       "league": "Serie A",
       "status": "Scheduled",
-      "time": "06:45 PM",
+      "time": "19:45",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T18:45Z",
       "timestamp": 1791657900000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401874754",
       "espnLeagueCode": "ita.1",
       "homeTeamId": "114",
@@ -2466,21 +2141,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/104.png",
       "league": "Serie A",
       "status": "Scheduled",
-      "time": "10:30 AM",
+      "time": "11:30",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T10:30Z",
       "timestamp": 1791714600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401874940",
       "espnLeagueCode": "ita.1",
       "homeTeamId": "2572",
@@ -2494,21 +2164,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/4007.png",
       "league": "Serie A",
       "status": "Scheduled",
-      "time": "01:00 PM",
+      "time": "14:00",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T13:00Z",
       "timestamp": 1791723600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401874951",
       "espnLeagueCode": "ita.1",
       "homeTeamId": "112",
@@ -2522,21 +2187,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/107.png",
       "league": "Serie A",
       "status": "Scheduled",
-      "time": "01:00 PM",
+      "time": "14:00",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T13:00Z",
       "timestamp": 1791723600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401874776",
       "espnLeagueCode": "ita.1",
       "homeTeamId": "113",
@@ -2550,21 +2210,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/103.png",
       "league": "Serie A",
       "status": "Scheduled",
-      "time": "04:00 PM",
+      "time": "17:00",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T16:00Z",
       "timestamp": 1791734400000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401874789",
       "espnLeagueCode": "ita.1",
       "homeTeamId": "3997",
@@ -2578,21 +2233,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/111.png",
       "league": "Serie A",
       "status": "Scheduled",
-      "time": "06:45 PM",
+      "time": "19:45",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T18:45Z",
       "timestamp": 1791744300000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401874764",
       "espnLeagueCode": "ita.1",
       "homeTeamId": "2925",
@@ -2606,21 +2256,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/17530.png",
       "league": "Serie A",
       "status": "Scheduled",
-      "time": "04:30 PM",
+      "time": "17:30",
       "date": "12/10/2026",
       "dateIso": "2026-10-12",
       "utcDate": "2026-10-12T16:30Z",
       "timestamp": 1791822600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401875005",
       "espnLeagueCode": "ita.1",
       "homeTeamId": "105",
@@ -2634,21 +2279,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/118.png",
       "league": "Serie A",
       "status": "Scheduled",
-      "time": "06:45 PM",
+      "time": "19:45",
       "date": "12/10/2026",
       "dateIso": "2026-10-12",
       "utcDate": "2026-10-12T18:45Z",
       "timestamp": 1791830700000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401874763",
       "espnLeagueCode": "ita.1",
       "homeTeamId": "239",
@@ -2662,21 +2302,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/22269.png",
       "league": "Belgian Pro League",
       "status": "Scheduled",
-      "time": "06:45 PM",
+      "time": "19:45",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T18:45Z",
       "timestamp": 1791571500000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401878976",
       "espnLeagueCode": "bel.1",
       "homeTeamId": "13450",
@@ -2690,21 +2325,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/441.png",
       "league": "Belgian Pro League",
       "status": "Scheduled",
-      "time": "02:00 PM",
+      "time": "15:00",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T14:00Z",
       "timestamp": 1791640800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401878977",
       "espnLeagueCode": "bel.1",
       "homeTeamId": "3610",
@@ -2718,21 +2348,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/570.png",
       "league": "Belgian Pro League",
       "status": "Scheduled",
-      "time": "04:15 PM",
+      "time": "17:15",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T16:15Z",
       "timestamp": 1791648900000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401878978",
       "espnLeagueCode": "bel.1",
       "homeTeamId": "131235",
@@ -2746,21 +2371,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/5786.png",
       "league": "Belgian Pro League",
       "status": "Scheduled",
-      "time": "06:45 PM",
+      "time": "19:45",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T18:45Z",
       "timestamp": 1791657900000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401878973",
       "espnLeagueCode": "bel.1",
       "homeTeamId": "938",
@@ -2774,21 +2394,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/3611.png",
       "league": "Belgian Pro League",
       "status": "Scheduled",
-      "time": "06:45 PM",
+      "time": "19:45",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T18:45Z",
       "timestamp": 1791657900000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401878974",
       "espnLeagueCode": "bel.1",
       "homeTeamId": "4691",
@@ -2802,21 +2417,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/3616.png",
       "league": "Belgian Pro League",
       "status": "Scheduled",
-      "time": "11:30 AM",
+      "time": "12:30",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T11:30Z",
       "timestamp": 1791718200000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401878971",
       "espnLeagueCode": "bel.1",
       "homeTeamId": "559",
@@ -2830,21 +2440,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/5579.png",
       "league": "Belgian Pro League",
       "status": "Scheduled",
-      "time": "02:00 PM",
+      "time": "15:00",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T14:00Z",
       "timestamp": 1791727200000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401878975",
       "espnLeagueCode": "bel.1",
       "homeTeamId": "5807",
@@ -2858,21 +2463,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/17544.png",
       "league": "Belgian Pro League",
       "status": "Scheduled",
-      "time": "04:30 PM",
+      "time": "17:30",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T16:30Z",
       "timestamp": 1791736200000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401878970",
       "espnLeagueCode": "bel.1",
       "homeTeamId": "606",
@@ -2886,21 +2486,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/936.png",
       "league": "Belgian Pro League",
       "status": "Scheduled",
-      "time": "05:15 PM",
+      "time": "18:15",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T17:15Z",
       "timestamp": 1791738900000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401878972",
       "espnLeagueCode": "bel.1",
       "homeTeamId": "7879",
@@ -2914,21 +2509,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/22022.png",
       "league": "Saudi Pro League",
       "status": "Scheduled",
-      "time": "01:50 PM",
+      "time": "14:50",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T13:50Z",
       "timestamp": 1791553800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401900908",
       "espnLeagueCode": "ksa.1",
       "homeTeamId": "22028",
@@ -2942,21 +2532,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/8346.png",
       "league": "Saudi Pro League",
       "status": "Scheduled",
-      "time": "02:55 PM",
+      "time": "15:55",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T14:55Z",
       "timestamp": 1791557700000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401900912",
       "espnLeagueCode": "ksa.1",
       "homeTeamId": "13033",
@@ -2970,21 +2555,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/131746.png",
       "league": "Saudi Pro League",
       "status": "Scheduled",
-      "time": "06:00 PM",
+      "time": "19:00",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T18:00Z",
       "timestamp": 1791568800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401900907",
       "espnLeagueCode": "ksa.1",
       "homeTeamId": "817",
@@ -2998,21 +2578,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/130899.png",
       "league": "Saudi Pro League",
       "status": "Scheduled",
-      "time": "01:50 PM",
+      "time": "14:50",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T13:50Z",
       "timestamp": 1791640200000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401900910",
       "espnLeagueCode": "ksa.1",
       "homeTeamId": "21964",
@@ -3026,21 +2601,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/21829.png",
       "league": "Saudi Pro League",
       "status": "Scheduled",
-      "time": "02:55 PM",
+      "time": "15:55",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T14:55Z",
       "timestamp": 1791644100000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401900913",
       "espnLeagueCode": "ksa.1",
       "homeTeamId": "8363",
@@ -3054,21 +2624,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2276.png",
       "league": "Saudi Pro League",
       "status": "Scheduled",
-      "time": "06:00 PM",
+      "time": "19:00",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T18:00Z",
       "timestamp": 1791655200000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401900909",
       "espnLeagueCode": "ksa.1",
       "homeTeamId": "929",
@@ -3082,21 +2647,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/21965.png",
       "league": "Saudi Pro League",
       "status": "Scheduled",
-      "time": "01:40 PM",
+      "time": "14:40",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T13:40Z",
       "timestamp": 1791726000000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401900911",
       "espnLeagueCode": "ksa.1",
       "homeTeamId": "21827",
@@ -3110,21 +2670,16 @@
       "awayLogo": "https://ui-avatars.com/api/?name=Al%20Faisaly&background=334155&color=f8fafc",
       "league": "Saudi Pro League",
       "status": "Scheduled",
-      "time": "03:25 PM",
+      "time": "16:25",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T15:25Z",
       "timestamp": 1791732300000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401900914",
       "espnLeagueCode": "ksa.1",
       "homeTeamId": "21833",
@@ -3138,21 +2693,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/18459.png",
       "league": "Saudi Pro League",
       "status": "Scheduled",
-      "time": "06:00 PM",
+      "time": "19:00",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T18:00Z",
       "timestamp": 1791741600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401900906",
       "espnLeagueCode": "ksa.1",
       "homeTeamId": "793",
@@ -3166,14 +2716,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/1010.png",
       "league": "Greek Super League",
       "status": "Scheduled",
-      "time": "04:30 PM",
+      "time": "17:30",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T16:30Z",
       "timestamp": 1791649800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -3187,11 +2737,6 @@
         "overUnder": 3.5,
         "details": "AEK -525"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401896754",
       "espnLeagueCode": "gre.1",
       "homeTeamId": "887",
@@ -3205,14 +2750,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/6790.png",
       "league": "Greek Super League",
       "status": "Scheduled",
-      "time": "04:30 PM",
+      "time": "17:30",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T16:30Z",
       "timestamp": 1791649800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -3226,11 +2771,6 @@
         "overUnder": 2.5,
         "details": "AST +135"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401896753",
       "espnLeagueCode": "gre.1",
       "homeTeamId": "8354",
@@ -3244,14 +2784,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/5276.png",
       "league": "Greek Super League",
       "status": "Scheduled",
-      "time": "02:00 PM",
+      "time": "15:00",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T14:00Z",
       "timestamp": 1791727200000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -3265,11 +2805,6 @@
         "overUnder": 2.5,
         "details": "IRAK +125"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401896818",
       "espnLeagueCode": "gre.1",
       "homeTeamId": "2575",
@@ -3283,14 +2818,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/11431.png",
       "league": "Greek Super League",
       "status": "Scheduled",
-      "time": "02:00 PM",
+      "time": "15:00",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T14:00Z",
       "timestamp": 1791727200000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -3304,11 +2839,6 @@
         "overUnder": 2.5,
         "details": "KIF -110"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401896751",
       "espnLeagueCode": "gre.1",
       "homeTeamId": "21969",
@@ -3322,14 +2852,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/20043.png",
       "league": "Greek Super League",
       "status": "Scheduled",
-      "time": "04:00 PM",
+      "time": "17:00",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T16:00Z",
       "timestamp": 1791734400000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -3343,11 +2873,6 @@
         "overUnder": 2.5,
         "details": "ARI -225"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401896752",
       "espnLeagueCode": "gre.1",
       "homeTeamId": "11553",
@@ -3361,14 +2886,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/443.png",
       "league": "Greek Super League",
       "status": "Scheduled",
-      "time": "06:00 PM",
+      "time": "19:00",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T18:00Z",
       "timestamp": 1791741600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -3382,11 +2907,6 @@
         "overUnder": 2.5,
         "details": "OLY +115"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401896750",
       "espnLeagueCode": "gre.1",
       "homeTeamId": "435",
@@ -3400,14 +2920,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/132429.png",
       "league": "Greek Super League",
       "status": "Scheduled",
-      "time": "03:00 PM",
+      "time": "16:00",
       "date": "12/10/2026",
       "dateIso": "2026-10-12",
       "utcDate": "2026-10-12T15:00Z",
       "timestamp": 1791817200000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -3421,11 +2941,6 @@
         "overUnder": 3.5,
         "details": "PAOK -550"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401896819",
       "espnLeagueCode": "gre.1",
       "homeTeamId": "605",
@@ -3439,14 +2954,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/6870.png",
       "league": "Turkish Super Lig",
       "status": "Scheduled",
-      "time": "05:00 PM",
+      "time": "18:00",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T17:00Z",
       "timestamp": 1791565200000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -3460,11 +2975,6 @@
         "overUnder": 3.5,
         "details": "GAL -425"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401888280",
       "espnLeagueCode": "tur.1",
       "homeTeamId": "432",
@@ -3478,14 +2988,14 @@
       "awayLogo": "https://ui-avatars.com/api/?name=Amed%20SFK&background=334155&color=f8fafc",
       "league": "Turkish Super Lig",
       "status": "Scheduled",
-      "time": "10:30 AM",
+      "time": "11:30",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T10:30Z",
       "timestamp": 1791628200000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -3499,11 +3009,6 @@
         "overUnder": 2.5,
         "details": "AMED +145"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401888379",
       "espnLeagueCode": "tur.1",
       "homeTeamId": "996",
@@ -3517,21 +3022,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/19267.png",
       "league": "Turkish Super Lig",
       "status": "Scheduled",
-      "time": "01:00 PM",
+      "time": "14:00",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T13:00Z",
       "timestamp": 1791637200000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401888283",
       "espnLeagueCode": "tur.1",
       "homeTeamId": "9078",
@@ -3545,21 +3045,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/997.png",
       "league": "Turkish Super Lig",
       "status": "Scheduled",
-      "time": "01:00 PM",
+      "time": "14:00",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T13:00Z",
       "timestamp": 1791637200000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401888278",
       "espnLeagueCode": "tur.1",
       "homeTeamId": "11429",
@@ -3573,14 +3068,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/436.png",
       "league": "Turkish Super Lig",
       "status": "Scheduled",
-      "time": "04:00 PM",
+      "time": "17:00",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T16:00Z",
       "timestamp": 1791648000000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -3594,11 +3089,6 @@
         "overUnder": 2.5,
         "details": "FEN -135"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401888282",
       "espnLeagueCode": "tur.1",
       "homeTeamId": "7656",
@@ -3612,21 +3102,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/7914.png",
       "league": "Turkish Super Lig",
       "status": "Scheduled",
-      "time": "10:30 AM",
+      "time": "11:30",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T10:30Z",
       "timestamp": 1791714600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401888281",
       "espnLeagueCode": "tur.1",
       "homeTeamId": "7648",
@@ -3640,14 +3125,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/132334.png",
       "league": "Turkish Super Lig",
       "status": "Scheduled",
-      "time": "01:00 PM",
+      "time": "14:00",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T13:00Z",
       "timestamp": 1791723600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -3661,11 +3146,6 @@
         "overUnder": 2.5,
         "details": "GAZ +155"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401888380",
       "espnLeagueCode": "tur.1",
       "homeTeamId": "20070",
@@ -3679,21 +3159,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/995.png",
       "league": "Turkish Super Lig",
       "status": "Scheduled",
-      "time": "04:00 PM",
+      "time": "17:00",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T16:00Z",
       "timestamp": 1791734400000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401888279",
       "espnLeagueCode": "tur.1",
       "homeTeamId": "1895",
@@ -3707,21 +3182,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/789.png",
       "league": "Turkish Super Lig",
       "status": "Scheduled",
-      "time": "05:00 PM",
+      "time": "18:00",
       "date": "12/10/2026",
       "dateIso": "2026-10-12",
       "utcDate": "2026-10-12T17:00Z",
       "timestamp": 1791824400000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401888284",
       "espnLeagueCode": "tur.1",
       "homeTeamId": "20729",
@@ -3735,14 +3205,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/174.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "04:45 PM",
+      "time": "17:45",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T16:45Z",
       "timestamp": 1792082700000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -3756,11 +3226,6 @@
         "overUnder": 2.5,
         "details": "MON -220"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401915855",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "10834",
@@ -3774,14 +3239,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2922.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "04:45 PM",
+      "time": "17:45",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T16:45Z",
       "timestamp": 1792082700000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -3795,11 +3260,6 @@
         "overUnder": 2.5,
         "details": "GET +130"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401915854",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "8089",
@@ -3813,21 +3273,16 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/572.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "04:45 PM",
+      "time": "17:45",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T16:45Z",
       "timestamp": 1792082700000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401915859",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "21943",
@@ -3841,14 +3296,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2290.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "04:45 PM",
+      "time": "17:45",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T16:45Z",
       "timestamp": 1792082700000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -3862,11 +3317,6 @@
         "overUnder": 2.5,
         "details": "RSB +140"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401915748",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "7672",
@@ -3880,14 +3330,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/139.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "04:45 PM",
+      "time": "17:45",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T16:45Z",
       "timestamp": 1792082700000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -3901,11 +3351,6 @@
         "overUnder": 3.5,
         "details": "AJA -190"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401915861",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "489",
@@ -3919,14 +3364,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/7853.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "04:45 PM",
+      "time": "17:45",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T16:45Z",
       "timestamp": 1792082700000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -3940,11 +3385,6 @@
         "overUnder": 2.5,
         "details": "GENT -165"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401915860",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "3611",
@@ -3958,14 +3398,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/997.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "04:45 PM",
+      "time": "17:45",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T16:45Z",
       "timestamp": 1792082700000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -3979,11 +3419,6 @@
         "overUnder": 2.5,
         "details": "TRAB -210"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401915858",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "8169",
@@ -3997,14 +3432,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/20703.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "04:45 PM",
+      "time": "17:45",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T16:45Z",
       "timestamp": 1792082700000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -4018,11 +3453,6 @@
         "overUnder": 2.5,
         "details": "MJA -450"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401915857",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "20301",
@@ -4036,14 +3466,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/20710.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "04:45 PM",
+      "time": "17:45",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T16:45Z",
       "timestamp": 1792082700000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -4057,11 +3487,6 @@
         "overUnder": 3.5,
         "details": "PAO -450"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401915856",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "443",
@@ -4075,14 +3500,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2528.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "04:45 PM",
+      "time": "17:45",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T16:45Z",
       "timestamp": 1792082700000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -4096,11 +3521,6 @@
         "overUnder": 2.5,
         "details": "RIG -115"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401915747",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "19246",
@@ -4114,14 +3534,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/22281.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "07:00 PM",
+      "time": "20:00",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T19:00Z",
       "timestamp": 1792090800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -4135,11 +3555,6 @@
         "overUnder": 2.5,
         "details": "ATA -280"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401915746",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "105",
@@ -4153,14 +3568,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/20028.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "07:00 PM",
+      "time": "20:00",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T19:00Z",
       "timestamp": 1792090800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -4174,11 +3589,6 @@
         "overUnder": 4.5,
         "details": "BHA -5000"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401915853",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "331",
@@ -4192,14 +3602,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2994.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "07:00 PM",
+      "time": "20:00",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T19:00Z",
       "timestamp": 1792090800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -4213,11 +3623,6 @@
         "overUnder": 2.5,
         "details": "KBH +145"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401915852",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "909",
@@ -4231,14 +3636,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/3024.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "07:00 PM",
+      "time": "20:00",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T19:00Z",
       "timestamp": 1792090800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -4252,11 +3657,6 @@
         "overUnder": 3.5,
         "details": "TWE -525"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401915851",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "152",
@@ -4270,14 +3670,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/3101.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "07:00 PM",
+      "time": "20:00",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T19:00Z",
       "timestamp": 1792090800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -4291,11 +3691,6 @@
         "overUnder": 2.5,
         "details": "FCN +150"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401915850",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "262",
@@ -4309,14 +3704,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/7922.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "07:00 PM",
+      "time": "20:00",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T19:00Z",
       "timestamp": 1792090800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -4330,11 +3725,6 @@
         "overUnder": 3.5,
         "details": "SCF -360"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401915848",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "126",
@@ -4348,14 +3738,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/20025.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "07:00 PM",
+      "time": "20:00",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T19:00Z",
       "timestamp": 1792090800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -4369,11 +3759,6 @@
         "overUnder": 2.5,
         "details": "STVV -250"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401915849",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "936",
@@ -4387,14 +3772,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/17856.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "07:00 PM",
+      "time": "20:00",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T19:00Z",
       "timestamp": 1792090800000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -4408,11 +3793,6 @@
         "overUnder": 3.5,
         "details": "SKBR -700"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401915847",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "620",
@@ -4426,14 +3806,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/mlt.png",
       "league": "UEFA Nations League",
       "status": "Scheduled",
-      "time": "04:00 PM",
+      "time": "17:00",
       "date": "24/09/2026",
       "dateIso": "2026-09-24",
       "utcDate": "2026-09-24T16:00Z",
       "timestamp": 1790265600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -4447,11 +3827,6 @@
         "overUnder": 1.5,
         "details": "MLT +135"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401861047",
       "espnLeagueCode": "uefa.nations",
       "homeTeamId": "587",
@@ -4465,14 +3840,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/isr.png",
       "league": "UEFA Nations League",
       "status": "Scheduled",
-      "time": "06:45 PM",
+      "time": "19:45",
       "date": "24/09/2026",
       "dateIso": "2026-09-24",
       "utcDate": "2026-09-24T18:45Z",
       "timestamp": 1790275500000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -4486,11 +3861,6 @@
         "overUnder": 3.5,
         "details": "AUT -250"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401861048",
       "espnLeagueCode": "uefa.nations",
       "homeTeamId": "474",
@@ -4504,14 +3874,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/irl.png",
       "league": "UEFA Nations League",
       "status": "Scheduled",
-      "time": "06:45 PM",
+      "time": "19:45",
       "date": "24/09/2026",
       "dateIso": "2026-09-24",
       "utcDate": "2026-09-24T18:45Z",
       "timestamp": 1790275500000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -4525,11 +3895,6 @@
         "overUnder": 2.5,
         "details": "KOS +140"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401861045",
       "espnLeagueCode": "uefa.nations",
       "homeTeamId": "18272",
@@ -4543,14 +3908,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/ltu.png",
       "league": "UEFA Nations League",
       "status": "Scheduled",
-      "time": "06:45 PM",
+      "time": "19:45",
       "date": "24/09/2026",
       "dateIso": "2026-09-24",
       "utcDate": "2026-09-24T18:45Z",
       "timestamp": 1790275500000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -4564,11 +3929,6 @@
         "overUnder": 2.5,
         "details": "LTU -340"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401861043",
       "espnLeagueCode": "uefa.nations",
       "homeTeamId": "589",
@@ -4582,14 +3942,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/ger.png",
       "league": "UEFA Nations League",
       "status": "Scheduled",
-      "time": "06:45 PM",
+      "time": "19:45",
       "date": "24/09/2026",
       "dateIso": "2026-09-24",
       "utcDate": "2026-09-24T18:45Z",
       "timestamp": 1790275500000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -4603,11 +3963,6 @@
         "overUnder": 3.5,
         "details": "NED +130"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401861041",
       "espnLeagueCode": "uefa.nations",
       "homeTeamId": "449",
@@ -4621,14 +3976,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/den.png",
       "league": "UEFA Nations League",
       "status": "Scheduled",
-      "time": "06:45 PM",
+      "time": "19:45",
       "date": "24/09/2026",
       "dateIso": "2026-09-24",
       "utcDate": "2026-09-24T18:45Z",
       "timestamp": 1790275500000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -4642,11 +3997,6 @@
         "overUnder": 2.5,
         "details": "NOR -140"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401861046",
       "espnLeagueCode": "uefa.nations",
       "homeTeamId": "464",
@@ -4660,14 +4010,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/wal.png",
       "league": "UEFA Nations League",
       "status": "Scheduled",
-      "time": "06:45 PM",
+      "time": "19:45",
       "date": "24/09/2026",
       "dateIso": "2026-09-24",
       "utcDate": "2026-09-24T18:45Z",
       "timestamp": 1790275500000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -4681,11 +4031,6 @@
         "overUnder": 3.5,
         "details": "POR -500"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401861044",
       "espnLeagueCode": "uefa.nations",
       "homeTeamId": "482",
@@ -4699,14 +4044,14 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/gre.png",
       "league": "UEFA Nations League",
       "status": "Scheduled",
-      "time": "06:45 PM",
+      "time": "19:45",
       "date": "24/09/2026",
       "dateIso": "2026-09-24",
       "utcDate": "2026-09-24T18:45Z",
       "timestamp": 1790275500000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": {
         "provider": "DraftKings",
@@ -4720,11 +4065,6 @@
         "overUnder": 2.5,
         "details": "SRB +150"
       },
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401861042",
       "espnLeagueCode": "uefa.nations",
       "homeTeamId": "6757",
@@ -4738,21 +4078,16 @@
       "awayLogo": "https://ui-avatars.com/api/?name=CD%20Tede%C3%B3n&background=334155&color=f8fafc",
       "league": "Copa del Rey",
       "status": "Scheduled",
-      "time": "04:00 PM",
+      "time": "17:00",
       "date": "26/09/2026",
       "dateIso": "2026-09-26",
       "utcDate": "2026-09-26T16:00Z",
       "timestamp": 1790438400000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401918750",
       "espnLeagueCode": "esp.copa_del_rey",
       "homeTeamId": "20776",
@@ -4766,21 +4101,16 @@
       "awayLogo": "https://ui-avatars.com/api/?name=CD%20Bazt%C3%A1n&background=334155&color=f8fafc",
       "league": "Copa del Rey",
       "status": "Scheduled",
-      "time": "04:00 PM",
+      "time": "17:00",
       "date": "26/09/2026",
       "dateIso": "2026-09-26",
       "utcDate": "2026-09-26T16:00Z",
       "timestamp": 1790438400000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401918755",
       "espnLeagueCode": "esp.copa_del_rey",
       "homeTeamId": "131403",
@@ -4794,21 +4124,16 @@
       "awayLogo": "https://ui-avatars.com/api/?name=Ceuta%206%20de%20Junio&background=334155&color=f8fafc",
       "league": "Copa del Rey",
       "status": "Scheduled",
-      "time": "04:00 PM",
+      "time": "17:00",
       "date": "26/09/2026",
       "dateIso": "2026-09-26",
       "utcDate": "2026-09-26T16:00Z",
       "timestamp": 1790438400000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401918765",
       "espnLeagueCode": "esp.copa_del_rey",
       "homeTeamId": "133844",
@@ -4822,21 +4147,16 @@
       "awayLogo": "https://ui-avatars.com/api/?name=SD%20Noja&background=334155&color=f8fafc",
       "league": "Copa del Rey",
       "status": "Scheduled",
-      "time": "05:00 PM",
+      "time": "18:00",
       "date": "26/09/2026",
       "dateIso": "2026-09-26",
       "utcDate": "2026-09-26T17:00Z",
       "timestamp": 1790442000000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401918756",
       "espnLeagueCode": "esp.copa_del_rey",
       "homeTeamId": "133842",
@@ -4850,28 +4170,252 @@
       "awayLogo": "https://ui-avatars.com/api/?name=Atl%C3%A9tico%20Melilla&background=334155&color=f8fafc",
       "league": "Copa del Rey",
       "status": "Scheduled",
-      "time": "06:00 PM",
+      "time": "19:00",
       "date": "26/09/2026",
       "dateIso": "2026-09-26",
       "utcDate": "2026-09-26T18:00Z",
       "timestamp": 1790445600000,
       "goals": {
-        "home": null,
-        "away": null
+        "home": 0,
+        "away": 0
       },
       "odds": null,
-      "isCompleted": false,
-      "homeScore": null,
-      "awayScore": null,
-      "actualScore": null,
-      "actualWinner": null,
       "espnEventId": "401918764",
       "espnLeagueCode": "esp.copa_del_rey",
       "homeTeamId": "133832",
       "awayTeamId": "131419"
     }
   ],
-  "yesterdayMatches": [],
+  "yesterdayMatches": [
+    {
+      "id": "401882861",
+      "home": "Getafe",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2922.png",
+      "away": "Málaga",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/99.png",
+      "league": "LaLiga",
+      "status": "FT",
+      "time": "13:00",
+      "date": "20/09/2026",
+      "dateIso": "2026-09-20",
+      "utcDate": "2026-09-20T12:00Z",
+      "timestamp": 1789905600000,
+      "goals": {
+        "home": 1,
+        "away": 0
+      },
+      "espnLeagueCode": "esp.1"
+    },
+    {
+      "id": "401882865",
+      "home": "Atlético Madrid",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/1068.png",
+      "away": "Real Madrid",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/86.png",
+      "league": "LaLiga",
+      "status": "FT",
+      "time": "15:15",
+      "date": "20/09/2026",
+      "dateIso": "2026-09-20",
+      "utcDate": "2026-09-20T14:15Z",
+      "timestamp": 1789913700000,
+      "goals": {
+        "home": 2,
+        "away": 1
+      },
+      "espnLeagueCode": "esp.1"
+    },
+    {
+      "id": "401882863",
+      "home": "Deportivo",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/90.png",
+      "away": "Real Betis",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/244.png",
+      "league": "LaLiga",
+      "status": "FT",
+      "time": "17:30",
+      "date": "20/09/2026",
+      "dateIso": "2026-09-20",
+      "utcDate": "2026-09-20T16:30Z",
+      "timestamp": 1789921800000,
+      "goals": {
+        "home": 1,
+        "away": 1
+      },
+      "espnLeagueCode": "esp.1"
+    },
+    {
+      "id": "401882857",
+      "home": "Villarreal",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/102.png",
+      "away": "Levante",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/1538.png",
+      "league": "LaLiga",
+      "status": "FT",
+      "time": "17:30",
+      "date": "20/09/2026",
+      "dateIso": "2026-09-20",
+      "utcDate": "2026-09-20T16:30Z",
+      "timestamp": 1789921800000,
+      "goals": {
+        "home": 3,
+        "away": 1
+      },
+      "espnLeagueCode": "esp.1"
+    },
+    {
+      "id": "401882858",
+      "home": "Valencia",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/94.png",
+      "away": "Real Sociedad",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/89.png",
+      "league": "LaLiga",
+      "status": "FT",
+      "time": "20:00",
+      "date": "20/09/2026",
+      "dateIso": "2026-09-20",
+      "utcDate": "2026-09-20T19:00Z",
+      "timestamp": 1789930800000,
+      "goals": {
+        "home": 2,
+        "away": 3
+      },
+      "espnLeagueCode": "esp.1"
+    },
+    {
+      "id": "401915444",
+      "home": "Fenerbahce",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/436.png",
+      "away": "AS Roma",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/104.png",
+      "league": "UEFA Champions League",
+      "status": "FT",
+      "time": "17:45",
+      "date": "10/09/2026",
+      "dateIso": "2026-09-10",
+      "utcDate": "2026-09-10T16:45Z",
+      "timestamp": 1789058700000,
+      "goals": {
+        "home": 1,
+        "away": 1
+      },
+      "espnLeagueCode": "uefa.champions"
+    },
+    {
+      "id": "401915422",
+      "home": "PSV Eindhoven",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/148.png",
+      "away": "Shakhtar Donetsk",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/493.png",
+      "league": "UEFA Champions League",
+      "status": "FT",
+      "time": "17:45",
+      "date": "10/09/2026",
+      "dateIso": "2026-09-10",
+      "utcDate": "2026-09-10T16:45Z",
+      "timestamp": 1789058700000,
+      "goals": {
+        "home": 1,
+        "away": 1
+      },
+      "espnLeagueCode": "uefa.champions"
+    },
+    {
+      "id": "401915443",
+      "home": "Bayern Munich",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/132.png",
+      "away": "Bodo/Glimt",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2980.png",
+      "league": "UEFA Champions League",
+      "status": "FT",
+      "time": "20:00",
+      "date": "10/09/2026",
+      "dateIso": "2026-09-10",
+      "utcDate": "2026-09-10T19:00Z",
+      "timestamp": 1789066800000,
+      "goals": {
+        "home": 5,
+        "away": 0
+      },
+      "espnLeagueCode": "uefa.champions"
+    },
+    {
+      "id": "401915441",
+      "home": "Como",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2572.png",
+      "away": "RB Leipzig",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/11420.png",
+      "league": "UEFA Champions League",
+      "status": "FT",
+      "time": "20:00",
+      "date": "10/09/2026",
+      "dateIso": "2026-09-10",
+      "utcDate": "2026-09-10T19:00Z",
+      "timestamp": 1789066800000,
+      "goals": {
+        "home": 4,
+        "away": 1
+      },
+      "espnLeagueCode": "uefa.champions"
+    },
+    {
+      "id": "401915442",
+      "home": "Manchester United",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/360.png",
+      "away": "Sabah FK",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/21922.png",
+      "league": "UEFA Champions League",
+      "status": "FT",
+      "time": "20:00",
+      "date": "10/09/2026",
+      "dateIso": "2026-09-10",
+      "utcDate": "2026-09-10T19:00Z",
+      "timestamp": 1789066800000,
+      "goals": {
+        "home": 4,
+        "away": 0
+      },
+      "espnLeagueCode": "uefa.champions"
+    },
+    {
+      "id": "401915440",
+      "home": "Slavia Prague",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/494.png",
+      "away": "Lens",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/175.png",
+      "league": "UEFA Champions League",
+      "status": "FT",
+      "time": "20:00",
+      "date": "10/09/2026",
+      "dateIso": "2026-09-10",
+      "utcDate": "2026-09-10T19:00Z",
+      "timestamp": 1789066800000,
+      "goals": {
+        "home": 2,
+        "away": 3
+      },
+      "espnLeagueCode": "uefa.champions"
+    },
+    {
+      "id": "401884788",
+      "home": "Bayer Leverkusen",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/131.png",
+      "away": "RB Leipzig",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/11420.png",
+      "league": "Bundesliga",
+      "status": "FT",
+      "time": "14:30",
+      "date": "20/09/2026",
+      "dateIso": "2026-09-20",
+      "utcDate": "2026-09-20T13:30Z",
+      "timestamp": 1789911000000,
+      "goals": {
+        "home": 2,
+        "away": 0
+      },
+      "espnLeagueCode": "ger.1"
+    }
+  ],
   "todayCompletedMatches": [],
-  "cachedAt": "2026-09-23T19:34:41.761Z"
+  "cachedAt": "2026-09-23T21:26:23.609Z"
 }

@@ -24,6 +24,7 @@ import ErrorBoundary from './ErrorBoundary';
 import PropsSpecialsPage from './PropsSpecialsPage';
 import StrategyProofModal from './StrategyProofModal';
 import DailyBriefingPanel from './DailyBriefingPanel';
+import LiveMatchPlayerModal from './LiveMatchPlayerModal';
 import { resolveMatchOdds, resolveMatchProb } from '../utils/oddsUtils';
 import { isLeagueBlacklisted } from '../utils/leagueUtils';
 import { getTimezoneDisplayLabel } from '../utils/dateUtils';
@@ -114,6 +115,7 @@ export default function Dashboard() {
   // Active selected match for Deep Research or Lineup inspection
   const [activeResearchMatch, setActiveResearchMatch] = useState(null);
   const [activeLineupMatch, setActiveLineupMatch] = useState(null);
+  const [activePlayerMatch, setActivePlayerMatch] = useState(null);
 
   // Bet Slips State
   const [betSlips, setBetSlips] = useState(() => {
@@ -790,6 +792,7 @@ export default function Dashboard() {
                 onClearSlip={handleClearAcca}
                 onOpenLineup={handleOpenLineups}
                 onOpenDeepResearch={handleOpenDeepResearch}
+                onOpenWatchLive={(m) => setActivePlayerMatch(m)}
                 onTriggerScrape={handleTriggerScrape}
                 onTriggerRetrain={handleTriggerRetrain}
                 isScraping={isScraping}
@@ -831,6 +834,7 @@ export default function Dashboard() {
                 accaMatchIds={new Set(accaPicks.map(p => p.id))}
                 onClearSlip={handleClearAcca}
                 onOpenDeepResearch={handleOpenDeepResearch}
+                onOpenWatchLive={(m) => setActivePlayerMatch(m)}
                 onSelectMarketMode={setActivePage}
               />
             )}
@@ -1022,6 +1026,15 @@ export default function Dashboard() {
         <StrategyProofModal
           isOpen={showStrategyProof}
           onClose={() => setShowStrategyProof(false)}
+        />
+
+        {/* Live Match Streaming & Pitch Simulator Modal */}
+        <LiveMatchPlayerModal
+          match={activePlayerMatch}
+          isOpen={Boolean(activePlayerMatch)}
+          onClose={() => setActivePlayerMatch(null)}
+          onAddToSlip={handleToggleAccaPick}
+          isInSlip={activePlayerMatch ? accaPicks.some(p => p.id === activePlayerMatch.id) : false}
         />
 
       </div>

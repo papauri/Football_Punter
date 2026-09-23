@@ -1,7 +1,7 @@
 {
   "Arsenal": {
     "team": "Arsenal",
-    "updatedAt": "2026-09-23T18:01:06.958Z",
+    "updatedAt": "2026-09-23T21:26:21.663Z",
     "matchesCount": 3,
     "record": {
       "wins": 1,
@@ -80,7 +80,7 @@
   },
   "Chelsea": {
     "team": "Chelsea",
-    "updatedAt": "2026-09-23T18:01:06.955Z",
+    "updatedAt": "2026-09-23T21:26:21.651Z",
     "matchesCount": 3,
     "record": {
       "wins": 2,
@@ -158,7 +158,7 @@
   },
   "FC Twente": {
     "team": "FC Twente",
-    "updatedAt": "2026-09-23T18:01:06.882Z",
+    "updatedAt": "2026-09-23T21:26:21.287Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -211,7 +211,7 @@
   },
   "PSV Eindhoven": {
     "team": "PSV Eindhoven",
-    "updatedAt": "2026-09-23T18:01:06.882Z",
+    "updatedAt": "2026-09-23T21:26:21.287Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -277,7 +277,7 @@
   },
   "Fiorentina": {
     "team": "Fiorentina",
-    "updatedAt": "2026-09-23T18:01:06.963Z",
+    "updatedAt": "2026-09-23T21:26:21.688Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -343,7 +343,7 @@
   },
   "Napoli": {
     "team": "Napoli",
-    "updatedAt": "2026-09-23T18:01:06.897Z",
+    "updatedAt": "2026-09-23T21:26:21.364Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -396,7 +396,7 @@
   },
   "Deportivo": {
     "team": "Deportivo",
-    "updatedAt": "2026-09-23T18:01:06.864Z",
+    "updatedAt": "2026-09-23T21:26:21.195Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -449,7 +449,7 @@
   },
   "Real Betis": {
     "team": "Real Betis",
-    "updatedAt": "2026-09-23T18:01:06.864Z",
+    "updatedAt": "2026-09-23T21:26:21.195Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -501,7 +501,7 @@
   },
   "Frosinone": {
     "team": "Frosinone",
-    "updatedAt": "2026-09-23T18:01:06.898Z",
+    "updatedAt": "2026-09-23T21:26:21.371Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -554,7 +554,7 @@
   },
   "Como": {
     "team": "Como",
-    "updatedAt": "2026-09-23T18:01:06.898Z",
+    "updatedAt": "2026-09-23T21:26:21.371Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -621,7 +621,7 @@
   },
   "Fenerbahce": {
     "team": "Fenerbahce",
-    "updatedAt": "2026-09-23T18:01:06.919Z",
+    "updatedAt": "2026-09-23T21:26:21.483Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -687,7 +687,7 @@
   },
   "AS Roma": {
     "team": "AS Roma",
-    "updatedAt": "2026-09-23T18:01:06.867Z",
+    "updatedAt": "2026-09-23T21:26:21.215Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -739,7 +739,7 @@
   },
   "Celtic": {
     "team": "Celtic",
-    "updatedAt": "2026-09-23T18:01:06.928Z",
+    "updatedAt": "2026-09-23T21:26:21.521Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -806,7 +806,7 @@
   },
   "Rangers": {
     "team": "Rangers",
-    "updatedAt": "2026-09-23T18:01:06.895Z",
+    "updatedAt": "2026-09-23T21:26:21.357Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -859,7 +859,7 @@
   },
   "Bayern Munich": {
     "team": "Bayern Munich",
-    "updatedAt": "2026-09-23T18:01:06.960Z",
+    "updatedAt": "2026-09-23T21:26:21.675Z",
     "matchesCount": 3,
     "record": {
       "wins": 3,
@@ -938,7 +938,7 @@
   },
   "Bodo/Glimt": {
     "team": "Bodo/Glimt",
-    "updatedAt": "2026-09-23T18:01:06.871Z",
+    "updatedAt": "2026-09-23T21:26:21.230Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -991,7 +991,7 @@
   },
   "Shakhtar Donetsk": {
     "team": "Shakhtar Donetsk",
-    "updatedAt": "2026-09-23T18:01:06.869Z",
+    "updatedAt": "2026-09-23T21:26:21.223Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -1043,7 +1043,7 @@
   },
   "Villarreal": {
     "team": "Villarreal",
-    "updatedAt": "2026-09-23T18:01:06.865Z",
+    "updatedAt": "2026-09-23T21:26:21.201Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -1096,7 +1096,7 @@
   },
   "Levante": {
     "team": "Levante",
-    "updatedAt": "2026-09-23T18:01:06.865Z",
+    "updatedAt": "2026-09-23T21:26:21.202Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -1149,7 +1149,7 @@
   },
   "Feyenoord Rotterdam": {
     "team": "Feyenoord Rotterdam",
-    "updatedAt": "2026-09-23T18:01:06.880Z",
+    "updatedAt": "2026-09-23T21:26:21.274Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -1202,7 +1202,7 @@
   },
   "FC Utrecht": {
     "team": "FC Utrecht",
-    "updatedAt": "2026-09-23T18:01:06.880Z",
+    "updatedAt": "2026-09-23T21:26:21.274Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -1255,7 +1255,7 @@
   },
   "Santa Clara": {
     "team": "Santa Clara",
-    "updatedAt": "2026-09-23T18:01:06.893Z",
+    "updatedAt": "2026-09-23T21:26:21.342Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -1307,7 +1307,7 @@
   },
   "Braga": {
     "team": "Braga",
-    "updatedAt": "2026-09-23T18:01:06.893Z",
+    "updatedAt": "2026-09-23T21:26:21.343Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -1359,7 +1359,7 @@
   },
   "Getafe": {
     "team": "Getafe",
-    "updatedAt": "2026-09-23T18:01:06.861Z",
+    "updatedAt": "2026-09-23T21:26:21.182Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -1412,7 +1412,7 @@
   },
   "Málaga": {
     "team": "Málaga",
-    "updatedAt": "2026-09-23T18:01:06.861Z",
+    "updatedAt": "2026-09-23T21:26:21.182Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -1478,7 +1478,7 @@
   },
   "Manchester United": {
     "team": "Manchester United",
-    "updatedAt": "2026-09-23T18:01:06.874Z",
+    "updatedAt": "2026-09-23T21:26:21.243Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -1531,7 +1531,7 @@
   },
   "Sabah FK": {
     "team": "Sabah FK",
-    "updatedAt": "2026-09-23T18:01:06.874Z",
+    "updatedAt": "2026-09-23T21:26:21.243Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -1584,7 +1584,7 @@
   },
   "Amed SFK": {
     "team": "Amed SFK",
-    "updatedAt": "2026-09-23T18:01:06.921Z",
+    "updatedAt": "2026-09-23T21:26:21.489Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -1637,7 +1637,7 @@
   },
   "Besiktas": {
     "team": "Besiktas",
-    "updatedAt": "2026-09-23T18:01:06.926Z",
+    "updatedAt": "2026-09-23T21:26:21.515Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -1705,7 +1705,7 @@
   },
   "Marseille": {
     "team": "Marseille",
-    "updatedAt": "2026-09-23T18:01:06.926Z",
+    "updatedAt": "2026-09-23T21:26:21.515Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -1771,7 +1771,7 @@
   },
   "Paris Saint-Germain": {
     "team": "Paris Saint-Germain",
-    "updatedAt": "2026-09-23T18:01:06.935Z",
+    "updatedAt": "2026-09-23T21:26:21.561Z",
     "matchesCount": 2,
     "record": {
       "wins": 2,
@@ -1837,7 +1837,7 @@
   },
   "Bolivia": {
     "team": "Bolivia",
-    "updatedAt": "2026-09-23T18:01:06.949Z",
+    "updatedAt": "2026-09-23T21:26:21.629Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -1890,7 +1890,7 @@
   },
   "Brazil": {
     "team": "Brazil",
-    "updatedAt": "2026-09-23T18:01:06.949Z",
+    "updatedAt": "2026-09-23T21:26:21.629Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -1942,7 +1942,7 @@
   },
   "Parma": {
     "team": "Parma",
-    "updatedAt": "2026-09-23T18:01:06.899Z",
+    "updatedAt": "2026-09-23T21:26:21.378Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -1994,7 +1994,7 @@
   },
   "Genoa": {
     "team": "Genoa",
-    "updatedAt": "2026-09-23T18:01:06.961Z",
+    "updatedAt": "2026-09-23T21:26:21.682Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -2060,7 +2060,7 @@
   },
   "AJ Auxerre": {
     "team": "AJ Auxerre",
-    "updatedAt": "2026-09-23T18:01:06.885Z",
+    "updatedAt": "2026-09-23T21:26:21.300Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -2112,7 +2112,7 @@
   },
   "Brest": {
     "team": "Brest",
-    "updatedAt": "2026-09-23T18:01:06.885Z",
+    "updatedAt": "2026-09-23T21:26:21.300Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2165,7 +2165,7 @@
   },
   "Vitória de Guimaraes": {
     "team": "Vitória de Guimaraes",
-    "updatedAt": "2026-09-23T18:01:06.890Z",
+    "updatedAt": "2026-09-23T21:26:21.328Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2218,7 +2218,7 @@
   },
   "Moreirense": {
     "team": "Moreirense",
-    "updatedAt": "2026-09-23T18:01:06.890Z",
+    "updatedAt": "2026-09-23T21:26:21.328Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2270,7 +2270,7 @@
   },
   "Estrela": {
     "team": "Estrela",
-    "updatedAt": "2026-09-23T18:01:06.889Z",
+    "updatedAt": "2026-09-23T21:26:21.321Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2324,7 +2324,7 @@
   },
   "Académico de Viseu": {
     "team": "Académico de Viseu",
-    "updatedAt": "2026-09-23T18:01:06.889Z",
+    "updatedAt": "2026-09-23T21:26:21.321Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -2376,7 +2376,7 @@
   },
   "SC Paderborn 07": {
     "team": "SC Paderborn 07",
-    "updatedAt": "2026-09-23T18:01:06.879Z",
+    "updatedAt": "2026-09-23T21:26:21.268Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -2429,7 +2429,7 @@
   },
   "TSG Hoffenheim": {
     "team": "TSG Hoffenheim",
-    "updatedAt": "2026-09-23T18:01:06.925Z",
+    "updatedAt": "2026-09-23T21:26:21.509Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -2496,7 +2496,7 @@
   },
   "Levadiakos": {
     "team": "Levadiakos",
-    "updatedAt": "2026-09-23T18:01:06.912Z",
+    "updatedAt": "2026-09-23T21:26:21.444Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2548,7 +2548,7 @@
   },
   "Olympiacos": {
     "team": "Olympiacos",
-    "updatedAt": "2026-09-23T18:01:06.912Z",
+    "updatedAt": "2026-09-23T21:26:21.444Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -2600,7 +2600,7 @@
   },
   "NEC Nijmegen": {
     "team": "NEC Nijmegen",
-    "updatedAt": "2026-09-23T18:01:06.930Z",
+    "updatedAt": "2026-09-23T21:26:21.535Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -2666,7 +2666,7 @@
   },
   "Go Ahead Eagles": {
     "team": "Go Ahead Eagles",
-    "updatedAt": "2026-09-23T18:01:06.884Z",
+    "updatedAt": "2026-09-23T21:26:21.294Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2719,7 +2719,7 @@
   },
   "AZ Alkmaar": {
     "team": "AZ Alkmaar",
-    "updatedAt": "2026-09-23T18:01:06.881Z",
+    "updatedAt": "2026-09-23T21:26:21.281Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -2772,7 +2772,7 @@
   },
   "Telstar": {
     "team": "Telstar",
-    "updatedAt": "2026-09-23T18:01:06.881Z",
+    "updatedAt": "2026-09-23T21:26:21.281Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2824,7 +2824,7 @@
   },
   "Aston Villa": {
     "team": "Aston Villa",
-    "updatedAt": "2026-09-23T18:01:06.935Z",
+    "updatedAt": "2026-09-23T21:26:21.562Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2877,7 +2877,7 @@
   },
   "Erzurum BB": {
     "team": "Erzurum BB",
-    "updatedAt": "2026-09-23T18:01:06.918Z",
+    "updatedAt": "2026-09-23T21:26:21.475Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -2929,7 +2929,7 @@
   },
   "Samsunspor": {
     "team": "Samsunspor",
-    "updatedAt": "2026-09-23T18:01:06.918Z",
+    "updatedAt": "2026-09-23T21:26:21.475Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2982,7 +2982,7 @@
   },
   "Nice": {
     "team": "Nice",
-    "updatedAt": "2026-09-23T18:01:06.964Z",
+    "updatedAt": "2026-09-23T21:26:21.694Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -3049,7 +3049,7 @@
   },
   "Lille": {
     "team": "Lille",
-    "updatedAt": "2026-09-23T18:01:06.886Z",
+    "updatedAt": "2026-09-23T21:26:21.308Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3104,7 +3104,7 @@
   },
   "Levski Sofia": {
     "team": "Levski Sofia",
-    "updatedAt": "2026-09-23T18:01:06.924Z",
+    "updatedAt": "2026-09-23T21:26:21.502Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3156,7 +3156,7 @@
   },
   "RB Salzburg": {
     "team": "RB Salzburg",
-    "updatedAt": "2026-09-23T18:01:06.924Z",
+    "updatedAt": "2026-09-23T21:26:21.502Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -3209,7 +3209,7 @@
   },
   "Estoril": {
     "team": "Estoril",
-    "updatedAt": "2026-09-23T18:01:06.892Z",
+    "updatedAt": "2026-09-23T21:26:21.336Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3263,7 +3263,7 @@
   },
   "Casa Pia": {
     "team": "Casa Pia",
-    "updatedAt": "2026-09-23T18:01:06.892Z",
+    "updatedAt": "2026-09-23T21:26:21.336Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -3315,7 +3315,7 @@
   },
   "Al Diriyah": {
     "team": "Al Diriyah",
-    "updatedAt": "2026-09-23T18:01:06.910Z",
+    "updatedAt": "2026-09-23T21:26:21.429Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3367,7 +3367,7 @@
   },
   "Abha": {
     "team": "Abha",
-    "updatedAt": "2026-09-23T18:01:06.910Z",
+    "updatedAt": "2026-09-23T21:26:21.429Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3419,7 +3419,7 @@
   },
   "Atlético Madrid": {
     "team": "Atlético Madrid",
-    "updatedAt": "2026-09-23T18:01:06.863Z",
+    "updatedAt": "2026-09-23T21:26:21.188Z",
     "matchesCount": 2,
     "record": {
       "wins": 2,
@@ -3428,12 +3428,12 @@
       "winRate": 100
     },
     "metrics": {
-      "avgPossession": 54.5,
-      "avgShots": 15,
-      "avgShotsOnTarget": 7,
+      "avgPossession": 48,
+      "avgShots": 10.5,
+      "avgShotsOnTarget": 4,
       "avgGoalsScored": 2,
       "avgGoalsConceded": 1,
-      "avgXgCreated": 2.57,
+      "avgXgCreated": 1.56,
       "avgXgConceded": 0.95,
       "cleanSheets": 0,
       "failedToScore": 0
@@ -3446,8 +3446,7 @@
       "setPieceVulnerability": 3.5
     },
     "recurringWinDrivers": [
-      "Lethal transition efficiency on vertical counter-attacks (<54.5% possession)",
-      "High box penetration: 7 shots on target/game"
+      "Lethal transition efficiency on vertical counter-attacks (<48% possession)"
     ],
     "recurringLossDrivers": [
       "Occasional finishing variance when facing elite shot-stoppers"
@@ -3475,17 +3474,17 @@
         "result": "WIN",
         "score": "2-1",
         "date": "2026-09-20",
-        "possession": 60.9,
-        "shots": 18,
-        "shotsOnTarget": 9,
-        "xG": 3.24,
+        "possession": 48,
+        "shots": 9,
+        "shotsOnTarget": 3,
+        "xG": 1.23,
         "lossReason": null
       }
     ]
   },
   "Real Madrid": {
     "team": "Real Madrid",
-    "updatedAt": "2026-09-23T18:01:06.863Z",
+    "updatedAt": "2026-09-23T21:26:21.189Z",
     "matchesCount": 3,
     "record": {
       "wins": 1,
@@ -3494,12 +3493,12 @@
       "winRate": 33.3
     },
     "metrics": {
-      "avgPossession": 51,
-      "avgShots": 10,
-      "avgShotsOnTarget": 3.7,
+      "avgPossession": 55.3,
+      "avgShots": 10.7,
+      "avgShotsOnTarget": 4,
       "avgGoalsScored": 1.67,
       "avgGoalsConceded": 1.33,
-      "avgXgCreated": 1.45,
+      "avgXgCreated": 1.57,
       "avgXgConceded": 1.27,
       "cleanSheets": 1,
       "failedToScore": 0
@@ -3512,7 +3511,7 @@
       "setPieceVulnerability": 3.5
     },
     "recurringWinDrivers": [
-      "Lethal transition efficiency on vertical counter-attacks (<51% possession)"
+      "Lethal transition efficiency on vertical counter-attacks (<55.3% possession)"
     ],
     "recurringLossDrivers": [
       "Chronic late-game capitulation: conceded in 75'+ in 1 of last 3 matches"
@@ -3553,17 +3552,17 @@
         "result": "LOSS",
         "score": "1-2",
         "date": "2026-09-20",
-        "possession": 39.1,
-        "shots": 8,
-        "shotsOnTarget": 3,
-        "xG": 1.18,
-        "lossReason": "Executive Tactical Verdict: Atlético Madrid dismantled Real Madrid 2-1 by ruthlessly exploiting structural and situational vulnerabilities. Atlético Madrid generated 3.24 xG across 18 shots (9 on target) with 60.9% possession, systematically pinning Real Madrid (39.1% possession, 1.18 xG). The match pivoted irrevocably in the 52' when Dean Huijsen was dismissed, shattering Real Madrid's tactical shape. Atlético Madrid's breakthrough via Alejandro Grimaldo (53') established insurmountable tactical momentum. While Real Madrid attempted late adjustments, Atlético Madrid's defensive discipline and transitional speed rendered the victory completely authoritative."
+        "possession": 52,
+        "shots": 10,
+        "shotsOnTarget": 4,
+        "xG": 1.54,
+        "lossReason": "Executive Tactical Verdict: Atlético Madrid dismantled Real Madrid 2-1 by ruthlessly exploiting structural and situational vulnerabilities. Atlético Madrid generated 1.23 xG across 9 shots (3 on target) with 48% possession, systematically pinning Real Madrid (52% possession, 1.54 xG). While Real Madrid attempted late adjustments, Atlético Madrid's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   },
   "Bosnia-Herzegovina": {
     "team": "Bosnia-Herzegovina",
-    "updatedAt": "2026-09-23T18:01:06.943Z",
+    "updatedAt": "2026-09-23T21:26:21.600Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3616,7 +3615,7 @@
   },
   "Italy": {
     "team": "Italy",
-    "updatedAt": "2026-09-23T18:01:06.943Z",
+    "updatedAt": "2026-09-23T21:26:21.600Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3668,7 +3667,7 @@
   },
   "FC Porto": {
     "team": "FC Porto",
-    "updatedAt": "2026-09-23T18:01:06.894Z",
+    "updatedAt": "2026-09-23T21:26:21.350Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -3721,7 +3720,7 @@
   },
   "Benfica": {
     "team": "Benfica",
-    "updatedAt": "2026-09-23T18:01:06.894Z",
+    "updatedAt": "2026-09-23T21:26:21.351Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3774,7 +3773,7 @@
   },
   "Club Brugge": {
     "team": "Club Brugge",
-    "updatedAt": "2026-09-23T18:01:06.906Z",
+    "updatedAt": "2026-09-23T21:26:21.410Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -3827,7 +3826,7 @@
   },
   "Racing Genk": {
     "team": "Racing Genk",
-    "updatedAt": "2026-09-23T18:01:06.906Z",
+    "updatedAt": "2026-09-23T21:26:21.410Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3880,7 +3879,7 @@
   },
   "Peru": {
     "team": "Peru",
-    "updatedAt": "2026-09-23T18:01:06.952Z",
+    "updatedAt": "2026-09-23T21:26:21.639Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3932,7 +3931,7 @@
   },
   "Paraguay": {
     "team": "Paraguay",
-    "updatedAt": "2026-09-23T18:01:06.952Z",
+    "updatedAt": "2026-09-23T21:26:21.639Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -3985,7 +3984,7 @@
   },
   "Eyupspor": {
     "team": "Eyupspor",
-    "updatedAt": "2026-09-23T18:01:06.919Z",
+    "updatedAt": "2026-09-23T21:26:21.483Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4039,7 +4038,7 @@
   },
   "Schalke 04": {
     "team": "Schalke 04",
-    "updatedAt": "2026-09-23T18:01:06.877Z",
+    "updatedAt": "2026-09-23T21:26:21.261Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4091,7 +4090,7 @@
   },
   "SV Elversberg": {
     "team": "SV Elversberg",
-    "updatedAt": "2026-09-23T18:01:06.877Z",
+    "updatedAt": "2026-09-23T21:26:21.261Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4143,7 +4142,7 @@
   },
   "Spain": {
     "team": "Spain",
-    "updatedAt": "2026-09-23T18:01:06.942Z",
+    "updatedAt": "2026-09-23T21:26:21.594Z",
     "matchesCount": 2,
     "record": {
       "wins": 2,
@@ -4209,7 +4208,7 @@
   },
   "England": {
     "team": "England",
-    "updatedAt": "2026-09-23T18:01:06.936Z",
+    "updatedAt": "2026-09-23T21:26:21.568Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4262,7 +4261,7 @@
   },
   "Neom SC": {
     "team": "Neom SC",
-    "updatedAt": "2026-09-23T18:01:06.909Z",
+    "updatedAt": "2026-09-23T21:26:21.423Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -4315,7 +4314,7 @@
   },
   "Al Fateh": {
     "team": "Al Fateh",
-    "updatedAt": "2026-09-23T18:01:06.909Z",
+    "updatedAt": "2026-09-23T21:26:21.423Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4369,7 +4368,7 @@
   },
   "KV Kortrijk": {
     "team": "KV Kortrijk",
-    "updatedAt": "2026-09-23T18:01:06.907Z",
+    "updatedAt": "2026-09-23T21:26:21.416Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -4421,7 +4420,7 @@
   },
   "Waasland-Beveren": {
     "team": "Waasland-Beveren",
-    "updatedAt": "2026-09-23T18:01:06.907Z",
+    "updatedAt": "2026-09-23T21:26:21.416Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4473,7 +4472,7 @@
   },
   "Slavia Prague": {
     "team": "Slavia Prague",
-    "updatedAt": "2026-09-23T18:01:06.875Z",
+    "updatedAt": "2026-09-23T21:26:21.249Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4527,7 +4526,7 @@
   },
   "Lens": {
     "team": "Lens",
-    "updatedAt": "2026-09-23T18:01:06.964Z",
+    "updatedAt": "2026-09-23T21:26:21.694Z",
     "matchesCount": 2,
     "record": {
       "wins": 2,
@@ -4593,7 +4592,7 @@
   },
   "Kalamata": {
     "team": "Kalamata",
-    "updatedAt": "2026-09-23T18:01:06.916Z",
+    "updatedAt": "2026-09-23T21:26:21.464Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4645,7 +4644,7 @@
   },
   "Panathinaikos": {
     "team": "Panathinaikos",
-    "updatedAt": "2026-09-23T18:01:06.916Z",
+    "updatedAt": "2026-09-23T21:26:21.464Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -4698,7 +4697,7 @@
   },
   "Venezuela": {
     "team": "Venezuela",
-    "updatedAt": "2026-09-23T18:01:06.953Z",
+    "updatedAt": "2026-09-23T21:26:21.645Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4752,7 +4751,7 @@
   },
   "Colombia": {
     "team": "Colombia",
-    "updatedAt": "2026-09-23T18:01:06.953Z",
+    "updatedAt": "2026-09-23T21:26:21.645Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -4805,7 +4804,7 @@
   },
   "OFI CRETE": {
     "team": "OFI CRETE",
-    "updatedAt": "2026-09-23T18:01:06.925Z",
+    "updatedAt": "2026-09-23T21:26:21.509Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -4870,7 +4869,7 @@
   },
   "Volos NFC": {
     "team": "Volos NFC",
-    "updatedAt": "2026-09-23T18:01:06.913Z",
+    "updatedAt": "2026-09-23T21:26:21.450Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4923,7 +4922,7 @@
   },
   "AEK Athens": {
     "team": "AEK Athens",
-    "updatedAt": "2026-09-23T18:01:06.913Z",
+    "updatedAt": "2026-09-23T21:26:21.450Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -4975,7 +4974,7 @@
   },
   "Sint-Truidense": {
     "team": "Sint-Truidense",
-    "updatedAt": "2026-09-23T18:01:06.904Z",
+    "updatedAt": "2026-09-23T21:26:21.403Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5028,7 +5027,7 @@
   },
   "KVC Westerlo": {
     "team": "KVC Westerlo",
-    "updatedAt": "2026-09-23T18:01:06.904Z",
+    "updatedAt": "2026-09-23T21:26:21.404Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -5081,7 +5080,7 @@
   },
   "Kosovo": {
     "team": "Kosovo",
-    "updatedAt": "2026-09-23T18:01:06.946Z",
+    "updatedAt": "2026-09-23T21:26:21.613Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5133,7 +5132,7 @@
   },
   "Türkiye": {
     "team": "Türkiye",
-    "updatedAt": "2026-09-23T18:01:06.946Z",
+    "updatedAt": "2026-09-23T21:26:21.613Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -5185,7 +5184,7 @@
   },
   "Manchester City": {
     "team": "Manchester City",
-    "updatedAt": "2026-09-23T18:01:06.958Z",
+    "updatedAt": "2026-09-23T21:26:21.663Z",
     "matchesCount": 3,
     "record": {
       "wins": 2,
@@ -5266,7 +5265,7 @@
   },
   "Argentina": {
     "team": "Argentina",
-    "updatedAt": "2026-09-23T18:01:06.948Z",
+    "updatedAt": "2026-09-23T21:26:21.624Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -5332,7 +5331,7 @@
   },
   "Ecuador": {
     "team": "Ecuador",
-    "updatedAt": "2026-09-23T18:01:06.948Z",
+    "updatedAt": "2026-09-23T21:26:21.624Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -5384,7 +5383,7 @@
   },
   "Antwerp": {
     "team": "Antwerp",
-    "updatedAt": "2026-09-23T18:01:06.903Z",
+    "updatedAt": "2026-09-23T21:26:21.397Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5437,7 +5436,7 @@
   },
   "Union St.-Gilloise": {
     "team": "Union St.-Gilloise",
-    "updatedAt": "2026-09-23T18:01:06.934Z",
+    "updatedAt": "2026-09-23T21:26:21.555Z",
     "matchesCount": 2,
     "record": {
       "wins": 2,
@@ -5504,7 +5503,7 @@
   },
   "Borussia Dortmund": {
     "team": "Borussia Dortmund",
-    "updatedAt": "2026-09-23T18:01:06.960Z",
+    "updatedAt": "2026-09-23T21:26:21.675Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5557,7 +5556,7 @@
   },
   "Juventus": {
     "team": "Juventus",
-    "updatedAt": "2026-09-23T18:01:06.930Z",
+    "updatedAt": "2026-09-23T21:26:21.535Z",
     "matchesCount": 2,
     "record": {
       "wins": 2,
@@ -5624,7 +5623,7 @@
   },
   "Atalanta": {
     "team": "Atalanta",
-    "updatedAt": "2026-09-23T18:01:06.900Z",
+    "updatedAt": "2026-09-23T21:26:21.384Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5677,7 +5676,7 @@
   },
   "Goztepe": {
     "team": "Goztepe",
-    "updatedAt": "2026-09-23T18:01:06.923Z",
+    "updatedAt": "2026-09-23T21:26:21.496Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5730,7 +5729,7 @@
   },
   "Caykur Rizespor": {
     "team": "Caykur Rizespor",
-    "updatedAt": "2026-09-23T18:01:06.923Z",
+    "updatedAt": "2026-09-23T21:26:21.496Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5782,7 +5781,7 @@
   },
   "Viktoria Plzen": {
     "team": "Viktoria Plzen",
-    "updatedAt": "2026-09-23T18:01:06.934Z",
+    "updatedAt": "2026-09-23T21:26:21.555Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5836,7 +5835,7 @@
   },
   "Real Sociedad": {
     "team": "Real Sociedad",
-    "updatedAt": "2026-09-23T18:01:06.932Z",
+    "updatedAt": "2026-09-23T21:26:21.548Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -5903,7 +5902,7 @@
   },
   "AFC Bournemouth": {
     "team": "AFC Bournemouth",
-    "updatedAt": "2026-09-23T18:01:06.933Z",
+    "updatedAt": "2026-09-23T21:26:21.548Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -5955,7 +5954,7 @@
   },
   "Asteras Tripoli": {
     "team": "Asteras Tripoli",
-    "updatedAt": "2026-09-23T18:01:06.914Z",
+    "updatedAt": "2026-09-23T21:26:21.457Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6007,7 +6006,7 @@
   },
   "Czechia": {
     "team": "Czechia",
-    "updatedAt": "2026-09-23T18:01:06.944Z",
+    "updatedAt": "2026-09-23T21:26:21.608Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6059,7 +6058,7 @@
   },
   "Denmark": {
     "team": "Denmark",
-    "updatedAt": "2026-09-23T18:01:06.944Z",
+    "updatedAt": "2026-09-23T21:26:21.608Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6112,7 +6111,7 @@
   },
   "Pisa": {
     "team": "Pisa",
-    "updatedAt": "2026-09-23T18:01:06.963Z",
+    "updatedAt": "2026-09-23T21:26:21.688Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6165,7 +6164,7 @@
   },
   "Al Riyadh": {
     "team": "Al Riyadh",
-    "updatedAt": "2026-09-23T18:01:06.911Z",
+    "updatedAt": "2026-09-23T21:26:21.436Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -6218,7 +6217,7 @@
   },
   "Al Kholood": {
     "team": "Al Kholood",
-    "updatedAt": "2026-09-23T18:01:06.911Z",
+    "updatedAt": "2026-09-23T21:26:21.436Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6272,7 +6271,7 @@
   },
   "Georgia": {
     "team": "Georgia",
-    "updatedAt": "2026-09-23T18:01:06.938Z",
+    "updatedAt": "2026-09-23T21:26:21.575Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6324,7 +6323,7 @@
   },
   "Greece": {
     "team": "Greece",
-    "updatedAt": "2026-09-23T18:01:06.938Z",
+    "updatedAt": "2026-09-23T21:26:21.575Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6376,7 +6375,7 @@
   },
   "Norwich City": {
     "team": "Norwich City",
-    "updatedAt": "2026-09-23T18:01:06.956Z",
+    "updatedAt": "2026-09-23T21:26:21.657Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6429,7 +6428,7 @@
   },
   "VfL Osnabruck": {
     "team": "VfL Osnabruck",
-    "updatedAt": "2026-09-23T18:01:06.959Z",
+    "updatedAt": "2026-09-23T21:26:21.669Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6482,7 +6481,7 @@
   },
   "AC Milan": {
     "team": "AC Milan",
-    "updatedAt": "2026-09-23T18:01:06.901Z",
+    "updatedAt": "2026-09-23T21:26:21.391Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -6534,7 +6533,7 @@
   },
   "Lecce": {
     "team": "Lecce",
-    "updatedAt": "2026-09-23T18:01:06.901Z",
+    "updatedAt": "2026-09-23T21:26:21.391Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6587,7 +6586,7 @@
   },
   "Panetolikos": {
     "team": "Panetolikos",
-    "updatedAt": "2026-09-23T18:01:06.917Z",
+    "updatedAt": "2026-09-23T21:26:21.469Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6640,7 +6639,7 @@
   },
   "PAOK": {
     "team": "PAOK",
-    "updatedAt": "2026-09-23T18:01:06.917Z",
+    "updatedAt": "2026-09-23T21:26:21.469Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -6693,7 +6692,7 @@
   },
   "Chile": {
     "team": "Chile",
-    "updatedAt": "2026-09-23T18:01:06.951Z",
+    "updatedAt": "2026-09-23T21:26:21.634Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6745,7 +6744,7 @@
   },
   "Uruguay": {
     "team": "Uruguay",
-    "updatedAt": "2026-09-23T18:01:06.951Z",
+    "updatedAt": "2026-09-23T21:26:21.635Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6797,7 +6796,7 @@
   },
   "RB Leipzig": {
     "team": "RB Leipzig",
-    "updatedAt": "2026-09-23T18:01:06.876Z",
+    "updatedAt": "2026-09-23T21:26:21.255Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -6863,7 +6862,7 @@
   },
   "Sudtirol": {
     "team": "Sudtirol",
-    "updatedAt": "2026-09-23T18:01:06.961Z",
+    "updatedAt": "2026-09-23T21:26:21.682Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6915,7 +6914,7 @@
   },
   "Valencia": {
     "team": "Valencia",
-    "updatedAt": "2026-09-23T18:01:06.866Z",
+    "updatedAt": "2026-09-23T21:26:21.208Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6969,7 +6968,7 @@
   },
   "Ferencvaros": {
     "team": "Ferencvaros",
-    "updatedAt": "2026-09-23T18:01:06.928Z",
+    "updatedAt": "2026-09-23T21:26:21.521Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -7022,7 +7021,7 @@
   },
   "Bayer Leverkusen": {
     "team": "Bayer Leverkusen",
-    "updatedAt": "2026-09-23T18:01:06.876Z",
+    "updatedAt": "2026-09-23T21:26:21.255Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -7075,7 +7074,7 @@
   },
   "Ukraine": {
     "team": "Ukraine",
-    "updatedAt": "2026-09-23T18:01:06.939Z",
+    "updatedAt": "2026-09-23T21:26:21.581Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -7128,7 +7127,7 @@
   },
   "Iceland": {
     "team": "Iceland",
-    "updatedAt": "2026-09-23T18:01:06.940Z",
+    "updatedAt": "2026-09-23T21:26:21.581Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -7181,7 +7180,7 @@
   },
   "Crystal Palace": {
     "team": "Crystal Palace",
-    "updatedAt": "2026-09-23T18:01:06.929Z",
+    "updatedAt": "2026-09-23T21:26:21.528Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -7234,7 +7233,7 @@
   },
   "Lech Poznan": {
     "team": "Lech Poznan",
-    "updatedAt": "2026-09-23T18:01:06.929Z",
+    "updatedAt": "2026-09-23T21:26:21.528Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -7288,7 +7287,7 @@
   },
   "Lillestrom": {
     "team": "Lillestrom",
-    "updatedAt": "2026-09-23T18:01:06.931Z",
+    "updatedAt": "2026-09-23T21:26:21.542Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -7343,7 +7342,7 @@
   },
   "Torreense": {
     "team": "Torreense",
-    "updatedAt": "2026-09-23T18:01:06.931Z",
+    "updatedAt": "2026-09-23T21:26:21.542Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -7395,7 +7394,7 @@
   },
   "Sweden": {
     "team": "Sweden",
-    "updatedAt": "2026-09-23T18:01:06.947Z",
+    "updatedAt": "2026-09-23T21:26:21.619Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -7448,7 +7447,7 @@
   },
   "Poland": {
     "team": "Poland",
-    "updatedAt": "2026-09-23T18:01:06.947Z",
+    "updatedAt": "2026-09-23T21:26:21.619Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -7515,7 +7514,7 @@
   },
   "Wales": {
     "team": "Wales",
-    "updatedAt": "2026-09-23T18:01:06.941Z",
+    "updatedAt": "2026-09-23T21:26:21.588Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,

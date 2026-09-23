@@ -2497,6 +2497,35 @@ class SoccerEngine {
     );
 
     const isCompleted = Boolean(isExplicitlyCompleted);
+    const statusLower = String(raw.status || '').toLowerCase();
+    const isLive = !isCompleted && !isScheduled && (
+      raw.isLive === true ||
+      statusLower.includes('live') ||
+      statusLower.includes('in progress') ||
+      statusLower.includes('halftime') ||
+      statusLower === 'ht' ||
+      statusLower === '1h' ||
+      statusLower === '2h' ||
+      /^\d+['’]/.test(raw.status || '') ||
+      (raw.clock != null && raw.clock !== '')
+    );
+
+    const liveMinute = isLive ? (raw.liveMinute || raw.clock || (statusLower.includes('ht') ? 'HT' : (raw.status || "45'"))) : null;
+    const liveHomeScore = isLive ? (raw.liveHomeScore ?? (raw.goals?.home ?? raw.homeScore ?? 0)) : null;
+    const liveAwayScore = isLive ? (raw.liveAwayScore ?? (raw.goals?.away ?? raw.awayScore ?? 0)) : null;
+    const inPlayPrediction = isLive
+      ? (raw.inPlayPrediction || this.calculateInPlayLivePrediction(
+          { home: homeName, away: awayName, lambda: dcProbs.lambda, mu: dcProbs.mu, prob: dcProbs, xG: dcProbs.xG },
+          liveMinute,
+          liveHomeScore,
+          liveAwayScore,
+          raw.inPlayOptions || {}
+        ))
+      : null;
+
+    const broadcast = raw.broadcast || this.getDefaultBroadcastForLeague(league);
+    const channels = raw.channels || (broadcast ? broadcast.split(',').map(s => s.trim()).filter(Boolean) : this.getDefaultChannelsForLeague(league));
+
     const hG = isCompleted ? (raw.homeScore ?? raw.goals?.home ?? (raw.actualScore ? parseInt(raw.actualScore.split('-')[0], 10) : null)) : null;
     const aG = isCompleted ? (raw.awayScore ?? raw.goals?.away ?? (raw.actualScore ? parseInt(raw.actualScore.split('-')[1], 10) : null)) : null;
     const actualScore = isCompleted && hG != null && aG != null ? `${hG}-${aG}` : null;
@@ -2514,16 +2543,22 @@ class SoccerEngine {
       away: awayName,
       awayLogo: raw.awayLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(awayName)}&background=334155&color=f8fafc`,
       league,
-      status: raw.status || (isCompleted ? 'FT' : 'Scheduled'),
+      status: raw.status || (isCompleted ? 'FT' : (isLive ? (liveMinute || 'LIVE') : 'Scheduled')),
       time: raw.time,
       date: raw.date,
       dateIso: raw.dateIso,
       utcDate: raw.utcDate,
       timestamp: raw.timestamp,
       isCompleted,
-      goals: isCompleted ? (raw.goals || (hG != null && aG != null ? { home: hG, away: aG } : { home: null, away: null })) : { home: null, away: null },
-      homeScore: isCompleted ? hG : null,
-      awayScore: isCompleted ? aG : null,
+      isLive,
+      liveMinute,
+      liveScore: isLive && liveHomeScore != null && liveAwayScore != null ? `${liveHomeScore}-${liveAwayScore}` : null,
+      inPlayPrediction,
+      broadcast,
+      channels,
+      goals: isCompleted ? (raw.goals || (hG != null && aG != null ? { home: hG, away: aG } : { home: null, away: null })) : (isLive ? { home: liveHomeScore, away: liveAwayScore } : { home: null, away: null }),
+      homeScore: isCompleted ? hG : (isLive ? liveHomeScore : null),
+      awayScore: isCompleted ? aG : (isLive ? liveAwayScore : null),
       actualScore,
       actualWinner,
       isHit,
@@ -2636,7 +2671,13 @@ class SoccerEngine {
           espnEventId: m.espnEventId,
           espnLeagueCode: m.espnLeagueCode,
           homeTeamId: m.homeTeamId,
-          awayTeamId: m.awayTeamId
+          awayTeamId: m.awayTeamId,
+          broadcast: m.broadcast,
+          channels: m.channels,
+          isLive: m.isLive,
+          liveMinute: m.liveMinute,
+          liveScore: m.liveScore,
+          inPlayPrediction: m.inPlayPrediction
         };
       };
 
@@ -3775,6 +3816,189 @@ class SoccerEngine {
     this.saveTeamTrends();
   }
 
+  // -------------------------------------------------------------
+  // REAL-TIME IN-PLAY / MID-GAME LIVE PREDICTION ENGINE
+  // -------------------------------------------------------------
+  getDefaultBroadcastForLeague(leagueName = '') {
+    const l = String(leagueName).toLowerCase();
+    if (l.includes('premier league') || l.includes('eng.1')) return 'Sky Sports, TNT Sports, Peacock';
+    if (l.includes('champions league') || l.includes('uefa.champions')) return 'TNT Sports, Paramount+, DAZN';
+    if (l.includes('europa') || l.includes('uefa.europa')) return 'TNT Sports, Paramount+';
+    if (l.includes('laliga') || l.includes('esp.1') || l.includes('primera')) return 'ESPN+, ITV4, Premier Sports';
+    if (l.includes('serie a') || l.includes('ita.1')) return 'Paramount+, OneFootball, TNT Sports';
+    if (l.includes('bundesliga') || l.includes('ger.1')) return 'ESPN+, Sky Sport';
+    if (l.includes('ligue 1') || l.includes('fra.1')) return 'beIN SPORTS, DAZN';
+    if (l.includes('mls') || l.includes('usa.1')) return 'Apple TV (MLS Season Pass), FOX Sports';
+    if (l.includes('championship') || l.includes('eng.2')) return 'Sky Sports Football';
+    if (l.includes('fa cup') || l.includes('efl') || l.includes('carabao')) return 'BBC One, ITVX, ESPN+';
+    if (l.includes('nations') || l.includes('world cup')) return 'UEFA.tv, FOX Sports, ITV';
+    return 'Free Live Stream, Club TV';
+  }
+
+  getDefaultChannelsForLeague(leagueName = '') {
+    const b = this.getDefaultBroadcastForLeague(leagueName);
+    return b.split(',').map(s => s.trim()).filter(Boolean);
+  }
+
+  calculateInPlayLivePrediction(match = {}, liveMinute = 45, liveHomeScore = 0, liveAwayScore = 0, options = {}) {
+    const home = match.home || 'Home';
+    const away = match.away || 'Away';
+    
+    // Parse elapsed minute safely
+    let minuteNum = 45;
+    if (typeof liveMinute === 'number') {
+      minuteNum = liveMinute;
+    } else if (typeof liveMinute === 'string') {
+      const clean = liveMinute.replace(/[^0-9+]/g, '');
+      if (liveMinute.toLowerCase().includes('ht') || liveMinute.toLowerCase().includes('half')) {
+        minuteNum = 45;
+      } else if (clean.includes('+')) {
+        const parts = clean.split('+').map(n => parseInt(n, 10) || 0);
+        minuteNum = parts[0] + parts[1];
+      } else {
+        minuteNum = parseInt(clean, 10) || 45;
+      }
+    }
+    minuteNum = Math.min(95, Math.max(1, minuteNum));
+
+    const hScore = Math.max(0, parseInt(liveHomeScore, 10) || 0);
+    const aScore = Math.max(0, parseInt(liveAwayScore, 10) || 0);
+
+    // Remaining time fraction
+    const remFraction = minuteNum >= 90 ? Math.max(0.03, (95 - minuteNum) / 90) : Math.max(0.05, (90 - minuteNum) / 90);
+
+    // Pre-game expected goals
+    let preH = typeof match.lambda === 'number' ? match.lambda : (match.xG?.home ? parseFloat(match.xG.home) : 1.45);
+    let preA = typeof match.mu === 'number' ? match.mu : (match.xG?.away ? parseFloat(match.xG.away) : 1.15);
+
+    // Red card penalties
+    const hRed = options.homeRedCards || 0;
+    const aRed = options.awayRedCards || 0;
+    const hRedMult = Math.pow(0.62, hRed) * Math.pow(1.22, aRed);
+    const aRedMult = Math.pow(0.62, aRed) * Math.pow(1.22, hRed);
+
+    const lambdaRem = Math.max(0.02, preH * remFraction * hRedMult);
+    const muRem = Math.max(0.02, preA * remFraction * aRedMult);
+
+    // Poisson distribution for remaining goals
+    const poisson = (k, l) => {
+      let p = Math.exp(-l);
+      for (let i = 1; i <= k; i++) p = (p * l) / i;
+      return p;
+    };
+
+    let sumH = 0, sumD = 0, sumA = 0;
+    let maxP = -1;
+    let bestRemH = 0, bestRemA = 0;
+
+    for (let gh = 0; gh <= 5; gh++) {
+      const pH = poisson(gh, lambdaRem);
+      for (let ga = 0; ga <= 5; ga++) {
+        const pA = poisson(ga, muRem);
+        const joint = pH * pA;
+        const finH = hScore + gh;
+        const finA = aScore + ga;
+
+        if (finH > finA) sumH += joint;
+        else if (finH === finA) sumD += joint;
+        else sumA += joint;
+
+        if (joint > maxP) {
+          maxP = joint;
+          bestRemH = gh;
+          bestRemA = ga;
+        }
+      }
+    }
+
+    const total = sumH + sumD + sumA || 1;
+    const liveHomeProb = parseFloat(((sumH / total) * 100).toFixed(1));
+    const liveDrawProb = parseFloat(((sumD / total) * 100).toFixed(1));
+    const liveAwayProb = parseFloat(((sumA / total) * 100).toFixed(1));
+
+    const projFinalH = hScore + bestRemH;
+    const projFinalA = aScore + bestRemA;
+    const projectedScore = `${projFinalH} - ${projFinalA}`;
+
+    let livePick = 'HOME';
+    let livePickProb = liveHomeProb;
+    if (liveAwayProb > liveHomeProb && liveAwayProb > liveDrawProb) {
+      livePick = 'AWAY';
+      livePickProb = liveAwayProb;
+    } else if (liveDrawProb > liveHomeProb && liveDrawProb > liveAwayProb) {
+      livePick = 'DRAW';
+      livePickProb = liveDrawProb;
+    }
+
+    const liveOdds = parseFloat((100 / Math.max(12, livePickProb - 3)).toFixed(2));
+
+    // Synthesize dynamic in-play tactical momentum verdict
+    let momentumVerdict = '';
+    let tacticalAdvice = '';
+    const leadDiff = hScore - aScore;
+
+    if (minuteNum >= 75) {
+      if (leadDiff > 0) {
+        momentumVerdict = `${home} managing match tempo with a disciplined low-block rest-defense, successfully protecting their ${hScore}-${aScore} lead (${minuteNum}').`;
+        tacticalAdvice = `Home side entering game-management lockdown. Statistical model projects ${liveHomeProb}% probability to secure outright victory.`;
+      } else if (leadDiff < 0) {
+        momentumVerdict = `${away} maintaining compact mid-block lines and isolating counter-attack channels to protect their ${hScore}-${aScore} advantage (${minuteNum}').`;
+        tacticalAdvice = `Away team controlling transitional territory. Model favors away side (${liveAwayProb}%) to close out the 3 points.`;
+      } else {
+        momentumVerdict = `Tense late-game equilibrium locked at ${hScore}-${aScore} (${minuteNum}'). Both sides cautious in transition to avoid conceding a fatal late counter.`;
+        tacticalAdvice = `Draw probability surged to ${liveDrawProb}%. Stalemate represents the dominant mathematical expectation.`;
+      }
+    } else if (minuteNum >= 45) {
+      if (leadDiff !== 0) {
+        const leader = leadDiff > 0 ? home : away;
+        const chaser = leadDiff > 0 ? away : home;
+        momentumVerdict = `${leader} holding game-state leverage (${hScore}-${aScore}) in the 2nd half. ${chaser} committing additional numbers forward, conceding transition corridors.`;
+        tacticalAdvice = `Live value tilts toward ${leader} holding or extending on counter-attack breakaways. Projected score: ${projectedScore}.`;
+      } else {
+        momentumVerdict = `Evenly contested tactical clash at ${hScore}-${aScore} (${minuteNum}'). Balanced possession with controlled spatial pressure.`;
+        tacticalAdvice = `Managerial bench adjustments will decide the outcome. Model anticipates a ${projectedScore} final result.`;
+      }
+    } else {
+      momentumVerdict = `Early match phase (${minuteNum}'): Current score stands at ${hScore}-${aScore}. Base pre-match models active with live pacing calibration.`;
+      tacticalAdvice = `Opening tactical probes underway. Projected trajectory: ${projectedScore}.`;
+    }
+
+    return {
+      minute: minuteNum,
+      minuteDisplay: typeof liveMinute === 'string' && liveMinute.includes('HT') ? 'HT' : `${minuteNum}'`,
+      currentScore: `${hScore} - ${aScore}`,
+      homeScore: hScore,
+      awayScore: aScore,
+      projectedScore,
+      projectedFinalScore: projectedScore,
+      prob: {
+        home: liveHomeProb,
+        draw: liveDrawProb,
+        away: liveAwayProb
+      },
+      liveProb: {
+        home: liveHomeProb,
+        draw: liveDrawProb,
+        away: liveAwayProb
+      },
+      fairOdds: {
+        home: parseFloat((100 / Math.max(12, liveHomeProb - 3)).toFixed(2)),
+        draw: parseFloat((100 / Math.max(12, liveDrawProb - 3)).toFixed(2)),
+        away: parseFloat((100 / Math.max(12, liveAwayProb - 3)).toFixed(2))
+      },
+      livePick,
+      livePickLabel: livePick === 'HOME' ? `${home} Win` : livePick === 'AWAY' ? `${away} Win` : 'Draw',
+      liveOdds,
+      remainingXg: {
+        home: parseFloat(lambdaRem.toFixed(2)),
+        away: parseFloat(muRem.toFixed(2))
+      },
+      momentumVerdict,
+      tacticalAdvice,
+      timestamp: Date.now()
+    };
+  }
+
   loadTrainingDataFromDisk() {
     try {
       const filePath = path.join(process.cwd(), 'training_data.json');
@@ -4614,8 +4838,57 @@ class SoccerEngine {
             // Immediately parse sharp market consensus odds if published
             const odds = this.parseEspnOdds(comp);
 
+            // Extract broadcast channels
+            let broadcast = null;
+            if (Array.isArray(comp?.broadcasts)) {
+              const names = [];
+              for (const b of comp.broadcasts) {
+                if (Array.isArray(b.names)) names.push(...b.names);
+                else if (b.name) names.push(b.name);
+              }
+              if (names.length > 0) broadcast = [...new Set(names)].join(', ');
+            }
+            if (!broadcast && Array.isArray(comp?.geoBroadcasts)) {
+              const names = comp.geoBroadcasts.map(gb => gb.media?.shortName || gb.media?.name).filter(Boolean);
+              if (names.length > 0) broadcast = [...new Set(names)].join(', ');
+            }
+            if (!broadcast && comp?.broadcast) {
+              broadcast = typeof comp.broadcast === 'string' ? comp.broadcast : comp.broadcast?.name;
+            }
+            if (!broadcast) {
+              broadcast = this.getDefaultBroadcastForLeague(league);
+            }
+            const channels = broadcast ? broadcast.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+            // Detect live in-play status
+            const statusName = ev.status?.type?.name || '';
+            const statusDesc = ev.status?.type?.description || '';
+            const statusDetail = ev.status?.type?.detail || '';
+            const statusShort = ev.status?.type?.shortDetail || '';
+            const isLiveState = ev.status?.type?.state === 'in' || 
+                                statusName === 'STATUS_IN_PROGRESS' || 
+                                statusName === 'STATUS_HALFTIME' ||
+                                statusShort.includes("'") ||
+                                statusShort.toLowerCase() === 'ht' ||
+                                statusDesc.toLowerCase().includes('in progress');
+
+            const isLive = Boolean(isLiveState);
+            const liveMinute = isLive ? (statusShort || (ev.status?.displayClock ? `${ev.status.displayClock}'` : (statusName === 'STATUS_HALFTIME' ? 'HT' : "45'"))) : null;
+            const hLiveScore = home.score !== undefined && home.score !== '' ? parseInt(home.score, 10) : 0;
+            const aLiveScore = away.score !== undefined && away.score !== '' ? parseInt(away.score, 10) : 0;
+
             // Immediately calculate Dixon-Coles probabilities and team news synthesis
             const dcProbs = this.computeDixonColesProbabilities(homeName, awayName, { odds, league });
+            const inPlayPrediction = isLive
+              ? this.calculateInPlayLivePrediction(
+                  { home: homeName, away: awayName, lambda: dcProbs.lambda, mu: dcProbs.mu, prob: dcProbs, xG: dcProbs.xG },
+                  liveMinute,
+                  hLiveScore,
+                  aLiveScore,
+                  {}
+                )
+              : null;
+
             const homeNarrative = this.getTeamNarrative(homeName);
             const awayNarrative = this.getTeamNarrative(awayName);
             const newsImpact = `${homeName}: ${homeNarrative.news} | ${awayName}: ${awayNarrative.news}`;
@@ -4628,12 +4901,18 @@ class SoccerEngine {
               away: awayName,
               awayLogo: away.team.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(awayName)}&background=334155&color=f8fafc`,
               league,
-              status: statusStr,
+              status: isLive ? (liveMinute || 'LIVE') : statusStr,
               time: timeStr,
               date: evDate.toLocaleDateString(),
               dateIso: evDate.toISOString().slice(0, 10),
               utcDate: ev.date || evDate.toISOString(),
               timestamp: evDate.getTime(),
+              isLive,
+              liveMinute,
+              liveScore: isLive ? `${hLiveScore}-${aLiveScore}` : null,
+              inPlayPrediction,
+              broadcast,
+              channels,
               goals: {
                 home: home.score !== undefined && home.score !== '' ? parseInt(home.score, 10) : null,
                 away: away.score !== undefined && away.score !== '' ? parseInt(away.score, 10) : null
@@ -4690,6 +4969,12 @@ class SoccerEngine {
             this.matches[existingIdx].dateIso = item.dateIso;
             this.matches[existingIdx].timestamp = item.timestamp;
             this.matches[existingIdx].utcDate = item.utcDate;
+            this.matches[existingIdx].isLive = item.isLive;
+            this.matches[existingIdx].liveMinute = item.liveMinute;
+            this.matches[existingIdx].liveScore = item.liveScore;
+            this.matches[existingIdx].inPlayPrediction = item.inPlayPrediction;
+            this.matches[existingIdx].broadcast = item.broadcast;
+            this.matches[existingIdx].channels = item.channels;
             this.matches[existingIdx].disruptionModel = item.disruptionModel;
             this.matches[existingIdx].binaryModel = item.binaryModel;
             this.matches[existingIdx].scoreModel = item.scoreModel;
@@ -9954,4 +10239,7 @@ Output format: {"home": 45.5, "draw": 25.5, "away": 29.0, "reason": "Home team r
 }
 
 export const engine = new SoccerEngine();
+export const calculateInPlayLivePrediction = (...args) => engine.calculateInPlayLivePrediction(...args);
+export const getDefaultBroadcastForLeague = (...args) => engine.getDefaultBroadcastForLeague(...args);
+export const getDefaultChannelsForLeague = (...args) => engine.getDefaultChannelsForLeague(...args);
 export { SoccerEngine };
