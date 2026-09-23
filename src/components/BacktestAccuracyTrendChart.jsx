@@ -297,17 +297,17 @@ export default function BacktestAccuracyTrendChart({ data = [], metrics = null }
               labelFormatter={(label, items) => {
                 const item = items?.[0]?.payload;
                 return (
-                  <div className="border-b border-slate-100 pb-1.5 mb-2">
-                    <div className="font-bold text-slate-900 text-xs flex items-center justify-between">
+                  <span className="block border-b border-slate-100 pb-1.5 mb-2">
+                    <span className="font-bold text-slate-900 text-xs flex items-center justify-between">
                       <span>Cohort: {label}</span>
                       <span className="text-[10px] text-slate-500 font-normal">Cohort #{item?.cohort || ''}</span>
-                    </div>
+                    </span>
                     {item?.sampleRange && (
-                      <div className="text-[11px] text-slate-500 font-mono">
+                      <span className="block text-[11px] text-slate-500 font-mono">
                         Matches {item.sampleRange} ({item.matches?.toLocaleString()} games)
-                      </div>
+                      </span>
                     )}
-                  </div>
+                  </span>
                 );
               }}
             />

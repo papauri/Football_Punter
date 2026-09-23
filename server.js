@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { engine } from './engine.js';
+import { isLeagueBlacklisted } from './src/utils/leagueUtils.js';
 import { createServer as createViteServer } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -58,14 +59,30 @@ async function startServer() {
   });
 
   app.get('/api/historical-30d', (req, res) => {
-    if (!engine || !engine.historicalMatches) return res.json({ matches: [] });
+    if (!engine) return res.json({ matches: [] });
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
-    const recentMatches = engine.historicalMatches.filter(m => {
-        const d = m.dateIso || m.date || m.utcDate;
-        if (!d) return false;
-        return new Date(d) >= thirtyDaysAgo;
-    });
+    
+    // Combine todayCompletedMatches, yesterdayMatches, and historicalMatches so recent finishes appear immediately
+    const allMatches = (engine.todayCompletedMatches || [])
+      .concat(engine.yesterdayMatches || [])
+      .concat(engine.historicalMatches || []);
+
+    const seenIds = new Set();
+    const recentMatches = [];
+
+    for (const m of allMatches) {
+      if (isLeagueBlacklisted(m.league) || engine.isLeagueDisabled(m.league)) continue;
+      const idKey = m.id || `${m.home}-${m.away}-${m.dateIso || m.date}`;
+      if (seenIds.has(idKey)) continue;
+      const d = m.dateIso || m.date || m.utcDate;
+      if (!d) continue;
+      const matchDate = new Date(d);
+      if (!isNaN(matchDate.getTime()) && matchDate >= thirtyDaysAgo) {
+        seenIds.add(idKey);
+        recentMatches.push(m);
+      }
+    }
 
     // Populate predictions for historical matches so the chart has real accuracy data
     const populated = recentMatches.map(m => {
@@ -371,9 +388,13 @@ app.get('/api/state', (req, res) => {
     } catch (err) {
       console.error(`Error in /api/fetch-date for ${date}:`, err);
 
-      // Attempt fallback from historical matches or state
-      const rawFallback = (engine.historicalMatches || []).concat(engine.yesterdayMatches || []).concat(engine.matches || [])
-        .filter(x => (x.date && x.date.startsWith(date)) || (x.dateIso && x.dateIso.startsWith(date)));
+      // Attempt fallback from historical matches, today's completions, or state
+      const rawFallback = (engine.todayCompletedMatches || [])
+        .concat(engine.yesterdayMatches || [])
+        .concat(engine.historicalMatches || [])
+        .concat(engine.matches || [])
+        .filter(x => (x.date && x.date.startsWith(date)) || (x.dateIso && x.dateIso.startsWith(date)))
+        .filter(x => !isLeagueBlacklisted(x.league) && !engine.isLeagueDisabled(x.league));
 
       const fallback = rawFallback.map(m => {
         if (m.predictedWinner && m.smartMarket && m.isHit !== undefined) return m;

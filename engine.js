@@ -11,7 +11,7 @@ import path from 'path';
 import { GoogleGenAI } from '@google/genai';
 import { fetchUnderstatData } from './understat_scraper.js';
 import { AISwarmOrchestrator } from './multiAgentSwarm.js';
-import { SOLID_LEAGUES, BLACKLISTED_LEAGUES, isLeagueBlacklisted, isLeagueSolid } from './src/utils/leagueUtils.js';
+import { SOLID_LEAGUES, BLACKLISTED_LEAGUES, isLeagueBlacklisted, isLeagueSolid, isCupCompetition } from './src/utils/leagueUtils.js';
 
 const HYPERPARAMETERS_FILE = path.join(process.cwd(), 'hyperparameters.json');
 
@@ -342,6 +342,7 @@ class SoccerEngine {
       delete process.env.AI_PROVIDER;
     }
     this.logs = [];
+    this.todayCompletedMatches = [];
     this.yesterdayMatches = [];
     this.yesterdayStats = {
       total: 0,
@@ -902,14 +903,14 @@ class SoccerEngine {
       return Math.abs(h);
     };
     const seed = hash(teamName);
-    const attack = 0.85 + ((seed % 115) / 100); // 0.85 to 2.00
-    const defense = 0.70 + (((seed >> 4) % 75) / 100); // 0.70 to 1.45
-    const elo = 1520 + (seed % 420); // 1520 to 1940
-    const xGForm = (attack * 0.9) + (((seed >> 2) % 40) / 100);
-    const lineHeight = 1 + (seed % 10);
-    const counterVelocity = 1 + ((seed >> 3) % 10);
+    const attack = 0.95 + ((seed % 45) / 100); // 0.95 to 1.40 (prevents artificial attack inflation)
+    const defense = 0.90 + (((seed >> 4) % 40) / 100); // 0.90 to 1.30
+    const elo = 1380 + (seed % 160); // 1380 to 1540 (realistic baseline for unranked/semi-pro clubs)
+    const xGForm = attack * 0.95;
+    const lineHeight = 3 + (seed % 5);
+    const counterVelocity = 3 + ((seed >> 3) % 5);
 
-    const starDependency = 5 + (seed % 4);
+    const starDependency = 4 + (seed % 3);
 
     this.teamDb[teamName] = { attack, defense, elo, xGForm, lineHeight, counterVelocity, starDependency };
     return this.teamDb[teamName];
@@ -1717,7 +1718,23 @@ class SoccerEngine {
     }
 
     // Both Teams To Score (BTTS)
-    const pBttsYes = (scorelineMatrix.filter(s => s.homeGoals > 0 && s.awayGoals > 0).reduce((acc, s) => acc + s.prob, 0) / matrixSum) * 100;
+    let pBttsYes = (scorelineMatrix.filter(s => s.homeGoals > 0 && s.awayGoals > 0).reduce((acc, s) => acc + s.prob, 0) / matrixSum) * 100;
+    
+    // Empirical Clean Sheet & Shutout Calibration for BTTS
+    // In domestic cup ties or asymmetric matchups, underdogs suffer frequent clean sheets (BTTS: NO)
+    const isCup = isCupCompetition(options?.league || '');
+    const weakerXg = Math.min(xG_Home, xG_Away);
+    const xgGap = Math.abs(xG_Home - xG_Away);
+
+    if (isCup) {
+      // Cup matches exhibit elevated clean sheet frequency (one side failing to penetrate or blowouts)
+      const cupShutoutAdjustment = Math.min(16, Math.max(5, (1.2 - weakerXg) * 14));
+      pBttsYes = Math.max(15, pBttsYes - cupShutoutAdjustment);
+    } else if (xgGap >= 1.0 || weakerXg < 0.85) {
+      // Asymmetric league matchups: underdogs are shut out ~55% of the time
+      const mismatchDampening = Math.min(12, Math.max(3, (xgGap - 0.7) * 9));
+      pBttsYes = Math.max(18, pBttsYes - mismatchDampening);
+    }
     const pBttsNo = Math.max(0, 100 - pBttsYes);
 
     // Clean Sheets
@@ -2999,6 +3016,7 @@ class SoccerEngine {
       const nextWindowStr = formatYMD(nextWindowDate);
 
       let newCompleted = [];
+      let newTodayCompleted = [];
       let newYesterday = [];
       let newUpcoming = [];
       const seenCompleted = new Set();
@@ -3116,6 +3134,9 @@ class SoccerEngine {
         if (res.status !== 'fulfilled') continue;
         const { league, leagueCode, pastEvents, upEvents } = res.value;
 
+        // Strictly prune blacklisted and disabled noise/volatility leagues from pipeline
+        if (isLeagueBlacklisted(league) || this.isLeagueDisabled(league)) continue;
+
         // Process Real Completed Fixtures for Yesterday & Training Corpus
         for (const ev of pastEvents) {
           const comp = ev.competitions?.[0];
@@ -3128,6 +3149,12 @@ class SoccerEngine {
             const aScore = parseInt(away.score || 0, 10);
             const evDate = ev.date ? new Date(ev.date) : yestDate;
             const isYesterdayMatch = formatYMD(evDate) === yestStr;
+            const isTodayMatch = formatYMD(evDate) === todayStr;
+
+            const dcProbs = this.computeDixonColesProbabilities(home.team.displayName, away.team.displayName, { league });
+            const actualWinner = hScore > aScore ? 'HOME' : aScore > hScore ? 'AWAY' : 'DRAW';
+            const smartHit = this.evaluateHit(dcProbs, hScore, aScore);
+            const isHit = smartHit !== null ? smartHit : (dcProbs.predictedWinner === actualWinner);
 
             const matchItem = {
               id: ev.id || `ESPN_${home.team.id}_${away.team.id}`,
@@ -3138,13 +3165,44 @@ class SoccerEngine {
               league,
               espnLeagueCode: leagueCode || league,
               time: evDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }),
-              date: isYesterdayMatch ? "Yesterday" : evDate.toLocaleDateString(),
+              date: isYesterdayMatch ? "Yesterday" : (isTodayMatch ? "Today" : evDate.toLocaleDateString()),
               dateIso: evDate.toISOString().slice(0, 10),
               utcDate: ev.date || evDate.toISOString(),
               timestamp: evDate.getTime(),
+              isCompleted: true,
+              status: 'FT',
               goals: { home: hScore, away: aScore },
-              actualWinner: hScore > aScore ? 'HOME' : aScore > hScore ? 'AWAY' : 'DRAW'
+              homeScore: hScore,
+              awayScore: aScore,
+              actualScore: `${hScore}-${aScore}`,
+              actualWinner,
+              predictedWinner: dcProbs.predictedWinner,
+              predictedScore: dcProbs.mostLikelyScore,
+              mostLikelyScore: dcProbs.mostLikelyScore,
+              isHit,
+              prob: {
+                home: typeof dcProbs.home === 'number' ? dcProbs.home.toFixed(1) : '33.3',
+                draw: typeof dcProbs.draw === 'number' ? dcProbs.draw.toFixed(1) : '33.4',
+                away: typeof dcProbs.away === 'number' ? dcProbs.away.toFixed(1) : '33.3'
+              },
+              confidence: typeof dcProbs.confidence === 'number' ? dcProbs.confidence.toFixed(1) : '60.0',
+              smartMarket: dcProbs.smartMarket,
+              binaryModel: dcProbs.binaryModel,
+              disruptionModel: dcProbs.disruptionModel,
+              scoreModel: dcProbs.scoreModel,
+              h2h: dcProbs.h2h
             };
+
+            // Update matching fixture in this.matches if present
+            const matchIdx = this.matches.findIndex(m => String(m.id) === String(matchItem.id) || (m.home === matchItem.home && m.away === matchItem.away));
+            if (matchIdx >= 0) {
+              this.matches[matchIdx] = {
+                ...this.matches[matchIdx],
+                ...matchItem,
+                status: 'FT',
+                isCompleted: true
+              };
+            }
 
             if (!seenCompleted.has(matchItem.id)) {
               seenCompleted.add(matchItem.id);
@@ -3153,6 +3211,9 @@ class SoccerEngine {
               this.recordHeadToHeadEncounter(matchItem.home, matchItem.away, hScore, aScore, evDate, league, matchItem.id);
               if (isYesterdayMatch) {
                 newYesterday.push(matchItem);
+              }
+              if (isTodayMatch) {
+                newTodayCompleted.push(matchItem);
               }
             }
           }
@@ -3283,6 +3344,14 @@ class SoccerEngine {
         });
         this.log('ESPNScraper', `Successfully synced ${newUpcoming.length} live/upcoming fixtures with calculated probabilities and news context.`);
       this.autoFetchUpcomingLineups();
+      }
+
+      // Update Today Completed Matches
+      if (newTodayCompleted.length > 0) {
+        if (!this.todayCompletedMatches) this.todayCompletedMatches = [];
+        const existingIds = new Set(this.todayCompletedMatches.map(m => String(m.id)));
+        const fresh = newTodayCompleted.filter(m => !existingIds.has(String(m.id)));
+        this.todayCompletedMatches = [...fresh, ...this.todayCompletedMatches].slice(0, 60);
       }
 
       // Update Yesterday Matches
@@ -4243,6 +4312,14 @@ Output strictly JSON format:
       const match = (this.matches || []).find(m => String(m.id) === String(pick.id) || (m.home === pick.home && m.away === pick.away));
       const pVal = String(pick.pick || '').toUpperCase();
       const isDC = pVal === '1X' || pVal === 'X2' || pVal === '12';
+
+      const matchLeague = pick.league || match?.league;
+      const isBlacklisted = isLeagueBlacklisted(matchLeague) || this.isLeagueDisabled(matchLeague);
+      const isCup = isCupCompetition(matchLeague);
+
+      if (isBlacklisted || isCup) {
+        trapWarnings.push(`⛔ **${pick.home} vs ${pick.away}**: ${isCup ? 'Knockout Cup Competition' : 'Blacklisted League'} (${matchLeague || 'Volatile'}). Purged from bet slips to eliminate extreme squad rotation and volatility.`);
+      }
 
       if (isDC) {
         nonOutrightWarnings.push(`⚠️ **${pick.home} vs ${pick.away}**: Double Chance selection (${pVal}). Acca policy requires straight outrights only (HOME Win or AWAY Win).`);
@@ -6316,6 +6393,9 @@ Provide a crisp 3-bullet assessment:
         const { league, events } = r.value;
         if (!Array.isArray(events)) continue;
 
+        // Strictly prune blacklisted and disabled chaos/volatility competitions from date queries
+        if (isLeagueBlacklisted(league) || this.isLeagueDisabled(league)) continue;
+
         for (const ev of events) {
           try {
             const comp = ev.competitions?.[0];
@@ -6453,6 +6533,27 @@ Provide a crisp 3-bullet assessment:
           });
         });
       }
+    }
+
+    // Merge any completed fixtures in todayCompletedMatches, yesterdayMatches, or this.matches for this date
+    const localCompleted = (this.todayCompletedMatches || [])
+      .concat(this.yesterdayMatches || [])
+      .concat((this.matches || []).filter(m => m.isCompleted || m.status === 'FT' || m.actualScore))
+      .filter(m => (m.dateIso && m.dateIso.startsWith(dateStr)) || (m.date && m.date.startsWith(dateStr)));
+
+    if (localCompleted.length > 0) {
+      const existingIds = new Set(dateMatches.map(m => String(m.id)));
+      localCompleted.forEach(km => {
+        if (!existingIds.has(String(km.id))) {
+          existingIds.add(String(km.id));
+          dateMatches.unshift(km);
+        } else {
+          const idx = dateMatches.findIndex(m => String(m.id) === String(km.id));
+          if (idx >= 0 && (!dateMatches[idx].isCompleted || dateMatches[idx].status !== 'FT')) {
+            dateMatches[idx] = { ...dateMatches[idx], ...km, isCompleted: true, status: 'FT' };
+          }
+        }
+      });
     }
 
     // Cache the resolved matches
@@ -7761,6 +7862,7 @@ Output format: {"home": 45.5, "draw": 25.5, "away": 29.0, "reason": "Home team r
           imperialSwarm: sw?.synthesis || m.imperialSwarm
         };
       }),
+      todayCompletedMatches: this.todayCompletedMatches || [],
       yesterdayMatches: this.yesterdayMatches || [],
       yesterdayStats: this.yesterdayStats || { accuracy: 0.0, total: 0, correctPredictions: 0 },
       logs: this.logs,

@@ -3,7 +3,7 @@
 // 6 Autonomous Specialized Agents Operating Concurrently in Swarm Fleet
 // =========================================================================
 
-import { isLeagueBlacklisted } from './src/utils/leagueUtils.js';
+import { isLeagueBlacklisted, isCupCompetition } from './src/utils/leagueUtils.js';
 
 export class TacticalFormationAgent {
   constructor() {
@@ -394,6 +394,8 @@ export class AISynthesisAgent {
     let isUnanimousDirective = false;
 
     const isBlacklisted = isLeagueBlacklisted(match.league);
+    const isCup = isCupCompetition(match?.league);
+
     if (isBlacklisted) {
       consensusTier = 'BLACKLISTED_LEAGUE_EXEMPT';
       tierBadge = '⛔ Blacklisted League (High Chaos/No Telemetry)';
@@ -405,6 +407,13 @@ export class AISynthesisAgent {
       tierBadge = '⚠️ High-Risk Contrarian Trap Intercepted';
       isContrarianTrap = true;
       isTopValueLeg = false;
+    } else if (isCup) {
+      // Completely exclude all knockout cup ties from top value and unanimous directives to eliminate volatility and false hope
+      consensusTier = 'CUP_VOLATILITY_EXCLUDED';
+      tierBadge = '🚫 Knockout Cup (High Volatility / Excluded from Consensus)';
+      isTopValueLeg = false;
+      isUnanimousDirective = false;
+      is100Unanimous = false;
     } else if (is100Unanimous && (consensusWinner === 'HOME' || consensusWinner === 'AWAY') && matchConf >= 48 && swarmScore >= 68) {
       consensusTier = 'UNANIMOUS_DIRECTIVE';
       tierBadge = swarmScore >= 75 ? '👑 6-Agent Unanimous Consensus (Top Value)' : '👑 6-Agent Unanimous AI Consensus';
@@ -735,9 +744,9 @@ export class AISwarmOrchestrator {
       }
 
       // Curate Directives:
-      // 1. Top Unanimous AI Directives (expand pool so all top qualified consensus legs are accessible)
+      // 1. Top Unanimous AI Directives (strictly exclude blacklisted leagues and volatile cups)
       const unanimousDirectives = allScored
-        .filter(s => s.synthesis.isTopValueLeg && !isLeagueBlacklisted(s.league))
+        .filter(s => s.synthesis.isTopValueLeg && !isLeagueBlacklisted(s.league) && !isCupCompetition(s.league))
         .sort((a, b) => b.synthesis.swarmScore - a.synthesis.swarmScore)
         .slice(0, 16);
 
@@ -749,9 +758,9 @@ export class AISwarmOrchestrator {
       // 3. Golden Top Value Swarm Parlay (6-Agent Unanimous Consensus)
       let parlayLegs = unanimousDirectives;
       if (parlayLegs.length < 2) {
-        // Fallback: top consensus non-trap matches from verified non-blacklisted leagues
+        // Fallback: top consensus non-trap matches from verified solid league fixtures only (zero cup chaos)
         const fallbackCandidates = allScored
-          .filter(s => !s.synthesis.isContrarianTrap && !isLeagueBlacklisted(s.league) && (s.synthesis.masterVerdict === 'HOME' || s.synthesis.masterVerdict === 'AWAY'))
+          .filter(s => !s.synthesis.isContrarianTrap && !isLeagueBlacklisted(s.league) && !isCupCompetition(s.league) && (s.synthesis.masterVerdict === 'HOME' || s.synthesis.masterVerdict === 'AWAY'))
           .sort((a, b) => (b.synthesis.swarmScore || 0) - (a.synthesis.swarmScore || 0));
         parlayLegs = fallbackCandidates.slice(0, 12);
       }
@@ -801,7 +810,7 @@ export class AISwarmOrchestrator {
       // 3b. Dedicated Prime Stable Outright Parlay (100% AI Consensus Outright Straight Wins)
       // Low volatility, high stability fixtures with unanimous council agreement on straight HOME or AWAY win (Zero DC shielding)
       const antiFragileCandidates = allScored
-        .filter(s => !s.synthesis.isContrarianTrap && !isLeagueBlacklisted(s.league) && (s.synthesis.isTopValueLeg || s.synthesis.is100Unanimous || s.synthesis.consensusTier === 'UNANIMOUS_DIRECTIVE'))
+        .filter(s => !s.synthesis.isContrarianTrap && !isLeagueBlacklisted(s.league) && !isCupCompetition(s.league) && (s.synthesis.isTopValueLeg || s.synthesis.is100Unanimous || s.synthesis.consensusTier === 'UNANIMOUS_DIRECTIVE'))
         .filter(s => s.synthesis.masterVerdict === 'HOME' || s.synthesis.masterVerdict === 'AWAY')
         .map(s => {
           const matchObj = upcoming.find(m => String(m.id) === String(s.fixtureId) || `${m.home} vs ${m.away}` === s.fixture);

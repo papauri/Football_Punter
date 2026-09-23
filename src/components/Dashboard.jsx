@@ -23,6 +23,7 @@ import ErrorBoundary from './ErrorBoundary';
 import PropsSpecialsPage from './PropsSpecialsPage';
 import StrategyProofModal from './StrategyProofModal';
 import { resolveMatchOdds, resolveMatchProb } from '../utils/oddsUtils';
+import { isLeagueBlacklisted } from '../utils/leagueUtils';
 
 // =========================================================================
 // TIMEZONE CONTEXT & EXPORTS
@@ -528,24 +529,40 @@ export default function Dashboard() {
   const tuningConfig = state?.hyperparameters || {};
   const disabledLeagues = tuningConfig.disabledLeagues || [];
   
-  // Filter out disabled leagues from historical views so performance accurately reflects active engine
+  const isMatchPruned = useCallback((m) => {
+    if (!m) return true;
+    if (isLeagueBlacklisted(m.league)) return true;
+    if (Array.isArray(disabledLeagues) && disabledLeagues.some(dl => {
+      const d = String(dl).toLowerCase().trim();
+      const l = String(m.league || '').toLowerCase().trim();
+      return l === d || l.includes(d) || d.includes(l);
+    })) return true;
+    return false;
+  }, [disabledLeagues]);
+
+  // Filter out disabled & blacklisted chaos leagues so views and performance accurately reflect verified active engine
   const filteredHistorical30d = useMemo(() => {
-    return historical30d.filter(m => !disabledLeagues.includes(m.league));
-  }, [historical30d, disabledLeagues]);
+    return historical30d.filter(m => !isMatchPruned(m));
+  }, [historical30d, isMatchPruned]);
 
   const filteredAuditedDateResults = useMemo(() => {
     if (!auditedDateResults) return null;
-    return auditedDateResults.filter(m => !disabledLeagues.includes(m.league));
-  }, [auditedDateResults, disabledLeagues]);
+    return auditedDateResults.filter(m => !isMatchPruned(m));
+  }, [auditedDateResults, isMatchPruned]);
 
   const filteredYesterdayMatches = useMemo(() => {
     const ym = state?.yesterdayMatches || [];
-    return ym.filter(m => !disabledLeagues.includes(m.league));
-  }, [state?.yesterdayMatches, disabledLeagues]);
+    return ym.filter(m => !isMatchPruned(m));
+  }, [state?.yesterdayMatches, isMatchPruned]);
+
+  const filteredTodayCompletedMatches = useMemo(() => {
+    const tm = state?.todayCompletedMatches || [];
+    return tm.filter(m => !isMatchPruned(m));
+  }, [state?.todayCompletedMatches, isMatchPruned]);
 
   const matches = useMemo(() => {
-    return (state?.matches || []).filter(m => !disabledLeagues.includes(m.league));
-  }, [state?.matches, disabledLeagues]);
+    return (state?.matches || []).filter(m => !isMatchPruned(m));
+  }, [state?.matches, isMatchPruned]);
 
   if (!state) {
     return (
@@ -753,10 +770,14 @@ export default function Dashboard() {
                 historicalResults={
                   filteredAuditedDateResults !== null
                     ? filteredAuditedDateResults
-                    : (filteredYesterdayMatches && filteredYesterdayMatches.length > 0)
-                      ? filteredYesterdayMatches
-                      : []
+                    : (filteredTodayCompletedMatches && filteredTodayCompletedMatches.length > 0)
+                      ? filteredTodayCompletedMatches
+                      : (filteredYesterdayMatches && filteredYesterdayMatches.length > 0)
+                        ? filteredYesterdayMatches
+                        : []
                 }
+                todayMatches={filteredTodayCompletedMatches}
+                yesterdayMatches={filteredYesterdayMatches}
                 leaguePerformance={state.trainingStats?.leaguePerformance || []}
                 tzSettings={tzSettings}
                 onOpenDeepResearch={handleOpenDeepResearch}

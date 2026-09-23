@@ -39,8 +39,7 @@ export const SOLID_LEAGUES = [
   { code: 'ger.super_cup', name: 'DFL-Supercup', aliases: ['dfl-supercup', 'dfl supercup', 'german super cup'] },
   { code: 'esp.copa_del_rey', name: 'Copa del Rey', aliases: ['copa del rey', 'spanish copa del rey'] },
   { code: 'ita.coppa_italia', name: 'Coppa Italia', aliases: ['coppa italia', 'italian coppa italia'] },
-  { code: 'fra.coupe_de_france', name: 'Coupe de France', aliases: ['coupe de france', 'french cup'] },
-  { code: 'ned.cup', name: 'KNVB Beker', aliases: ['knvb beker', 'dutch cup', 'knvb cup'] }
+  { code: 'fra.coupe_de_france', name: 'Coupe de France', aliases: ['coupe de france', 'french cup'] }
 ];
 
 export const BLACKLISTED_LEAGUES = [
@@ -85,11 +84,15 @@ export const BLACKLISTED_LEAGUES = [
   'Romanian Liga 1', 'rou.1',
   'Russian Premier League', 'rus.1',
   'EFL Trophy', 'eng.trophy',
-  'U.S. Open Cup', 'usa.open'
+  'U.S. Open Cup', 'usa.open',
+
+  // 4. Volatile Preliminary Cups & Amateur Knockouts (Zero baseline predictability, extreme blowouts / false consensus)
+  'KNVB Beker', 'Dutch Cup', 'Netherlands KNVB Cup', 'ned.cup',
+  'Preliminary Rounds', 'Qualifying Round', 'Kwalificatieronde'
 ];
 
 const BLACKLISTED_CODES = new Set([
-  'eng.2', 'eng.3', 'eng.4', 'ger.2', 'esp.2', 'ita.2', 'fra.2', 'sco.2', 'ned.2',
+  'eng.2', 'eng.3', 'eng.4', 'ger.2', 'esp.2', 'ita.2', 'fra.2', 'sco.2', 'ned.2', 'ned.cup',
   'bra.1', 'bra.2', 'usa.1', 'usa.open', 'jpn.1', 'mex.1', 'mex.2',
   'arg.1', 'arg.2', 'col.1', 'chi.1', 'uru.1', 'ecu.1', 'bol.1', 'per.1', 'ven.1', 'par.1',
   'nir.1', 'wal.1', 'cyp.1', 'mys.1', 'tha.1', 'rsa.1', 'ind.1', 'chn.1', 'fin.1', 'rou.1', 'rus.1',
@@ -136,7 +139,16 @@ const BLACKLISTED_REGEXES = [
   /\bveikkausliiga\b/i,
   /\brussian\s*premier\b/i,
   /\befl\s*trophy\b/i,
-  /\bu\.?s\.?\s*open\s*cup\b/i
+  /\bu\.?s\.?\s*open\s*cup\b/i,
+  /\bknvb\b/i,
+  /\bbeker\b/i,
+  /\bdutch\s*cup\b/i,
+  /\bnetherlands\s*cup\b/i,
+  /\bkwalificatieronde\b/i,
+  /\bpreliminary\s*round\b/i,
+  /\bqualifying\s*round\b/i,
+  /\bamateur\b/i,
+  /\bnon-league\b/i
 ];
 
 /**
@@ -242,6 +254,21 @@ export const LEAGUE_PREDICTABILITY_TIERS = {
     leagues: BLACKLISTED_LEAGUES
   }
 };
+
+export function isCupCompetition(leagueName = '') {
+  if (!leagueName || typeof leagueName !== 'string') return false;
+  const lower = leagueName.toLowerCase().trim();
+  return (
+    lower.includes('cup') ||
+    lower.includes('beker') ||
+    lower.includes('pokal') ||
+    lower.includes('copa') ||
+    lower.includes('coppa') ||
+    lower.includes('coupe') ||
+    lower.includes('trophy') ||
+    lower.includes('shield')
+  );
+}
 
 export function getLeaguePredictabilityTier(leagueName = '') {
   if (!leagueName) return LEAGUE_PREDICTABILITY_TIERS.TIER_2;

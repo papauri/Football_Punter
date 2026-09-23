@@ -22,6 +22,8 @@ import { formatSafeDateTime, formatRelativeDayTime } from '../utils/dateUtils';
 
 export default function ResultsProofPage({
   historicalResults = [],
+  todayMatches = [],
+  yesterdayMatches = [],
   leaguePerformance = [],
   onOpenDeepResearch,
   onFetchDateResults,
@@ -30,7 +32,6 @@ export default function ResultsProofPage({
 }) {
   const getTodayIso = () => {
     const d = new Date();
-    
     return d.toISOString().slice(0, 10);
   };
 
@@ -73,10 +74,40 @@ export default function ResultsProofPage({
     }
   }, [selectedDate]);
 
+  // Combine fetched historicalResults with local todayMatches / yesterdayMatches for active selected date
+  const activeResults = useMemo(() => {
+    const todayIso = getTodayIso();
+    const yesterdayDate = new Date();
+    yesterdayDate.setUTCDate(yesterdayDate.getUTCDate() - 1);
+    const yesterdayIso = yesterdayDate.toISOString().slice(0, 10);
+
+    let list = Array.isArray(historicalResults) ? [...historicalResults] : [];
+
+    if (selectedDate === todayIso && todayMatches && todayMatches.length > 0) {
+      const existingIds = new Set(list.map(m => String(m.id)));
+      todayMatches.forEach(tm => {
+        if (!existingIds.has(String(tm.id))) {
+          existingIds.add(String(tm.id));
+          list.push(tm);
+        }
+      });
+    } else if (selectedDate === yesterdayIso && yesterdayMatches && yesterdayMatches.length > 0) {
+      const existingIds = new Set(list.map(m => String(m.id)));
+      yesterdayMatches.forEach(ym => {
+        if (!existingIds.has(String(ym.id))) {
+          existingIds.add(String(ym.id));
+          list.push(ym);
+        }
+      });
+    }
+
+    return list;
+  }, [historicalResults, todayMatches, yesterdayMatches, selectedDate]);
+
   // Extract unique leagues
   const leagueOptions = useMemo(() => {
     const set = new Set();
-    const validMatches = historicalResults.filter(m => {
+    const validMatches = activeResults.filter(m => {
       return m.isCompleted || m.status === 'FT' || m.status?.includes('FT') || m.status?.includes('Final') || m.actualScore || (m.homeScore != null && m.awayScore != null);
     });
     validMatches.forEach(m => {
@@ -91,11 +122,11 @@ export default function ResultsProofPage({
         return { value: l, label: `${l} (${count})${perfStr}` };
       })
     ];
-  }, [historicalResults, leaguePerformance]);
+  }, [activeResults, leaguePerformance]);
 
   // Filter results
   const filteredResults = useMemo(() => {
-    return historicalResults.filter(m => {
+    return activeResults.filter(m => {
       // Must be an audited completed match with verified scores or winner
       const isCompleted = m.isCompleted || m.status === 'FT' || m.status?.includes('FT') || m.status?.includes('Final') || m.actualScore || (m.homeScore != null && m.awayScore != null);
       if (!isCompleted) return false;
@@ -155,11 +186,11 @@ export default function ResultsProofPage({
       }
       return 0;
     });
-  }, [historicalResults, searchQuery, leagueFilter, statusFilter, sortField, sortDirection]);
+  }, [activeResults, searchQuery, leagueFilter, statusFilter, sortField, sortDirection]);
 
   // Compute stats
   const stats = useMemo(() => {
-    const validMatches = historicalResults.filter(m => {
+    const validMatches = activeResults.filter(m => {
       return m.isCompleted || m.status === 'FT' || m.status?.includes('FT') || m.status?.includes('Final') || m.actualScore || (m.homeScore != null && m.awayScore != null);
     });
     if (validMatches.length === 0) return { total: 0, hits: 0, misses: 0, pushes: 0, passes: 0, activeTotal: 0, hitRate: '0.0' };
@@ -191,7 +222,7 @@ export default function ResultsProofPage({
     const activeTotal = hits + misses;
     const hitRate = activeTotal > 0 ? safeToFixed((hits / activeTotal) * 100, 1) : (total > 0 ? safeToFixed((hits / total) * 100, 1) : '0.0');
     return { total, hits, misses, pushes, passes, activeTotal, hitRate };
-  }, [historicalResults]);
+  }, [activeResults]);
 
   return (
     <div className="space-y-4">
@@ -440,8 +471,27 @@ export default function ResultsProofPage({
               ) : filteredResults.length === 0 ? (
                 <tr className="flex flex-col md:table-row">
                   <td colSpan={8} className="py-12 text-center text-slate-400 block md:table-cell">
-                    <p className="text-sm font-medium">No verified matches recorded for {selectedDate}</p>
-                    <p className="text-xs text-slate-500 mt-1">Select a different date from the dropdown above.</p>
+                    {selectedDate === getTodayIso() ? (
+                      <div className="max-w-md mx-auto p-5 bg-slate-50/80 rounded-2xl border border-slate-200 text-center">
+                        <Calendar className="w-8 h-8 text-indigo-500 mx-auto mb-2.5" />
+                        <p className="text-sm font-bold text-slate-800">No Full-Time Games Recorded For Today Yet</p>
+                        <p className="text-xs text-slate-500 mt-1 mb-4 leading-relaxed">
+                          Today's matches ({selectedDate}) are currently scheduled or in-play. Once games reach Full Time (FT), their final scores, verified prediction hits, and AI post-mortems appear here automatically.
+                        </p>
+                        <button
+                          onClick={() => setSelectedDate(dateOptions[1]?.value || '')}
+                          className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer inline-flex items-center gap-2"
+                        >
+                          <History className="w-3.5 h-3.5" />
+                          <span>View Yesterday's Verified Matches ({dateOptions[1]?.value})</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="text-sm font-medium">No verified matches recorded for {selectedDate}</p>
+                        <p className="text-xs text-slate-500 mt-1">Select a different date from the dropdown above.</p>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ) : (
