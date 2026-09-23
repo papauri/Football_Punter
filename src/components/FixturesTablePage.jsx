@@ -32,10 +32,11 @@ import {
   Flame,
   Award,
   Lock,
-  Clock
+  Clock,
+  Calendar
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
-import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey } from '../utils/dateUtils';
+import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey, getLocalizedTodayKey, formatFriendlyDateOption } from '../utils/dateUtils';
 import { safeParseFloat, safeToFixed, formatKellyStake, formatSmartMarket, formatScore } from '../utils/numberUtils';
 import { getLeaguePredictabilityTier, isLeagueBlacklisted, isLeagueSolid } from '../utils/leagueUtils';
 import { resolveMatchOdds, resolveMatchProb } from '../utils/oddsUtils';
@@ -382,7 +383,7 @@ export default function FixturesTablePage({
     const keys = Object.keys(counts).sort();
     return [
       { value: 'All', label: `All Dates (${dailySwarmAcca.legs.length})` },
-      ...keys.map(k => ({ value: k, label: `${k} (${counts[k]})` }))
+      ...keys.map(k => ({ value: k, label: formatFriendlyDateOption(k, counts[k], tzSettings) }))
     ];
   }, [dailySwarmAcca, tzSettings]);
 
@@ -768,20 +769,47 @@ export default function FixturesTablePage({
     ];
   }, [matches, leaguePerformance]);
 
-  // Extract unique date options
-  const dateOptions = useMemo(() => {
+  const todayKey = useMemo(() => getLocalizedTodayKey(tzSettings), [tzSettings]);
+
+  // Extract unique date options with friendly localized labels
+  const { dateOptions, nearestUpcomingDateKey, todayMatchCount, nearestUpcomingCount, totalActiveCount } = useMemo(() => {
     const dates = {};
+    let todayCount = 0;
     matches.forEach(m => {
+      if (m.isCompleted || m.status === 'FT' || m.status === 'FINISHED') return;
       const timeVal = m.timestamp || m.utcDate || m.dateIso || m.date;
       const dKey = timeVal ? getLocalizedDateKey(timeVal, tzSettings) : 'Upcoming';
       dates[dKey] = (dates[dKey] || 0) + 1;
+      if (dKey === todayKey) todayCount++;
     });
-    const keys = Object.keys(dates).sort();
-    return [
-      { value: 'All', label: `All Dates (${matches.length})` },
-      ...keys.map(k => ({ value: k, label: `${k} (${dates[k]})` }))
+
+    // Ensure Today is ALWAYS represented in the filter list so user knows today's slate status
+    if (!dates[todayKey]) {
+      dates[todayKey] = 0;
+    }
+
+    const sortedKeys = Object.keys(dates).sort();
+    const upcomingKeys = sortedKeys.filter(k => k !== 'Upcoming' && k >= todayKey && dates[k] > 0);
+    const nearestKey = upcomingKeys[0] || null;
+
+    const totalActive = matches.filter(m => !m.isCompleted && m.status !== 'FT' && m.status !== 'FINISHED').length;
+
+    const options = [
+      { value: 'All', label: `All Upcoming Dates (${totalActive})` },
+      ...sortedKeys.map(k => ({
+        value: k,
+        label: formatFriendlyDateOption(k, dates[k], tzSettings)
+      }))
     ];
-  }, [matches, tzSettings]);
+
+    return {
+      dateOptions: options,
+      nearestUpcomingDateKey: nearestKey,
+      todayMatchCount: todayCount,
+      nearestUpcomingCount: nearestKey ? dates[nearestKey] : 0,
+      totalActiveCount: totalActive
+    };
+  }, [matches, tzSettings, todayKey]);
 
   // 1. First, apply base filters (date, league, search, exclude finished)
   const baseMatches = useMemo(() => {
@@ -1956,6 +1984,34 @@ export default function FixturesTablePage({
         )}
       </div>
 
+      {/* Midweek Off-Day Notice Banner if Today has 0 matches */}
+      {todayMatchCount === 0 && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 px-3.5 py-2.5 bg-gradient-to-r from-slate-50 to-indigo-50/30 border border-slate-200 rounded-xl text-xs text-slate-600 shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <span className="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-200/60 shrink-0">
+              <Calendar className="w-3.5 h-3.5" />
+            </span>
+            <div className="leading-relaxed">
+              <span className="font-semibold text-slate-800">Midweek Rest Day:</span> No covered league fixtures scheduled for today ({formatFriendlyDateOption(todayKey, null, tzSettings)}).
+              {nearestUpcomingDateKey && (
+                <span className="text-slate-500 ml-1 sm:inline block">
+                  Next active matchday starts <strong className="text-slate-700">{formatFriendlyDateOption(nearestUpcomingDateKey, null, tzSettings)}</strong> ({nearestUpcomingCount} fixtures).
+                </span>
+              )}
+            </div>
+          </div>
+          {nearestUpcomingDateKey && selectedDate !== nearestUpcomingDateKey && (
+            <button
+              onClick={() => setSelectedDate(nearestUpcomingDateKey)}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-indigo-700 bg-white border border-indigo-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-300 transition-colors shadow-xs cursor-pointer shrink-0"
+            >
+              <span>View {formatFriendlyDateOption(nearestUpcomingDateKey, null, tzSettings)} Slate</span>
+              <ArrowRight className="w-3 h-3 text-indigo-600" />
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Matches League Table */}
       <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
         <div className="w-full overflow-x-auto">
@@ -2119,35 +2175,68 @@ export default function FixturesTablePage({
             <tbody className="flex flex-col md:table-row-group divide-y divide-slate-100">
               {filteredMatches.length === 0 ? (
                 <tr className="flex flex-col md:table-row">
-                  <td colSpan={9} className="py-12 text-center text-slate-400 block md:table-cell">
-                    <p className="text-sm font-medium">
-                      {selectedOutcome === 'DRAW'
-                        ? 'No matches predicted as a Draw under current criteria.'
-                        : selectedOutcome === 'WIN_LOSE'
-                        ? 'No decisive Win / Lose matches found under current criteria.'
-                        : selectedOutcome === 'HOME'
-                        ? 'No Home Win matches found under current criteria.'
-                        : selectedOutcome === 'AWAY'
-                        ? 'No Away Win matches found under current criteria.'
-                        : filterMode === 'UNANIMOUS' 
-                        ? 'No matches found matching Consensus Picks under current filters.'
-                        : filterMode === 'HIGH_CONFIDENCE'
-                        ? 'No matches found with High Confidence (≥65%) under current filters.'
-                        : filterMode === 'ELITE'
-                        ? 'No matches found with Elite Edge (≥75%) under current filters.'
-                        : filterMode === 'NO_TRAPS'
-                        ? 'No low-risk matches found under current filters.'
-                        : filterMode === 'DERIVATIVE_SAFETY'
-                        ? 'No matches with safe alternative picks found.'
-                        : filterMode === 'DNB_ONLY'
-                        ? 'No Draw-No-Bet advised matches found under current filters.'
-                        : filterMode === 'TIER_1_ONLY'
-                        ? 'No Top League matches found for this selection.'
-                        : filterMode === 'UPSET_RISK'
-                        ? 'No upset alerts or trap matches detected for this period.'
-                        : 'No matches match your active filter criteria.'}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">Try switching dates, selecting "All Outcomes", clearing the search query, or selecting "All Leagues".</p>
+                  <td colSpan={9} className="py-14 px-4 text-center block md:table-cell">
+                    {selectedDate === todayKey && todayMatchCount === 0 ? (
+                      <div className="max-w-md mx-auto flex flex-col items-center justify-center text-center py-2">
+                        <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 mb-3 shadow-xs">
+                          <Calendar className="w-6 h-6" />
+                        </div>
+                        <h3 className="text-sm font-bold text-slate-800 tracking-tight">
+                          Midweek Rest Day — No Fixtures Scheduled Today
+                        </h3>
+                        <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                          There are no matches scheduled today ({formatFriendlyDateOption(todayKey, null, tzSettings)}) across covered top-tier European leagues (Premier League, La Liga, Serie A, Bundesliga, Champions League, UEFA Nations League). Our strict signal filter automatically screens out volatile friendly and youth matches.
+                        </p>
+                        {nearestUpcomingDateKey && (
+                          <div className="mt-4 pt-3 border-t border-slate-100 w-full flex flex-col sm:flex-row items-center justify-center gap-2">
+                            <button
+                              onClick={() => setSelectedDate(nearestUpcomingDateKey)}
+                              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs transition-colors cursor-pointer"
+                            >
+                              <span>View {formatFriendlyDateOption(nearestUpcomingDateKey, null, tzSettings)} Slate ({nearestUpcomingCount} Matches)</span>
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => setSelectedDate('All')}
+                              className="w-full sm:w-auto inline-flex items-center justify-center px-3.5 py-2 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
+                            >
+                              View All Upcoming ({totalActiveCount})
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-sm font-medium text-slate-400">
+                          {selectedOutcome === 'DRAW'
+                            ? 'No matches predicted as a Draw under current criteria.'
+                            : selectedOutcome === 'WIN_LOSE'
+                            ? 'No decisive Win / Lose matches found under current criteria.'
+                            : selectedOutcome === 'HOME'
+                            ? 'No Home Win matches found under current criteria.'
+                            : selectedOutcome === 'AWAY'
+                            ? 'No Away Win matches found under current criteria.'
+                            : filterMode === 'UNANIMOUS' 
+                            ? 'No matches found matching Consensus Picks under current filters.'
+                            : filterMode === 'HIGH_CONFIDENCE'
+                            ? 'No matches found with High Confidence (≥65%) under current filters.'
+                            : filterMode === 'ELITE'
+                            ? 'No matches found with Elite Edge (≥75%) under current filters.'
+                            : filterMode === 'NO_TRAPS'
+                            ? 'No low-risk matches found under current filters.'
+                            : filterMode === 'DERIVATIVE_SAFETY'
+                            ? 'No matches with safe alternative picks found.'
+                            : filterMode === 'DNB_ONLY'
+                            ? 'No Draw-No-Bet advised matches found under current filters.'
+                            : filterMode === 'TIER_1_ONLY'
+                            ? 'No Top League matches found for this selection.'
+                            : filterMode === 'UPSET_RISK'
+                            ? 'No upset alerts or trap matches detected for this period.'
+                            : 'No matches match your active filter criteria.'}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-1">Try switching dates, selecting "All Outcomes", clearing the search query, or selecting "All Leagues".</p>
+                      </>
+                    )}
                   </td>
                 </tr>
               ) : (

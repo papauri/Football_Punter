@@ -199,3 +199,35 @@ export function getTimezoneDisplayLabel(tzSettings = {}) {
     return zone || 'UTC';
   }
 }
+
+export function formatFriendlyDateOption(dateKey, count = null, tzSettings = {}) {
+  const countStr = typeof count === 'number' ? ` • ${count} ${count === 1 ? 'match' : 'matches'}` : '';
+  if (!dateKey || dateKey === 'All' || dateKey === 'Upcoming') return `All Upcoming Matches${countStr}`;
+  
+  const todayKey = getLocalizedTodayKey(tzSettings);
+  try {
+    const d = new Date(dateKey + 'T12:00:00Z');
+    const tzZone = tzSettings?.zone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    const dayName = d.toLocaleDateString(undefined, { timeZone: tzZone, weekday: 'short' });
+    const monthDay = d.toLocaleDateString(undefined, { timeZone: tzZone, month: 'short', day: 'numeric' });
+
+    if (dateKey === todayKey) {
+      return `Today (${dayName}, ${monthDay})${countStr}`;
+    }
+
+    const [y1, m1, d1] = todayKey.split('-').map(Number);
+    const [y2, m2, d2] = dateKey.split('-').map(Number);
+    const diff = Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / (1000 * 60 * 60 * 24));
+
+    if (diff === 1) {
+      return `Tomorrow (${dayName}, ${monthDay})${countStr}`;
+    }
+    if (diff === -1) {
+      return `Yesterday (${dayName}, ${monthDay})${countStr}`;
+    }
+
+    return `${dayName}, ${monthDay}${countStr}`;
+  } catch {
+    return `${dateKey}${countStr}`;
+  }
+}
