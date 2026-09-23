@@ -780,6 +780,7 @@ export default function Dashboard() {
                 />
                 <FixturesTablePage
                 matches={matches}
+                bankrollEuro={state.bankrollEuro || 1000}
                 leaguePerformance={state.trainingStats?.leaguePerformance || []}
                 tzSettings={tzSettings}
                 unanimousHitRate={state.unanimousHitRate || state.aiSwarm?.directives?.telemetry?.unanimousHitRate || 84.8}

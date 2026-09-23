@@ -39,7 +39,7 @@ import UniformDropdown from './UniformDropdown';
 import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey, getLocalizedTodayKey, formatFriendlyDateOption } from '../utils/dateUtils';
 import { safeParseFloat, safeToFixed, formatKellyStake, formatSmartMarket, formatScore } from '../utils/numberUtils';
 import { getLeaguePredictabilityTier, isLeagueBlacklisted, isLeagueSolid } from '../utils/leagueUtils';
-import { resolveMatchOdds, resolveMatchProb } from '../utils/oddsUtils';
+import { resolveMatchOdds, resolveMatchProb, getOddsProviderLabel, calculatePotentialReturn } from '../utils/oddsUtils';
 import ConfidenceGauge from './ConfidenceGauge';
 import KellyTooltip from './KellyTooltip';
 import InfoTooltip from './InfoTooltip';
@@ -61,6 +61,7 @@ export const getMatchPick = (m) => {
 
 export default function FixturesTablePage({
   matches = [],
+  bankrollEuro = 1000,
   leaguePerformance = [],
   tzSettings,
   unanimousHitRate = 84.8,
@@ -1046,7 +1047,7 @@ export default function FixturesTablePage({
     });
   }, [baseMatches, hasUnanimous, maxBaseConfidence, selectedOutcome, filterMode, convictionMode, marketMode, filterByMarketOnly, sortField, sortDirection]);
 
-  const renderMarketPrediction = (m, predictedWinner, homeProb, drawProb, awayProb) => {
+  const renderMarketPrediction = (m, predictedWinner, homeProb, drawProb, awayProb, matchOdds = null) => {
     const isFavHome = homeProb >= awayProb;
     const favTeam = isFavHome ? m.home : m.away;
     const favProb = isFavHome ? homeProb : awayProb;
@@ -1054,59 +1055,66 @@ export default function FixturesTablePage({
     const dnbProb = Math.round((favProb / nonDrawTotal) * 100);
     const dcProb = Math.min(99, Math.round(favProb + drawProb));
     const dcCode = isFavHome ? '1X' : 'X2';
+    const odds = matchOdds || resolveMatchOdds(m, predictedWinner);
 
     // 1. SMART_ADAPTIVE (Default view: Auto DNB / DC when draw risk is high)
     if (marketMode === 'SMART_ADAPTIVE') {
       const isHighDraw = drawProb >= 24.0;
       if (m.smartMarket?.marketType === 'DOUBLE_CHANCE' || (isHighDraw && dcProb >= 72 && favProb < 55)) {
+        const dcOdds = resolveMatchOdds(m, dcCode);
         return (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-300 shadow-2xs" title={`Smart Double Chance (${dcProb}%): Win or Draw protects against stalemate.`}>
             <ShieldCheck className="w-3 h-3 text-amber-600 shrink-0" />
-            <span className="truncate max-w-[85px]">{favTeam}</span>/Draw <span className="text-[10px] text-amber-700">({dcProb}%)</span>
+            <span className="truncate max-w-[85px]">{favTeam}</span>/Draw <span className="text-[10px] text-amber-700 font-mono">@{safeToFixed(dcOdds, 2)}</span>
           </span>
         );
       }
 
       if (m.smartMarket?.marketType === 'DRAW_NO_BET' || isHighDraw) {
+        const dnbOdds = resolveMatchOdds(m, isFavHome ? '1' : '2');
         return (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-50 text-indigo-900 border border-indigo-300 shadow-2xs" title={`Smart Draw-No-Bet (${dnbProb}%): Stake refunded on draw. 78.3% empirical hit rate.`}>
             <ShieldCheck className="w-3 h-3 text-indigo-600 shrink-0" />
-            <span className="truncate max-w-[85px]">{favTeam}</span> <span className="text-[10px] font-mono text-indigo-700">DNB ({dnbProb}%)</span>
+            <span className="truncate max-w-[85px]">{favTeam}</span> <span className="text-[10px] font-mono text-indigo-700">DNB @{safeToFixed(dnbOdds, 2)}</span>
           </span>
         );
       }
 
       return (
-        <span className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold border ${getWinnerBadgeClass(predictedWinner)}`}>
-          {predictedWinner === 'HOME' ? `${m.home?.slice(0, 10)} WIN (${homeProb.toFixed(0)}%)` : predictedWinner === 'AWAY' ? `${m.away?.slice(0, 10)} WIN (${awayProb.toFixed(0)}%)` : 'DRAW'}
+        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold border ${getWinnerBadgeClass(predictedWinner)}`}>
+          <span>{predictedWinner === 'HOME' ? `${m.home?.slice(0, 10)} WIN` : predictedWinner === 'AWAY' ? `${m.away?.slice(0, 10)} WIN` : 'DRAW'}</span>
+          <span className="text-[10px] font-mono opacity-80 font-normal">@{safeToFixed(odds, 2)}</span>
         </span>
       );
     }
 
     // 2. DNB Mode (Draw No Bet)
     if (marketMode === 'DNB') {
+      const dnbOdds = resolveMatchOdds(m, isFavHome ? '1' : '2');
       return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-50 text-indigo-900 border border-indigo-300 shadow-2xs" title={`Draw-No-Bet (${dnbProb}%): Push/refund on tie.`}>
           <ShieldCheck className="w-3 h-3 text-indigo-600 shrink-0" />
-          <span className="truncate max-w-[85px]">{favTeam}</span> DNB <span className="text-[10px] font-mono text-indigo-700">({dnbProb}%)</span>
+          <span className="truncate max-w-[85px]">{favTeam}</span> DNB <span className="text-[10px] font-mono text-indigo-700">@{safeToFixed(dnbOdds, 2)}</span>
         </span>
       );
     }
 
     // 3. Double Chance Mode
     if (marketMode === 'DOUBLE_CHANCE') {
+      const dcOdds = resolveMatchOdds(m, dcCode);
       return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-900 border border-emerald-300 shadow-2xs" title={`Double Chance: ${dcCode} (${dcProb}%)`}>
           <ShieldCheck className="w-3 h-3 text-emerald-600 shrink-0" />
-          <span className="truncate max-w-[85px]">{favTeam}</span> / Draw <span className="text-[10px] text-emerald-700 font-mono">({dcProb}%)</span>
+          <span className="truncate max-w-[85px]">{favTeam}</span>/Draw <span className="text-[10px] text-emerald-700 font-mono">@{safeToFixed(dcOdds, 2)}</span>
         </span>
       );
     }
 
     // 4. Straight 1X2
     return (
-      <span className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold border ${getWinnerBadgeClass(predictedWinner)}`}>
-        {predictedWinner === 'HOME' ? `${m.home?.slice(0, 10)} WIN` : predictedWinner === 'AWAY' ? `${m.away?.slice(0, 10)} WIN` : 'DRAW'}
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold border ${getWinnerBadgeClass(predictedWinner)}`}>
+        <span>{predictedWinner === 'HOME' ? `${m.home?.slice(0, 10)} WIN` : predictedWinner === 'AWAY' ? `${m.away?.slice(0, 10)} WIN` : 'DRAW'}</span>
+        <span className="text-[10px] font-mono opacity-80 font-normal">@{safeToFixed(odds, 2)}</span>
       </span>
     );
   };
@@ -2148,17 +2156,17 @@ export default function FixturesTablePage({
                   </div>
                 </th>
 
-                {/* Smart Staking */}
+                {/* LiveScore Bet Odds & Potential Return */}
                 <th 
                   onClick={() => handleSort('kelly')}
-                  className={`py-1.5 px-2 w-36 text-left cursor-pointer transition-colors group select-none ${
+                  className={`py-1.5 px-2 w-44 text-left cursor-pointer transition-colors group select-none ${
                     sortField === 'kelly' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
                   title="Click to sort by Value Bet"
                 >
                   <div className="inline-flex items-center gap-1">
-                    <InfoTooltip title="Value Bet" content="Recommended market based on calculated mathematical edge (+EV).">
-                      <span className={sortField === 'kelly' ? 'text-indigo-600 font-bold' : ''}>Value Bet</span>
+                    <InfoTooltip title="LiveScore Odds & Potential Return" content="Recommended market, benchmark odds, Kelly stake, and calculated potential returns.">
+                      <span className={sortField === 'kelly' ? 'text-indigo-600 font-bold' : ''}>Odds &amp; Return</span>
                     </InfoTooltip>
                     {sortField === 'kelly' ? (
                       sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
@@ -2262,7 +2270,16 @@ export default function FixturesTablePage({
 
                   const homeXg = safeParseFloat(m.xG?.home ?? m.lambda, 1.5);
                   const awayXg = safeParseFloat(m.xG?.away ?? m.mu, 1.1);
-                  const kellyDisplay = formatKellyStake(m.kellyStake ?? m.binaryModel?.kellyStake, '1.5u');
+                  const matchOdds = resolveMatchOdds(m, predictedWinner);
+                  const oddsProvider = getOddsProviderLabel(m);
+                  const kelly = m.kellyStake ?? m.binaryModel?.kellyStake;
+                  const kellyUnits = safeParseFloat(kelly?.units ?? kelly?.fraction, 0);
+                  const rawEuro = safeParseFloat(kelly?.stakeEuro, 0);
+                  const rowStake = rawEuro > 0 
+                    ? rawEuro 
+                    : (kellyUnits > 0 ? (kellyUnits <= 1 ? kellyUnits * bankrollEuro : (kellyUnits / 100) * bankrollEuro) : (bankrollEuro * 0.02));
+                  const returns = calculatePotentialReturn(rowStake, matchOdds);
+                  const kellyDisplay = formatKellyStake(kelly, '1.5u');
                   const smartMarketDisplay = formatSmartMarket(m.smartMarket ?? m.binaryModel?.smartMarket, `${predictedWinner === 'HOME' ? m.home : predictedWinner === 'AWAY' ? m.away : 'Draw'} ML`);
 
                   const isTrap = (m.aiSwarm || m.imperialSwarm)?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap;
@@ -2327,8 +2344,9 @@ export default function FixturesTablePage({
                             </div>
                             <div className="flex flex-col items-end">
                               <span className="text-[9px] uppercase font-bold text-slate-400 mb-0.5">Top Pick</span>
-                              <span className={`inline-block px-2.5 py-1 rounded text-[11px] font-bold border shadow-sm ${getWinnerBadgeClass(predictedWinner)}`}>
-                                {predictedWinner === 'HOME' ? `${m.home?.slice(0, 10)} WIN` : predictedWinner === 'AWAY' ? `${m.away?.slice(0, 10)} WIN` : 'DRAW'}
+                              <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-bold border shadow-xs ${getWinnerBadgeClass(predictedWinner)}`}>
+                                <span>{predictedWinner === 'HOME' ? `${m.home?.slice(0, 10)} WIN` : predictedWinner === 'AWAY' ? `${m.away?.slice(0, 10)} WIN` : 'DRAW'}</span>
+                                <span className="text-[10px] font-mono opacity-80">@{safeToFixed(matchOdds, 2)}</span>
                               </span>
                             </div>
                           </div>
@@ -2339,13 +2357,11 @@ export default function FixturesTablePage({
                                 {score}
                               </span>
                               <span className="text-[10px] font-mono font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">
-                                {smartMarketDisplay}
+                                {smartMarketDisplay} @{safeToFixed(matchOdds, 2)}
                               </span>
-                              {kellyDisplay && kellyDisplay !== '—' && (
-                                <span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                                  💰 {kellyDisplay}
-                                </span>
-                              )}
+                              <span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200" title={`Wager €${rowStake.toFixed(0)} based on €${bankrollEuro} bankroll`}>
+                                💰 €{rowStake.toFixed(0)} → €{returns.payoutStr} ({returns.profitStr})
+                              </span>
                             </div>
                             <button
                               onClick={(e) => {
@@ -2438,7 +2454,7 @@ export default function FixturesTablePage({
 
                         {/* AI Prediction Pick */}
                         <td className="hidden md:table-cell py-1.5 px-2 text-center">
-                          {renderMarketPrediction(m, predictedWinner, homeProb, drawProb, awayProb)}
+                          {renderMarketPrediction(m, predictedWinner, homeProb, drawProb, awayProb, matchOdds)}
                         </td>
 
                         {/* Probabilities 1 | X | 2 */}
@@ -2473,17 +2489,27 @@ export default function FixturesTablePage({
                           </span>
                         </td>
 
-                        {/* Smart Staking */}
+                        {/* LiveScore Bet Odds & Potential Return */}
                         <td className="hidden md:table-cell py-1.5 px-2">
                           <div className="text-[11px]">
-                            <span className="font-semibold text-slate-800 block truncate max-w-[150px]" title={smartMarketDisplay}>
-                              {smartMarketDisplay}
-                            </span>
-                            <KellyTooltip showIcon={false} align="right">
-                              <span className="inline-flex items-center gap-1 text-[10px] text-emerald-800 font-semibold font-mono bg-emerald-50/90 border border-emerald-200 px-1.5 py-0.2 rounded mt-0.5 cursor-help hover:bg-emerald-100 transition-colors">
-                                💰 {kellyDisplay}
+                            <div className="flex items-center gap-1">
+                              <span className="font-semibold text-slate-800 truncate max-w-[105px]" title={smartMarketDisplay}>
+                                {smartMarketDisplay}
                               </span>
-                            </KellyTooltip>
+                              <span className="text-[10px] font-bold font-mono text-indigo-700 bg-indigo-50 border border-indigo-200 px-1 py-0.2 rounded shrink-0" title={`${oddsProvider} Odds`}>
+                                @{safeToFixed(matchOdds, 2)}
+                              </span>
+                            </div>
+                            <div className="mt-0.5 flex items-center gap-1 flex-wrap">
+                              <KellyTooltip showIcon={false} align="right">
+                                <span className="text-[10px] text-emerald-800 font-bold font-mono bg-emerald-50/90 border border-emerald-200 px-1.5 py-0.2 rounded cursor-help hover:bg-emerald-100 transition-colors" title={`Recommended wager based on €${bankrollEuro} bankroll (${kellyDisplay})`}>
+                                  💰 €{rowStake.toFixed(0)}
+                                </span>
+                              </KellyTooltip>
+                              <span className="text-[10px] font-semibold text-slate-600 font-mono whitespace-nowrap">
+                                → <strong className="text-emerald-700">€{returns.payoutStr}</strong> <span className="text-slate-400 font-normal">({returns.profitStr})</span>
+                              </span>
+                            </div>
                           </div>
                         </td>
 
@@ -2557,6 +2583,45 @@ export default function FixturesTablePage({
                               >
                                 {isSlipAdded ? '✓ Added' : '+ Slip'}
                               </button>
+                            </div>
+
+                            {/* LiveScore Bet & Returns Banner */}
+                            <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-indigo-950 text-white rounded-xl p-3 mb-3 border border-slate-800 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs">
+                              <div className="flex items-center gap-2.5">
+                                <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shrink-0 font-bold font-mono text-sm">
+                                  €
+                                </span>
+                                <div>
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="font-bold text-white tracking-wide">{smartMarketDisplay}</span>
+                                    <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                                      @{safeToFixed(matchOdds, 2)}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400">
+                                      ({oddsProvider} Benchmark)
+                                    </span>
+                                  </div>
+                                  <div className="text-[11px] text-slate-300 mt-0.5">
+                                    Recommended Stake: <strong className="text-white font-mono">€{rowStake.toFixed(2)}</strong> ({safeToFixed(kellyUnits, 1)}u · {m.kellyStake?.fractionLabel || '1/4 Kelly'} · €{bankrollEuro} Bankroll)
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3 shrink-0 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700/60 w-full md:w-auto justify-between md:justify-start">
+                                <div>
+                                  <div className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Potential Payout</div>
+                                  <div className="text-xs sm:text-sm font-bold font-mono text-emerald-400">€{returns.payoutStr}</div>
+                                </div>
+                                <div className="h-6 w-px bg-slate-700" />
+                                <div>
+                                  <div className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Net Profit</div>
+                                  <div className="text-xs sm:text-sm font-bold font-mono text-white">{returns.profitStr}</div>
+                                </div>
+                                <div className="h-6 w-px bg-slate-700" />
+                                <div>
+                                  <div className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Mathematical Edge</div>
+                                  <div className="text-xs sm:text-sm font-bold font-mono text-indigo-300">+{safeToFixed(m.smartMarket?.expectedValue ?? m.kellyStake?.expectedValue ?? 8.0, 1)}% EV</div>
+                                </div>
+                              </div>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">

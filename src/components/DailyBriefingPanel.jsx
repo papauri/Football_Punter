@@ -6,6 +6,7 @@ import {
 import { safeParseFloat, safeToFixed, formatKellyStake, formatSmartMarket } from '../utils/numberUtils';
 import { isLeagueBlacklisted } from '../utils/leagueUtils';
 import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey, getLocalizedTodayKey } from '../utils/dateUtils';
+import { resolveMatchOdds, getOddsProviderLabel, calculatePotentialReturn } from '../utils/oddsUtils';
 import KellyTooltip from './KellyTooltip';
 import ConfidenceGauge from './ConfidenceGauge';
 
@@ -106,9 +107,15 @@ export default function DailyBriefingPanel({
       const isUnanimous = (m.aiSwarm || m.imperialSwarm)?.isTopValueLeg || (m.aiSwarm || m.imperialSwarm)?.consensusTier === 'UNANIMOUS_DIRECTIVE';
       const inSnapshotWindow = msToKickoff >= 0 && msToKickoff <= 60 * 60 * 1000;
 
+      const matchOdds = resolveMatchOdds(m, pick);
       const kelly = m.kellyStake ?? m.binaryModel?.kellyStake;
       const kellyUnits = safeParseFloat(kelly?.units ?? kelly?.fraction, 0);
-      const kellyEuro = kellyUnits > 0 ? (kellyUnits * bankrollEuro).toFixed(0) : null;
+      const rawEuro = safeParseFloat(kelly?.stakeEuro, 0);
+      const stakeEuro = rawEuro > 0 
+        ? rawEuro 
+        : (kellyUnits > 0 ? (kellyUnits <= 1 ? kellyUnits * bankrollEuro : (kellyUnits / 100) * bankrollEuro) : (bankrollEuro * 0.02));
+      const returns = calculatePotentialReturn(stakeEuro, matchOdds);
+      const oddsProvider = getOddsProviderLabel(m);
 
       // READY TO BET: inside ≤60m kickoff window, high confidence (≥60%), not a trap/pass
       const isReadyToBet = inSnapshotWindow && !isPass && !isTrap && conf >= 60;
@@ -128,7 +135,10 @@ export default function DailyBriefingPanel({
         msToKickoff,
         kelly,
         kellyUnits,
-        kellyEuro,
+        stakeEuro,
+        matchOdds,
+        returns,
+        oddsProvider,
         timeVal
       };
     }).sort((a, b) => (a.timeVal || 0) - (b.timeVal || 0));
@@ -257,7 +267,7 @@ export default function DailyBriefingPanel({
                   <th className="py-2 px-3 min-w-[130px]">League</th>
                   <th className="py-2 px-3 w-36 text-center">Model Pick</th>
                   <th className="py-2 px-3 w-28 text-center">Confidence</th>
-                  <th className="py-2 px-3 w-28 text-center">Kelly Stake</th>
+                  <th className="py-2 px-3 w-44 text-center">LiveScore Odds &amp; Return</th>
                   <th className="py-2 px-3 w-24 text-center">Slip</th>
                 </tr>
               </thead>
@@ -275,7 +285,7 @@ export default function DailyBriefingPanel({
                   </tr>
                 ) : (
                   displayList.map((item, idx) => {
-                    const { m, pick, conf, isPass, isTrap, isUnanimous, inSnapshotWindow, isReadyToBet, msToKickoff, kelly, kellyEuro } = item;
+                    const { m, pick, conf, isPass, isTrap, isUnanimous, inSnapshotWindow, isReadyToBet, msToKickoff, kelly, kellyUnits, stakeEuro, matchOdds, returns, oddsProvider } = item;
                     const inSlip = accaMatchIds.has(String(m.id)) || accaMatchIds.has(m.id);
                     const isHome = pick === 'HOME';
                     const pickTeam = isHome ? m.home : pick === 'AWAY' ? m.away : 'Draw';
@@ -361,16 +371,22 @@ export default function DailyBriefingPanel({
                           <ConfidenceGauge confidence={conf} size="sm" />
                         </td>
 
-                        {/* Kelly Stake */}
+                        {/* LiveScore Bet Odds & Potential Return */}
                         <td className="py-2.5 px-3 text-center">
                           <KellyTooltip showIcon={false} align="right">
-                            {kellyEuro ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-800 font-bold font-mono bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded cursor-help hover:bg-emerald-100 transition-colors">
-                                €{kellyEuro} ({kellyDisplay})
-                              </span>
-                            ) : (
-                              <span className="text-slate-400 font-mono text-[11px]">—</span>
-                            )}
+                            <div className="flex flex-col items-center cursor-help">
+                              <div className="inline-flex items-center gap-1">
+                                <span className="text-[11px] font-mono font-bold text-slate-800 bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded" title={`${oddsProvider} Odds`}>
+                                  @{safeToFixed(matchOdds, 2)}
+                                </span>
+                                <span className="text-[11px] font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded" title="Recommended Wager">
+                                  €{stakeEuro.toFixed(0)}
+                                </span>
+                              </div>
+                              <div className="text-[10px] font-medium text-slate-600 mt-0.5 whitespace-nowrap">
+                                Returns <strong className="text-emerald-700 font-mono">€{returns.payoutStr}</strong> <span className="text-slate-400 font-mono">({returns.profitStr})</span>
+                              </div>
+                            </div>
                           </KellyTooltip>
                         </td>
 

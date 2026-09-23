@@ -83,11 +83,11 @@ export default function KellyTooltip({
 
           {/* Core concept */}
           <p className="text-slate-200 text-[11px] leading-relaxed mb-2">
-            The <strong>Kelly Criterion</strong> is a mathematical formula used by quantitative traders and pro sports bettors to determine the <em>optimal fraction of your bankroll</em> to wager when you have a statistical edge (+EV).
+            The <strong>Kelly Criterion</strong> is a mathematical formula used by pro sports bettors to determine the <em>optimal bankroll percentage</em> to wager when you have a statistical edge (+EV).
           </p>
 
           {/* Formula snippet */}
-          <div className="bg-slate-950/80 border border-slate-800 rounded px-2 py-1 font-mono text-[10px] text-emerald-400 mb-2.5 flex items-center justify-between">
+          <div className="bg-slate-950/80 border border-slate-800 rounded px-2 py-1 font-mono text-[10px] text-emerald-400 mb-2 flex items-center justify-between">
             <span>f* = (b · p - q) / b</span>
             <span className="text-[9px] text-slate-400 font-sans">Optimal Stake %</span>
           </div>
@@ -96,15 +96,15 @@ export default function KellyTooltip({
           <div className="space-y-1.5 text-[10.5px] text-slate-300">
             <div className="flex items-start gap-1.5">
               <TrendingUp className="w-3 h-3 text-emerald-400 shrink-0 mt-0.5" />
-              <span><strong>Edge (+EV):</strong> If model win probability exceeds bookmaker odds, Kelly sizes the bet to maximize bankroll growth rate.</span>
+              <span><strong>What is EV (+EV)?</strong> Expected Value measures mathematical edge over the bookmaker. If our Poisson model estimates 60% win chance and LiveScore Bet pays 1.85, the bet has positive edge (+EV) over market pricing.</span>
             </div>
             <div className="flex items-start gap-1.5">
               <ShieldCheck className="w-3 h-3 text-indigo-400 shrink-0 mt-0.5" />
-              <span><strong>1/4 Kelly Safety:</strong> We wager 25% of full Kelly (quarter-Kelly) to smooth variance and protect against losing streaks.</span>
+              <span><strong>Why €50 next to games?</strong> Our default bankroll is set to <strong>€1,000</strong>. On high-conviction prime bets, Quarter-Kelly hits the strict <strong>5% safety ceiling (5.0 units) = €50.00</strong> to prevent over-exposure. If your bankroll is €100, that 5.0u recommendation becomes €5.00.</span>
             </div>
             <div className="flex items-start gap-1.5">
-              <span className="text-slate-400 text-xs font-bold leading-none shrink-0">•</span>
-              <span><strong>'No bet':</strong> If there is 0% or negative edge over the odds, Kelly wagers 0 units to prevent bankroll drain.</span>
+              <span className="text-amber-400 text-xs font-bold leading-none shrink-0">•</span>
+              <span><strong>1/4 Kelly Discipline:</strong> Wagers 25% of theoretical full Kelly to smooth out variance and protect your bankroll against bad-beat runs.</span>
             </div>
           </div>
 

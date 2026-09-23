@@ -109,3 +109,31 @@ export function resolveMatchProb(match, pickValue, customProb = null) {
   }
   return Math.min(95, Math.max(15, Math.round(baseConf)));
 }
+
+/**
+ * Returns human-readable bookmaker provider attribution (defaulting to LiveScore Bet)
+ */
+export function getOddsProviderLabel(match) {
+  if (match?.odds?.provider && match.odds.provider !== 'Consensus Market') {
+    return match.odds.provider;
+  }
+  return 'LiveScore Bet';
+}
+
+/**
+ * Calculates total potential payout and net profit for a given stake and decimal odds
+ */
+export function calculatePotentialReturn(stake, odds) {
+  const s = safeParseFloat(stake, 0);
+  const o = safeParseFloat(odds, 1.0);
+  const payout = safeParseFloat((s * o).toFixed(2));
+  const profit = safeParseFloat((payout - s).toFixed(2));
+  return {
+    stake: s,
+    odds: o,
+    payout,
+    profit,
+    payoutStr: payout.toFixed(2),
+    profitStr: (profit >= 0 ? '+' : '') + profit.toFixed(2)
+  };
+}
