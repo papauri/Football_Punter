@@ -9,7 +9,7 @@ import FixturesTablePage from './FixturesTablePage';
 import ScoresTablePage from './ScoresTablePage';
 import BinaryPicksPage from './BinaryPicksPage';
 import AccumulatorPage from './AccumulatorPage';
-import ResultsProofPage from './ResultsProofPage';
+import ResultsProofPage, { isMatchForDate } from './ResultsProofPage';
 import PerformanceChart from './PerformanceChart';
 import LineupsPage from './LineupsPage';
 import DeepResearchPage from './DeepResearchPage';
@@ -209,11 +209,11 @@ export default function Dashboard() {
 
     setIsLoadingDateResults(true);
 
-    // 3. Extract matching historical records from memory for instant fallback / optimistic render
+    // 3. Extract matching historical records from memory strictly matching dateStr
     const localMatches = (historical30d || [])
       .concat(state?.yesterdayMatches || [])
       .concat(state?.matches || [])
-      .filter(m => (m.date && m.date.startsWith(dateStr)) || (m.dateIso && m.dateIso.startsWith(dateStr)));
+      .filter(m => isMatchForDate(m, dateStr));
 
     if (localMatches.length > 0 && !auditedDateResults) {
       setAuditedDateResults(localMatches);
@@ -246,18 +246,16 @@ export default function Dashboard() {
         }
       }
 
-      // If backend returned empty but we have local historical data, use local
+      // If backend returned empty, use strictly matching local matches or empty array
       if (localMatches.length > 0) {
         setAuditedDateResults(localMatches);
+      } else {
+        setAuditedDateResults([]);
       }
     } catch (err) {
       if (err.name !== 'AbortError') {
-        // Fallback smoothly to local records
-        if (localMatches.length > 0) {
-          setAuditedDateResults(localMatches);
-        } else if (state?.yesterdayMatches && state.yesterdayMatches.length > 0) {
-          setAuditedDateResults(state.yesterdayMatches);
-        }
+        // Fallback strictly to matching local records, never random yesterday fixtures
+        setAuditedDateResults(localMatches.length > 0 ? localMatches : []);
       }
     } finally {
       if (abortControllerRef.current === abortCtrl) {
@@ -831,11 +829,7 @@ export default function Dashboard() {
                 historicalResults={
                   filteredAuditedDateResults !== null
                     ? filteredAuditedDateResults
-                    : (filteredTodayCompletedMatches && filteredTodayCompletedMatches.length > 0)
-                      ? filteredTodayCompletedMatches
-                      : (filteredYesterdayMatches && filteredYesterdayMatches.length > 0)
-                        ? filteredYesterdayMatches
-                        : []
+                    : []
                 }
                 todayMatches={filteredTodayCompletedMatches}
                 yesterdayMatches={filteredYesterdayMatches}

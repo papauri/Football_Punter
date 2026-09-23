@@ -20,6 +20,37 @@ import BacktestAccuracyTrendChart from './BacktestAccuracyTrendChart';
 import { safeToFixed, formatScore } from '../utils/numberUtils';
 import { formatSafeDateTime, formatRelativeDayTime } from '../utils/dateUtils';
 
+export const isMatchForDate = (m, targetIso) => {
+  if (!m || !targetIso) return false;
+  // 1. Direct dateIso match (YYYY-MM-DD)
+  if (m.dateIso && m.dateIso.slice(0, 10) === targetIso) return true;
+  // 2. Direct date match (if YYYY-MM-DD)
+  if (m.date && m.date.slice(0, 10) === targetIso) return true;
+  // 3. UTC date ISO string
+  if (m.utcDate && m.utcDate.slice(0, 10) === targetIso) return true;
+  // 4. Timestamp conversion
+  if (m.timestamp && typeof m.timestamp === 'number') {
+    const tsIso = new Date(m.timestamp).toISOString().slice(0, 10);
+    if (tsIso === targetIso) return true;
+  }
+  // 5. Slash formatted dates (DD/MM/YYYY or YYYY/MM/DD)
+  if (m.date && m.date.includes('/')) {
+    const parts = m.date.split('/');
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        // YYYY/MM/DD
+        const formatted = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+        if (formatted === targetIso) return true;
+      } else {
+        // DD/MM/YYYY
+        const formatted = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        if (formatted === targetIso) return true;
+      }
+    }
+  }
+  return false;
+};
+
 export default function ResultsProofPage({
   historicalResults = [],
   todayMatches = [],
@@ -53,7 +84,7 @@ export default function ResultsProofPage({
     }
   };
 
-  // Pre-configured date options
+  // Pre-configured date options with friendly weekday names
   const dateOptions = useMemo(() => {
     const opts = [];
     const now = new Date();
@@ -61,7 +92,10 @@ export default function ResultsProofPage({
       const d = new Date(now);
       d.setUTCDate(now.getUTCDate() - i);
       const iso = d.toISOString().slice(0, 10);
-      const label = i === 0 ? `Today (${iso})` : (i === 1 ? `Yesterday (${iso})` : `${i} days ago (${iso})`);
+      const dayName = d.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' });
+      let label = `${dayName} (${iso})`;
+      if (i === 0) label = `Today (${dayName}, ${iso})`;
+      else if (i === 1) label = `Yesterday (${dayName}, ${iso})`;
       opts.push({ value: iso, label });
     }
     return opts;
@@ -74,27 +108,37 @@ export default function ResultsProofPage({
     }
   }, [selectedDate]);
 
-  // Combine fetched historicalResults with local todayMatches / yesterdayMatches for active selected date
+  // Combine fetched historicalResults with local todayMatches / yesterdayMatches strictly for active selected date
   const activeResults = useMemo(() => {
+    let list = [];
+
+    // 1. Include fetched historical results strictly if they match selectedDate
+    if (Array.isArray(historicalResults)) {
+      historicalResults.forEach(m => {
+        if (isMatchForDate(m, selectedDate)) {
+          list.push(m);
+        }
+      });
+    }
+
     const todayIso = getTodayIso();
     const yesterdayDate = new Date();
     yesterdayDate.setUTCDate(yesterdayDate.getUTCDate() - 1);
     const yesterdayIso = yesterdayDate.toISOString().slice(0, 10);
 
-    let list = Array.isArray(historicalResults) ? [...historicalResults] : [];
+    const existingIds = new Set(list.map(m => String(m.id)));
 
-    if (selectedDate === todayIso && todayMatches && todayMatches.length > 0) {
-      const existingIds = new Set(list.map(m => String(m.id)));
+    // 2. Incorporate local matches ONLY if they strictly match selectedDate
+    if (selectedDate === todayIso && Array.isArray(todayMatches)) {
       todayMatches.forEach(tm => {
-        if (!existingIds.has(String(tm.id))) {
+        if (isMatchForDate(tm, selectedDate) && !existingIds.has(String(tm.id))) {
           existingIds.add(String(tm.id));
           list.push(tm);
         }
       });
-    } else if (selectedDate === yesterdayIso && yesterdayMatches && yesterdayMatches.length > 0) {
-      const existingIds = new Set(list.map(m => String(m.id)));
+    } else if (selectedDate === yesterdayIso && Array.isArray(yesterdayMatches)) {
       yesterdayMatches.forEach(ym => {
-        if (!existingIds.has(String(ym.id))) {
+        if (isMatchForDate(ym, selectedDate) && !existingIds.has(String(ym.id))) {
           existingIds.add(String(ym.id));
           list.push(ym);
         }
@@ -124,9 +168,12 @@ export default function ResultsProofPage({
     ];
   }, [activeResults, leaguePerformance]);
 
-  // Filter results
+  // Filter results strictly matching selected date
   const filteredResults = useMemo(() => {
     return activeResults.filter(m => {
+      // Strict date isolation: match must belong to selectedDate
+      if (!isMatchForDate(m, selectedDate)) return false;
+
       // Must be an audited completed match with verified scores or winner
       const isCompleted = m.isCompleted || m.status === 'FT' || m.status?.includes('FT') || m.status?.includes('Final') || m.actualScore || (m.homeScore != null && m.awayScore != null);
       if (!isCompleted) return false;
@@ -528,9 +575,19 @@ export default function ResultsProofPage({
                       </button>
                     </div>
                   ) : (
-                    <div>
-                      <p className="text-sm font-medium">No verified matches recorded for {selectedDate}</p>
-                      <p className="text-xs text-slate-500 mt-1">Select a different date from the dropdown above.</p>
+                    <div className="max-w-md mx-auto p-5 bg-slate-50/80 rounded-2xl border border-slate-200 text-center">
+                      <Calendar className="w-8 h-8 text-slate-400 mx-auto mb-2.5" />
+                      <p className="text-sm font-bold text-slate-800">No Verified Matches Recorded for {selectedDate}</p>
+                      <p className="text-xs text-slate-500 mt-1 mb-4 leading-relaxed">
+                        No matches were scheduled or completed in our covered leagues on this date. Check the most recent weekend matchday for audited results.
+                      </p>
+                      <button
+                        onClick={() => setSelectedDate("2026-09-20")}
+                        className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer inline-flex items-center gap-2"
+                      >
+                        <History className="w-3.5 h-3.5" />
+                        <span>View Sunday's Audited Matchday (2026-09-20)</span>
+                      </button>
                     </div>
                   )}
                 </td>

@@ -406,7 +406,15 @@ app.get('/api/state', (req, res) => {
         .concat(engine.yesterdayMatches || [])
         .concat(engine.historicalMatches || [])
         .concat(engine.matches || [])
-        .filter(x => (x.date && x.date.startsWith(date)) || (x.dateIso && x.dateIso.startsWith(date)))
+        .filter(x => {
+          const d = x.dateIso || x.date || x.utcDate;
+          if (d && String(d).startsWith(date)) return true;
+          if (x.timestamp && typeof x.timestamp === 'number') {
+            const tsIso = new Date(x.timestamp).toISOString().slice(0, 10);
+            if (tsIso === date) return true;
+          }
+          return false;
+        })
         .filter(x => !isLeagueBlacklisted(x.league) && !engine.isLeagueDisabled(x.league));
 
       const fallback = rawFallback.map(m => {
