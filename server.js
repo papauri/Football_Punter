@@ -13,7 +13,18 @@ const __dirname = path.dirname(__filename);
 async function startServer() {
   const app = express();
   const httpServer = createHttpServer(app);
-  const PORT = 3000;
+  const PORT = parseInt(process.env.PORT || '3000', 10);
+
+  // Permissive CORS for AI Studio / Webview / Cloud Workstations preview
+  app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
+    next();
+  });
 
   app.use(compression());
   app.use(express.json({ limit: '50mb' }));
@@ -538,13 +549,14 @@ app.get('/api/state', (req, res) => {
   const distDir = path.join(__dirname, 'dist');
   const hasDist = fs.existsSync(path.join(distDir, 'index.html'));
 
-  if (hasDist) {
+  if (hasDist && process.env.NODE_ENV === 'production') {
     console.log('[Server] Serving pre-bundled production assets from /dist');
     app.use(express.static(distDir));
     app.get('*', (req, res) => {
       res.sendFile(path.join(distDir, 'index.html'));
     });
-  } else if (process.env.NODE_ENV !== 'production') {
+  } else {
+    // If not production or if dist/ is missing, run Vite middleware seamlessly
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
@@ -556,15 +568,10 @@ app.get('/api/state', (req, res) => {
       appType: 'spa',
     });
     app.use(vite.middlewares);
-  } else {
-    app.use(express.static(distDir));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distDir, 'index.html'));
-    });
   }
 
   httpServer.listen(PORT, '0.0.0.0', () => {
-    console.log(`API Engine running on http://localhost:${PORT}`);
+    console.log(`API Engine running on http://0.0.0.0:${PORT}`);
     // Start continuous autonomous agent in the background after server is listening
     setTimeout(() => {
       engine.startAutonomousAgent();
