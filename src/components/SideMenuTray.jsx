@@ -92,6 +92,13 @@ export default function SideMenuTray({
           badgeColor: isSwarmRunning ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'
         },
         {
+          id: 'alldaywinner',
+          label: 'All-Day Winner Bet',
+          icon: Zap,
+          badge: '8-Team Lotto',
+          badgeColor: 'bg-amber-100 text-amber-900 border border-amber-300 font-bold'
+        },
+        {
           id: 'acca',
           label: 'Bet Slips',
           icon: ListChecks,

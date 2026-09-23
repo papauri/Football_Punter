@@ -243,15 +243,54 @@ app.get('/api/state', (req, res) => {
     }
   });
 
-  app.get('/api/team-trends', (req, res) => {
+  app.get('/api/all-day-winner', async (req, res) => {
     try {
-      const { team } = req.query;
-      if (team) {
-        const profile = engine.getSingleTeamTrends(team);
-        return res.json({ success: true, team, profile });
+      const size = parseInt(req.query.size || '8', 10);
+      const minConfidence = parseFloat(req.query.minConfidence || '60');
+      const forceRefresh = req.query.refresh === 'true';
+      const lotto = await engine.getAllDayWinnerLotto({ size, minConfidence, forceRefresh });
+      res.json({ success: true, ...lotto });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/team-recent-matches', (req, res) => {
+    try {
+      const team = req.query.team || '';
+      const limit = parseInt(req.query.limit || '20', 10);
+      if (!team) {
+        return res.status(400).json({ success: false, error: 'Query parameter "team" is required.' });
       }
-      const trends = engine.getTeamTrends();
-      res.json({ success: true, count: trends.length, trends });
+      const matches = engine.getRecentMatchesForTeam(team, limit);
+      res.json({ success: true, team, count: matches.length, matches });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/team-coach', async (req, res) => {
+    try {
+      const team = req.query.team || '';
+      const league = req.query.league || '';
+      if (!team) {
+        return res.status(400).json({ success: false, error: 'Query parameter "team" is required.' });
+      }
+      const coach = await engine.fetchDynamicTeamCoach(team, league);
+      res.json({ success: true, team, coach: coach || 'Head Coach' });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.post('/api/override-manager', (req, res) => {
+    try {
+      const { team, manager, system } = req.body || {};
+      if (!team || !manager) {
+        return res.status(400).json({ success: false, error: 'Both team and manager are required' });
+      }
+      engine.overrideTeamManager(team, manager, system);
+      res.json({ success: true, message: `Successfully updated manager for ${team} to ${manager}` });
     } catch (error) {
       res.status(500).json({ success: false, error: error.message });
     }

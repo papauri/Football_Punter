@@ -9,6 +9,7 @@ import FixturesTablePage from './FixturesTablePage';
 import ScoresTablePage from './ScoresTablePage';
 import BinaryPicksPage from './BinaryPicksPage';
 import AccumulatorPage from './AccumulatorPage';
+import AllDayWinnerPage from './AllDayWinnerPage';
 import ResultsProofPage, { isMatchForDate } from './ResultsProofPage';
 import PerformanceChart from './PerformanceChart';
 import LineupsPage from './LineupsPage';
@@ -875,6 +876,16 @@ export default function Dashboard() {
                 onRefreshState={() => fetchState(true)}
                 onAddToAcca={handleToggleAccaPick}
                 onOpenDeepResearch={handleOpenDeepResearch}
+              />
+            )}
+
+            {activePage === 'alldaywinner' && (
+              <AllDayWinnerPage
+                state={state}
+                tzSettings={tzSettings}
+                onOpenDeepResearch={handleOpenDeepResearch}
+                onLoadPicksToSlip={handleLoadPicksToSlip}
+                onNavigateToSlip={() => setActivePage('acca')}
               />
             )}
 

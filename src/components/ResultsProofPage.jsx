@@ -81,8 +81,37 @@ export default function ResultsProofPage({
   const [ledgerEntries, setLedgerEntries] = useState([]);
   const [ledgerLoading, setLedgerLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [serverTeamMatches, setServerTeamMatches] = useState([]);
+  const [isSearchingServer, setIsSearchingServer] = useState(false);
   const pageSize = 8;
   const isSearchMode = searchQuery.trim().length >= 2;
+
+  // Auto query server when team search is active to fetch all recent matches across all dates
+  useEffect(() => {
+    if (!isSearchMode) {
+      setServerTeamMatches([]);
+      return;
+    }
+    const q = searchQuery.trim();
+    const timer = setTimeout(async () => {
+      setIsSearchingServer(true);
+      try {
+        const res = await fetch(`/api/team-recent-matches?team=${encodeURIComponent(q)}&limit=30`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.matches)) {
+            setServerTeamMatches(data.matches);
+          }
+        }
+      } catch (e) {
+        // non-blocking
+      } finally {
+        setIsSearchingServer(false);
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, isSearchMode]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -159,7 +188,8 @@ export default function ResultsProofPage({
     };
 
     if (isSearchMode) {
-      // In search mode: query across the complete historical database
+      // In search mode: query across the complete historical database and server matches
+      if (Array.isArray(serverTeamMatches)) serverTeamMatches.forEach(addMatch);
       if (Array.isArray(historical30d)) historical30d.forEach(addMatch);
       if (Array.isArray(historicalResults)) historicalResults.forEach(addMatch);
       if (Array.isArray(todayMatches)) todayMatches.forEach(addMatch);
@@ -194,7 +224,7 @@ export default function ResultsProofPage({
     }
 
     return list;
-  }, [historicalResults, historical30d, todayMatches, yesterdayMatches, selectedDate, isSearchMode]);
+  }, [historicalResults, historical30d, todayMatches, yesterdayMatches, selectedDate, isSearchMode, serverTeamMatches]);
 
   // Extract unique leagues
   const leagueOptions = useMemo(() => {
@@ -414,15 +444,25 @@ export default function ResultsProofPage({
       <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs space-y-2.5">
         <div className="flex flex-wrap items-center justify-between gap-2.5">
           
-          <div className="relative flex-1 min-w-[180px] max-w-sm">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <div className="relative flex-1 min-w-[200px] max-w-md">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
             <input
               type="text"
-              placeholder="Search audited club..."
+              placeholder="Search team name (e.g. Real Madrid, Arsenal, Barcelona)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 text-slate-800 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
+              className="w-full pl-9 pr-8 py-2 text-xs font-medium bg-slate-50 text-slate-900 placeholder:text-slate-400 border border-slate-200 rounded-lg shadow-2xs hover:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear input search"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded-full hover:bg-slate-100"
+              >
+                ✕
+              </button>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-2">

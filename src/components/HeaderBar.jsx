@@ -38,6 +38,7 @@ export default function HeaderBar({
     scores: 'Goals & Totals',
     binary: 'Value Bets',
     swarm: 'Model Consensus',
+    alldaywinner: 'All-Day Winner Bet',
     acca: 'Bet Slips',
     'deep-research': 'Match Research',
     lineups: 'Starting Lineups',
@@ -88,6 +89,7 @@ export default function HeaderBar({
         { value: 'scores', label: 'Goals & Totals (O/U & BTTS)' },
         { value: 'binary', label: 'Value Bets & Kelly (+EV)' },
         { value: 'swarm', label: 'Model Consensus & AI Swarm' },
+        { value: 'alldaywinner', label: 'All-Day Winner Bet (8-Leg Lotto Acca)' },
         { value: 'acca', label: 'Bet Slips & Accumulators' }
       ]
     },
