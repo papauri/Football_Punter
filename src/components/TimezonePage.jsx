@@ -12,11 +12,18 @@ import UniformDropdown from './UniformDropdown';
 
 export default function TimezonePage({
   tzSettings = {},
-  onSaveTimezone
+  onSaveTimezone,
+  onUpdateSettings
 }) {
-  const [selectedZone, setSelectedZone] = useState(tzSettings.zone || 'UTC');
-  const [hourFormat, setHourFormat] = useState(tzSettings.hour24 ? '24' : '12');
+  const [selectedZone, setSelectedZone] = useState(tzSettings?.zone || 'UTC');
+  const [hourFormat, setHourFormat] = useState(tzSettings?.hour24 ? '24' : '12');
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  // Sync state if props update
+  React.useEffect(() => {
+    if (tzSettings?.zone) setSelectedZone(tzSettings.zone);
+    if (tzSettings?.hour24 !== undefined) setHourFormat(tzSettings.hour24 ? '24' : '12');
+  }, [tzSettings?.zone, tzSettings?.hour24]);
 
   const timezoneOptions = [
     { value: 'UTC', label: 'UTC (Coordinated Universal Time)' },
@@ -33,7 +40,10 @@ export default function TimezonePage({
     { value: 'Asia/Bangkok', label: 'Bangkok / Jakarta (ICT)' },
     { value: 'Asia/Singapore', label: 'Singapore / Hong Kong (SGT / HKT)' },
     { value: 'Asia/Tokyo', label: 'Tokyo / Seoul (JST / KST)' },
-    { value: 'Australia/Sydney', label: 'Sydney / Melbourne (AEST / AEDT)' }
+    { value: 'Australia/Perth', label: 'Perth / Western Australia (AWST, UTC+8)' },
+    { value: 'Australia/Adelaide', label: 'Adelaide / Central Australia (ACST / ACDT, UTC+9:30)' },
+    { value: 'Australia/Brisbane', label: 'Brisbane / Queensland (AEST, UTC+10)' },
+    { value: 'Australia/Sydney', label: 'Sydney / Melbourne / Canberra (AEST / AEDT, UTC+10/11)' }
   ];
 
   const now = new Date();
@@ -51,13 +61,31 @@ export default function TimezonePage({
     }
   };
 
+  const notifyChange = (newZone, newHour24) => {
+    const nextSettings = {
+      zone: newZone,
+      hour24: newHour24
+    };
+    if (typeof onUpdateSettings === 'function') onUpdateSettings(nextSettings);
+    if (typeof onSaveTimezone === 'function') onSaveTimezone(nextSettings);
+  };
+
+  const handleZoneSelect = (newZone) => {
+    setSelectedZone(newZone);
+    notifyChange(newZone, hourFormat === '24');
+    setSavedSuccess(true);
+    setTimeout(() => setSavedSuccess(false), 2000);
+  };
+
+  const handleHourSelect = (newFormat) => {
+    setHourFormat(newFormat);
+    notifyChange(selectedZone, newFormat === '24');
+    setSavedSuccess(true);
+    setTimeout(() => setSavedSuccess(false), 2000);
+  };
+
   const handleSave = () => {
-    if (onSaveTimezone) {
-      onSaveTimezone({
-        zone: selectedZone,
-        hour24: hourFormat === '24'
-      });
-    }
+    notifyChange(selectedZone, hourFormat === '24');
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 2500);
   };
@@ -103,7 +131,7 @@ export default function TimezonePage({
             <label className="text-xs font-bold text-slate-700 block">Timezone Region</label>
             <UniformDropdown
               value={selectedZone}
-              onChange={setSelectedZone}
+              onChange={handleZoneSelect}
               options={timezoneOptions}
               className="w-full"
             />
@@ -113,7 +141,7 @@ export default function TimezonePage({
             <label className="text-xs font-bold text-slate-700 block">Clock Format</label>
             <UniformDropdown
               value={hourFormat}
-              onChange={setHourFormat}
+              onChange={handleHourSelect}
               options={[
                 { value: '12', label: '12-Hour (e.g. 03:00 PM)' },
                 { value: '24', label: '24-Hour (e.g. 15:00)' }

@@ -761,6 +761,7 @@ export default function Dashboard() {
               <>
                 <DailyBriefingPanel
                   matches={matches}
+                  tzSettings={tzSettings}
                   onAddToSlip={handleToggleAccaPick}
                   accaMatchIds={new Set(accaPicks.map(p => p.id))}
                   bankrollEuro={state.bankrollEuro || 1000}
@@ -929,6 +930,7 @@ export default function Dashboard() {
               <TimezonePage
                 tzSettings={tzSettings}
                 onUpdateSettings={updateTzSettings}
+                onSaveTimezone={updateTzSettings}
                 browserTz={browserTz}
               />
             )}

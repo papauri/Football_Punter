@@ -781,7 +781,7 @@ export default function FixturesTablePage({
       { value: 'All', label: `All Dates (${matches.length})` },
       ...keys.map(k => ({ value: k, label: `${k} (${dates[k]})` }))
     ];
-  }, [matches]);
+  }, [matches, tzSettings]);
 
   // 1. First, apply base filters (date, league, search, exclude finished)
   const baseMatches = useMemo(() => {
