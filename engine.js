@@ -2640,11 +2640,22 @@ class SoccerEngine {
       const filePath = path.join(process.cwd(), 'fixtures_cache.json');
       // Strip ALL pre-calculated predictions for UPCOMING fixtures, but preserve audited completed records
       const stripPredictions = (m) => {
-        const isScheduled = m.status === 'Scheduled' || 
-                            m.status === 'STATUS_SCHEDULED' || 
-                            m.status === 'Pre-Game' ||
-                            (m.timestamp && m.timestamp > Date.now());
-        const isCompleted = !isScheduled && (m.status === 'FT' || m.status === 'STATUS_FULL_TIME' || (m.isCompleted && m.actualScore != null));
+        const isLive = Boolean(
+          m.isLive === true || 
+          m.status === 'HT' || 
+          m.status === 'LIVE' || 
+          m.status === 'STATUS_IN_PROGRESS' || 
+          m.status === 'STATUS_HALFTIME' ||
+          (typeof m.liveMinute === 'string' && (m.liveMinute.includes("'") || m.liveMinute.toLowerCase() === 'ht')) ||
+          (typeof m.status === 'string' && (m.status.includes("'") || m.status.toLowerCase() === 'ht'))
+        );
+        const isScheduled = !isLive && (
+          m.status === 'Scheduled' || 
+          m.status === 'STATUS_SCHEDULED' || 
+          m.status === 'Pre-Game' ||
+          (!m.isCompleted && m.timestamp && m.timestamp > Date.now())
+        );
+        const isCompleted = !isLive && !isScheduled && (m.status === 'FT' || m.status === 'STATUS_FULL_TIME' || (m.isCompleted && m.actualScore != null));
         return {
           id: m.id,
           home: m.home,
@@ -2652,17 +2663,20 @@ class SoccerEngine {
           away: m.away,
           awayLogo: m.awayLogo,
           league: m.league,
-          status: isCompleted ? (m.status || 'FT') : (m.status || 'Scheduled'),
+          status: isCompleted ? (m.status || 'FT') : (isLive ? (m.liveMinute || m.status || 'HT') : (m.status || 'Scheduled')),
           time: m.time,
           date: m.date,
           dateIso: m.dateIso,
           utcDate: m.utcDate,
           timestamp: m.timestamp,
-          goals: isCompleted ? m.goals : { home: null, away: null },
+          goals: isCompleted || isLive ? m.goals : { home: null, away: null },
           odds: m.odds,
           isCompleted: Boolean(isCompleted),
-          homeScore: isCompleted ? m.homeScore : null,
-          awayScore: isCompleted ? m.awayScore : null,
+          isLive: Boolean(isLive),
+          homeScore: isCompleted || isLive ? m.homeScore : null,
+          awayScore: isCompleted || isLive ? m.awayScore : null,
+          liveHomeScore: isLive ? (m.liveHomeScore ?? m.homeScore ?? 0) : null,
+          liveAwayScore: isLive ? (m.liveAwayScore ?? m.awayScore ?? 0) : null,
           actualScore: isCompleted ? m.actualScore : null,
           actualWinner: isCompleted ? m.actualWinner : null,
           predictedWinner: isCompleted ? m.predictedWinner : undefined,
@@ -2674,7 +2688,6 @@ class SoccerEngine {
           awayTeamId: m.awayTeamId,
           broadcast: m.broadcast,
           channels: m.channels,
-          isLive: m.isLive,
           liveMinute: m.liveMinute,
           liveScore: m.liveScore,
           inPlayPrediction: m.inPlayPrediction
@@ -3832,6 +3845,7 @@ class SoccerEngine {
     if (l.includes('championship') || l.includes('eng.2')) return 'Sky Sports Football';
     if (l.includes('fa cup') || l.includes('efl') || l.includes('carabao')) return 'BBC One, ITVX, ESPN+';
     if (l.includes('nations') || l.includes('world cup')) return 'UEFA.tv, FOX Sports, ITV';
+    if (l.includes('chile') || l.includes('copa chile') || l.includes('chi.')) return 'TNT Sports Chile, TNT Sports HD, Estadio TNT Sports';
     return 'Free Live Stream, Club TV';
   }
 

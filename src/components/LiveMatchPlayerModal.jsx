@@ -11,6 +11,7 @@ import {
   ExternalLink, 
   Sparkles, 
   Maximize2, 
+  Minimize2,
   RefreshCw, 
   Plus, 
   Check, 
@@ -48,7 +49,12 @@ export function buildMatchStreamSources(match) {
   let secondaryChannelKey = 'TNTSports1';
   let secondaryChannelLabel = 'TNT Sports 1';
 
-  if (leagueLower.includes('premier league') || leagueLower.includes('epl')) {
+  if (leagueLower.includes('chile') || leagueLower.includes('copa chile') || leagueLower.includes('chi.')) {
+    tvChannelKey = 'TNTSportsChile';
+    tvChannelLabel = 'TNT Sports Chile HD';
+    secondaryChannelKey = 'TNTSports2';
+    secondaryChannelLabel = 'TNT Sports 2 Chile';
+  } else if (leagueLower.includes('premier league') || leagueLower.includes('epl')) {
     tvChannelKey = 'SkySportsPremierLeague';
     tvChannelLabel = 'Sky Sports Premier League HD';
     secondaryChannelKey = 'TNTSports1';
@@ -87,7 +93,12 @@ export function buildMatchStreamSources(match) {
 
   // Override if match has explicitly scraped broadcasts
   const broadcastStr = (match.broadcast || '').toLowerCase();
-  if (broadcastStr.includes('peacock')) {
+  if (broadcastStr.includes('tnt sports chile') || broadcastStr.includes('estadio tnt')) {
+    tvChannelKey = 'TNTSportsChile';
+    tvChannelLabel = 'TNT Sports Chile HD';
+    secondaryChannelKey = 'TNTSports2';
+    secondaryChannelLabel = 'TNT Sports 2 Chile';
+  } else if (broadcastStr.includes('peacock')) {
     tvChannelKey = 'Peacock';
     tvChannelLabel = 'Peacock USA HD';
   } else if (broadcastStr.includes('tnt')) {
@@ -169,22 +180,24 @@ export default function LiveMatchPlayerModal({
   onAddToSlip,
   isInSlip = false
 }) {
-  // Default immediately to 'stream' so users don't have to press buttons to watch!
   const [activeTab, setActiveTab] = useState('stream'); // 'stream' | 'radar' | 'radio' | 'analysis'
   const [currentSourceIndex, setCurrentSourceIndex] = useState(0);
   const [streamState, setStreamState] = useState('loading'); // 'loading' | 'playing' | 'failed' | 'switching'
   const [autoFallbackEnabled, setAutoFallbackEnabled] = useState(true);
   const [autoSwitchNotice, setAutoSwitchNotice] = useState(null);
-  const [customStreamUrl, setCustomStreamUrl] = useState('');
   const [activeStreamUrl, setActiveStreamUrl] = useState('');
-  const [isSimulatingLive, setIsSimulatingLive] = useState(false);
-  const [liveMinute, setLiveMinute] = useState(65);
-  const [liveScore, setLiveScore] = useState({ home: 1, away: 0 });
+  const [forcePlayStream, setForcePlayStream] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [liveMinute, setLiveMinute] = useState(45);
+  const [liveScore, setLiveScore] = useState({ home: 0, away: 0 });
   const [inPlayData, setInPlayData] = useState(null);
   const [isLoadingInPlay, setIsLoadingInPlay] = useState(false);
+  const [ballPosition, setBallPosition] = useState({ x: 50, y: 50 });
+  const [attackingSide, setAttackingSide] = useState('home');
 
   const fallbackTimerRef = useRef(null);
   const iframeRef = useRef(null);
+  const modalContainerRef = useRef(null);
 
   // Compute prioritized stream sources
   const streamSources = useMemo(() => {
@@ -192,6 +205,29 @@ export default function LiveMatchPlayerModal({
   }, [match]);
 
   const currentSource = streamSources[currentSourceIndex] || streamSources[0];
+
+  // Derive live status flags
+  const isMatchLive = Boolean(
+    match?.isLive === true || 
+    match?.status === 'LIVE' || 
+    match?.status === 'STATUS_IN_PROGRESS' || 
+    match?.status === 'STATUS_HALFTIME' || 
+    match?.status === 'HT' || 
+    (typeof match?.liveMinute === 'string' && (match.liveMinute.includes("'") || match.liveMinute.toLowerCase() === 'ht')) ||
+    (typeof match?.status === 'string' && (match.status.includes("'") || match.status.toLowerCase() === 'ht')) ||
+    (typeof match?.liveMinute === 'number' && match.liveMinute > 0)
+  );
+
+  const isMatchCompleted = Boolean(
+    match?.isCompleted === true ||
+    match?.status === 'FT' ||
+    match?.status === 'STATUS_FULL_TIME' ||
+    match?.status === 'FINAL' ||
+    match?.status === 'Final' ||
+    (typeof match?.status === 'string' && match.status.includes('FT'))
+  );
+
+  const isPreMatch = !isMatchLive && !isMatchCompleted;
 
   // Initialize scores, in-play prediction, and initial stream feed
   useEffect(() => {
@@ -201,23 +237,27 @@ export default function LiveMatchPlayerModal({
     setCurrentSourceIndex(0);
     setStreamState('loading');
     setAutoSwitchNotice(null);
+    setForcePlayStream(false);
 
-    const hS = match.liveHomeScore ?? match.goals?.home ?? match.homeScore ?? (match.isLive ? 1 : 0);
+    const hS = match.liveHomeScore ?? match.goals?.home ?? match.homeScore ?? 0;
     const aS = match.liveAwayScore ?? match.goals?.away ?? match.awayScore ?? 0;
     setLiveScore({ home: hS, away: aS });
 
-    let min = 65;
+    let min = 45;
     if (typeof match.liveMinute === 'number') min = match.liveMinute;
     else if (typeof match.liveMinute === 'string') {
       const parsed = parseInt(match.liveMinute.replace(/[^0-9]/g, ''), 10);
       if (!isNaN(parsed)) min = parsed;
       else if (match.liveMinute.toLowerCase().includes('ht')) min = 45;
+    } else if (typeof match.status === 'string') {
+      const parsed = parseInt(match.status.replace(/[^0-9]/g, ''), 10);
+      if (!isNaN(parsed)) min = parsed;
     }
     setLiveMinute(min);
 
     if (match.inPlayPrediction) {
       setInPlayData(match.inPlayPrediction);
-    } else {
+    } else if (isMatchLive) {
       fetchInPlayPrediction(min, hS, aS);
     }
 
@@ -232,7 +272,6 @@ export default function LiveMatchPlayerModal({
     if (!currentSource) return;
 
     if (currentSource.type === 'radar') {
-      // Switched to radar fallback
       setActiveTab('radar');
       setStreamState('playing');
       setAutoSwitchNotice('Auto-switched to 2D Pitch Radar: Live visual simulator active.');
@@ -249,11 +288,9 @@ export default function LiveMatchPlayerModal({
       clearTimeout(fallbackTimerRef.current);
     }
 
-    // If auto-fallback is enabled, set an automatic watchdog:
-    // If the stream doesn't report playing within 7 seconds, automatically advance to next source!
-    if (autoFallbackEnabled) {
+    // If auto-fallback is enabled and game is live or force stream is on, set 7-second auto watchdog
+    if (autoFallbackEnabled && (isMatchLive || forcePlayStream)) {
       fallbackTimerRef.current = setTimeout(() => {
-        // If still in loading state after 7 seconds, trigger seamless auto-fallback
         handleAutoAdvance();
       }, 7000);
     }
@@ -261,7 +298,31 @@ export default function LiveMatchPlayerModal({
     return () => {
       if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
     };
-  }, [currentSourceIndex, autoFallbackEnabled]);
+  }, [currentSourceIndex, autoFallbackEnabled, isMatchLive, forcePlayStream]);
+
+  // 2D Tactical Pitch Radar Simulation Tick (ONLY when match is LIVE!)
+  useEffect(() => {
+    if (!isMatchLive || activeTab !== 'radar') return;
+
+    const interval = setInterval(() => {
+      // Simulate attacking transitions between home and away
+      setBallPosition(prev => {
+        const targetX = attackingSide === 'home' ? 70 + Math.random() * 25 : 5 + Math.random() * 25;
+        const targetY = 20 + Math.random() * 60;
+        return {
+          x: Math.round(prev.x * 0.7 + targetX * 0.3),
+          y: Math.round(prev.y * 0.7 + targetY * 0.3)
+        };
+      });
+
+      // Randomly change attack momentum every few ticks
+      if (Math.random() < 0.25) {
+        setAttackingSide(s => s === 'home' ? 'away' : 'home');
+      }
+    }, 1800);
+
+    return () => clearInterval(interval);
+  }, [isMatchLive, activeTab, attackingSide]);
 
   const handleAutoAdvance = () => {
     if (currentSourceIndex < streamSources.length - 1) {
@@ -270,7 +331,6 @@ export default function LiveMatchPlayerModal({
       setAutoSwitchNotice(`Feed ${currentSourceIndex + 1} took too long to play. Auto-switched to ${nextSource.name}.`);
       setCurrentSourceIndex(nextIdx);
     } else {
-      // Reached end of web streams, fall back to pitch radar
       setActiveTab('radar');
       setAutoSwitchNotice('Web stream mirrors offline or geo-restricted. Displaying Live 2D Pitch Radar & Tactical Simulator.');
     }
@@ -305,6 +365,15 @@ export default function LiveMatchPlayerModal({
     }
   };
 
+  const toggleFullscreen = () => {
+    if (!modalContainerRef.current) return;
+    if (!document.fullscreenElement) {
+      modalContainerRef.current.requestFullscreen?.().then(() => setIsFullscreen(true)).catch(() => {});
+    } else {
+      document.exitFullscreen?.().then(() => setIsFullscreen(false)).catch(() => {});
+    }
+  };
+
   const fetchInPlayPrediction = async (min, hS, aS) => {
     if (!match) return;
     try {
@@ -333,10 +402,9 @@ export default function LiveMatchPlayerModal({
 
   if (!isOpen || !match) return null;
 
-  const isLive = match.isLive || isSimulatingLive || (match.status && !match.isCompleted && match.status !== 'FT' && (match.status.includes("'") || match.status.includes('LIVE') || match.status === 'HT'));
   const channelsList = Array.isArray(match.channels) && match.channels.length > 0 
     ? match.channels 
-    : (match.broadcast ? match.broadcast.split(',').map(s => s.trim()) : ['Sky Sports Main Event', 'Peacock', 'ESPN+']);
+    : (match.broadcast ? match.broadcast.split(',').map(s => s.trim()) : ['TNT Sports Chile', 'Sky Sports Main Event', 'Peacock']);
 
   const currentHomeP = inPlayData?.liveProb?.home ?? safeParseFloat(match.prob?.home, 50);
   const currentDrawP = inPlayData?.liveProb?.draw ?? safeParseFloat(match.prob?.draw, 25);
@@ -344,49 +412,89 @@ export default function LiveMatchPlayerModal({
   const currentProjScore = inPlayData?.projectedFinalScore || match.mostLikelyScore || '1 - 0';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/90 backdrop-blur-md animate-in fade-in duration-200">
       <div 
-        className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-5xl max-h-[94vh] flex flex-col shadow-2xl overflow-hidden text-slate-100"
+        ref={modalContainerRef}
+        className={`bg-slate-950 border border-slate-800/80 rounded-2xl w-full ${isFullscreen ? 'max-w-none h-full' : 'max-w-5xl max-h-[94vh]'} flex flex-col shadow-2xl overflow-hidden text-slate-100 transition-all`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Top Header */}
-        <div className="px-4 sm:px-5 py-3 bg-slate-950/95 border-b border-slate-800 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
-              <Tv className="w-5 h-5" />
+        {/* Minimalist Top Header Bar */}
+        <div className="px-4 py-2.5 bg-slate-950/95 border-b border-white/5 flex items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+              <Tv className="w-4 h-4" />
             </div>
+
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-bold text-white text-sm sm:text-base truncate">
-                  {match.home} vs {match.away}
+                <span className="font-extrabold text-white text-sm sm:text-base truncate tracking-tight">
+                  {match.home} <span className="text-slate-500 font-normal text-xs">vs</span> {match.away}
                 </span>
-                {isLive ? (
-                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40 animate-pulse">
-                    <span className="w-2 h-2 rounded-full bg-rose-500" />
-                    LIVE {inPlayData?.minuteDisplay || `${liveMinute}'`}
+
+                {isMatchLive ? (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-black bg-rose-500/20 text-rose-400 border border-rose-500/40 animate-pulse">
+                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+                    LIVE {inPlayData?.minuteDisplay || (match.liveMinute || match.status || `${liveMinute}'`)}
+                  </span>
+                ) : isMatchCompleted ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+                    FT • Finished
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700">
-                    <Clock className="w-3 h-3 text-slate-400" />
-                    {match.time || 'Upcoming Today'}
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                    <Clock className="w-3 h-3" />
+                    Kickoff {match.time || 'Today'}
                   </span>
                 )}
-                <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-indigo-950/70 text-indigo-300 border border-indigo-800/60">
-                  {match.league}
+
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-indigo-950/60 text-indigo-300 border border-indigo-800/40">
+                  {match.league || 'Soccer'}
                 </span>
               </div>
+
               <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5 flex-wrap">
-                <span>Score: <strong className="text-white font-mono">{liveScore.home} - {liveScore.away}</strong></span>
-                <span>•</span>
-                <span className="truncate">📺 {channelsList.join(' • ')}</span>
+                {isMatchLive ? (
+                  <span className="font-semibold text-emerald-400 font-mono">
+                    Score: <strong className="text-white text-sm">{liveScore.home} - {liveScore.away}</strong>
+                  </span>
+                ) : isMatchCompleted ? (
+                  <span className="font-semibold text-slate-300 font-mono">
+                    Final: <strong className="text-white text-sm">{match.actualScore || `${liveScore.home} - ${liveScore.away}`}</strong>
+                  </span>
+                ) : (
+                  <span className="text-slate-400 text-[11px]">
+                    Pre-Match Standby • Projected Score: <strong className="text-white font-mono">{match.mostLikelyScore || '1 - 0'}</strong>
+                  </span>
+                )}
+                <span className="text-slate-600">•</span>
+                <span className="truncate text-slate-400 text-[11px]">📺 {channelsList[0] || 'Official HD'}</span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Header Controls */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={toggleFullscreen}
+              className="w-8 h-8 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer border border-white/5"
+              title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen Player'}
+            >
+              {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+            </button>
+
+            <a
+              href={currentSource.url || currentSource.fallbackUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-8 h-8 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer border border-white/5"
+              title="Pop-out player in new tab"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-lg bg-slate-900 hover:bg-rose-950/60 text-slate-400 hover:text-rose-400 flex items-center justify-center transition-colors cursor-pointer border border-white/5 ml-1"
               title="Close Player"
             >
               <X className="w-4 h-4" />
@@ -394,62 +502,67 @@ export default function LiveMatchPlayerModal({
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="px-4 sm:px-5 py-2 bg-slate-900 border-b border-slate-800 flex items-center justify-between gap-2 overflow-x-auto text-xs select-none">
+        {/* Minimalist Mode Selector Bar */}
+        <div className="px-4 py-2 bg-slate-900/90 border-b border-white/5 flex items-center justify-between gap-2 overflow-x-auto text-xs select-none shrink-0">
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => setActiveTab('stream')}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 cursor-pointer text-xs ${
                 activeTab === 'stream' 
                   ? 'bg-indigo-600 text-white shadow-xs' 
-                  : 'bg-slate-800/70 hover:bg-slate-800 text-slate-400 hover:text-slate-200'
+                  : 'bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-slate-200'
               }`}
             >
               <Tv className="w-3.5 h-3.5" />
-              <span>Live Web TV Stream</span>
-              <span className="px-1.5 py-0.2 rounded-full text-[9px] bg-rose-500/80 text-white font-bold ml-1 animate-pulse">
-                AUTO
-              </span>
+              <span>Video Stream</span>
+              {isMatchLive && (
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse ml-0.5" />
+              )}
             </button>
 
             <button
               onClick={() => setActiveTab('radar')}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 cursor-pointer text-xs ${
                 activeTab === 'radar' 
                   ? 'bg-indigo-600 text-white shadow-xs' 
-                  : 'bg-slate-800/70 hover:bg-slate-800 text-slate-400 hover:text-slate-200'
+                  : 'bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-slate-200'
               }`}
             >
               <Activity className="w-3.5 h-3.5" />
-              <span>2D Pitch Radar &amp; Simulator</span>
+              <span>2D Pitch Radar</span>
+              <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold ml-1 ${
+                isMatchLive ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-slate-800 text-slate-400'
+              }`}>
+                {isMatchLive ? 'SIMULATING' : 'STANDBY'}
+              </span>
             </button>
 
             <button
               onClick={() => setActiveTab('radio')}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 cursor-pointer text-xs ${
                 activeTab === 'radio' 
                   ? 'bg-indigo-600 text-white shadow-xs' 
-                  : 'bg-slate-800/70 hover:bg-slate-800 text-slate-400 hover:text-slate-200'
+                  : 'bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-slate-200'
               }`}
             >
               <Radio className="w-3.5 h-3.5" />
-              <span>Audio Commentary</span>
+              <span>Radio Audio</span>
             </button>
 
             <button
               onClick={() => setActiveTab('analysis')}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 cursor-pointer text-xs ${
                 activeTab === 'analysis' 
                   ? 'bg-indigo-600 text-white shadow-xs' 
-                  : 'bg-slate-800/70 hover:bg-slate-800 text-slate-400 hover:text-slate-200'
+                  : 'bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-slate-200'
               }`}
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>In-Play Analytics</span>
+              <span>AI Analytics</span>
             </button>
           </div>
 
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2.5">
             <button
               onClick={() => setAutoFallbackEnabled(!autoFallbackEnabled)}
               className={`px-2 py-1 rounded text-[10px] font-bold border transition-colors cursor-pointer flex items-center gap-1 ${
@@ -457,15 +570,15 @@ export default function LiveMatchPlayerModal({
                   ? 'bg-emerald-950/70 text-emerald-400 border-emerald-700/60' 
                   : 'bg-slate-800 text-slate-400 border-slate-700'
               }`}
-              title="Automatically switches to alternative Sportzx / Web TV mirror if current stream stalls"
+              title="Automatically switches to next unblocked mirror within 7s if feed stalls"
             >
-              <Zap className="w-3 h-3" />
-              <span>Auto-Fallback: {autoFallbackEnabled ? 'ON' : 'OFF'}</span>
+              <Zap className="w-3 h-3 text-amber-400" />
+              <span>Auto-Switch: {autoFallbackEnabled ? '7s' : 'OFF'}</span>
             </button>
 
-            <span className="text-[11px] text-emerald-400 flex items-center gap-1 font-medium">
+            <span className="text-[11px] text-emerald-400 flex items-center gap-1 font-semibold">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-              Direct Live Engine
+              Zero Ads • Sandboxed
             </span>
           </div>
         </div>
@@ -473,10 +586,10 @@ export default function LiveMatchPlayerModal({
         {/* Modal Main Body */}
         <div className="flex-1 overflow-y-auto p-3 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-5">
           
-          {/* Left/Main Column: Video / Radar / Audio Player */}
+          {/* Left/Main Column: Player Area */}
           <div className="lg:col-span-8 flex flex-col space-y-3">
             
-            {/* Auto-Switch Notice Alert if activated */}
+            {/* Auto-Switch Notice Alert */}
             {autoSwitchNotice && (
               <div className="p-2.5 bg-indigo-950/80 border border-indigo-700/60 rounded-xl text-xs text-indigo-200 flex items-center justify-between gap-2 animate-in fade-in">
                 <div className="flex items-center gap-2">
@@ -485,22 +598,22 @@ export default function LiveMatchPlayerModal({
                 </div>
                 <button
                   onClick={() => setAutoSwitchNotice(null)}
-                  className="text-indigo-400 hover:text-white text-xs px-1"
+                  className="text-indigo-400 hover:text-white text-xs px-1 cursor-pointer"
                 >
                   ✕
                 </button>
               </div>
             )}
 
-            {/* TAB 1: Live Web TV Stream (Sportzx / Web TV Iframe Player) */}
+            {/* TAB 1: Live Web TV Stream */}
             {activeTab === 'stream' && (
               <div className="space-y-3">
-                {/* 1-Click Stream Source Switcher Bar (Zero hassle) */}
-                <div className="p-2 bg-slate-950/80 border border-slate-800 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs">
+                {/* 1-Click Stream Source Switcher Bar */}
+                <div className="p-2 bg-slate-950/80 border border-white/5 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="text-slate-400 font-semibold flex items-center gap-1 text-[11px]">
                       <Tv className="w-3.5 h-3.5 text-indigo-400" />
-                      <span>Live Feeds:</span>
+                      <span>Feeds:</span>
                     </span>
 
                     {streamSources.map((src, idx) => (
@@ -510,7 +623,7 @@ export default function LiveMatchPlayerModal({
                         className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
                           currentSourceIndex === idx
                             ? 'bg-indigo-600 text-white shadow-xs'
-                            : 'bg-slate-800/80 hover:bg-slate-700 text-slate-300'
+                            : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border border-white/5'
                         }`}
                         title={src.description}
                       >
@@ -525,66 +638,101 @@ export default function LiveMatchPlayerModal({
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleNextStream}
-                      className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
-                      title="Skip to next live streaming mirror without hassle"
+                      className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1 border border-white/5"
+                      title="Skip to next stream mirror"
                     >
                       <RotateCcw className="w-3 h-3 text-indigo-400" />
                       <span>Next Feed</span>
                     </button>
-
-                    <a
-                      href={currentSource.url || currentSource.fallbackUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-2.5 py-1 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 hover:text-white border border-indigo-500/40 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer"
-                      title="Open full stream in new window"
-                    >
-                      <span>Pop-Out</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
                   </div>
                 </div>
 
-                {/* Secure Sandboxed Iframe Video Player */}
-                <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-slate-800 shadow-2xl">
-                  {/* Current Active Stream Embed */}
-                  {activeStreamUrl ? (
-                    <iframe
-                      ref={iframeRef}
-                      src={activeStreamUrl}
-                      title={`${match.home} vs ${match.away} Live Stream`}
-                      className="w-full h-full border-0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-                      allowFullScreen
-                      onLoad={handleIframeLoaded}
-                      onError={handleIframeError}
-                      sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-encrypted-media allow-fullscreen"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 p-6 text-center">
-                      <Tv className="w-10 h-10 mb-2 opacity-50 text-indigo-400" />
-                      <p className="text-sm font-semibold text-slate-300">Connecting to Live Web TV Stream...</p>
+                {/* Player View Container */}
+                <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-slate-800/80 shadow-2xl">
+                  {/* Case 1: Match is NOT live yet, show "Stream Has Not Started Yet" standby */}
+                  {isPreMatch && !forcePlayStream ? (
+                    <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-black flex flex-col items-center justify-center p-6 text-center select-none">
+                      <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-3 shadow-lg shadow-amber-500/10">
+                        <Clock className="w-7 h-7 text-amber-400 animate-pulse" />
+                      </div>
+
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 mb-2">
+                        <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                        Standby • Kickoff {match.time || 'Upcoming Today'}
+                      </span>
+
+                      <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                        Stream Has Not Started Yet
+                      </h3>
+
+                      <p className="text-xs sm:text-sm text-slate-400 max-w-md mt-1.5 leading-relaxed">
+                        Live HD video broadcast feeds activate automatically 10–15 minutes before the match kicks off.
+                      </p>
+
+                      <div className="mt-4 px-3.5 py-2 bg-slate-900/90 border border-slate-800 rounded-xl flex items-center gap-2.5 text-xs text-slate-300 max-w-sm">
+                        <Tv className="w-4 h-4 text-indigo-400 shrink-0" />
+                        <span className="truncate">
+                          Official Broadcast: <strong className="text-white">{match.broadcast || 'TNT Sports Chile, TNT Sports HD'}</strong>
+                        </span>
+                      </div>
+
+                      <div className="mt-5 flex items-center gap-3 flex-wrap justify-center">
+                        <button
+                          onClick={() => setForcePlayStream(true)}
+                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Play className="w-3.5 h-3.5 fill-white text-white" />
+                          <span>Open Carrier Stream Anyway</span>
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('analysis')}
+                          className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-all border border-slate-800 flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Pre-Match Predictions</span>
+                        </button>
+                      </div>
                     </div>
+                  ) : (
+                    /* Case 2: Match IS LIVE or user forced playback */
+                    activeStreamUrl ? (
+                      <iframe
+                        ref={iframeRef}
+                        src={activeStreamUrl}
+                        title={`${match.home} vs ${match.away} Live Stream`}
+                        className="w-full h-full border-0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                        allowFullScreen
+                        onLoad={handleIframeLoaded}
+                        onError={handleIframeError}
+                        sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-encrypted-media allow-fullscreen"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 p-6 text-center">
+                        <Tv className="w-10 h-10 mb-2 opacity-50 text-indigo-400" />
+                        <p className="text-sm font-semibold text-slate-300">Connecting to Live Web TV Stream...</p>
+                      </div>
+                    )
                   )}
 
                   {/* Sandboxed Protection Badge Overlay */}
                   <div className="absolute top-2.5 left-2.5 z-20 pointer-events-none">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-950/80 text-emerald-400 border border-emerald-500/40 backdrop-blur-xs shadow-md">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-950/85 text-emerald-400 border border-emerald-500/40 backdrop-blur-xs shadow-md">
                       <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                      <span>Sandboxed • Popups Blocked</span>
+                      <span>Sandboxed • Zero Ads</span>
                     </span>
                   </div>
 
                   {/* Active Source Badge Overlay */}
                   <div className="absolute top-2.5 right-2.5 z-20 pointer-events-none">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-950/80 text-indigo-300 border border-indigo-500/40 backdrop-blur-xs shadow-md font-mono">
-                      <span>{currentSource.name}</span>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-950/85 text-indigo-300 border border-indigo-500/40 backdrop-blur-xs shadow-md font-mono">
+                      <span>{currentSource.shortName}</span>
                     </span>
                   </div>
                 </div>
 
-                {/* Live Stream Bar Info */}
-                <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs">
+                {/* Minimalist Live Stream Bottom Strip */}
+                <div className="p-3 bg-slate-950/80 border border-white/5 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs">
                   <div className="flex items-center gap-2">
                     <span className="text-slate-400">Stream Status:</span>
                     <span className="font-semibold text-emerald-400 flex items-center gap-1 font-mono">
@@ -601,17 +749,17 @@ export default function LiveMatchPlayerModal({
                       onClick={handleNextStream}
                       className="text-xs text-indigo-400 hover:text-indigo-300 font-bold underline cursor-pointer"
                     >
-                      Auto-switch next feed →
+                      Switch mirror feed →
                     </button>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* TAB 2: 2D Synthetic Soccer Pitch Radar */}
+            {/* TAB 2: 2D Tactical Soccer Pitch Radar */}
             {activeTab === 'radar' && (
               <div className="space-y-3">
-                <div className="relative w-full aspect-video sm:aspect-21/9 bg-emerald-950 border-2 border-emerald-800/80 rounded-xl overflow-hidden shadow-inner flex flex-col justify-between p-3 select-none">
+                <div className="relative w-full aspect-video sm:aspect-21/9 bg-emerald-950 border-2 border-emerald-800/80 rounded-xl overflow-hidden shadow-inner flex flex-col justify-between p-3.5 select-none">
                   {/* Pitch Turf Pattern */}
                   <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px]" />
                   
@@ -623,7 +771,7 @@ export default function LiveMatchPlayerModal({
                   <div className="absolute left-2 top-1/2 -translate-y-1/2 w-12 h-28 border border-emerald-500/30 border-l-0" />
                   <div className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-28 border border-emerald-500/30 border-r-0" />
 
-                  {/* Pitch Radar Header */}
+                  {/* Header */}
                   <div className="relative z-10 flex items-center justify-between text-xs font-bold text-white px-2">
                     <div className="flex items-center gap-2">
                       <span className="px-2 py-0.5 rounded bg-emerald-900/80 text-emerald-300 border border-emerald-700/60 font-mono">
@@ -633,9 +781,15 @@ export default function LiveMatchPlayerModal({
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-0.5 rounded-full bg-rose-600/90 text-white font-mono text-[11px] animate-pulse">
-                        🔴 {liveMinute}' IN-PLAY
-                      </span>
+                      {isMatchLive ? (
+                        <span className="px-2.5 py-0.5 rounded-full bg-rose-600/90 text-white font-mono text-[11px] animate-pulse">
+                          🔴 {inPlayData?.minuteDisplay || `${liveMinute}'`} IN-PLAY
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-0.5 rounded-full bg-slate-900/90 text-slate-300 border border-slate-700 font-mono text-[11px]">
+                          ⏳ PRE-MATCH STANDBY
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -646,108 +800,131 @@ export default function LiveMatchPlayerModal({
                     </div>
                   </div>
 
-                  {/* Dynamic Tactical Pitch Action Representation */}
-                  <div className="relative z-10 flex-1 flex items-center justify-center my-2">
-                    <div className="bg-slate-950/70 backdrop-blur-xs border border-emerald-500/40 rounded-xl p-3 max-w-sm text-center">
-                      <div className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
-                        <Flame className="w-3.5 h-3.5 text-amber-400" />
-                        <span>Tactical Momentum &amp; Pitch Pressure</span>
+                  {/* Pitch Action or Standby State */}
+                  {isMatchLive ? (
+                    /* Live match dynamic physics & player movement */
+                    <div className="relative z-10 flex-1 flex items-center justify-center my-2">
+                      {/* Simulated Ball with Trail */}
+                      <div 
+                        className="absolute w-4 h-4 rounded-full bg-white border-2 border-emerald-900 shadow-lg shadow-white/50 transition-all duration-1000 ease-out z-20 flex items-center justify-center"
+                        style={{ left: `${ballPosition.x}%`, top: `${ballPosition.y}%` }}
+                      >
+                        <div className="w-1.5 h-1.5 rounded-full bg-rose-600" />
                       </div>
-                      <p className="text-xs text-slate-200 leading-relaxed font-medium">
-                        {inPlayData?.momentumVerdict || `${match.home} holding spatial control in mid-block. ${match.away} looking to exploit counter-attack lanes.`}
-                      </p>
-                      <div className="mt-2 flex items-center justify-center gap-3 text-[11px] text-slate-300 font-mono">
-                        <span>xG: {match.xG?.home || '1.4'} - {match.xG?.away || '1.1'}</span>
-                        <span>•</span>
-                        <span>Rem xG: {inPlayData?.remainingXg?.home || '0.4'} - {inPlayData?.remainingXg?.away || '0.3'}</span>
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Pitch Radar Footer: Momentum Bar */}
-                  <div className="relative z-10 space-y-1">
-                    <div className="flex justify-between text-[10px] font-bold text-slate-300 px-1 font-mono">
-                      <span>{match.home} Attack Pressure ({currentHomeP}%)</span>
-                      <span>{match.away} Counter Threat ({currentAwayP}%)</span>
+                      {/* Attacking Momentum Wave Indicator */}
+                      <div 
+                        className={`absolute px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider backdrop-blur-xs transition-all duration-700 ${
+                          attackingSide === 'home' 
+                            ? 'left-1/3 bg-indigo-600/80 text-white shadow-indigo-500/50 shadow-md' 
+                            : 'right-1/3 bg-rose-600/80 text-white shadow-rose-500/50 shadow-md'
+                        }`}
+                      >
+                        ⚡ Attacking Momentum: {attackingSide === 'home' ? match.home : match.away}
+                      </div>
                     </div>
-                    <div className="w-full h-2 bg-slate-900/80 rounded-full overflow-hidden flex border border-emerald-600/40">
-                      <div className="bg-indigo-500 h-full transition-all duration-500" style={{ width: `${currentHomeP}%` }} />
-                      <div className="bg-amber-500 h-full transition-all duration-500" style={{ width: `${currentDrawP}%` }} />
-                      <div className="bg-rose-500 h-full transition-all duration-500" style={{ width: `${currentAwayP}%` }} />
+                  ) : (
+                    /* Match NOT live: Standby Pitch Display */
+                    <div className="relative z-10 flex-1 flex flex-col items-center justify-center my-auto text-center p-4">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-900/60 text-emerald-300 border border-emerald-700/50 flex items-center justify-center mb-2">
+                        <Activity className="w-5 h-5 text-emerald-400" />
+                      </div>
+                      <h4 className="text-sm sm:text-base font-bold text-white tracking-tight">
+                        2D Simulation Standby
+                      </h4>
+                      <p className="text-[11px] sm:text-xs text-emerald-300/80 max-w-sm mt-1">
+                        Dynamic pitch ball physics, possession momentum waves, and live Poisson goal probability decay will activate when the match kicks off.
+                      </p>
                     </div>
+                  )}
+
+                  {/* Pitch Footer: Tactical Stats */}
+                  <div className="relative z-10 flex items-center justify-between text-[11px] font-mono text-emerald-300 px-2 bg-emerald-950/80 rounded-lg py-1 border border-emerald-800/40">
+                    <span>Tactical Radar: Low-Latency Sync</span>
+                    <span>{isMatchLive ? `Momentum: ${attackingSide.toUpperCase()}` : 'Kickoff Pending'}</span>
+                    <span>Pitch: Natural Grass</span>
                   </div>
                 </div>
 
-                {/* Broadcaster listings */}
-                <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div className="p-3 bg-slate-950/80 border border-white/5 rounded-xl flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
-                    <span className="text-slate-400">TV Channels:</span>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      {channelsList.map((ch, idx) => (
-                        <span key={idx} className="px-2 py-0.5 rounded bg-slate-800 text-indigo-300 font-semibold border border-slate-700">
-                          {ch}
-                        </span>
-                      ))}
-                    </div>
+                    <span className="text-slate-400">Tactical State:</span>
+                    <span className="font-semibold text-indigo-400">
+                      {isMatchLive 
+                        ? (inPlayData?.momentumVerdict || `${match.home} and ${match.away} contesting mid-pitch territorial control.`)
+                        : `Pre-match preparation: ${match.home} vs ${match.away} kicks off at ${match.time || 'scheduled time'}.`
+                      }
+                    </span>
                   </div>
-
-                  <button
-                    onClick={() => setActiveTab('stream')}
-                    className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-xs"
-                  >
-                    <Tv className="w-3 h-3" />
-                    <span>Switch to Video Stream</span>
-                  </button>
                 </div>
               </div>
             )}
 
-            {/* TAB 3: Live Radio Commentary */}
+            {/* TAB 3: Audio Commentary */}
             {activeTab === 'radio' && (
-              <div className="space-y-4 p-5 bg-slate-950 border border-slate-800 rounded-xl">
+              <div className="space-y-4 p-5 bg-slate-950 border border-white/5 rounded-xl">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center">
-                    <Radio className="w-6 h-6 animate-pulse" />
+                  <div className="w-10 h-10 rounded-xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center">
+                    <Radio className={`w-5 h-5 ${isMatchLive ? 'animate-pulse' : ''}`} />
                   </div>
                   <div>
                     <h3 className="text-sm font-bold text-white">Live Football Audio Commentary</h3>
-                    <p className="text-xs text-slate-400">Real-time play-by-play radio commentary &amp; crowd atmosphere</p>
+                    <p className="text-xs text-slate-400">
+                      {isMatchLive 
+                        ? 'Real-time play-by-play radio commentary & crowd atmosphere'
+                        : 'Live commentary stream activates at kickoff'
+                      }
+                    </p>
                   </div>
                 </div>
 
-                <div className="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
-                  <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
-                    <span>Source: Football Audio Network</span>
-                    <span className="text-emerald-400 flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                      Broadcasting Live
-                    </span>
+                {isMatchLive ? (
+                  <div className="p-4 bg-slate-900 border border-white/5 rounded-xl space-y-3">
+                    <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
+                      <span>Source: Sports Audio Live Stream</span>
+                      <span className="text-emerald-400 flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                        Broadcasting Live
+                      </span>
+                    </div>
+                    
+                    <div className="aspect-21/9 w-full bg-black rounded-lg overflow-hidden">
+                      <iframe
+                        src={`https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(match.home + ' vs ' + match.away + ' radio live commentary')}&autoplay=1`}
+                        title="Audio Commentary Stream"
+                        className="w-full h-full border-0"
+                        allow="autoplay"
+                        sandbox="allow-scripts allow-same-origin"
+                      />
+                    </div>
                   </div>
-                  
-                  <div className="aspect-21/9 w-full bg-black rounded-lg overflow-hidden">
-                    <iframe
-                      src={`https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(match.home + ' vs ' + match.away + ' radio live commentary')}&autoplay=1`}
-                      title="Audio Commentary Stream"
-                      className="w-full h-full border-0"
-                      allow="autoplay"
-                      sandbox="allow-scripts allow-same-origin"
-                    />
+                ) : (
+                  <div className="p-6 bg-slate-900/60 border border-white/5 rounded-xl text-center space-y-2">
+                    <Radio className="w-8 h-8 text-slate-500 mx-auto" />
+                    <h4 className="text-sm font-bold text-slate-200">Commentary Feed Standby</h4>
+                    <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                      Official matchday audio commentary will begin broadcasting once the game kicks off at {match.time || 'scheduled matchday time'}.
+                    </p>
                   </div>
-                </div>
+                )}
               </div>
             )}
 
             {/* TAB 4: In-Play Mid-Game Analytics */}
             {activeTab === 'analysis' && (
-              <div className="space-y-4 p-4 bg-slate-950 border border-slate-800 rounded-xl text-xs">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="space-y-4 p-4 bg-slate-950 border border-white/5 rounded-xl text-xs">
+                <div className="flex items-center justify-between border-b border-white/5 pb-3">
                   <div>
-                    <h3 className="font-bold text-white text-sm">Supermodel Mid-Game Autopsy</h3>
-                    <p className="text-slate-400 text-[11px]">Real-time Poisson goal rate recalibration during live match play</p>
+                    <h3 className="font-bold text-white text-sm">
+                      {isMatchLive ? 'Supermodel Mid-Game Autopsy' : 'Pre-Match Analytical Foundation'}
+                    </h3>
+                    <p className="text-slate-400 text-[11px]">
+                      {isMatchLive ? 'Real-time Poisson goal rate decay during active live play' : 'Dixon-Coles bivariate Poisson pre-game expected goals'}
+                    </p>
                   </div>
                   <div className="text-right">
                     <span className="text-emerald-400 font-mono font-bold text-sm">
-                      Live Pick: {inPlayData?.livePickLabel || `${match.home} Win`}
+                      Pick: {inPlayData?.livePickLabel || match.predictedWinner || `${match.home} Win`}
                     </span>
                     <span className="block text-slate-400 text-[10px]">
                       Projected Final: {currentProjScore}
@@ -756,22 +933,22 @@ export default function LiveMatchPlayerModal({
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg text-center">
-                    <span className="text-slate-400 text-[11px] block">Live Home Win %</span>
+                  <div className="p-3 bg-slate-900 border border-white/5 rounded-lg text-center">
+                    <span className="text-slate-400 text-[11px] block">{isMatchLive ? 'Live Home Win %' : 'Home Win %'}</span>
                     <strong className="text-indigo-400 font-mono text-base block mt-0.5">{currentHomeP}%</strong>
-                    <span className="text-[10px] text-slate-500 font-mono">Rem xG: {inPlayData?.remainingXg?.home || 0.4}</span>
+                    <span className="text-[10px] text-slate-500 font-mono">xG: {match.lambda || inPlayData?.remainingXg?.home || 1.2}</span>
                   </div>
 
-                  <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg text-center">
-                    <span className="text-slate-400 text-[11px] block">Live Draw %</span>
+                  <div className="p-3 bg-slate-900 border border-white/5 rounded-lg text-center">
+                    <span className="text-slate-400 text-[11px] block">{isMatchLive ? 'Live Draw %' : 'Draw %'}</span>
                     <strong className="text-amber-400 font-mono text-base block mt-0.5">{currentDrawP}%</strong>
-                    <span className="text-[10px] text-slate-500 font-mono">Stalemate risk</span>
+                    <span className="text-[10px] text-slate-500 font-mono">Stalemate probability</span>
                   </div>
 
-                  <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg text-center">
-                    <span className="text-slate-400 text-[11px] block">Live Away Win %</span>
+                  <div className="p-3 bg-slate-900 border border-white/5 rounded-lg text-center">
+                    <span className="text-slate-400 text-[11px] block">{isMatchLive ? 'Live Away Win %' : 'Away Win %'}</span>
                     <strong className="text-rose-400 font-mono text-base block mt-0.5">{currentAwayP}%</strong>
-                    <span className="text-[10px] text-slate-500 font-mono">Rem xG: {inPlayData?.remainingXg?.away || 0.3}</span>
+                    <span className="text-[10px] text-slate-500 font-mono">xG: {match.mu || inPlayData?.remainingXg?.away || 0.9}</span>
                   </div>
                 </div>
 
@@ -780,8 +957,8 @@ export default function LiveMatchPlayerModal({
                     <Sparkles className="w-3.5 h-3.5" />
                     Tactical Directive &amp; Game-State Breakdown
                   </span>
-                  <p className="text-slate-300 leading-relaxed">
-                    {inPlayData?.tacticalAdvice || `${match.home} holding game-state leverage into 2H. Model favors closing out victory.`}
+                  <p className="text-slate-300 leading-relaxed text-xs">
+                    {inPlayData?.tacticalAdvice || inPlayData?.momentumVerdict || match.analyticsConclusion || `${match.home} vs ${match.away}: Tactical dynamics favor projected final score of ${currentProjScore}.`}
                   </p>
                 </div>
               </div>
@@ -792,35 +969,37 @@ export default function LiveMatchPlayerModal({
           {/* Right Column: In-Play Betting & Tactical Sidebar */}
           <div className="lg:col-span-4 flex flex-col space-y-4">
             
-            {/* Live In-Play Model Card */}
-            <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-3.5 text-xs">
-              <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
+            {/* Live / Pre-Match Odds Card */}
+            <div className="p-4 bg-slate-950 border border-white/5 rounded-xl space-y-3.5 text-xs">
+              <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
                 <span className="font-bold text-white uppercase tracking-wider text-[11px] flex items-center gap-1.5">
                   <Activity className="w-3.5 h-3.5 text-rose-500" />
-                  Live In-Play Odds
+                  {isMatchLive ? 'Live In-Play Odds' : 'Pre-Game Model Odds'}
                 </span>
-                <span className="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-rose-500/20 text-rose-400 border border-rose-500/40">
-                  {liveMinute}' Tick
+                <span className={`px-2 py-0.5 rounded font-mono font-bold text-[10px] ${
+                  isMatchLive ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' : 'bg-slate-800 text-slate-300'
+                }`}>
+                  {isMatchLive ? `${liveMinute}' Tick` : (match.time || 'Pre-Game')}
                 </span>
               </div>
 
               {/* Dynamic Pick & Live Odds */}
-              <div className="p-3 bg-indigo-950/40 border border-indigo-800/50 rounded-lg space-y-2">
+              <div className="p-3 bg-indigo-950/40 border border-indigo-800/40 rounded-lg space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-400 font-medium">Recommended In-Play Pick:</span>
+                  <span className="text-slate-400 font-medium">Recommended Pick:</span>
                   <span className="font-mono font-bold text-indigo-300 text-sm">
                     {inPlayData?.liveOdds || 1.35}x
                   </span>
                 </div>
                 <div className="font-bold text-white text-sm">
-                  {inPlayData?.livePickLabel || `${match.home} Win`}
+                  {inPlayData?.livePickLabel || match.predictedWinner || `${match.home} Win`}
                 </div>
                 <div className="text-[11px] text-slate-400">
                   Model Probability: <strong className="text-emerald-400 font-mono">{currentHomeP}%</strong> • Projected: <strong className="text-white font-mono">{currentProjScore}</strong>
                 </div>
 
                 <button
-                  onClick={() => onAddToSlip && onAddToSlip(match, inPlayData?.livePick || 'HOME', `${inPlayData?.livePickLabel || match.home} Win (Live)`, inPlayData?.liveOdds || 1.35, currentHomeP)}
+                  onClick={() => onAddToSlip && onAddToSlip(match, inPlayData?.livePick || 'HOME', `${inPlayData?.livePickLabel || match.home} Win`, inPlayData?.liveOdds || 1.35, currentHomeP)}
                   className={`w-full py-2 rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs ${
                     isInSlip 
                       ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 hover:bg-rose-500/30' 
@@ -835,13 +1014,13 @@ export default function LiveMatchPlayerModal({
                   ) : (
                     <>
                       <Plus className="w-3.5 h-3.5" />
-                      <span>Add Live Pick to Slip</span>
+                      <span>Add Pick to Slip</span>
                     </>
                   )}
                 </button>
               </div>
 
-              {/* Live Probability Bars */}
+              {/* Probability Bars */}
               <div className="space-y-2 pt-1">
                 <div className="flex items-center justify-between text-slate-400 text-[11px]">
                   <span>{match.home}</span>
@@ -870,7 +1049,7 @@ export default function LiveMatchPlayerModal({
             </div>
 
             {/* TV Broadcaster Info Card */}
-            <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2.5 text-xs">
+            <div className="p-4 bg-slate-950 border border-white/5 rounded-xl space-y-2.5 text-xs">
               <span className="font-bold text-white uppercase tracking-wider text-[11px] flex items-center gap-1.5">
                 <Tv className="w-3.5 h-3.5 text-indigo-400" />
                 Live Broadcast Listings
@@ -878,7 +1057,7 @@ export default function LiveMatchPlayerModal({
 
               <div className="space-y-1.5">
                 {channelsList.map((ch, idx) => (
-                  <div key={idx} className="p-2 bg-slate-900 border border-slate-800 rounded-lg flex items-center justify-between">
+                  <div key={idx} className="p-2 bg-slate-900 border border-white/5 rounded-lg flex items-center justify-between">
                     <span className="font-medium text-slate-300 truncate">{ch}</span>
                     <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800/60 shrink-0 ml-2">
                       Official HD

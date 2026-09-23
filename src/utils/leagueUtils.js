@@ -37,8 +37,11 @@ export const SOLID_LEAGUES = [
   { code: 'ger.dfb_pokal', name: 'DFB-Pokal', aliases: ['dfb-pokal', 'dfb pokal', 'german cup'] },
   { code: 'ger.super_cup', name: 'DFL-Supercup', aliases: ['dfl-supercup', 'dfl supercup', 'german super cup'] },
   { code: 'esp.copa_del_rey', name: 'Copa del Rey', aliases: ['copa del rey', 'spanish copa del rey'] },
-  { code: 'ita.coppa_italia', name: 'Coppa Italia', aliases: ['coppa italia', 'italian coppa italia'] },
-  { code: 'fra.coupe_de_france', name: 'Coupe de France', aliases: ['coupe de france', 'french cup'] }
+  { code: 'fra.coupe_de_france', name: 'Coupe de France', aliases: ['coupe de france', 'french cup'] },
+
+  // 4. Latin American Competitions & Domestic Cups
+  { code: 'chi.copa_chi', name: 'Copa Chile', aliases: ['copa chile', 'chilean cup', 'chile cup', 'copa chile easy', 'copa chile coca-cola sin azucar', 'copa chile 2026'] },
+  { code: 'chi.1', name: 'Chilean Primera División', aliases: ['chilean primera división', 'chilean primera division', 'campeonato chileno', 'primera division de chile', 'primera división de chile'] }
 ];
 
 export const BLACKLISTED_LEAGUES = [
@@ -63,7 +66,6 @@ export const BLACKLISTED_LEAGUES = [
   'Japanese J1 League', 'J1 League', 'jpn.1',
   'Argentine Liga Profesional', 'Liga Profesional', 'arg.1',
   'Categoría Primera A', 'col.1',
-  'Chilean Primera División', 'chi.1',
   'Uruguayan Primera División', 'uru.1',
   'LigaPro Ecuador', 'ecu.1',
   'Bolivian Liga Profesional', 'bol.1',
@@ -104,7 +106,7 @@ export const BLACKLISTED_LEAGUES = [
 const BLACKLISTED_CODES = new Set([
   'eng.2', 'eng.3', 'eng.4', 'ger.2', 'esp.2', 'ita.2', 'fra.2', 'sco.2', 'ned.2', 'ned.cup',
   'bra.1', 'bra.2', 'usa.1', 'usa.open', 'jpn.1', 'mex.1', 'mex.2',
-  'arg.1', 'arg.2', 'col.1', 'chi.1', 'uru.1', 'ecu.1', 'bol.1', 'per.1', 'ven.1', 'par.1',
+  'arg.1', 'arg.2', 'col.1', 'uru.1', 'ecu.1', 'bol.1', 'per.1', 'ven.1', 'par.1',
   'irl.1', 'nir.1', 'wal.1', 'cyp.1', 'mys.1', 'tha.1', 'rsa.1', 'ind.1', 'chn.1', 'fin.1', 'rou.1', 'rus.1',
   'pol.1', 'cze.1', 'hun.1', 'isr.1', 'usa.nwsl', 'eng.w.1', 'esp.w.1', 'fra.w.1',
   'eng.trophy'
@@ -132,7 +134,6 @@ const BLACKLISTED_REGEXES = [
   /\bprimera\s*nacional\b/i,
   /\bexpansi[oó]n\s*mx\b/i,
   /\bcategor[ií]a\s*primera\s*a\b/i,
-  /\bchilean\s*primera\b/i,
   /\buruguayan\s*primera\b/i,
   /\bligapro\b/i,
   /\bbolivian\s*liga\b/i,
@@ -260,7 +261,9 @@ export const LEAGUE_PREDICTABILITY_TIERS = {
       'UEFA Conference League', 'uefa.europa.conf',
       'UEFA Nations League', 'uefa.nations',
       'UEFA World Cup Qualifiers', 'fifa.worldq.uefa',
-      'CONMEBOL World Cup Qualifiers', 'fifa.worldq.conmebol'
+      'CONMEBOL World Cup Qualifiers', 'fifa.worldq.conmebol',
+      'Copa Chile', 'chi.copa_chi',
+      'Chilean Primera División', 'chi.1'
     ]
   },
   TIER_3: {
