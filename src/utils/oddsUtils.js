@@ -1,4 +1,4 @@
-import { safeParseFloat } from './numberUtils';
+import { safeParseFloat } from './numberUtils.js';
 
 /**
  * Accurately extracts or calculates true bookmaker odds for any selection.

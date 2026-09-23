@@ -19,7 +19,6 @@ export const SOLID_LEAGUES = [
   { code: 'bel.1', name: 'Belgian Pro League', aliases: ['belgian pro league', 'jupiler pro league'] },
   { code: 'ksa.1', name: 'Saudi Pro League', aliases: ['saudi pro league', 'roshn saudi league', 'saudi professional league'] },
   { code: 'gre.1', name: 'Greek Super League', aliases: ['greek super league', 'super league greece'] },
-  { code: 'irl.1', name: 'Irish Premier Division', aliases: ['irish premier division', 'league of ireland', 'league of ireland premier division', 'sse airtricity'] },
   { code: 'tur.1', name: 'Turkish Super Lig', aliases: ['turkish super lig', 'super lig', 'süper lig'] },
   { code: 'uefa.europa', name: 'UEFA Europa League', aliases: ['uefa europa league', 'europa league', 'uel'] },
   { code: 'uefa.europa.conf', name: 'UEFA Conference League', aliases: ['uefa conference league', 'uefa europa conference league', 'conference league'] },
@@ -72,8 +71,9 @@ export const BLACKLISTED_LEAGUES = [
   'Venezuelan Primera División', 'ven.1',
 
   // 3. Zero-Telemetry / Data-Starved Leagues (Missing live odds, lineups & referee stats)
+  'Irish Premier Division', 'League of Ireland Premier Division', 'irl.1',
   'Northern Irish Premiership', 'nir.1',
-  'Welsh Premier League', 'wal.1',
+  'Welsh Premier League', 'Cymru Premier', 'wal.1',
   'Cypriot First Division', 'cyp.1',
   'Malaysian Super League', 'mys.1',
   'Thai League 1', 'tha.1',
@@ -83,10 +83,20 @@ export const BLACKLISTED_LEAGUES = [
   'Finnish Veikkausliiga', 'fin.1',
   'Romanian Liga 1', 'rou.1',
   'Russian Premier League', 'rus.1',
+  'Polish Ekstraklasa', 'pol.1',
+  'Czech First League', 'cze.1',
+  'Hungarian NB I', 'hun.1',
+  'Israeli Premier League', 'isr.1',
   'EFL Trophy', 'eng.trophy',
   'U.S. Open Cup', 'usa.open',
 
-  // 4. Volatile Preliminary Cups & Amateur Knockouts (Zero baseline predictability, extreme blowouts / false consensus)
+  // 4. Low-Predictability / Non-Male Top Flight / High Rotation Leagues
+  'NWSL', 'National Women\'s Soccer League', 'usa.nwsl',
+  'English Women\'s Super League', 'WSL', 'eng.w.1',
+  'Spanish Liga F', 'esp.w.1',
+  'French Première Ligue', 'fra.w.1',
+
+  // 5. Volatile Preliminary Cups & Amateur Knockouts (Zero baseline predictability, extreme blowouts / false consensus)
   'KNVB Beker', 'Dutch Cup', 'Netherlands KNVB Cup', 'ned.cup',
   'Preliminary Rounds', 'Qualifying Round', 'Kwalificatieronde'
 ];
@@ -95,7 +105,8 @@ const BLACKLISTED_CODES = new Set([
   'eng.2', 'eng.3', 'eng.4', 'ger.2', 'esp.2', 'ita.2', 'fra.2', 'sco.2', 'ned.2', 'ned.cup',
   'bra.1', 'bra.2', 'usa.1', 'usa.open', 'jpn.1', 'mex.1', 'mex.2',
   'arg.1', 'arg.2', 'col.1', 'chi.1', 'uru.1', 'ecu.1', 'bol.1', 'per.1', 'ven.1', 'par.1',
-  'nir.1', 'wal.1', 'cyp.1', 'mys.1', 'tha.1', 'rsa.1', 'ind.1', 'chn.1', 'fin.1', 'rou.1', 'rus.1',
+  'irl.1', 'nir.1', 'wal.1', 'cyp.1', 'mys.1', 'tha.1', 'rsa.1', 'ind.1', 'chn.1', 'fin.1', 'rou.1', 'rus.1',
+  'pol.1', 'cze.1', 'hun.1', 'isr.1', 'usa.nwsl', 'eng.w.1', 'esp.w.1', 'fra.w.1',
   'eng.trophy'
 ]);
 
@@ -138,6 +149,20 @@ const BLACKLISTED_REGEXES = [
   /\bchinese\s*super\s*league\b/i,
   /\bveikkausliiga\b/i,
   /\brussian\s*premier\b/i,
+  /\bpolish\s*ekstraklasa\b/i,
+  /\bekstraklasa\b/i,
+  /\bczech\s*first\b/i,
+  /\bfortuna\s*liga\b/i,
+  /\bhungarian\s*nb\b/i,
+  /\bisraeli\s*premier\b/i,
+  /\bligat\s*ha'?al\b/i,
+  /\birish\s*premier\b/i,
+  /\bleague\s*of\s*ireland\b/i,
+  /\bairtricity\b/i,
+  /\bnwsl\b/i,
+  /\bwomen'?s\s*super\s*league\b/i,
+  /\bliga\s*f\b/i,
+  /\bpremi[eè]re\s*ligue\b/i,
   /\befl\s*trophy\b/i,
   /\bu\.?s\.?\s*open\s*cup\b/i,
   /\bknvb\b/i,
@@ -207,7 +232,6 @@ export const LEAGUE_PREDICTABILITY_TIERS = {
       'Copa del Rey', 'esp.copa_del_rey',
       'Coppa Italia', 'ita.coppa_italia',
       'Coupe de France', 'fra.coupe_de_france',
-      'KNVB Beker', 'ned.cup',
       'Saudi Pro League', 'ksa.1',
       'Greek Super League', 'gre.1',
       'UEFA European Championship', 'uefa.euro',
@@ -231,7 +255,6 @@ export const LEAGUE_PREDICTABILITY_TIERS = {
       'French Ligue 1', 'Ligue 1', 'fra.1',
       'Portuguese Primeira Liga', 'Primeira Liga', 'por.1',
       'Belgian Pro League', 'bel.1',
-      'Irish Premier Division', 'League of Ireland Premier Division', 'irl.1',
       'Turkish Super Lig', 'tur.1',
       'UEFA Europa League', 'uefa.europa',
       'UEFA Conference League', 'uefa.europa.conf',

@@ -24,11 +24,13 @@ async function startServer() {
     // Compression is optional; continue cleanly
   }
 
-  // Permissive CORS for AI Studio / Webview / Cloud Workstations preview
+  // Permissive CORS and frame allowance for AI Studio / Webview / Cloud Workstations preview iframe
   app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.removeHeader('X-Frame-Options');
+    res.header('Content-Security-Policy', "frame-ancestors *");
     if (req.method === 'OPTIONS') {
       return res.sendStatus(200);
     }
@@ -596,6 +598,19 @@ app.get('/api/state', (req, res) => {
       appType: 'spa',
     });
     app.use(vite.middlewares);
+
+    // Fallback for SPA routing in development Vite middleware mode
+    app.use('*', async (req, res, next) => {
+      const url = req.originalUrl;
+      try {
+        let template = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf-8');
+        template = await vite.transformIndexHtml(url, template);
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+      } catch (e) {
+        vite.ssrFixStacktrace(e);
+        next(e);
+      }
+    });
   }
 
   httpServer.listen(PORT, '0.0.0.0', () => {

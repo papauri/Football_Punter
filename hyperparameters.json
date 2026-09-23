@@ -1,5 +1,5 @@
 {
-  "homeAdvantage": 1.2140090414613134,
+  "homeAdvantage": 1.2043178266324894,
   "homeEloBoost": 65,
   "entropyFloorThreshold": 52,
   "paritySafetyThreshold": 70,
@@ -30,6 +30,16 @@
     "KNVB Beker",
     "Netherlands KNVB Cup",
     "Dutch Cup",
-    "Eerste Divisie"
+    "Eerste Divisie",
+    "Irish Premier Division",
+    "League of Ireland Premier Division",
+    "NWSL",
+    "English Women's Super League",
+    "Spanish Liga F",
+    "French Première Ligue",
+    "Polish Ekstraklasa",
+    "Czech First League",
+    "Hungarian NB I",
+    "Israeli Premier League"
   ]
 }

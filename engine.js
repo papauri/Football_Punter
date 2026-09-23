@@ -3840,7 +3840,7 @@ class SoccerEngine {
         });
       }
 
-      this.log('TrainingEngine', `Dixon-Coles Cycle #${this.trainingStats.trainingCycles} | Real Match Hit Rate: ${this.trainingStats.accuracy}% (${correct}/${n}) | Yesterday Accuracy: ${this.yesterdayStats.accuracy}% (${this.yesterdayStats.correctPredictions}/${this.yesterdayStats.total}) | Brier: ${this.trainingStats.brierScore}`);
+      this.log('TrainingEngine', `Dixon-Coles Cycle #${this.trainingStats.trainingCycles} | Real Match Hit Rate: ${this.trainingStats.accuracy}% (${effectiveCorrect}/${effectiveN}) | Yesterday Accuracy: ${this.yesterdayStats.accuracy}% (${this.yesterdayStats.correctPredictions}/${this.yesterdayStats.total}) | Brier: ${this.trainingStats.brierScore}`);
 
     } catch (err) {
       this.log('TrainingEngine_Error', `Calibration iteration error: ${err.message}`);
