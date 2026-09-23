@@ -25,6 +25,7 @@ import StrategyProofModal from './StrategyProofModal';
 import DailyBriefingPanel from './DailyBriefingPanel';
 import { resolveMatchOdds, resolveMatchProb } from '../utils/oddsUtils';
 import { isLeagueBlacklisted } from '../utils/leagueUtils';
+import { getTimezoneDisplayLabel } from '../utils/dateUtils';
 
 // =========================================================================
 // TIMEZONE CONTEXT & EXPORTS
@@ -421,6 +422,17 @@ export default function Dashboard() {
     } catch {}
   };
 
+  // Live ticking clock for timezone display
+  const [clockTick, setClockTick] = useState(Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setClockTick(Date.now()), 15000);
+    return () => clearInterval(id);
+  }, []);
+
+  const tzLabel = useMemo(() => {
+    return getTimezoneDisplayLabel(tzSettings);
+  }, [tzSettings, clockTick]);
+
   // Engine polling state
   const isFetchingRef = useRef(false);
   const backoffUntilRef = useRef(0);
@@ -660,7 +672,7 @@ export default function Dashboard() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           matchCount={matches.length}
-          tzLabel={tzSettings.mode === 'auto' ? browserTz.formattedOffset : tzSettings.manualLabel}
+          tzLabel={tzLabel}
           onOpenTimezone={() => {
             setActivePage('timezone');
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -736,7 +748,7 @@ export default function Dashboard() {
           }}
           matchCount={matches.length}
           patchCount={state.patchTelemetry?.patchesApplied || patches.length}
-          tzLabel={tzSettings.mode === 'auto' ? browserTz.formattedOffset : tzSettings.manualLabel}
+          tzLabel={tzLabel}
           counts={{
             fixtures: matches.length,
             scores: matches.filter(m => m.hasPrediction).length,

@@ -182,3 +182,20 @@ export function getLocalizedTodayKey(tzSettings = {}) {
     return new Date().toISOString().slice(0, 10);
   }
 }
+
+export function getTimezoneDisplayLabel(tzSettings = {}) {
+  const zone = tzSettings?.zone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  try {
+    const now = new Date();
+    const city = zone.includes('/') ? zone.split('/').pop().replace(/_/g, ' ') : zone;
+    const timeStr = now.toLocaleTimeString([], {
+      timeZone: zone,
+      hour12: tzSettings?.hour24 === false,
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    return `${city} ${timeStr}`;
+  } catch {
+    return zone || 'UTC';
+  }
+}

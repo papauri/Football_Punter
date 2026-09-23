@@ -164,10 +164,11 @@ export default function HeaderBar({
                 handlePageSelect('timezone');
               }
             }}
-            className="hidden sm:flex items-center px-2.5 py-1 rounded-md text-[11px] font-medium text-slate-600 bg-slate-100 hover:bg-slate-200/80 transition-colors border border-slate-200 cursor-pointer"
-            title="Configure timezone"
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors border border-slate-200 cursor-pointer shadow-2xs shrink-0"
+            title="Configure timezone region & clock preferences"
           >
-            <span className="truncate max-w-[130px] font-mono">{tzLabel || 'UTC'}</span>
+            <Clock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+            <span className="truncate max-w-[160px] font-mono">{tzLabel || 'UTC'}</span>
           </button>
 
           {/* Consensus Win Rate Badge */}
