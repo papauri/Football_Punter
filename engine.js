@@ -2468,11 +2468,29 @@ class SoccerEngine {
     const newsImpact = `${homeName}: ${homeNarrative.news} | ${awayName}: ${awayNarrative.news}`;
     const conclusion = `${homeName}: ${homeNarrative.news} (${homeNarrative.motivation}) vs ${awayName}: ${awayNarrative.news} (${awayNarrative.rivalry}). Form-adjusted probability stands at Home Win ${dcProbs.home.toFixed(1)}%, Draw ${dcProbs.draw.toFixed(1)}%, Away Win ${dcProbs.away.toFixed(1)}% (Projected: ${dcProbs.mostLikelyScore}).`;
 
-    const isCompleted = raw.isCompleted || raw.status === 'FT' || raw.status?.includes('FT') || raw.status?.includes('Final') || raw.actualScore != null || (raw.homeScore != null && raw.awayScore != null) || (raw.goals?.home != null && raw.goals?.away != null);
-    const hG = raw.homeScore ?? raw.goals?.home ?? (raw.actualScore ? parseInt(raw.actualScore.split('-')[0], 10) : null);
-    const aG = raw.awayScore ?? raw.goals?.away ?? (raw.actualScore ? parseInt(raw.actualScore.split('-')[1], 10) : null);
-    const actualScore = raw.actualScore || (hG != null && aG != null ? `${hG}-${aG}` : null);
-    const actualWinner = raw.actualWinner || (hG != null && aG != null ? (hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW') : null);
+    const isScheduled = raw.status === 'Scheduled' || 
+                        raw.status === 'STATUS_SCHEDULED' || 
+                        raw.status === 'Pre-Game' || 
+                        raw.status === 'STATUS_POSTPONED' || 
+                        raw.status === 'Postponed' ||
+                        (raw.timestamp && raw.timestamp > Date.now());
+
+    const isExplicitlyCompleted = !isScheduled && (
+      raw.status === 'FT' || 
+      raw.status === 'STATUS_FULL_TIME' || 
+      raw.status === 'STATUS_FINAL' || 
+      raw.status === 'Final' || 
+      raw.status?.includes('FT') || 
+      raw.status?.includes('Full Time') || 
+      raw.status === 'FINISHED' ||
+      (raw.isCompleted === true && raw.actualScore != null)
+    );
+
+    const isCompleted = Boolean(isExplicitlyCompleted);
+    const hG = isCompleted ? (raw.homeScore ?? raw.goals?.home ?? (raw.actualScore ? parseInt(raw.actualScore.split('-')[0], 10) : null)) : null;
+    const aG = isCompleted ? (raw.awayScore ?? raw.goals?.away ?? (raw.actualScore ? parseInt(raw.actualScore.split('-')[1], 10) : null)) : null;
+    const actualScore = isCompleted && hG != null && aG != null ? `${hG}-${aG}` : null;
+    const actualWinner = isCompleted && hG != null && aG != null ? (hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW') : null;
 
     // If already audited and verified, freeze the historical result so it cannot drift or change
     const isHit = isCompleted && hG != null && aG != null
@@ -2493,7 +2511,7 @@ class SoccerEngine {
       utcDate: raw.utcDate,
       timestamp: raw.timestamp,
       isCompleted,
-      goals: raw.goals || (hG != null && aG != null ? { home: hG, away: aG } : { home: null, away: null }),
+      goals: isCompleted ? (raw.goals || (hG != null && aG != null ? { home: hG, away: aG } : { home: null, away: null })) : { home: null, away: null },
       homeScore: isCompleted ? hG : null,
       awayScore: isCompleted ? aG : null,
       actualScore,
@@ -2576,7 +2594,11 @@ class SoccerEngine {
       const filePath = path.join(process.cwd(), 'fixtures_cache.json');
       // Strip ALL pre-calculated predictions for UPCOMING fixtures, but preserve audited completed records
       const stripPredictions = (m) => {
-        const isCompleted = m.isCompleted || m.status === 'FT' || m.actualScore != null;
+        const isScheduled = m.status === 'Scheduled' || 
+                            m.status === 'STATUS_SCHEDULED' || 
+                            m.status === 'Pre-Game' ||
+                            (m.timestamp && m.timestamp > Date.now());
+        const isCompleted = !isScheduled && (m.status === 'FT' || m.status === 'STATUS_FULL_TIME' || (m.isCompleted && m.actualScore != null));
         return {
           id: m.id,
           home: m.home,
@@ -2584,19 +2606,19 @@ class SoccerEngine {
           away: m.away,
           awayLogo: m.awayLogo,
           league: m.league,
-          status: m.status || (isCompleted ? 'FT' : 'Scheduled'),
+          status: isCompleted ? (m.status || 'FT') : (m.status || 'Scheduled'),
           time: m.time,
           date: m.date,
           dateIso: m.dateIso,
           utcDate: m.utcDate,
           timestamp: m.timestamp,
-          goals: m.goals,
+          goals: isCompleted ? m.goals : { home: null, away: null },
           odds: m.odds,
-          isCompleted,
-          homeScore: m.homeScore,
-          awayScore: m.awayScore,
-          actualScore: m.actualScore,
-          actualWinner: m.actualWinner,
+          isCompleted: Boolean(isCompleted),
+          homeScore: isCompleted ? m.homeScore : null,
+          awayScore: isCompleted ? m.awayScore : null,
+          actualScore: isCompleted ? m.actualScore : null,
+          actualWinner: isCompleted ? m.actualWinner : null,
           predictedWinner: isCompleted ? m.predictedWinner : undefined,
           predictedScore: isCompleted ? (m.predictedScore || m.mostLikelyScore) : undefined,
           isHit: isCompleted ? m.isHit : undefined,

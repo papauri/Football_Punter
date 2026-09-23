@@ -50,16 +50,36 @@ export default function DailyBriefingPanel({ matches = [], onAddToSlip, accaMatc
 
   const todayIso = new Date().toISOString().slice(0, 10);
 
-  // Classify each today match
-  const classified = useMemo(() => {
-    const today = matches.filter(m => {
+  // Target date: today if matches exist, or the nearest upcoming active matchday!
+  const { targetDateIso, isToday } = useMemo(() => {
+    const hasToday = matches.some(m => {
       if (m.isCompleted || m.status === 'FT') return false;
-      if (isLeagueBlacklisted(m.league)) return false;
       const d = m.dateIso || m.utcDate?.slice(0, 10) || '';
       return d === todayIso;
     });
+    if (hasToday) return { targetDateIso: todayIso, isToday: true };
+    
+    // Find the nearest upcoming matchday
+    const upcoming = matches
+      .filter(m => !m.isCompleted && m.status !== 'FT')
+      .map(m => m.dateIso || m.utcDate?.slice(0, 10) || '')
+      .filter(d => d >= todayIso)
+      .sort();
 
-    return today.map(m => {
+    const nextDate = upcoming[0] || todayIso;
+    return { targetDateIso: nextDate, isToday: nextDate === todayIso };
+  }, [matches, todayIso]);
+
+  // Classify matches for the target active matchday
+  const classified = useMemo(() => {
+    const targetMatches = matches.filter(m => {
+      if (m.isCompleted || m.status === 'FT') return false;
+      if (isLeagueBlacklisted(m.league)) return false;
+      const d = m.dateIso || m.utcDate?.slice(0, 10) || '';
+      return d === targetDateIso;
+    });
+
+    return targetMatches.map(m => {
       const msToKickoff = m.timestamp ? m.timestamp - now : Infinity;
       const pick = getMatchPick(m);
       const conf = safeParseFloat(m.confidence ?? m.binaryModel?.confidence ?? m.prob?.[pick?.toLowerCase()], 60);
@@ -73,20 +93,24 @@ export default function DailyBriefingPanel({ matches = [], onAddToSlip, accaMatc
 
       // READY TO BET: snapshot window + not pass + not trap + conf ≥ 60
       const isReadyToBet = inSnapshotWindow && !isPass && !isTrap && conf >= 60;
-      // WATCH: within 3h + not pass + conf >= 55
-      const isWatch = !isReadyToBet && msToKickoff <= 3 * 60 * 60 * 1000 && msToKickoff > 0 && !isPass && conf >= 55;
+      // WATCH: within 4h + not pass + conf >= 55
+      const isWatch = !isReadyToBet && msToKickoff <= 4 * 60 * 60 * 1000 && msToKickoff > 0 && !isPass && conf >= 55;
 
       return { m, pick, conf, isPass, isTrap, isElite, inSnapshotWindow, isReadyToBet, isWatch, msToKickoff, kelly, kellyUnits, kellyEuro };
     }).sort((a, b) => a.msToKickoff - b.msToKickoff);
-  }, [matches, now, todayIso, bankrollEuro]);
+  }, [matches, now, targetDateIso, bankrollEuro]);
 
   const readyToBet = classified.filter(c => c.isReadyToBet);
   const watchList = classified.filter(c => c.isWatch);
-  const allToday = classified;
+  const allSlate = classified;
 
-  const displayList = activeTab === 'bet' ? readyToBet : activeTab === 'watch' ? watchList : allToday;
+  // Auto-switch to 'all' if 'bet' is empty on future matchdays
+  const effectiveTab = (activeTab === 'bet' && readyToBet.length === 0 && allSlate.length > 0) ? 'all' : activeTab;
+  const displayList = effectiveTab === 'bet' ? readyToBet : effectiveTab === 'watch' ? watchList : allSlate;
 
-  if (allToday.length === 0) return null;
+  if (allSlate.length === 0) return null;
+
+  const targetDateLabel = targetDateIso ? new Date(targetDateIso + 'T12:00:00Z').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) : 'Upcoming';
 
   return (
     <div className="bg-white border border-indigo-200 rounded-xl shadow-xs overflow-hidden mb-4">
@@ -97,9 +121,11 @@ export default function DailyBriefingPanel({ matches = [], onAddToSlip, accaMatc
       >
         <div className="flex items-center gap-2.5">
           <Zap className="w-4 h-4 text-white" />
-          <span className="font-bold text-white text-sm">Today's Autonomous Briefing</span>
+          <span className="font-bold text-white text-sm">
+            {isToday ? "Today's Autonomous Briefing" : `Next Active Matchday (${targetDateLabel})`}
+          </span>
           <span className="text-[11px] px-2 py-0.5 rounded-full bg-white/20 text-white font-semibold">
-            {allToday.length} fixtures today
+            {allSlate.length} fixtures {isToday ? 'today' : 'on slate'}
           </span>
           {readyToBet.length > 0 && (
             <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-400/30 text-emerald-100 font-bold border border-emerald-300/40">
@@ -108,7 +134,12 @@ export default function DailyBriefingPanel({ matches = [], onAddToSlip, accaMatc
           )}
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-white/70 text-[11px]">
+          {!isToday && (
+            <span className="text-white/80 text-[11px] bg-white/10 px-2 py-0.5 rounded">
+              No games today &bull; Previewing {targetDateLabel}
+            </span>
+          )}
+          <span className="text-white/70 text-[11px] hidden sm:inline">
             {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })}
           </span>
           {collapsed
@@ -125,20 +156,20 @@ export default function DailyBriefingPanel({ matches = [], onAddToSlip, accaMatc
             {[
               { key: 'bet', label: '⚡ Ready to Bet', count: readyToBet.length, active: 'bg-emerald-600 text-white', inactive: 'text-slate-600' },
               { key: 'watch', label: '👁️ Watch List', count: watchList.length, active: 'bg-amber-500 text-white', inactive: 'text-slate-600' },
-              { key: 'all', label: 'All Today', count: allToday.length, active: 'bg-indigo-600 text-white', inactive: 'text-slate-600' },
+              { key: 'all', label: isToday ? 'All Today' : `All ${targetDateLabel}`, count: allSlate.length, active: 'bg-indigo-600 text-white', inactive: 'text-slate-600' },
             ].map(tab => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold transition-colors cursor-pointer border-b-2 ${
-                  activeTab === tab.key
+                  effectiveTab === tab.key
                     ? `border-current ${tab.active}`
                     : `border-transparent ${tab.inactive} hover:bg-slate-100`
                 }`}
               >
                 {tab.label}
                 <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                  activeTab === tab.key ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-600'
+                  effectiveTab === tab.key ? 'bg-white/25 text-white' : 'bg-slate-200 text-slate-600'
                 }`}>
                   {tab.count}
                 </span>
