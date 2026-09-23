@@ -243,6 +243,20 @@ app.get('/api/state', (req, res) => {
     }
   });
 
+  app.get('/api/team-trends', (req, res) => {
+    try {
+      const { team } = req.query;
+      if (team) {
+        const profile = engine.getSingleTeamTrends(team);
+        return res.json({ success: true, team, profile });
+      }
+      const trends = engine.getTeamTrends();
+      res.json({ success: true, count: trends.length, trends });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   app.post('/api/props-specials', async (req, res) => {
     try {
       const forceRefresh = req.body?.forceRefresh === true;

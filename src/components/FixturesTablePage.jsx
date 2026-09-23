@@ -2427,6 +2427,10 @@ export default function FixturesTablePage({
                               <span className="inline-flex items-center text-[9px] font-bold bg-indigo-50 text-indigo-700 px-1.5 py-0.2 rounded border border-indigo-200 shrink-0" title="Draw-No-Bet Protection Advised">
                                 🛡️ DNB
                               </span>
+                            ) : m.teamTrends?.home?.badge ? (
+                              <span className="inline-flex items-center text-[9px] font-bold bg-slate-100 text-slate-700 px-1.5 py-0.2 rounded border border-slate-200 shrink-0" title={m.teamTrends.home.tacticalIdentity}>
+                                {m.teamTrends.home.badge}
+                              </span>
                             ) : null}
                           </div>
                           <div className="text-[10px] text-slate-500 truncate max-w-[170px]">
@@ -2624,8 +2628,39 @@ export default function FixturesTablePage({
                               </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 text-xs">
                               
+                              {/* Evolving Team Trends & Tactical DNA */}
+                              <div className="bg-white p-2.5 rounded-lg border border-slate-200 shadow-2xs">
+                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+                                  <span>Tactical DNA</span>
+                                  <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1 rounded">Learning</span>
+                                </div>
+                                <div className="space-y-1 text-[11px] text-slate-700">
+                                  <div className="flex justify-between items-center">
+                                    <span className="truncate max-w-[70px]">{m.home}:</span>
+                                    <span className="font-semibold text-slate-900 text-[10px] bg-slate-100 px-1 rounded truncate max-w-[100px]">
+                                      {m.teamTrends?.home?.badge || '🛡️ Balanced'}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                    <span className="truncate max-w-[70px]">{m.away}:</span>
+                                    <span className="font-semibold text-slate-900 text-[10px] bg-slate-100 px-1 rounded truncate max-w-[100px]">
+                                      {m.teamTrends?.away?.badge || '🛡️ Balanced'}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between text-[10px]">
+                                    <span className="text-slate-500">Late Risk:</span>
+                                    <span className={`font-mono font-bold ${
+                                      m.teamTrends?.away?.tacticalIndices?.lateCapitulationRisk === 'CRITICAL' ? 'text-rose-600' :
+                                      m.teamTrends?.away?.tacticalIndices?.lateCapitulationRisk === 'HIGH' ? 'text-amber-600' : 'text-emerald-600'
+                                    }`}>
+                                      {m.teamTrends?.away?.tacticalIndices?.lateCapitulationRisk || 'LOW'}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
                               {/* Statistical Matrix Summary */}
                               <div className="bg-white p-2.5 rounded-lg border border-slate-200 shadow-2xs">
                                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
