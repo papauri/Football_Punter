@@ -15,11 +15,12 @@ import {
   ArrowDown,
   Target,
   Activity,
-  CheckCircle2
+  CheckCircle2,
+  Calendar
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
 import { safeParseFloat, safeToFixed } from '../utils/numberUtils';
-import { formatRelativeDayTime, getLocalizedDateKey } from '../utils/dateUtils';
+import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey } from '../utils/dateUtils';
 import ConfidenceGauge from './ConfidenceGauge';
 import KellyTooltip from './KellyTooltip';
 import InfoTooltip from './InfoTooltip';
@@ -146,6 +147,7 @@ export default function BinaryPicksPage({
         match: m,
         id: m.id,
         time: formattedTime,
+        dt: formatSafeDateTime(timeVal, null, tzSettings),
         league: m.league,
         home: m.home,
         away: m.away,
@@ -190,6 +192,9 @@ export default function BinaryPicksPage({
         const tA = a.match?.timestamp || (a.match?.utcDate ? new Date(a.match.utcDate).getTime() : 0);
         const tB = b.match?.timestamp || (b.match?.utcDate ? new Date(b.match.utcDate).getTime() : 0);
         return (tA - tB) * multiplier;
+      }
+      if (sortField === 'league') {
+        return (a.league || '').localeCompare(b.league || '') * multiplier;
       }
       if (sortField === 'fixture') {
         const nameA = `${a.home || ''} ${a.away || ''} ${a.league || ''}`.toLowerCase();
@@ -376,342 +381,323 @@ export default function BinaryPicksPage({
       </div>
 
       {/* Compact Binary Picks Table */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-        <div className="w-full">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead className="hidden md:table-header-group">
-              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-10">
-                {/* Time */}
-                <th 
-                  onClick={() => handleSort('time')}
-                  className="py-1.5 px-2 w-20 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Kickoff Time (Asc / Desc)"
-                >
-                  <div className="inline-flex items-center justify-center gap-1">
-                    <span className={sortField === 'time' ? 'text-indigo-600 font-bold' : ''}>Time</span>
-                    {sortField === 'time' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+      <div className="bg-white border border-slate-200 rounded-lg overflow-x-auto shadow-2xs">
+        <table className="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr className="bg-slate-50 border-b border-slate-200 select-none h-9">
+              {/* Kickoff Day & Time */}
+              <th 
+                onClick={() => handleSort('time')}
+                className={`py-2 px-3 min-w-[155px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'time' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Kickoff Day & Time"
+              >
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-3 h-3 text-indigo-600" />
+                  <span>Kickoff (Day & Time)</span>
+                  {sortField === 'time' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                {/* Fixture */}
-                <th 
-                  onClick={() => handleSort('fixture')}
-                  className="py-1.5 px-2 min-w-[180px] cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Match / Competition (A-Z / Z-A)"
-                >
-                  <div className="inline-flex items-center gap-1">
-                    <span className={sortField === 'fixture' ? 'text-indigo-600 font-bold' : ''}>Fixture</span>
-                    {sortField === 'fixture' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+              {/* League */}
+              <th 
+                onClick={() => handleSort('league')}
+                className={`py-2 px-3 min-w-[130px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'league' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by League"
+              >
+                <div className="flex items-center gap-1">
+                  <span>League</span>
+                  {sortField === 'league' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                {/* Market Pick */}
-                <th 
-                  onClick={() => handleSort('market')}
-                  className="py-1.5 px-2 min-w-[160px] cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Market Pick"
-                >
-                  <div className="inline-flex items-center gap-1">
-                    <span className={sortField === 'market' ? 'text-indigo-600 font-bold' : ''}>Market Pick</span>
-                    {sortField === 'market' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+              {/* Fixture */}
+              <th 
+                onClick={() => handleSort('fixture')}
+                className={`py-2 px-3 min-w-[190px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'fixture' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Fixture (A-Z / Z-A)"
+              >
+                <div className="flex items-center gap-1">
+                  <span>Fixture</span>
+                  {sortField === 'fixture' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                {/* Odds */}
-                <th 
-                  onClick={() => handleSort('odds')}
-                  className="py-1.5 px-2 w-20 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Decimal Odds"
-                >
-                  <div className="inline-flex items-center justify-center gap-1">
-                    <span className={sortField === 'odds' ? 'text-indigo-600 font-bold' : ''}>Odds</span>
-                    {sortField === 'odds' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+              {/* Market Pick */}
+              <th 
+                onClick={() => handleSort('market')}
+                className={`py-2 px-2.5 min-w-[140px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'market' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Market Pick"
+              >
+                <div className="flex items-center gap-1">
+                  <span>Market Pick</span>
+                  {sortField === 'market' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                {/* Prob */}
-                <th 
-                  onClick={() => handleSort('prob')}
-                  className="py-1.5 px-2 w-20 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Probability"
-                >
-                  <div className="inline-flex items-center justify-center gap-1">
-                    <InfoTooltip title="Probability" content="The absolute probability calculated by our Poisson engine for this outcome to occur. Click to sort.">
-                      <span className={sortField === 'prob' ? 'text-indigo-600 font-bold' : ''}>Prob</span>
-                    </InfoTooltip>
-                    {sortField === 'prob' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+              {/* Odds */}
+              <th 
+                onClick={() => handleSort('odds')}
+                className={`py-2 px-2 w-20 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'odds' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Decimal Odds"
+              >
+                <div className="flex items-center justify-center gap-1">
+                  <span>Odds</span>
+                  {sortField === 'odds' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                {/* Implied */}
-                <th 
-                  onClick={() => handleSort('implied')}
-                  className="py-1.5 px-2 w-20 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Impliedability"
-                >
-                  <div className="inline-flex items-center justify-center gap-1">
-                    <InfoTooltip title="Impliedability" content="The probability implied by bookmaker odds (1 / Decimal Odds). Click to sort.">
-                      <span className={sortField === 'implied' ? 'text-indigo-600 font-bold' : ''}>Implied</span>
-                    </InfoTooltip>
-                    {sortField === 'implied' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+              {/* Prob */}
+              <th 
+                onClick={() => handleSort('prob')}
+                className={`py-2 px-2 w-20 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'prob' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Model Probability"
+              >
+                <div className="flex items-center justify-center gap-1">
+                  <InfoTooltip title="Probability" content="The absolute probability calculated by our Poisson engine for this outcome to occur. Click to sort.">
+                    <span>Prob</span>
+                  </InfoTooltip>
+                  {sortField === 'prob' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                {/* Edge */}
-                <th 
-                  onClick={() => handleSort('edge')}
-                  className="py-1.5 px-2 w-28 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Edge (+EV)"
-                >
-                  <div className="inline-flex items-center justify-center gap-1">
-                    <InfoTooltip title="Divergence Edge" content="The positive difference (+EV) between Prob and Implied. Click to sort.">
-                      <span className={sortField === 'edge' ? 'text-indigo-600 font-bold' : ''}>Edge</span>
-                    </InfoTooltip>
-                    {sortField === 'edge' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+              {/* Implied */}
+              <th 
+                onClick={() => handleSort('implied')}
+                className={`py-2 px-2 w-20 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'implied' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Implied Probability"
+              >
+                <div className="flex items-center justify-center gap-1">
+                  <InfoTooltip title="Implied Probability" content="The probability implied by bookmaker odds (1 / Decimal Odds). Click to sort.">
+                    <span>Implied</span>
+                  </InfoTooltip>
+                  {sortField === 'implied' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                {/* Kelly */}
-                <th 
-                  onClick={() => handleSort('kelly')}
-                  className="py-1.5 px-2 w-28 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Kelly sizing"
-                >
-                  <div className="inline-flex items-center justify-center gap-1">
-                    <KellyTooltip align="center">
-                      <span className={sortField === 'kelly' ? 'text-indigo-600 font-bold' : ''}>Kelly</span>
-                    </KellyTooltip>
-                    {sortField === 'kelly' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+              {/* Edge */}
+              <th 
+                onClick={() => handleSort('edge')}
+                className={`py-2 px-2 w-24 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'edge' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Edge (+EV)"
+              >
+                <div className="flex items-center justify-center gap-1">
+                  <InfoTooltip title="Divergence Edge" content="The positive difference (+EV) between Prob and Implied. Click to sort.">
+                    <span>Edge</span>
+                  </InfoTooltip>
+                  {sortField === 'edge' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                {/* Actions */}
-                <th className="py-1.5 px-2 w-36 text-center">Actions</th>
+              {/* Kelly */}
+              <th 
+                onClick={() => handleSort('kelly')}
+                className={`py-2 px-2 w-24 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'kelly' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Kelly sizing"
+              >
+                <div className="flex items-center justify-center gap-1">
+                  <KellyTooltip align="center">
+                    <span>Kelly</span>
+                  </KellyTooltip>
+                  {sortField === 'kelly' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
+
+              {/* Actions */}
+              <th className="py-2 px-2.5 w-32 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+
+          <tbody className="divide-y divide-slate-100">
+            {binaryPicks.length === 0 ? (
+              <tr>
+                <td colSpan={10} className="py-12 text-center text-slate-400">
+                  No value picks match the selected filters.
+                </td>
               </tr>
-            </thead>
-            <tbody className="flex flex-col md:table-row-group divide-y divide-slate-100">
-              {binaryPicks.length === 0 ? (
-                <tr className="flex flex-col md:table-row">
-                  <td colSpan={9} className="py-12 text-center text-slate-400 block md:table-cell">
-                    No value picks match the selected filters.
-                  </td>
-                </tr>
-              ) : (
-                binaryPicks.map((p, idx) => {
-                  const isSlipAdded = accaMatchIds.has(p.id);
-                  const isElite = p.edge >= 8;
+            ) : (
+              binaryPicks.map((p, idx) => {
+                const isSlipAdded = accaMatchIds.has(p.id);
+                const isElite = p.edge >= 8;
 
-                  return (
-                    <tr key={p.id || idx} className={`flex flex-col md:table-row hover:bg-indigo-50/30 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'} md:h-12`}>
-                      
-                      {/* ---------------- MOBILE VIEW ---------------- */}
-                      <td className="md:hidden p-3 block">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <span className="font-semibold text-slate-700 font-mono text-[10px] mr-2">
-                              {p.time}
-                            </span>
-                            <span className="text-[10px] text-slate-400">
-                              {p.league?.split(' ')[0] || 'Soccer'}
-                            </span>
-                          </div>
-                          <span className={`inline-block px-1.5 py-0.5 rounded font-bold text-[10px] font-mono ${
-                            p.edge >= 8 
-                              ? 'bg-emerald-100 text-emerald-800' 
-                              : p.edge > 3 
-                              ? 'bg-emerald-50 text-emerald-700' 
-                              : 'bg-slate-100 text-slate-600'
-                          }`}>
-                            Edge: {p.edge > 0 ? `+${safeToFixed(p.edge, 1)}%` : `${safeToFixed(p.edge, 1)}%`}
+                return (
+                  <tr 
+                    key={p.id || idx} 
+                    className={`hover:bg-indigo-50/20 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} h-11`}
+                  >
+                    {/* Kickoff Day & Time */}
+                    <td className="py-2 px-3 whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs">
+                          <Calendar className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                          <span>{p.time}</span>
+                        </div>
+                        {p.dt?.day && (p.time?.startsWith('Today') || p.time?.startsWith('Tomorrow')) && (
+                          <span className="text-[10px] text-slate-400 pl-5 font-medium">
+                            {p.dt.day}, {p.dt.date}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* League */}
+                    <td className="py-2 px-3">
+                      <span 
+                        className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[11px] truncate max-w-[130px] border border-slate-200"
+                        title={p.league}
+                      >
+                        {p.league || 'Soccer'}
+                      </span>
+                    </td>
+
+                    {/* Fixture */}
+                    <td className="py-2 px-3 min-w-[190px]">
+                      <div className="font-semibold text-slate-900 flex items-center gap-1.5 flex-wrap">
+                        <span className="text-slate-900 font-bold">{p.home}</span>
+                        <span className="text-[10px] text-slate-400 font-normal">vs</span>
+                        <span className="text-slate-900 font-bold">{p.away}</span>
+                      </div>
+                    </td>
+
+                    {/* Pick */}
+                    <td className="py-2 px-2.5 whitespace-nowrap">
+                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold border ${
+                        isElite 
+                          ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
+                          : 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                      }`}>
+                        {p.market}
+                      </span>
+                    </td>
+
+                    {/* Bookmaker Odds */}
+                    <td className="py-2 px-2 text-center font-mono font-bold text-slate-800 text-xs whitespace-nowrap">
+                      {safeToFixed(p.marketOdds, 2)}
+                    </td>
+
+                    {/* Prob */}
+                    <td className="py-2 px-2 text-center whitespace-nowrap">
+                      <ConfidenceGauge confidence={p.modelProb} size="sm" />
+                    </td>
+
+                    {/* Implied */}
+                    <td className="py-2 px-2 text-center font-mono text-slate-500 text-xs whitespace-nowrap">
+                      {safeToFixed(p.impliedProb, 1)}%
+                    </td>
+
+                    {/* Edge */}
+                    <td className="py-2 px-2 text-center font-mono whitespace-nowrap">
+                      <span className={`inline-block px-1.5 py-0.5 rounded font-bold text-xs ${
+                        p.edge >= 8 
+                          ? 'bg-emerald-100 text-emerald-800' 
+                          : p.edge > 3 
+                          ? 'bg-emerald-50 text-emerald-700' 
+                          : 'bg-slate-100 text-slate-600'
+                      }`}>
+                        {p.edge > 0 ? `+${safeToFixed(p.edge, 1)}%` : `${safeToFixed(p.edge, 1)}%`}
+                      </span>
+                    </td>
+
+                    {/* Kelly Sizing */}
+                    <td className="py-2 px-2 text-center whitespace-nowrap">
+                      <KellyTooltip showIcon={false} align="center">
+                        <div className="cursor-help inline-block">
+                          <span className="font-mono font-bold text-slate-800 text-xs block hover:text-indigo-600 transition-colors">
+                            {p.kellyUnits > 0 ? `${p.kellyUnits}u` : 'No bet'}
+                          </span>
+                          <span className="text-[10px] text-slate-400 block font-mono">
+                            1/4 Kelly
                           </span>
                         </div>
-                        <div className="flex justify-between items-center mb-1">
-                          <div className="flex flex-col flex-1">
-                            <span className="font-bold text-slate-900">{p.home}</span>
-                            <span className="font-bold text-slate-900">{p.away}</span>
-                          </div>
-                          <div className="flex flex-col items-end">
-                            <span className="text-[9px] uppercase font-bold text-slate-400 mb-0.5">Top Pick</span>
-                            <div className={`inline-block px-2.5 py-1 rounded text-[11px] font-bold border shadow-sm ${
-                              isElite 
-                                ? 'bg-emerald-100 text-emerald-800 border-emerald-300' 
-                                : 'bg-indigo-50 text-indigo-700 border-indigo-200'
-                            }`}>
-                              {p.market}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-100 mt-2">
-                           <div className="flex flex-col text-[10px] font-mono text-slate-500">
-                             <span>Odds: <strong className="text-slate-900">{safeToFixed(p.marketOdds, 2)}</strong></span>
-                             <KellyTooltip showIcon={false} align="left">
-                               <span className="font-bold text-slate-800 mt-0.5 inline-flex items-center gap-1 cursor-help hover:text-indigo-600">
-                                 <span>Stake: {p.kellyUnits > 0 ? `${p.kellyUnits}u` : 'No bet'} (1/4 Kelly)</span>
-                               </span>
-                             </KellyTooltip>
-                           </div>
-                           <div className="flex flex-col items-center justify-center pr-2">
-                             <ConfidenceGauge confidence={p.modelProb} size="sm" />
-                           </div>
-                           <div className="flex gap-2">
-                             <button
-                                onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(p.match); }}
-                                className="px-2 py-1 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 text-teal-800 text-center"
-                              >
-                                Analysis
-                             </button>
-                             <button
-                                onClick={(e) => { e.stopPropagation(); onAddToSlip && onAddToSlip(p.match); }}
-                                className={`px-2 py-1 rounded text-[10px] font-medium border text-center ${
-                                  isSlipAdded
-                                    ? 'bg-rose-50 text-rose-700 border-rose-200'
-                                    : 'bg-white text-slate-700 border-slate-300'
-                                }`}
-                              >
-                                {isSlipAdded ? 'Remove' : '+ Slip'}
-                             </button>
-                           </div>
-                        </div>
-                      </td>
+                      </KellyTooltip>
+                    </td>
 
-                      {/* ---------------- DESKTOP CELLS ---------------- */}
-                      {/* Time */}
-                      <td className="hidden md:table-cell py-1.5 px-2 text-center">
-                        <span className="font-semibold text-slate-700 font-mono text-xs block">
-                          {p.time}
-                        </span>
-                        <span className="text-[10px] text-slate-400 block truncate max-w-[65px] mx-auto">
-                          {p.league?.split(' ')[0] || 'Soccer'}
-                        </span>
-                      </td>
+                    {/* Actions */}
+                    <td className="py-2 px-2.5 text-center whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(p.match); }}
+                          className="px-2 py-1 rounded text-[11px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
+                          title="Open Analysis"
+                        >
+                          Analysis
+                        </button>
 
-                      {/* Fixture */}
-                      <td className="hidden md:table-cell py-1.5 px-2">
-                        <div className="font-semibold text-slate-900 truncate">
-                          {p.home} vs {p.away}
-                        </div>
-                        <div className="text-[10px] text-slate-500 truncate max-w-[150px]">
-                          {p.league}
-                        </div>
-                      </td>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onAddToSlip && onAddToSlip(p.match); }}
+                          className={`px-2 py-1 rounded text-[11px] font-bold transition-colors cursor-pointer border ${
+                            isSlipAdded
+                              ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
+                              : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
+                          }`}
+                          title={isSlipAdded ? 'Remove from Bet Slip' : 'Add to Bet Slip'}
+                        >
+                          {isSlipAdded ? 'Remove' : '+ Slip'}
+                        </button>
+                      </div>
+                    </td>
 
-                      {/* Pick */}
-                      <td className="hidden md:table-cell py-1.5 px-2">
-                        <span className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold border ${
-                          isElite 
-                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300' 
-                            : 'bg-indigo-50 text-indigo-700 border-indigo-200'
-                        }`}>
-                          {p.market}
-                        </span>
-                      </td>
-
-                      {/* Bookmaker Odds */}
-                      <td className="hidden md:table-cell py-1.5 px-2 text-center font-mono font-semibold text-slate-800 text-xs">
-                        {safeToFixed(p.marketOdds, 2)}
-                      </td>
-
-                      {/* Prob */}
-                      <td className="hidden md:table-cell py-1.5 px-2 text-center font-mono font-bold text-indigo-700 text-xs">
-                        <ConfidenceGauge confidence={p.modelProb} size="sm" />
-                      </td>
-
-                      {/* Implied */}
-                      <td className="hidden md:table-cell py-1.5 px-2 text-center font-mono text-slate-500 text-xs">
-                        {safeToFixed(p.impliedProb, 1)}%
-                      </td>
-
-                      {/* Edge */}
-                      <td className="hidden md:table-cell py-1.5 px-2 text-center font-mono">
-                        <span className={`inline-block px-1.5 py-0.5 rounded font-bold text-xs ${
-                          p.edge >= 8 
-                            ? 'bg-emerald-100 text-emerald-800' 
-                            : p.edge > 3 
-                            ? 'bg-emerald-50 text-emerald-700' 
-                            : 'bg-slate-100 text-slate-600'
-                        }`}>
-                          {p.edge > 0 ? `+${safeToFixed(p.edge, 1)}%` : `${safeToFixed(p.edge, 1)}%`}
-                        </span>
-                      </td>
-
-                      {/* Kelly Sizing */}
-                      <td className="hidden md:table-cell py-1.5 px-2 text-center">
-                        <KellyTooltip showIcon={false} align="center">
-                          <div className="group-hover/tooltip:opacity-90">
-                            <span className="font-mono font-semibold text-slate-800 text-xs block group-hover:text-indigo-600 transition-colors">
-                              {p.kellyUnits > 0 ? `${p.kellyUnits}u` : 'No bet'}
-                            </span>
-                            <span className="text-[10px] text-slate-400 block font-mono">
-                              1/4 Kelly
-                            </span>
-                          </div>
-                        </KellyTooltip>
-                      </td>
-
-                      {/* Actions */}
-                      <td className="hidden md:table-cell py-1.5 px-2 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <button
-                            onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(p.match); }}
-                            className="px-2 py-1 rounded text-[11px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
-                            title="Open Analysis"
-                          >
-                            Analysis
-                          </button>
-
-                          <button
-                            onClick={(e) => { e.stopPropagation(); onAddToSlip && onAddToSlip(p.match); }}
-                            className={`px-2 py-1 rounded text-[11px] font-medium transition-colors cursor-pointer border ${
-                              isSlipAdded
-                                ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
-                                : 'bg-white text-slate-700 hover:bg-purple-50 hover:text-purple-700 border-slate-200 hover:border-purple-200'
-                            }`}
-                            title={isSlipAdded ? 'Remove from Bet Slip' : 'Add to Bet Slip'}
-                          >
-                            {isSlipAdded ? 'Remove' : '+ Slip'}
-                          </button>
-                        </div>
-                      </td>
-
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
       </div>
 
     </div>

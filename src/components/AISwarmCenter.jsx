@@ -1064,24 +1064,49 @@ export default function AISwarmCenter({
           </div>
         </div>
 
-        {/* Compact Table for Swarm Fixtures */}
-        <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+        {/* Match-by-Match Swarm Consensus Explorer Table */}
+        <div className="bg-white border border-slate-200 rounded-lg overflow-x-auto shadow-2xs">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-10">
-                <th className="py-1.5 px-2 w-16 text-center">Score</th>
-                <th className="py-1.5 px-2 min-w-[190px]">Fixture</th>
-                <th className="py-1.5 px-2 w-28 text-center">Directive</th>
-                <th className="py-1.5 px-2 min-w-[150px] text-center">Agent Voting</th>
-                <th className="py-1.5 px-2 w-28 text-center">Debate</th>
-                <th className="py-1.5 px-2 w-16 text-center">Slip</th>
+              <tr className="bg-slate-50 border-b border-slate-200 select-none h-9">
+                <th className="py-2 px-2.5 w-10 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  #
+                </th>
+                <th className="py-2 px-2.5 w-16 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  Score
+                </th>
+                <th className="py-2 px-3 min-w-[155px] text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3 text-indigo-500" />
+                    <span>Kickoff (Day & Time)</span>
+                  </div>
+                </th>
+                <th className="py-2 px-3 min-w-[120px] text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  League
+                </th>
+                <th className="py-2 px-3 min-w-[190px] text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  Fixture
+                </th>
+                <th className="py-2 px-2.5 w-28 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  Directive
+                </th>
+                <th className="py-2 px-2.5 min-w-[150px] text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  Agent Voting
+                </th>
+                <th className="py-2 px-2.5 w-24 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  Debate
+                </th>
+                <th className="py-2 px-2.5 w-20 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  Slip
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {displayedMatches.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-400">
-                    No fixtures match the selected swarm filter.
+                  <td colSpan={9} className="py-8 text-center text-slate-400">
+                    <Filter className="w-6 h-6 mx-auto mb-1.5 text-slate-300" />
+                    <div className="font-semibold text-slate-600">No fixtures match the selected swarm filter.</div>
                   </td>
                 </tr>
               ) : (
@@ -1090,14 +1115,24 @@ export default function AISwarmCenter({
                   const isUnanimous = swarmData?.isTopValueLeg || swarmData?.isAntiFragileLeg;
                   const isTrap = swarmData?.isContrarianTrap;
                   const isExpanded = expandedDebateId === m.id;
+                  const pickValue = swarmData?.masterVerdict || m.predictedWinner || 'HOME';
+                  const isHome = pickValue === 'HOME';
+                  const isAway = pickValue === 'AWAY';
+                  const isDraw = pickValue === 'DRAW';
+                  const isSlipAdded = addedLegIds.has(String(m.id));
 
                   return (
                     <React.Fragment key={m.id}>
-                      <tr className={`hover:bg-indigo-50/30 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'} md:h-12 ${isExpanded ? 'bg-indigo-50/20' : ''}`}>
+                      <tr className={`hover:bg-indigo-50/20 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} h-11 ${isExpanded ? 'bg-indigo-50/20' : ''}`}>
                         
+                        {/* Index */}
+                        <td className="py-2 px-2.5 text-center text-[11px] font-mono text-slate-400 font-semibold">
+                          {idx + 1}
+                        </td>
+
                         {/* Score */}
-                        <td className="py-1.5 px-2 text-center">
-                          <span className={`inline-block px-2 py-0.5 rounded font-black font-mono text-xs border ${
+                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
+                          <span className={`inline-block px-2.5 py-0.5 rounded font-black font-mono text-xs border ${
                             isUnanimous 
                               ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
                               : isTrap 
@@ -1108,36 +1143,61 @@ export default function AISwarmCenter({
                           </span>
                         </td>
 
-                        {/* Fixture */}
-                        <td className="py-1.5 px-2">
-                          <div className="font-semibold text-slate-900 truncate">
-                            {m.home} vs {m.away}
+                        {/* Kickoff Day & Time */}
+                        <td className="py-2 px-3 whitespace-nowrap">
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs">
+                              <Calendar className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                              <span>{formatRelativeDayTime(m, tzSettings)}</span>
+                            </div>
+                            {formatRelativeDayTime(m, tzSettings)?.startsWith('Today') && (
+                              <span className="text-[10px] text-slate-400 pl-5 font-medium">
+                                {formatSafeDateTime(m, null, tzSettings).day}, {formatSafeDateTime(m, null, tzSettings).date}
+                              </span>
+                            )}
                           </div>
-                          <div className="text-[10px] text-slate-400 flex items-center gap-1.5 flex-wrap">
-                            <span>{m.league}</span>
-                            <span>•</span>
-                            <span className="font-semibold text-slate-600 flex items-center gap-1">
-                              <Calendar className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
-                              {formatRelativeDayTime(m, tzSettings)}
+                        </td>
+
+                        {/* League */}
+                        <td className="py-2 px-3">
+                          <span 
+                            className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[11px] truncate max-w-[120px] border border-slate-200"
+                            title={m.league}
+                          >
+                            {m.league}
+                          </span>
+                        </td>
+
+                        {/* Fixture */}
+                        <td className="py-2 px-3 min-w-[190px]">
+                          <div className="font-semibold text-slate-900 flex items-center gap-1.5 flex-wrap">
+                            <span className={isHome ? 'font-black text-slate-950' : 'text-slate-800'}>
+                              {m.home}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-normal">vs</span>
+                            <span className={isAway ? 'font-black text-slate-950' : 'text-slate-800'}>
+                              {m.away}
                             </span>
                           </div>
                         </td>
 
                         {/* Directive */}
-                        <td className="py-1.5 px-2 text-center">
-                          <span className={`inline-block px-2.5 py-0.5 rounded text-[11px] font-bold border ${
+                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${
                             isUnanimous
-                              ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                               : isTrap
-                              ? 'bg-rose-100 text-rose-800 border-rose-300'
-                              : 'bg-slate-100 text-slate-700 border-slate-200'
+                              ? 'bg-rose-50 text-rose-800 border-rose-300'
+                              : isDraw
+                              ? 'bg-amber-50 text-amber-800 border-amber-300'
+                              : 'bg-indigo-50 text-indigo-800 border-indigo-300'
                           }`}>
-                            {swarmData?.masterVerdict || m.predictedWinner}
+                            {isHome ? 'HOME Win' : isAway ? 'AWAY Win' : isDraw ? 'DRAW' : pickValue}
                           </span>
                         </td>
 
                         {/* 6 mini agent votes */}
-                        <td className="py-1.5 px-2 text-center">
+                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
                           <div className="flex items-center justify-center gap-1 text-[10px] font-mono">
                             {['TACT', 'xG', 'SQD', 'MKT', 'PHYS', 'LRN'].map((label, aIdx) => {
                               const rawVote = swarmData?.agentVotes?.[aIdx]?.predictedWinner;
@@ -1152,7 +1212,7 @@ export default function AISwarmCenter({
                         </td>
 
                         {/* Debate toggle */}
-                        <td className="py-1.5 px-2 text-center">
+                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
                           <button
                             onClick={() => setExpandedDebateId(isExpanded ? null : m.id)}
                             className="px-2 py-1 rounded text-[11px] font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 inline-flex items-center gap-1 transition-colors cursor-pointer"
@@ -1164,19 +1224,33 @@ export default function AISwarmCenter({
                         </td>
 
                         {/* Acca action */}
-                        <td className="py-1.5 px-2 text-center">
+                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
                           {onAddToAcca && (
                             <button
                               onClick={() => {
-                                const pickValue = m.aiSwarm?.masterVerdict || m.predictedWinner || 'HOME';
-                                const prob = m.aiSwarm?.aiSwarmScore || m.confidence || 75;
+                                const prob = swarmData?.swarmScore || swarmData?.aiSwarmScore || m.confidence || 75;
                                 const estOdds = (100 / Math.max(10, prob - 5)).toFixed(2);
                                 onAddToAcca(m, pickValue, pickValue, estOdds, prob);
+                                setAddedLegIds(prev => new Set([...prev, String(m.id)]));
                               }}
-                              className="p-1 rounded text-slate-400 hover:text-purple-700 hover:bg-purple-50 transition-colors cursor-pointer"
-                              title="Add to Acca"
+                              className={`px-2.5 py-1 rounded text-xs font-semibold shadow-2xs transition-all flex items-center gap-1 cursor-pointer mx-auto ${
+                                isSlipAdded
+                                  ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                                  : 'bg-amber-500 hover:bg-amber-600 text-white'
+                              }`}
+                              title={isSlipAdded ? 'Added to Acca' : 'Add to Acca'}
                             >
-                              <Plus className="w-4 h-4 mx-auto" />
+                              {isSlipAdded ? (
+                                <>
+                                  <Check className="w-3 h-3" />
+                                  <span>Added</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Plus className="w-3 h-3" />
+                                  <span>Slip</span>
+                                </>
+                              )}
                             </button>
                           )}
                         </td>
@@ -1186,7 +1260,7 @@ export default function AISwarmCenter({
                       {/* Expanded Debate Drawer */}
                       {isExpanded && (
                         <tr className="bg-slate-50/80 border-b border-slate-200">
-                          <td colSpan={6} className="p-3 text-xs">
+                          <td colSpan={9} className="p-3 text-xs">
                             <div className="space-y-2.5">
                               <div className="p-3 rounded-lg bg-white border border-indigo-200">
                                 <div className="font-bold text-indigo-900 text-xs mb-1 flex items-center gap-1.5">

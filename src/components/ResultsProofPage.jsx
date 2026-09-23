@@ -161,6 +161,9 @@ export default function ResultsProofPage({
         const tB = b.timestamp || (b.utcDate ? new Date(b.utcDate).getTime() : 0);
         return (tA - tB) * multiplier;
       }
+      if (sortField === 'league') {
+        return (a.league || '').localeCompare(b.league || '') * multiplier;
+      }
       if (sortField === 'fixture') {
         const nameA = `${a.home || ''} ${a.away || ''} ${a.league || ''}`.toLowerCase();
         const nameB = `${b.home || ''} ${b.away || ''} ${b.league || ''}`.toLowerCase();
@@ -354,306 +357,307 @@ export default function ResultsProofPage({
         </div>
       </div>
 
-      {/* Compact Ress Table */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-        <div className="w-full">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead className="hidden md:table-header-group">
-              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-10">
-                {/* Date & Time */}
-                <th 
-                  onClick={() => handleSort('time')}
-                  className="py-1.5 px-2 w-28 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Kickoff Time (Asc / Desc)"
-                >
-                  <div className="inline-flex items-center justify-center gap-1">
-                    <span className={sortField === 'time' ? 'text-indigo-600 font-bold' : ''}>Date &amp; Time</span>
-                    {sortField === 'time' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+      {/* Compact Results Table */}
+      <div className="bg-white border border-slate-200 rounded-lg overflow-x-auto shadow-2xs">
+        <table className="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr className="bg-slate-50 border-b border-slate-200 select-none h-9">
+              {/* Kickoff Day & Time */}
+              <th 
+                onClick={() => handleSort('time')}
+                className={`py-2 px-3 min-w-[155px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'time' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Kickoff Day & Time"
+              >
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-3 h-3 text-indigo-600" />
+                  <span>Kickoff (Day & Time)</span>
+                  {sortField === 'time' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                {/* Fixture */}
-                <th 
-                  onClick={() => handleSort('fixture')}
-                  className="py-1.5 px-2 min-w-[180px] cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Match / Competition (A-Z / Z-A)"
-                >
-                  <div className="inline-flex items-center gap-1">
-                    <span className={sortField === 'fixture' ? 'text-indigo-600 font-bold' : ''}>Fixture</span>
-                    {sortField === 'fixture' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+              {/* League */}
+              <th 
+                onClick={() => handleSort('league')}
+                className={`py-2 px-3 min-w-[130px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'league' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by League"
+              >
+                <div className="flex items-center gap-1">
+                  <span>League</span>
+                  {sortField === 'league' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                {/* Actual Score */}
-                <th 
-                  onClick={() => handleSort('actual')}
-                  className="py-1.5 px-2 w-24 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Actual Goals"
-                >
-                  <div className="inline-flex items-center justify-center gap-1">
-                    <span className={sortField === 'actual' ? 'text-indigo-600 font-bold' : ''}>Actual Score</span>
-                    {sortField === 'actual' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+              {/* Fixture */}
+              <th 
+                onClick={() => handleSort('fixture')}
+                className={`py-2 px-3 min-w-[190px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'fixture' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Fixture (A-Z / Z-A)"
+              >
+                <div className="flex items-center gap-1">
+                  <span>Fixture</span>
+                  {sortField === 'fixture' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                {/* Predicted */}
-                <th 
-                  onClick={() => handleSort('predicted')}
-                  className="py-1.5 px-2 w-24 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Predicted Score"
-                >
-                  <div className="inline-flex items-center justify-center gap-1">
-                    <span className={sortField === 'predicted' ? 'text-indigo-600 font-bold' : ''}>Predicted</span>
-                    {sortField === 'predicted' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+              {/* Actual Score */}
+              <th 
+                onClick={() => handleSort('actual')}
+                className={`py-2 px-2.5 w-24 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'actual' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Actual Goals"
+              >
+                <div className="flex items-center justify-center gap-1">
+                  <span>Actual Score</span>
+                  {sortField === 'actual' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                {/* Pick Res */}
-                <th 
-                  onClick={() => handleSort('result')}
-                  className="py-1.5 px-2 w-28 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Pick Res (Hits / Misses)"
-                >
-                  <div className="inline-flex items-center justify-center gap-1">
-                    <span className={sortField === 'result' ? 'text-indigo-600 font-bold' : ''}>Pick Res</span>
-                    {sortField === 'result' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+              {/* Predicted Score */}
+              <th 
+                onClick={() => handleSort('predicted')}
+                className={`py-2 px-2.5 w-24 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'predicted' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Predicted Score"
+              >
+                <div className="flex items-center justify-center gap-1">
+                  <span>Predicted</span>
+                  {sortField === 'predicted' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                {/* Conf */}
-                <th 
-                  onClick={() => handleSort('conf')}
-                  className="py-1.5 px-2 w-16 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Confidence"
-                >
-                  <div className="inline-flex items-center justify-center gap-1">
-                    <span className={sortField === 'conf' ? 'text-indigo-600 font-bold' : ''}>Conf</span>
-                    {sortField === 'conf' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+              {/* Pick Res Hit/Miss/Push/Pass */}
+              <th 
+                onClick={() => handleSort('result')}
+                className={`py-2 px-2.5 w-28 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'result' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Pick Outcome"
+              >
+                <div className="flex items-center justify-center gap-1">
+                  <span>Pick Res</span>
+                  {sortField === 'result' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                <th className="py-1.5 px-2 min-w-[160px]">Market Verification</th>
-                <th className="py-1.5 px-2 w-24 text-center">Actions</th>
+              {/* Confidence */}
+              <th 
+                onClick={() => handleSort('conf')}
+                className={`py-2 px-2 w-16 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'conf' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Confidence"
+              >
+                <div className="flex items-center justify-center gap-1">
+                  <span>Conf</span>
+                  {sortField === 'conf' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
+
+              {/* Market Verification */}
+              <th className="py-2 px-3 min-w-[170px] text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                Market Verification
+              </th>
+
+              {/* Actions */}
+              <th className="py-2 px-2.5 w-24 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+
+          <tbody className="divide-y divide-slate-100">
+            {isLoading ? (
+              <tr>
+                <td colSpan={9} className="py-12 text-center text-slate-400">
+                  <RefreshCw className="w-6 h-6 animate-spin mx-auto text-indigo-600 mb-2" />
+                  <span className="font-semibold text-slate-600 text-xs">Auditing results against historical data...</span>
+                </td>
               </tr>
-            </thead>
-            <tbody className="flex flex-col md:table-row-group divide-y divide-slate-100">
-              {isLoading ? (
-                <tr className="flex flex-col md:table-row">
-                  <td colSpan={8} className="py-12 text-center text-slate-400 block md:table-cell">
-                    <RefreshCw className="w-6 h-6 animate-spin mx-auto text-indigo-600 mb-2" />
-                    <span className="font-semibold text-slate-600 text-xs">Auditing results against historical data...</span>
-                  </td>
-                </tr>
-              ) : filteredResults.length === 0 ? (
-                <tr className="flex flex-col md:table-row">
-                  <td colSpan={8} className="py-12 text-center text-slate-400 block md:table-cell">
-                    {selectedDate === getTodayIso() ? (
-                      <div className="max-w-md mx-auto p-5 bg-slate-50/80 rounded-2xl border border-slate-200 text-center">
-                        <Calendar className="w-8 h-8 text-indigo-500 mx-auto mb-2.5" />
-                        <p className="text-sm font-bold text-slate-800">No Full-Time Games Recorded For Today Yet</p>
-                        <p className="text-xs text-slate-500 mt-1 mb-4 leading-relaxed">
-                          Today's matches ({selectedDate}) are currently scheduled or in-play. Once games reach Full Time (FT), their final scores, verified prediction hits, and AI post-mortems appear here automatically.
-                        </p>
-                        <button
-                          onClick={() => setSelectedDate(dateOptions[1]?.value || '')}
-                          className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer inline-flex items-center gap-2"
-                        >
-                          <History className="w-3.5 h-3.5" />
-                          <span>View Yesterday's Verified Matches ({dateOptions[1]?.value})</span>
-                        </button>
-                      </div>
-                    ) : (
-                      <div>
-                        <p className="text-sm font-medium">No verified matches recorded for {selectedDate}</p>
-                        <p className="text-xs text-slate-500 mt-1">Select a different date from the dropdown above.</p>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ) : (
-                filteredResults.map((m, idx) => {
-                  const hG = m.homeScore ?? m.goals?.home;
-                  const aG = m.awayScore ?? m.goals?.away;
-                  const actualWinner = m.actualWinner || (hG != null && aG != null ? (hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW') : 'DRAW');
-                  const isHit = m.isHit === true;
-                  const isMiss = m.isHit === false;
-                  const isPush = m.isPush || (m.isHit === null && m.smartMarket?.pick?.includes('DNB') && actualWinner === 'DRAW');
-                  const isPass = m.isPass || (m.isHit === null && m.smartMarket?.pick === 'PASS');
-                  const actualScore = formatScore(
-                    m.actualScore ||
-                    (hG != null && aG != null ? `${hG}-${aG}` : null) ||
-                    'FT'
-                  );
-                  const predictedScore = formatScore(m.predictedScore || m.mostLikelyScore || '1-0');
-                  const isExactScore = predictedScore === actualScore && actualScore !== 'FT' && actualScore !== '';
+            ) : filteredResults.length === 0 ? (
+              <tr>
+                <td colSpan={9} className="py-12 text-center text-slate-400">
+                  {selectedDate === getTodayIso() ? (
+                    <div className="max-w-md mx-auto p-5 bg-slate-50/80 rounded-2xl border border-slate-200 text-center">
+                      <Calendar className="w-8 h-8 text-indigo-500 mx-auto mb-2.5" />
+                      <p className="text-sm font-bold text-slate-800">No Full-Time Games Recorded For Today Yet</p>
+                      <p className="text-xs text-slate-500 mt-1 mb-4 leading-relaxed">
+                        Today's matches ({selectedDate}) are currently scheduled or in-play. Once games reach Full Time (FT), their final scores, verified prediction hits, and AI post-mortems appear here automatically.
+                      </p>
+                      <button
+                        onClick={() => setSelectedDate(dateOptions[1]?.value || '')}
+                        className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer inline-flex items-center gap-2"
+                      >
+                        <History className="w-3.5 h-3.5" />
+                        <span>View Yesterday's Verified Matches ({dateOptions[1]?.value})</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-sm font-medium">No verified matches recorded for {selectedDate}</p>
+                      <p className="text-xs text-slate-500 mt-1">Select a different date from the dropdown above.</p>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ) : (
+              filteredResults.map((m, idx) => {
+                const hG = m.homeScore ?? m.goals?.home;
+                const aG = m.awayScore ?? m.goals?.away;
+                const actualWinner = m.actualWinner || (hG != null && aG != null ? (hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW') : 'DRAW');
+                const isHit = m.isHit === true;
+                const isMiss = m.isHit === false;
+                const isPush = m.isPush || (m.isHit === null && m.smartMarket?.pick?.includes('DNB') && actualWinner === 'DRAW');
+                const isPass = m.isPass || (m.isHit === null && m.smartMarket?.pick === 'PASS');
+                const actualScore = formatScore(
+                  m.actualScore ||
+                  (hG != null && aG != null ? `${hG}-${aG}` : null) ||
+                  'FT'
+                );
+                const predictedScore = formatScore(m.predictedScore || m.mostLikelyScore || '1-0');
+                const isExactScore = predictedScore === actualScore && actualScore !== 'FT' && actualScore !== '';
 
-                  return (
-                    <tr key={m.id || idx} className={`flex flex-col md:table-row hover:bg-indigo-50/30 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'} md:h-12`}>
-                      
-                      {/* ---------------- MOBILE VIEW ---------------- */}
-                      <td className="md:hidden p-3 block">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <span className="font-semibold text-slate-700 font-mono text-[10px] mr-2">
-                              {formatRelativeDayTime(m, tzSettings)}
-                            </span>
-                            <span className="text-[10px] text-slate-400">
-                              {m.league?.split(' ')[0] || 'Soccer'}
-                            </span>
-                          </div>
-                          <span className={`inline-block px-1.5 py-0.5 rounded font-bold text-[10px] font-mono border ${
-                            isHit 
-                              ? 'bg-emerald-100 text-emerald-800 border-emerald-300' 
-                              : isPush
-                              ? 'bg-amber-100 text-amber-800 border-amber-300'
-                              : isPass
-                              ? 'bg-slate-100 text-slate-700 border-slate-300'
-                              : 'bg-rose-100 text-rose-800 border-rose-300'
-                          }`}>
-                            {isHit ? 'HIT' : isPush ? 'PUSH' : isPass ? 'PASS' : 'MISS'}
+                const dt = formatSafeDateTime(m, null, tzSettings);
+                const relativeText = formatRelativeDayTime(m, tzSettings);
+
+                return (
+                  <tr 
+                    key={m.id || idx} 
+                    className={`hover:bg-indigo-50/20 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} h-11`}
+                  >
+                    {/* Kickoff Day & Time */}
+                    <td className="py-2 px-3 whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs">
+                          <Calendar className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                          <span>{relativeText}</span>
+                        </div>
+                        {dt.day && (relativeText.startsWith('Today') || relativeText.startsWith('Tomorrow') || relativeText.startsWith('Yesterday')) && (
+                          <span className="text-[10px] text-slate-400 pl-5 font-medium">
+                            {dt.day}, {dt.date}
                           </span>
-                        </div>
-                        <div className="flex justify-between items-center mb-3">
-                          <div className="flex flex-col">
-                            <span className="font-bold text-slate-900">{m.home}</span>
-                            <span className="font-bold text-slate-900">{m.away}</span>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-black text-slate-900 text-sm font-mono bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 mb-0.5 inline-block">
-                              {actualScore}
-                            </div>
-                            <div className="text-[10px] text-slate-500 font-mono flex items-center justify-end gap-1">
-                              Pred: {predictedScore}
-                              {isExactScore && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-100 mt-2">
-                           <div className="flex flex-col text-[10px] text-slate-500">
-                             <span className="font-semibold text-slate-800">
-                               Pick: {m.smartMarket?.pickLabel || (m.predictedWinner === 'HOME' ? m.home : m.predictedWinner === 'AWAY' ? m.away : 'Draw')}
-                             </span>
-                             <span>
-                               Actual: {actualWinner === 'HOME' ? `${m.home} Win` : actualWinner === 'AWAY' ? `${m.away} Win` : 'Draw'}
-                             </span>
-                           </div>
-                           <button
-                              onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(m); }}
-                              className="px-2 py-1 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 text-teal-800 text-center"
-                            >
-                              Analysis
-                           </button>
-                        </div>
-                      </td>
+                        )}
+                      </div>
+                    </td>
 
-                      {/* ---------------- DESKTOP CELLS ---------------- */}
-                      {/* Date & Time */}
-                      <td className="hidden md:table-cell py-1.5 px-2 text-center whitespace-nowrap">
-                        <span className="font-semibold text-slate-700 font-mono text-xs block">
-                          {formatSafeDateTime(m, null, tzSettings).time}
-                        </span>
-                        <span className="text-[10px] text-slate-400 block truncate max-w-[85px] mx-auto font-medium">
-                          {formatSafeDateTime(m, null, tzSettings).day}, {formatSafeDateTime(m, null, tzSettings).date}
-                        </span>
-                      </td>
+                    {/* League */}
+                    <td className="py-2 px-3">
+                      <span 
+                        className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[11px] truncate max-w-[130px] border border-slate-200"
+                        title={m.league}
+                      >
+                        {m.league || 'Soccer'}
+                      </span>
+                    </td>
 
-                      {/* Fixture */}
-                      <td className="hidden md:table-cell py-1.5 px-2">
-                        <div className="font-semibold text-slate-900 truncate">
-                          {m.home} vs {m.away}
-                        </div>
-                        <div className="text-[10px] text-slate-500 truncate max-w-[150px]">
-                          {m.league}
-                        </div>
-                      </td>
+                    {/* Fixture */}
+                    <td className="py-2 px-3 min-w-[190px]">
+                      <div className="font-semibold text-slate-900 flex items-center gap-1.5 flex-wrap">
+                        <span className="text-slate-900 font-bold">{m.home}</span>
+                        <span className="text-[10px] text-slate-400 font-normal">vs</span>
+                        <span className="text-slate-900 font-bold">{m.away}</span>
+                      </div>
+                    </td>
 
-                      {/* Actual Score */}
-                      <td className="hidden md:table-cell py-1.5 px-2 text-center">
-                        <span className="font-black font-mono text-slate-900 text-xs bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                          {actualScore}
-                        </span>
-                      </td>
+                    {/* Actual Score */}
+                    <td className="py-2 px-2.5 text-center whitespace-nowrap">
+                      <span className="font-black font-mono text-slate-900 text-xs bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                        {actualScore}
+                      </span>
+                    </td>
 
-                      {/* Predicted Score */}
-                      <td className="hidden md:table-cell py-1.5 px-2 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          <span className="font-mono text-slate-600 text-xs">{predictedScore}</span>
-                          {isExactScore && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" title="Exact score predicted!" />}
-                        </div>
-                      </td>
+                    {/* Predicted Score */}
+                    <td className="py-2 px-2.5 text-center whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <span className="font-mono text-slate-700 text-xs font-semibold">{predictedScore}</span>
+                        {isExactScore && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" title="Exact score predicted!" />}
+                      </div>
+                    </td>
 
-                      {/* Pick Res Hit/Miss/Push/Pass */}
-                      <td className="hidden md:table-cell py-1.5 px-2 text-center">
-                        <span className={`inline-block px-2.5 py-0.5 rounded font-bold text-[11px] border ${
-                          isHit
-                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                            : isPush
-                            ? 'bg-amber-100 text-amber-800 border-amber-300'
-                            : isPass
-                            ? 'bg-slate-100 text-slate-700 border-slate-300'
-                            : 'bg-rose-100 text-rose-800 border-rose-300'
-                        }`}>
-                          {isHit ? 'HIT' : isPush ? 'PUSH' : isPass ? 'PASS' : 'MISS'}
-                        </span>
-                      </td>
+                    {/* Pick Res Hit/Miss/Push/Pass */}
+                    <td className="py-2 px-2.5 text-center whitespace-nowrap">
+                      <span className={`inline-block px-2.5 py-0.5 rounded-full font-bold text-[11px] border ${
+                        isHit
+                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                          : isPush
+                          ? 'bg-amber-100 text-amber-800 border-amber-300'
+                          : isPass
+                          ? 'bg-slate-100 text-slate-700 border-slate-300'
+                          : 'bg-rose-100 text-rose-800 border-rose-300'
+                      }`}>
+                        {isHit ? 'HIT' : isPush ? 'PUSH' : isPass ? 'PASS' : 'MISS'}
+                      </span>
+                    </td>
 
-                      {/* Confidence */}
-                      <td className="hidden md:table-cell py-1.5 px-2 text-center font-mono font-bold text-slate-700 text-xs">
-                        {(m.confidence != null) ? `${safeToFixed(m.confidence, 0)}%` : '68%'}
-                      </td>
+                    {/* Confidence */}
+                    <td className="py-2 px-2 text-center font-mono font-bold text-slate-700 text-xs whitespace-nowrap">
+                      {(m.confidence != null) ? `${safeToFixed(m.confidence, 0)}%` : '68%'}
+                    </td>
 
-                      {/* Market Verification */}
-                      <td className="hidden md:table-cell py-1.5 px-2 text-[11px]">
-                        <span className="font-medium text-slate-800 block truncate max-w-[170px]">
+                    {/* Market Verification */}
+                    <td className="py-2 px-3 text-[11px] whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <span className="font-medium text-slate-800 truncate max-w-[170px]">
                           Pick: <strong>{m.smartMarket?.pickLabel || (m.predictedWinner === 'HOME' ? m.home : m.predictedWinner === 'AWAY' ? m.away : 'Draw')}</strong>
                         </span>
                         <span className="text-[10px] text-slate-500">
                           Actual: {actualWinner === 'HOME' ? `${m.home} Win` : actualWinner === 'AWAY' ? `${m.away} Win` : 'Draw'}
                         </span>
-                      </td>
+                      </div>
+                    </td>
 
-                      {/* Analysis Button */}
-                      <td className="hidden md:table-cell py-1.5 px-2 text-center">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(m); }}
-                          className="px-2 py-1 rounded text-[11px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
-                          title="Open tactical root cause forensics"
-                        >
-                          Analysis
-                        </button>
-                      </td>
+                    {/* Analysis Button */}
+                    <td className="py-2 px-2.5 text-center whitespace-nowrap">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(m); }}
+                        className="px-2 py-1 rounded text-[11px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
+                        title="Open tactical root cause forensics"
+                      >
+                        Analysis
+                      </button>
+                    </td>
 
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
       </div>
 
     </div>

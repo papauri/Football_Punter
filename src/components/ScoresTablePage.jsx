@@ -12,7 +12,8 @@ import {
   ArrowUp,
   ArrowDown,
   Scale,
-  CheckCircle2
+  CheckCircle2,
+  Calendar
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
 import InfoTooltip from './InfoTooltip';
@@ -44,7 +45,7 @@ export default function ScoresTablePage({
       else setSortBy('custom');
     } else {
       setSortField(field);
-      const defaultDesc = ['top_score', 'over15', 'over25', 'btts', 'xg'].includes(field);
+      const defaultDesc = ['top_score', 'over15', 'over25', 'btts', 'xg', 'best_value'].includes(field);
       const newDir = defaultDesc ? 'desc' : 'asc';
       setSortDirection(newDir);
       if (field === 'time') setSortBy(newDir === 'asc' ? 'time_asc' : 'custom');
@@ -160,6 +161,9 @@ export default function ScoresTablePage({
         const tA = a.timestamp || (a.utcDate ? new Date(a.utcDate).getTime() : 0);
         const tB = b.timestamp || (b.utcDate ? new Date(b.utcDate).getTime() : 0);
         return (tA - tB) * multiplier;
+      }
+      if (sortField === 'league') {
+        return (a.league || '').localeCompare(b.league || '') * multiplier;
       }
       if (sortField === 'fixture') {
         const nameA = `${a.home || ''} ${a.away || ''} ${a.league || ''}`.toLowerCase();
@@ -384,345 +388,339 @@ export default function ScoresTablePage({
       </div>
 
       {/* Compact Scores Table */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-        <div className="w-full overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead className="hidden md:table-header-group">
-              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-10">
-                {/* Time */}
-                <th 
-                  onClick={() => handleSort('time')}
-                  className="py-1.5 px-2 w-20 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Kickoff Time (Asc / Desc)"
-                >
-                  <div className="inline-flex items-center justify-center gap-1">
-                    <span className={sortField === 'time' ? 'text-indigo-600 font-bold' : ''}>Time</span>
-                    {sortField === 'time' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+      <div className="bg-white border border-slate-200 rounded-lg overflow-x-auto shadow-2xs">
+        <table className="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr className="bg-slate-50 border-b border-slate-200 select-none h-9">
+              {/* Kickoff Day & Time */}
+              <th 
+                onClick={() => handleSort('time')}
+                className={`py-2 px-3 min-w-[155px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'time' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Kickoff Day & Time"
+              >
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-3 h-3 text-indigo-600" />
+                  <span>Kickoff (Day & Time)</span>
+                  {sortField === 'time' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                {/* Fixture */}
-                <th 
-                  onClick={() => handleSort('fixture')}
-                  className="py-1.5 px-2 min-w-[180px] cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Match / Competition (A-Z / Z-A)"
-                >
-                  <div className="inline-flex items-center gap-1">
-                    <span className={sortField === 'fixture' ? 'text-indigo-600 font-bold' : ''}>Fixture</span>
-                    {sortField === 'fixture' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+              {/* League */}
+              <th 
+                onClick={() => handleSort('league')}
+                className={`py-2 px-3 min-w-[130px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'league' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by League"
+              >
+                <div className="flex items-center gap-1">
+                  <span>League</span>
+                  {sortField === 'league' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                {/* Top Projected Scores */}
-                <th 
-                  onClick={() => handleSort('top_score')}
-                  className="py-1.5 px-2 min-w-[140px] cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Top Scoreline Probability"
-                >
-                  <div className="inline-flex items-center gap-1">
-                    <span className={sortField === 'top_score' ? 'text-indigo-600 font-bold' : ''}>Proj. Scores</span>
-                    {sortField === 'top_score' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+              {/* Fixture */}
+              <th 
+                onClick={() => handleSort('fixture')}
+                className={`py-2 px-3 min-w-[190px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'fixture' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Fixture"
+              >
+                <div className="flex items-center gap-1">
+                  <span>Fixture</span>
+                  {sortField === 'fixture' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                {/* O1.5 */}
-                <th 
-                  onClick={() => handleSort('over15')}
-                  className="py-1.5 px-2 w-20 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Over 1.5 Goals Probability"
-                >
-                  <div className="inline-flex items-center justify-center gap-1">
-                    <InfoTooltip title="Over / Under 1.5 Goals" content="Probability of the match having Over 1.5 (2 or more goals). Click to sort.">
-                      <span className={sortField === 'over15' ? 'text-indigo-600 font-bold' : ''}>O1.5</span>
-                    </InfoTooltip>
-                    {sortField === 'over15' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+              {/* Top Projected Scores */}
+              <th 
+                onClick={() => handleSort('top_score')}
+                className={`py-2 px-2.5 min-w-[150px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'top_score' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Top Scoreline Probability"
+              >
+                <div className="flex items-center gap-1">
+                  <span>Proj. Scores</span>
+                  {sortField === 'top_score' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                {/* O2.5 */}
-                <th 
-                  onClick={() => handleSort('over25')}
-                  className="py-1.5 px-2 w-20 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Over 2.5 Goals Probability"
-                >
-                  <div className="inline-flex items-center justify-center gap-1">
-                    <InfoTooltip title="Over / Under 2.5 Goals" content="Probability of the match having Over 2.5 (3 or more goals). Click to sort.">
-                      <span className={sortField === 'over25' ? 'text-indigo-600 font-bold' : ''}>O2.5</span>
-                    </InfoTooltip>
-                    {sortField === 'over25' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+              {/* O1.5 */}
+              <th 
+                onClick={() => handleSort('over15')}
+                className={`py-2 px-2 w-20 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'over15' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Over 1.5 Goals Probability"
+              >
+                <div className="flex items-center justify-center gap-1">
+                  <InfoTooltip title="Over / Under 1.5 Goals" content="Probability of the match having Over 1.5 (2 or more goals). Click to sort.">
+                    <span>O1.5</span>
+                  </InfoTooltip>
+                  {sortField === 'over15' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                {/* BTTS */}
-                <th 
-                  onClick={() => handleSort('btts')}
-                  className="py-1.5 px-2 w-20 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Both Teams to Score (Yes) Probability"
-                >
-                  <div className="inline-flex items-center justify-center gap-1">
-                    <InfoTooltip title="Both Teams to Score (BTTS)" content="Probability of both teams scoring at least one goal (Yes). Click to sort.">
-                      <span className={sortField === 'btts' ? 'text-indigo-600 font-bold' : ''}>BTTS</span>
-                    </InfoTooltip>
-                    {sortField === 'btts' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+              {/* O2.5 */}
+              <th 
+                onClick={() => handleSort('over25')}
+                className={`py-2 px-2 w-20 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'over25' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Over 2.5 Goals Probability"
+              >
+                <div className="flex items-center justify-center gap-1">
+                  <InfoTooltip title="Over / Under 2.5 Goals" content="Probability of the match having Over 2.5 (3 or more goals). Click to sort.">
+                    <span>O2.5</span>
+                  </InfoTooltip>
+                  {sortField === 'over25' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                {/* Total xG */}
-                <th 
-                  onClick={() => handleSort('xg')}
-                  className="py-1.5 px-2 w-20 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Combined Expected Goals (xG)"
-                >
-                  <div className="inline-flex items-center justify-center gap-1">
-                    <InfoTooltip title="Total Expected Goals" content="Combined xG projection for both teams. Click to sort.">
-                      <span className={sortField === 'xg' ? 'text-indigo-600 font-bold' : ''}>Total xG</span>
-                    </InfoTooltip>
-                    {sortField === 'xg' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+              {/* BTTS */}
+              <th 
+                onClick={() => handleSort('btts')}
+                className={`py-2 px-2 w-20 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'btts' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Both Teams to Score (Yes) Probability"
+              >
+                <div className="flex items-center justify-center gap-1">
+                  <InfoTooltip title="Both Teams to Score (BTTS)" content="Probability of both teams scoring at least one goal (Yes). Click to sort.">
+                    <span>BTTS</span>
+                  </InfoTooltip>
+                  {sortField === 'btts' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                {/* Best Value Total */}
-                <th 
-                  onClick={() => handleSort('best_value')}
-                  className="py-1.5 px-2 w-36 text-left cursor-pointer hover:bg-slate-100 transition-colors group"
-                  title="Click to sort by Best Value Edge"
-                >
-                  <div className="inline-flex items-center gap-1">
-                    <span className={sortField === 'best_value' ? 'text-indigo-600 font-bold' : ''}>Best Value Total</span>
-                    {sortField === 'best_value' ? (
-                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
-                    ) : (
-                      <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    )}
-                  </div>
-                </th>
+              {/* Total xG */}
+              <th 
+                onClick={() => handleSort('xg')}
+                className={`py-2 px-2 w-20 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'xg' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Combined Expected Goals (xG)"
+              >
+                <div className="flex items-center justify-center gap-1">
+                  <InfoTooltip title="Total Expected Goals" content="Combined xG projection for both teams. Click to sort.">
+                    <span>Total xG</span>
+                  </InfoTooltip>
+                  {sortField === 'xg' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
 
-                {/* Actions */}
-                <th className="py-1.5 px-2 w-24 text-center">Actions</th>
+              {/* Best Value Total */}
+              <th 
+                onClick={() => handleSort('best_value')}
+                className={`py-2 px-2.5 min-w-[130px] text-left text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                  sortField === 'best_value' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
+                }`}
+                title="Click to sort by Best Value Edge"
+              >
+                <div className="flex items-center gap-1">
+                  <span>Best Value</span>
+                  {sortField === 'best_value' ? (
+                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                  ) : (
+                    <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                  )}
+                </div>
+              </th>
+
+              {/* Actions */}
+              <th className="py-2 px-2.5 w-28 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+
+          <tbody className="divide-y divide-slate-100">
+            {filteredMatches.length === 0 ? (
+              <tr>
+                <td colSpan={10} className="py-12 text-center text-slate-400">
+                  No scorelines match the active filter criteria.
+                </td>
               </tr>
-            </thead>
-            <tbody className="flex flex-col md:table-row-group divide-y divide-slate-100">
-              {filteredMatches.length === 0 ? (
-                <tr className="flex flex-col md:table-row">
-                  <td colSpan={9} className="py-12 text-center text-slate-400 block md:table-cell">
-                    No scorelines match the active filter criteria.
-                  </td>
-                </tr>
-              ) : (
-                filteredMatches.map((m, idx) => {
-                  const over15 = safeParseFloat(m.scoreModel?.overUnder?.over15, 75);
-                  const over25 = safeParseFloat(m.scoreModel?.overUnder?.over25 ?? m.over25Prob, 52);
-                  const under25 = 100 - over25;
-                  const bttsYes = safeParseFloat(m.scoreModel?.btts?.yes, 50);
-                  const topScores = m.scoreModel?.topScorelines?.slice(0, 3) || [];
-                  const homeLambda = safeParseFloat(m.lambda ?? m.xG?.home, 1.4);
-                  const awayMu = safeParseFloat(m.mu ?? m.xG?.away, 1.1);
-                  const totalXg = safeToFixed(homeLambda + awayMu, 1, '2.5');
+            ) : (
+              filteredMatches.map((m, idx) => {
+                const over15 = safeParseFloat(m.scoreModel?.overUnder?.over15, 75);
+                const over25 = safeParseFloat(m.scoreModel?.overUnder?.over25 ?? m.over25Prob, 52);
+                const under25 = 100 - over25;
+                const bttsYes = safeParseFloat(m.scoreModel?.btts?.yes, 50);
+                const topScores = m.scoreModel?.topScorelines?.slice(0, 3) || [];
+                const homeLambda = safeParseFloat(m.lambda ?? m.xG?.home, 1.4);
+                const awayMu = safeParseFloat(m.mu ?? m.xG?.away, 1.1);
+                const totalXg = safeToFixed(homeLambda + awayMu, 1, '2.5');
 
-                  const bestValuePick = over25 >= 58 ? 'Over 2.5 Goals' : under25 >= 58 ? 'Under 2.5 Goals' : bttsYes >= 58 ? 'BTTS - Yes' : 'Under 3.5 Goals';
+                const bestValuePick = over25 >= 58 ? 'Over 2.5 Goals' : under25 >= 58 ? 'Under 2.5 Goals' : bttsYes >= 58 ? 'BTTS - Yes' : 'Under 3.5 Goals';
 
-                  return (
-                    <tr key={m.id || idx} className={`flex flex-col md:table-row hover:bg-indigo-50/30 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'} md:h-12`}>
-                      
-                      {/* ---------------- MOBILE VIEW ---------------- */}
-                      <td className="md:hidden p-3 block">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <span className="font-semibold text-slate-700 font-mono text-[10px] mr-2">
-                              {formatMatchKickoff(m)}
-                            </span>
-                            <span className="text-[10px] text-slate-400">
-                              {m.league?.split(' ')[0] || 'Soccer'}
-                            </span>
-                          </div>
-                          <span className="font-bold text-slate-700 font-mono text-xs">
-                            xG: {totalXg}
+                const relativeText = formatMatchKickoff(m);
+                const dt = formatSafeDateTime(m, null, tzSettings);
+
+                return (
+                  <tr 
+                    key={m.id || idx} 
+                    className={`hover:bg-indigo-50/20 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} h-11`}
+                  >
+                    {/* Kickoff Day & Time */}
+                    <td className="py-2 px-3 whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs">
+                          <Calendar className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                          <span>{relativeText}</span>
+                        </div>
+                        {dt.day && (relativeText.startsWith('Today') || relativeText.startsWith('Tomorrow')) && (
+                          <span className="text-[10px] text-slate-400 pl-5 font-medium">
+                            {dt.day}, {dt.date}
                           </span>
-                        </div>
-                        <div className="flex justify-between items-center mb-3">
-                          <div className="flex flex-col">
-                            <span className="font-bold text-slate-900">{m.home}</span>
-                            <span className="font-bold text-slate-900">{m.away}</span>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-bold text-indigo-700 font-mono mb-0.5">
-                              {topScores.length > 0 ? `${topScores[0].score} (${safeToFixed(topScores[0].prob, 1)}%)` : '—'}
-                            </div>
-                            <div className="text-[10px] text-slate-500 font-mono">
-                              {topScores.length > 1 ? `${topScores[1].score} | ${topScores[2]?.score || '—'}` : '—'}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-100 mt-2">
-                           <div className="flex gap-2">
-                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${over25 >= 55 ? 'bg-emerald-50 text-emerald-700' : under25 >= 55 ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>
-                                {over25 >= 50 ? `O2.5 ${safeToFixed(over25, 0)}%` : `U2.5 ${safeToFixed(under25, 0)}%`}
-                              </span>
-                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${bttsYes >= 55 ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
-                                BTTS {bttsYes >= 50 ? 'Y' : 'N'}
-                              </span>
-                           </div>
-                           <div className="flex gap-1">
-                             <button
-                                onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(m); }}
-                                className="px-2 py-1 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 text-teal-800 text-center"
-                              >
-                                Analysis
-                             </button>
-                             {onAddToSlip && (
-                               <button
-                                  onClick={(e) => { 
-                                    e.stopPropagation(); 
-                                    const pickProb = bestValuePick === 'Over 2.5 Goals' ? over25 : bestValuePick === 'Under 2.5 Goals' ? under25 : bestValuePick === 'BTTS - Yes' ? bttsYes : 50;
-                                    const estOdds = (100 / Math.max(10, pickProb - 5)).toFixed(2);
-                                    onAddToSlip(m, 'OVER_UNDER', bestValuePick, estOdds, pickProb);
-                                  }}
-                                  className="px-2 py-1 rounded text-[10px] font-bold border border-indigo-200 bg-indigo-50 text-indigo-700 text-center"
-                                >
-                                  + Slip
-                               </button>
-                             )}
-                           </div>
-                        </div>
-                      </td>
+                        )}
+                      </div>
+                    </td>
 
-                      {/* ---------------- DESKTOP CELLS ---------------- */}
-                      {/* Time */}
-                      <td className="hidden md:table-cell py-1.5 px-2 text-center">
-                        <span className="font-semibold text-slate-700 font-mono text-xs block">
-                          {formatMatchKickoff(m)}
-                        </span>
-                        <span className="text-[10px] text-slate-400 block truncate max-w-[65px] mx-auto">
-                          {m.league?.split(' ')[0] || 'Soccer'}
-                        </span>
-                      </td>
+                    {/* League */}
+                    <td className="py-2 px-3">
+                      <span 
+                        className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[11px] truncate max-w-[130px] border border-slate-200"
+                        title={m.league}
+                      >
+                        {m.league || 'Soccer'}
+                      </span>
+                    </td>
 
-                      {/* Fixture */}
-                      <td className="hidden md:table-cell py-1.5 px-2">
-                        <div className="font-semibold text-slate-900 truncate">
-                          {m.home} vs {m.away}
-                        </div>
-                        <div className="text-[10px] text-slate-500 truncate max-w-[150px]">
-                          {m.league}
-                        </div>
-                      </td>
+                    {/* Fixture */}
+                    <td className="py-2 px-3 min-w-[190px]">
+                      <div className="font-semibold text-slate-900 flex items-center gap-1.5 flex-wrap">
+                        <span className="text-slate-900 font-bold">{m.home}</span>
+                        <span className="text-[10px] text-slate-400 font-normal">vs</span>
+                        <span className="text-slate-900 font-bold">{m.away}</span>
+                      </div>
+                    </td>
 
-                      {/* Top 3 Exact Scores */}
-                      <td className="hidden md:table-cell py-1.5 px-2">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          {topScores.slice(0, 3).map((sc, scIdx) => (
-                            <span 
-                              key={scIdx} 
-                              className={`px-1.5 py-0.5 rounded text-[11px] font-mono border ${
-                                scIdx === 0 
-                                  ? 'bg-indigo-50 text-indigo-800 font-bold border-indigo-200' 
-                                  : 'bg-slate-100 text-slate-700 border-slate-200'
-                              }`}
-                            >
-                              <strong>{sc.score}</strong> ({safeToFixed(sc.prob, 1)}%)
-                            </span>
-                          ))}
-                        </div>
-                      </td>
+                    {/* Top 3 Exact Scores */}
+                    <td className="py-2 px-2.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {topScores.slice(0, 3).map((sc, scIdx) => (
+                          <span 
+                            key={scIdx} 
+                            className={`px-1.5 py-0.5 rounded text-[11px] font-mono border ${
+                              scIdx === 0 
+                                ? 'bg-indigo-50 text-indigo-800 font-bold border-indigo-200' 
+                                : 'bg-slate-100 text-slate-700 border-slate-200'
+                            }`}
+                          >
+                            <strong>{sc.score}</strong> ({safeToFixed(sc.prob, 1)}%)
+                          </span>
+                        ))}
+                      </div>
+                    </td>
 
-                      {/* O/U 1.5 */}
-                      <td className="hidden md:table-cell py-1.5 px-2 text-center font-mono text-xs">
-                        <span className={over15 > 70 ? 'text-emerald-700 font-bold' : 'text-slate-600'}>
-                          O: {safeToFixed(over15, 0)}%
-                        </span>
-                      </td>
+                    {/* O/U 1.5 */}
+                    <td className="py-2 px-2 text-center font-mono text-xs whitespace-nowrap">
+                      <span className={over15 > 70 ? 'text-emerald-700 font-bold' : 'text-slate-600'}>
+                        {safeToFixed(over15, 0)}%
+                      </span>
+                    </td>
 
-                      {/* O/U 2.5 */}
-                      <td className="hidden md:table-cell py-1.5 px-2 text-center font-mono text-xs">
-                        <span className={`px-1 rounded ${over25 >= 55 ? 'bg-emerald-50 text-emerald-700 font-bold' : under25 >= 55 ? 'bg-blue-50 text-blue-700 font-bold' : 'text-slate-600'}`}>
-                          {over25 >= 50 ? `O ${safeToFixed(over25, 0)}%` : `U ${safeToFixed(under25, 0)}%`}
-                        </span>
-                      </td>
+                    {/* O/U 2.5 */}
+                    <td className="py-2 px-2 text-center font-mono text-xs whitespace-nowrap">
+                      <span className={`px-1.5 py-0.5 rounded text-[11px] font-bold border ${over25 >= 55 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : under25 >= 55 ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                        {over25 >= 50 ? `O ${safeToFixed(over25, 0)}%` : `U ${safeToFixed(under25, 0)}%`}
+                      </span>
+                    </td>
 
-                      {/* BTTS */}
-                      <td className="hidden md:table-cell py-1.5 px-2 text-center font-mono text-xs">
-                        <span className={`px-1 rounded ${bttsYes >= 55 ? 'text-emerald-700 font-bold' : 'text-slate-600'}`}>
-                          {bttsYes >= 50 ? `Yes ${safeToFixed(bttsYes, 0)}%` : `No ${safeToFixed(100 - bttsYes, 0)}%`}
-                        </span>
-                      </td>
+                    {/* BTTS */}
+                    <td className="py-2 px-2 text-center font-mono text-xs whitespace-nowrap">
+                      <span className={`px-1.5 py-0.5 rounded text-[11px] font-bold border ${bttsYes >= 55 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                        {bttsYes >= 50 ? `Yes ${safeToFixed(bttsYes, 0)}%` : `No ${safeToFixed(100 - bttsYes, 0)}%`}
+                      </span>
+                    </td>
 
-                      {/* Total xG */}
-                      <td className="hidden md:table-cell py-1.5 px-2 text-center font-mono text-xs font-semibold text-slate-700">
-                        {totalXg}
-                      </td>
+                    {/* Total xG */}
+                    <td className="py-2 px-2 text-center font-mono text-xs font-bold text-slate-800 whitespace-nowrap">
+                      {totalXg}
+                    </td>
 
-                      {/* Best Value Total */}
-                      <td className="hidden md:table-cell py-1.5 px-2">
-                        <span className="font-semibold text-slate-800 text-[11px] block">
+                    {/* Best Value Total */}
+                    <td className="py-2 px-2.5 whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <span className="font-bold text-slate-800 text-[11px]">
                           {bestValuePick}
                         </span>
-                        <span className="text-[10px] text-emerald-700 font-medium font-mono">
+                        <span className="text-[10px] text-emerald-700 font-semibold font-mono">
                           Edge: +{safeToFixed(Math.abs(over25 - 50) * 0.4, 1)}%
                         </span>
-                      </td>
+                      </div>
+                    </td>
 
-                      {/* Analysis Action */}
-                      <td className="hidden md:table-cell py-1.5 px-2 text-center">
-                        <div className="flex items-center justify-center gap-1">
+                    {/* Analysis & Slip Action */}
+                    <td className="py-2 px-2.5 text-center whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(m); }}
+                          className="px-2 py-1 rounded text-[11px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
+                          title="Open Analysis"
+                        >
+                          Analysis
+                        </button>
+                        {onAddToSlip && (
                           <button
-                            onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(m); }}
-                            className="px-2 py-1 rounded text-[11px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
-                            title="Open Analysis"
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              const pickProb = bestValuePick === 'Over 2.5 Goals' ? over25 : bestValuePick === 'Under 2.5 Goals' ? under25 : bestValuePick === 'BTTS - Yes' ? bttsYes : 50;
+                              const estOdds = (100 / Math.max(10, pickProb - 5)).toFixed(2);
+                              onAddToSlip(m, 'OVER_UNDER', bestValuePick, estOdds, pickProb);
+                            }}
+                            className="px-2 py-1 rounded text-[11px] font-bold border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors cursor-pointer"
+                            title={`Add ${bestValuePick} to Slip`}
                           >
-                            Analysis
+                            + Add
                           </button>
-                          {onAddToSlip && (
-                            <button
-                              onClick={(e) => { 
-                                e.stopPropagation(); 
-                                const pickProb = bestValuePick === 'Over 2.5 Goals' ? over25 : bestValuePick === 'Under 2.5 Goals' ? under25 : bestValuePick === 'BTTS - Yes' ? bttsYes : 50;
-                                const estOdds = (100 / Math.max(10, pickProb - 5)).toFixed(2);
-                                onAddToSlip(m, 'OVER_UNDER', bestValuePick, estOdds, pickProb);
-                              }}
-                              className="px-2 py-1 rounded text-[11px] font-bold border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors cursor-pointer"
-                              title={`Add ${bestValuePick} to Slip`}
-                            >
-                              + Add
-                            </button>
-                          )}
-                        </div>
-                      </td>
+                        )}
+                      </div>
+                    </td>
 
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
       </div>
 
     </div>
