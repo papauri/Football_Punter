@@ -117,48 +117,48 @@ export function buildMatchStreamSources(match) {
 
   return [
     {
-      id: 'sportzx-tv',
-      name: `Sportzx Web TV (${tvChannelLabel})`,
-      shortName: 'Sportzx TV',
-      type: 'webtv',
-      provider: 'Sportzx Live Network',
-      badge: '⚡ Auto Feed 1',
-      url: `https://topembed.pw/channel/${tvChannelKey}`,
-      fallbackUrl: `https://sportzx.co/live?event=${encodeURIComponent(home + ' vs ' + away)}`,
-      description: `Direct high-definition live television broadcast from ${tvChannelLabel} via Sportzx stream engine`
-    },
-    {
       id: 'sportzx-match',
-      name: `Sportzx Match Stream (${cleanHome} vs ${cleanAway})`,
-      shortName: 'Sportzx Match',
+      name: `Sportzx Match Relay (${cleanHome} vs ${cleanAway})`,
+      shortName: 'Sportzx Relay',
       type: 'match_feed',
       provider: 'Sportzx Stream Relay',
-      badge: '📺 Feed 2',
+      badge: '⚡ Auto Feed 1',
       url: `https://streamed.su/watch/${slug}`,
-      fallbackUrl: `https://sportzx.co/embed/${slug}`,
-      description: `Direct sports match stream powered by Sportzx high-speed web video servers`
+      fallbackUrl: `https://sportzx.co/live?event=${encodeURIComponent(cleanHome + ' vs ' + cleanAway)}`,
+      description: `Direct high-speed sports match stream powered by Sportzx web video relay`
     },
     {
-      id: 'webtv-mirror',
-      name: `Live Web TV Mirror (${secondaryChannelLabel})`,
-      shortName: 'Web TV 2',
-      type: 'channel_mirror',
-      provider: 'Web TV Satellite',
-      badge: '🌐 Feed 3',
-      url: `https://topembed.pw/channel/${secondaryChannelKey}`,
-      fallbackUrl: `https://embedstream.me/football/${slug}-stream-1`,
-      description: `Alternative television network feed on ${secondaryChannelLabel}`
+      id: 'webtv-satellite',
+      name: `Live Web TV Satellite (${tvChannelLabel})`,
+      shortName: 'Web TV HD',
+      type: 'webtv',
+      provider: 'Web TV Satellite Relay',
+      badge: '📺 Feed 2',
+      url: `https://buffsports.io/live/${slug}`,
+      fallbackUrl: `https://strikeout.im/soccer`,
+      description: `Live television broadcast feed via global sports satellite network (${tvChannelLabel})`
     },
     {
-      id: 'global-stream',
-      name: `Global Sports Online Feed (${cleanHome} vs ${cleanAway})`,
-      shortName: 'Global Feed',
+      id: 'global-mirror',
+      name: `Global Sports Mirror (${cleanHome} vs ${cleanAway})`,
+      shortName: 'Global Mirror',
       type: 'global_feed',
-      provider: 'Sports Online Gate',
-      badge: '🛰️ Feed 4',
-      url: `https://embedstream.me/football/${slug}-stream-1`,
-      fallbackUrl: `https://totalsportek.pro/game/${slug}`,
-      description: `Secondary global web stream mirror for uninterrupted coverage`
+      provider: 'Global Sports Mirror',
+      badge: '🌐 Feed 3',
+      url: `https://totalsportek.pro/game/${slug}`,
+      fallbackUrl: `https://weakstreams.com/soccer`,
+      description: `High-definition global sports mirror for uninterrupted coverage`
+    },
+    {
+      id: 'youtube-hub',
+      name: `YouTube Live Broadcast Hub (${cleanHome} vs ${cleanAway})`,
+      shortName: 'YouTube Live',
+      type: 'youtube_live',
+      provider: 'Official Broadcast & Commentary Hub',
+      badge: '🔴 Studio Clean',
+      url: `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(cleanHome + ' vs ' + cleanAway + ' live stream commentary')}&autoplay=1`,
+      fallbackUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanHome + ' vs ' + cleanAway + ' live commentary')}`,
+      description: `Official YouTube live broadcast stream & commentary - 100% Google Studio compatible`
     },
     {
       id: 'radar-fallback',
@@ -168,6 +168,7 @@ export function buildMatchStreamSources(match) {
       provider: 'AI Tactical Radar',
       badge: '📡 Zero-Lag',
       url: null,
+      fallbackUrl: null,
       description: 'Ultra-low latency tactical radar simulating attacking momentum and live probability decay'
     }
   ];
@@ -350,6 +351,13 @@ export default function LiveMatchPlayerModal({
   const handleNextStream = () => {
     if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
     handleAutoAdvance();
+  };
+
+  const handlePopoutStream = (customUrl = null) => {
+    const targetUrl = customUrl || currentSource?.fallbackUrl || currentSource?.url;
+    if (targetUrl) {
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const handleIframeLoaded = () => {
@@ -636,6 +644,16 @@ export default function LiveMatchPlayerModal({
                   </div>
 
                   <div className="flex items-center gap-2">
+                    {(currentSource?.url || currentSource?.fallbackUrl) && (
+                      <button
+                        onClick={() => handlePopoutStream()}
+                        className="px-2.5 py-1 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 hover:text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 border border-indigo-500/30"
+                        title="Open direct unblocked stream in a new browser tab (recommended for Google Studio preview)"
+                      >
+                        <ExternalLink className="w-3 h-3 text-indigo-400" />
+                        <span>Popout Stream ↗</span>
+                      </button>
+                    )}
                     <button
                       onClick={handleNextStream}
                       className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1 border border-white/5"
@@ -715,12 +733,23 @@ export default function LiveMatchPlayerModal({
                     )
                   )}
 
-                  {/* Sandboxed Protection Badge Overlay */}
-                  <div className="absolute top-2.5 left-2.5 z-20 pointer-events-none">
+                  {/* Sandboxed Protection Badge & Popout Overlay */}
+                  <div className="absolute top-2.5 left-2.5 z-20 flex items-center gap-2">
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-950/85 text-emerald-400 border border-emerald-500/40 backdrop-blur-xs shadow-md">
                       <ShieldCheck className="w-3 h-3 text-emerald-400" />
                       <span>Sandboxed • Zero Ads</span>
                     </span>
+
+                    {(currentSource?.url || currentSource?.fallbackUrl) && (
+                      <button
+                        onClick={() => handlePopoutStream()}
+                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-950/90 hover:bg-indigo-900 text-indigo-200 hover:text-white border border-indigo-500/40 backdrop-blur-xs shadow-md transition-all cursor-pointer pointer-events-auto"
+                        title="Open direct unblocked stream in a new window (bypasses Google Studio iframe sandbox)"
+                      >
+                        <ExternalLink className="w-3 h-3 text-indigo-400" />
+                        <span>Popout ↗</span>
+                      </button>
+                    )}
                   </div>
 
                   {/* Active Source Badge Overlay */}
@@ -733,7 +762,7 @@ export default function LiveMatchPlayerModal({
 
                 {/* Minimalist Live Stream Bottom Strip */}
                 <div className="p-3 bg-slate-950/80 border border-white/5 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-slate-400">Stream Status:</span>
                     <span className="font-semibold text-emerald-400 flex items-center gap-1 font-mono">
                       <span className="w-2 h-2 rounded-full bg-emerald-400" />
@@ -743,13 +772,24 @@ export default function LiveMatchPlayerModal({
                     <span className="text-slate-400 truncate max-w-xs">{currentSource.description}</span>
                   </div>
 
-                  <div className="flex items-center gap-2 text-slate-400">
-                    <span className="text-[11px]">Stream stalled?</span>
+                  <div className="flex items-center gap-2.5 text-slate-400 flex-wrap">
+                    {(currentSource?.url || currentSource?.fallbackUrl) && (
+                      <button
+                        onClick={() => handlePopoutStream()}
+                        className="text-xs text-indigo-400 hover:text-indigo-300 font-bold underline cursor-pointer flex items-center gap-1"
+                        title="Open unblocked stream in a new window"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                        <span>Popout stream ↗</span>
+                      </button>
+                    )}
+                    <span className="text-slate-600">•</span>
+                    <span className="text-[11px]">Stream stalled or cloud-blocked?</span>
                     <button
                       onClick={handleNextStream}
                       className="text-xs text-indigo-400 hover:text-indigo-300 font-bold underline cursor-pointer"
                     >
-                      Switch mirror feed →
+                      Next feed →
                     </button>
                   </div>
                 </div>
