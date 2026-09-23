@@ -502,6 +502,15 @@ app.get('/api/state', (req, res) => {
     }
   });
 
+  app.get('/api/pre-kickoff-ledger', (req, res) => {
+    try {
+      const ledger = engine.getPreKickoffLedger ? engine.getPreKickoffLedger() : [];
+      res.json({ success: true, count: ledger.length, ledger });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   app.post('/api/run-20k-backtest', (req, res) => {
     try {
       const options = req.body || {};

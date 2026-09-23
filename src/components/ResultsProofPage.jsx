@@ -13,7 +13,10 @@ import {
   AlertCircle,
   ArrowUpDown,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  Lock,
+  Clock,
+  ChevronDown
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
 import BacktestAccuracyTrendChart from './BacktestAccuracyTrendChart';
@@ -73,6 +76,31 @@ export default function ResultsProofPage({
   const [showBacktestChart, setShowBacktestChart] = useState(false);
   const [sortField, setSortField] = useState('time');
   const [sortDirection, setSortDirection] = useState('asc'); // 'asc' | 'desc'
+  const [showLedger, setShowLedger] = useState(false);
+  const [ledgerEntries, setLedgerEntries] = useState([]);
+  const [ledgerLoading, setLedgerLoading] = useState(false);
+
+  // Fetch the pre-kickoff snapshot ledger from the server
+  const fetchLedger = async () => {
+    setLedgerLoading(true);
+    try {
+      const res = await fetch('/api/pre-kickoff-ledger');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.ledger)) {
+        setLedgerEntries(data.ledger);
+      }
+    } catch (e) {
+      // silently ignore fetch errors
+    } finally {
+      setLedgerLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showLedger && ledgerEntries.length === 0) {
+      fetchLedger();
+    }
+  }, [showLedger]);
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -329,6 +357,19 @@ export default function ResultsProofPage({
             >
               <TrendingUp className="w-3.5 h-3.5" />
               <span>{showBacktestChart ? 'Hide 23.4k Chart' : '23.4k Accuracy Trend'}</span>
+            </button>
+
+            <button
+              onClick={() => setShowLedger(!showLedger)}
+              className={`px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
+                showLedger
+                  ? 'bg-amber-600 text-white shadow-xs'
+                  : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200'
+              }`}
+              title="View tamper-proof pre-kickoff prediction snapshots"
+            >
+              <Lock className="w-3.5 h-3.5" />
+              <span>{showLedger ? 'Hide Ledger' : '🔒 Pre-Kickoff Ledger'}</span>
             </button>
           </div>
 
@@ -716,6 +757,156 @@ export default function ResultsProofPage({
           </tbody>
         </table>
       </div>
+
+      {/* ── Pre-Kickoff Snapshot Ledger Panel ── */}
+      {showLedger && (
+        <div className="bg-white border border-amber-200 rounded-xl shadow-xs overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 bg-amber-50 border-b border-amber-200">
+            <div className="flex items-center gap-2">
+              <Lock className="w-4 h-4 text-amber-700" />
+              <span className="font-bold text-amber-900 text-sm">Pre-Kickoff Snapshot Ledger</span>
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-semibold">
+                {ledgerEntries.length} snapshots
+              </span>
+            </div>
+            <button
+              onClick={fetchLedger}
+              disabled={ledgerLoading}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold text-amber-800 bg-white border border-amber-200 rounded-lg hover:bg-amber-50 transition-colors cursor-pointer"
+            >
+              <RefreshCw className={`w-3 h-3 ${ledgerLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
+
+          <p className="px-4 py-2 text-[11px] text-slate-500 border-b border-amber-100 bg-amber-50/40">
+            Every prediction below was <strong>frozen before kickoff</strong> — timestamped proof that tips were published before the result was known. Prediction fields are <strong>immutable</strong> and can never be changed once snapshotted.
+          </p>
+
+          <div className="overflow-x-auto">
+            {ledgerLoading ? (
+              <div className="py-10 text-center text-slate-400">
+                <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-amber-500" />
+                <span className="text-xs">Loading ledger...</span>
+              </div>
+            ) : ledgerEntries.length === 0 ? (
+              <div className="py-10 text-center text-slate-400 px-4">
+                <Lock className="w-6 h-6 mx-auto mb-2 text-amber-400" />
+                <p className="text-sm font-semibold text-slate-700">No snapshots yet</p>
+                <p className="text-xs mt-1">Predictions are automatically frozen when a match enters the 60-minute window before kickoff. Check back closer to matchday.</p>
+              </div>
+            ) : (
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200 h-9 select-none">
+                    <th className="py-2 px-3 min-w-[145px] text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                      <div className="flex items-center gap-1"><Clock className="w-3 h-3 text-amber-500" /><span>Snapshot Frozen</span></div>
+                    </th>
+                    <th className="py-2 px-3 min-w-[120px] text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Kickoff</th>
+                    <th className="py-2 px-3 min-w-[120px] text-[11px] font-semibold text-slate-500 uppercase tracking-wider">League</th>
+                    <th className="py-2 px-3 min-w-[190px] text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Fixture</th>
+                    <th className="py-2 px-2.5 w-24 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Predicted</th>
+                    <th className="py-2 px-2.5 w-28 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Smart Pick</th>
+                    <th className="py-2 px-2 w-16 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Conf</th>
+                    <th className="py-2 px-2.5 w-24 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Result</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {ledgerEntries.map((entry, idx) => {
+                    const snapshotDate = entry.snapshotAt ? new Date(entry.snapshotAt) : null;
+                    const kickoffDate = entry.kickoffUtc ? new Date(entry.kickoffUtc) : null;
+                    const isResolved = entry.isHit !== null;
+
+                    return (
+                      <tr key={entry.id || idx} className={`hover:bg-amber-50/20 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} h-11`}>
+                        {/* Snapshot timestamp */}
+                        <td className="py-2 px-3 whitespace-nowrap">
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-1 font-bold text-slate-800 text-xs">
+                              <Lock className="w-3 h-3 text-amber-500 shrink-0" />
+                              <span>{snapshotDate ? snapshotDate.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' }) : '—'}</span>
+                            </div>
+                            <span className="text-[10px] text-slate-400 pl-4">
+                              {snapshotDate ? snapshotDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}{' '}
+                              {entry.minutesBeforeKickoff != null ? `(${entry.minutesBeforeKickoff} min before)` : ''}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Kickoff time */}
+                        <td className="py-2 px-3 whitespace-nowrap text-xs text-slate-700 font-medium">
+                          {kickoffDate ? kickoffDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+                        </td>
+
+                        {/* League */}
+                        <td className="py-2 px-3">
+                          <span className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[11px] truncate max-w-[120px] border border-slate-200" title={entry.league}>
+                            {entry.league || 'Soccer'}
+                          </span>
+                        </td>
+
+                        {/* Fixture */}
+                        <td className="py-2 px-3 min-w-[190px]">
+                          <div className="font-semibold text-slate-900 flex items-center gap-1.5 flex-wrap">
+                            <span className="font-bold text-slate-900">{entry.home}</span>
+                            <span className="text-[10px] text-slate-400 font-normal">vs</span>
+                            <span className="font-bold text-slate-900">{entry.away}</span>
+                          </div>
+                        </td>
+
+                        {/* Predicted score + winner */}
+                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
+                          <div className="flex flex-col items-center gap-0.5">
+                            <span className="font-mono text-slate-700 text-xs font-semibold">{entry.predictedScore || '—'}</span>
+                            <span className={`text-[10px] font-bold ${
+                              entry.predictedWinner === 'HOME' ? 'text-indigo-600' :
+                              entry.predictedWinner === 'AWAY' ? 'text-rose-600' : 'text-amber-600'
+                            }`}>
+                              {entry.predictedWinner === 'HOME' ? entry.home :
+                               entry.predictedWinner === 'AWAY' ? entry.away : 'Draw'}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Smart market pick */}
+                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
+                          {entry.smartMarket?.pick ? (
+                            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border bg-indigo-50 text-indigo-800 border-indigo-200">
+                              {entry.smartMarket.label || entry.smartMarket.pick}
+                            </span>
+                          ) : <span className="text-slate-400">—</span>}
+                        </td>
+
+                        {/* Confidence */}
+                        <td className="py-2 px-2 text-center font-mono font-bold text-slate-700 text-xs whitespace-nowrap">
+                          {entry.confidence != null ? `${safeToFixed(entry.confidence, 0)}%` : '—'}
+                        </td>
+
+                        {/* Result badge */}
+                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
+                          {!isResolved ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border bg-slate-100 text-slate-600 border-slate-200">
+                              <Clock className="w-3 h-3" /> Pending
+                            </span>
+                          ) : entry.isHit ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border bg-emerald-100 text-emerald-800 border-emerald-300">
+                              <CheckCircle2 className="w-3 h-3" /> HIT
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border bg-rose-100 text-rose-800 border-rose-300">
+                              <XCircle className="w-3 h-3" /> MISS
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      )}
 
     </div>
   );

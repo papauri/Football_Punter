@@ -511,6 +511,7 @@ class SoccerEngine {
 
     // Instantaneous cold start: load pre-cached fixtures immediately
     this.loadFixturesFromDisk();
+    this.loadSnapshotLedger();
 
     // Defer heavy historical ingestion & background routines so server boots instantaneously
     setTimeout(() => {
@@ -2619,6 +2620,113 @@ class SoccerEngine {
     }
   }
 
+  // ──────────────────────────────────────────────────────────────────────────
+  // PRE-KICKOFF SNAPSHOT LEDGER
+  // Freezes each fixture's prediction ≤60 min before kickoff so every tip is
+  // timestamped and tamper-proof before any result is known.
+  // ──────────────────────────────────────────────────────────────────────────
+
+  loadSnapshotLedger() {
+    try {
+      const filePath = path.join(process.cwd(), 'pre_kickoff_ledger.json');
+      if (!fs.existsSync(filePath)) {
+        this.preKickoffLedger = new Map();
+        return;
+      }
+      const raw = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      this.preKickoffLedger = new Map(
+        Array.isArray(raw) ? raw.map(entry => [String(entry.id), entry]) : []
+      );
+      this.log('SnapshotLedger', `Loaded ${this.preKickoffLedger.size} pre-kickoff snapshots from disk.`);
+    } catch (err) {
+      this.preKickoffLedger = new Map();
+      console.warn('[SnapshotLedger] Could not load pre_kickoff_ledger.json:', err.message);
+    }
+  }
+
+  saveSnapshotLedger() {
+    try {
+      const filePath = path.join(process.cwd(), 'pre_kickoff_ledger.json');
+      const entries = Array.from(this.preKickoffLedger.values())
+        .sort((a, b) => new Date(b.snapshotAt) - new Date(a.snapshotAt));
+      fs.writeFileSync(filePath, JSON.stringify(entries, null, 2), 'utf8');
+    } catch (err) {
+      console.warn('[SnapshotLedger] Could not save pre_kickoff_ledger.json:', err.message);
+    }
+  }
+
+  snapshotDueMatches() {
+    if (!this.preKickoffLedger) this.preKickoffLedger = new Map();
+    const now = Date.now();
+    const SIXTY_MIN_MS = 60 * 60 * 1000;
+    let newSnapshots = 0;
+
+    const upcomingWithPrediction = (this.matches || []).filter(m => {
+      if (!m.timestamp || m.isCompleted || m.status === 'FT') return false;
+      if (!m.hasPrediction && !m.predictedWinner) return false;
+      if (this.preKickoffLedger.has(String(m.id))) return false; // already snapshotted
+      const msToKickoff = m.timestamp - now;
+      return msToKickoff >= 0 && msToKickoff <= SIXTY_MIN_MS;
+    });
+
+    for (const m of upcomingWithPrediction) {
+      const msToKickoff = m.timestamp - now;
+      const minutesBeforeKickoff = Math.round(msToKickoff / 60000);
+      const snapshot = {
+        id: String(m.id),
+        home: m.home,
+        homeLogo: m.homeLogo || null,
+        away: m.away,
+        awayLogo: m.awayLogo || null,
+        league: m.league,
+        kickoffUtc: m.utcDate || new Date(m.timestamp).toISOString(),
+        snapshotAt: new Date().toISOString(),
+        minutesBeforeKickoff,
+        predictedWinner: m.predictedWinner,
+        predictedScore: m.mostLikelyScore || m.predictedScore || null,
+        prob: m.prob || null,
+        confidence: m.confidence || null,
+        smartMarket: m.smartMarket
+          ? { pick: m.smartMarket.pick, label: m.smartMarket.pickLabel || m.smartMarket.pick }
+          : null,
+        isHit: null,       // resolved once FT — prediction fields are NEVER changed
+        resolvedAt: null
+      };
+      this.preKickoffLedger.set(String(m.id), snapshot);
+      newSnapshots++;
+      this.log('SnapshotLedger', `🔒 Snapshot frozen: ${m.home} vs ${m.away} (${m.league}) — ${minutesBeforeKickoff} min to kickoff. Predicted: ${m.predictedWinner} ${m.mostLikelyScore || ''}`);
+    }
+
+    // Resolve any snapshotted matches that have now gone FT
+    let resolved = 0;
+    for (const [id, entry] of this.preKickoffLedger.entries()) {
+      if (entry.isHit !== null) continue; // already resolved
+      const live = (this.matches || []).find(m => String(m.id) === id) ||
+                   (this.todayCompletedMatches || []).find(m => String(m.id) === id) ||
+                   (this.yesterdayMatches || []).find(m => String(m.id) === id);
+      if (!live) continue;
+      const isFT = live.isCompleted || live.status === 'FT' || live.status?.includes('Full Time');
+      if (!isFT || live.isHit === undefined) continue;
+      entry.isHit = live.isHit ?? null;
+      entry.actualScore = live.actualScore || null;
+      entry.actualWinner = live.actualWinner || null;
+      entry.resolvedAt = new Date().toISOString();
+      resolved++;
+    }
+
+    if (newSnapshots > 0 || resolved > 0) {
+      this.saveSnapshotLedger();
+      if (newSnapshots > 0) this.log('SnapshotLedger', `Frozen ${newSnapshots} new pre-kickoff snapshot(s). Total ledger: ${this.preKickoffLedger.size}.`);
+      if (resolved > 0) this.log('SnapshotLedger', `Resolved ${resolved} snapshot(s) with final FT result.`);
+    }
+  }
+
+  getPreKickoffLedger() {
+    if (!this.preKickoffLedger) return [];
+    return Array.from(this.preKickoffLedger.values())
+      .sort((a, b) => new Date(b.snapshotAt) - new Date(a.snapshotAt));
+  }
+
   loadTrainingDataFromDisk() {
     try {
       const filePath = path.join(process.cwd(), 'training_data.json');
@@ -3623,6 +3731,7 @@ class SoccerEngine {
       this.evaluateYesterdayMatches();
       this.runTrainingCycle();
       this.saveFixturesToDisk();
+      this.snapshotDueMatches(); // Freeze predictions for matches ≤60 min from kickoff
 
       // Trigger self-reflection cycle on initial load
       setTimeout(() => this.runSelfPromptingReflectionCycle(), 3000);
@@ -7994,6 +8103,9 @@ Output format: {"home": 45.5, "draw": 25.5, "away": 29.0, "reason": "Home team r
       
       // Evaluate yesterday's matches and today's finished matches
       await this.evaluateYesterdayMatches();
+
+      // Freeze pre-kickoff snapshots for any match within 60 min of kickoff
+      this.snapshotDueMatches();
       
       // 2. Concurrently execute AI Multi-Agent Swarm Arbitration Cycle
       if (this.swarmOrchestrator) {
