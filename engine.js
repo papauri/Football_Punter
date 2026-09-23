@@ -2421,6 +2421,73 @@ class SoccerEngine {
     this.log('TrainingEngine', `Realistic data-driven predictability matrix applied. Average empirical confidence offset: ${avgBoost > 0 ? '+' : ''}${avgBoost.toFixed(2)}%`);
   }
 
+  analyzeRawFixture(raw) {
+    if (!raw || !raw.home || !raw.away) return raw;
+    const homeName = raw.home;
+    const awayName = raw.away;
+    const league = raw.league || 'Global League';
+    const odds = raw.odds || null;
+
+    // Dynamically calculate Dixon-Coles probabilities & narrative fresh on the fly (never hardcoded or pre-baked)
+    const dcProbs = this.computeDixonColesProbabilities(homeName, awayName, { odds, league });
+    const homeNarrative = this.getTeamNarrative(homeName);
+    const awayNarrative = this.getTeamNarrative(awayName);
+    const newsImpact = `${homeName}: ${homeNarrative.news} | ${awayName}: ${awayNarrative.news}`;
+    const conclusion = `${homeName}: ${homeNarrative.news} (${homeNarrative.motivation}) vs ${awayName}: ${awayNarrative.news} (${awayNarrative.rivalry}). Form-adjusted probability stands at Home Win ${dcProbs.home.toFixed(1)}%, Draw ${dcProbs.draw.toFixed(1)}%, Away Win ${dcProbs.away.toFixed(1)}% (Projected: ${dcProbs.mostLikelyScore}).`;
+
+    return {
+      id: raw.id || `FX_${homeName}_${awayName}`,
+      home: homeName,
+      homeLogo: raw.homeLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(homeName)}&background=334155&color=f8fafc`,
+      away: awayName,
+      awayLogo: raw.awayLogo || `https://ui-avatars.com/api/?name=${encodeURIComponent(awayName)}&background=334155&color=f8fafc`,
+      league,
+      status: raw.status || 'Scheduled',
+      time: raw.time,
+      date: raw.date,
+      dateIso: raw.dateIso,
+      utcDate: raw.utcDate,
+      timestamp: raw.timestamp,
+      goals: raw.goals || { home: null, away: null },
+      prob: {
+        home: dcProbs.home.toFixed(1),
+        draw: dcProbs.draw.toFixed(1),
+        away: dcProbs.away.toFixed(1)
+      },
+      confidence: dcProbs.confidence.toFixed(1),
+      predictedWinner: dcProbs.predictedWinner,
+      xG: dcProbs.xG,
+      lambda: dcProbs.lambda,
+      mu: dcProbs.mu,
+      mostLikelyScore: dcProbs.mostLikelyScore,
+      lambdaMu: `${dcProbs.lambda} / ${dcProbs.mu}`,
+      hasPrediction: true,
+      homeNews: homeNarrative.news,
+      awayNews: awayNarrative.news,
+      homeMotivation: homeNarrative.motivation,
+      awayMotivation: awayNarrative.motivation,
+      newsImpact,
+      analyticsConclusion: conclusion,
+      binaryModel: dcProbs.binaryModel,
+      disruptionModel: dcProbs.disruptionModel,
+      scoreModel: dcProbs.scoreModel,
+      h2h: dcProbs.h2h,
+      smartMarket: dcProbs.smartMarket,
+      isEliteConviction: dcProbs.isEliteConviction,
+      eliteDisqualificationReason: dcProbs.eliteDisqualificationReason,
+      leagueTier: dcProbs.leagueTier,
+      formMomentum: dcProbs.formMomentum,
+      isMarketDivergence: dcProbs.isMarketDivergence,
+      marketDivergenceDetail: dcProbs.marketDivergenceDetail,
+      odds: odds,
+      kellyStake: dcProbs.kellyStake,
+      espnEventId: raw.espnEventId || raw.id,
+      espnLeagueCode: raw.espnLeagueCode || league,
+      homeTeamId: raw.homeTeamId,
+      awayTeamId: raw.awayTeamId
+    };
+  }
+
   loadFixturesFromDisk() {
     try {
       const filePath = path.join(process.cwd(), 'fixtures_cache.json');
@@ -2429,10 +2496,15 @@ class SoccerEngine {
       }
       const raw = JSON.parse(fs.readFileSync(filePath, 'utf8'));
       if (Array.isArray(raw?.matches) && raw.matches.length > 0) {
-        this.matches = raw.matches;
-        if (Array.isArray(raw.yesterdayMatches)) this.yesterdayMatches = raw.yesterdayMatches;
-        if (Array.isArray(raw.todayCompletedMatches)) this.todayCompletedMatches = raw.todayCompletedMatches;
-        this.log('FixturesCache', `Instantaneous boot: pre-seeded ${this.matches.length} fixtures from disk cache.`);
+        // ALWAYS dynamically analyze fresh from mathematical model - zero pre-analyzed predictions stored
+        this.matches = raw.matches.map(m => this.analyzeRawFixture(m));
+        if (Array.isArray(raw.yesterdayMatches)) {
+          this.yesterdayMatches = raw.yesterdayMatches.map(m => this.analyzeRawFixture(m));
+        }
+        if (Array.isArray(raw.todayCompletedMatches)) {
+          this.todayCompletedMatches = raw.todayCompletedMatches.map(m => this.analyzeRawFixture(m));
+        }
+        this.log('FixturesCache', `Dynamically calculated predictions for ${this.matches.length} fetched fixtures on boot.`);
       }
     } catch (err) {
       console.warn('[FixturesCache] Notice loading fixtures cache:', err.message);
@@ -2443,14 +2515,36 @@ class SoccerEngine {
     try {
       if (!Array.isArray(this.matches) || this.matches.length === 0) return;
       const filePath = path.join(process.cwd(), 'fixtures_cache.json');
+      // Strip ALL pre-calculated predictions so disk cache only contains raw fixture metadata
+      const stripPredictions = (m) => ({
+        id: m.id,
+        home: m.home,
+        homeLogo: m.homeLogo,
+        away: m.away,
+        awayLogo: m.awayLogo,
+        league: m.league,
+        status: m.status || 'Scheduled',
+        time: m.time,
+        date: m.date,
+        dateIso: m.dateIso,
+        utcDate: m.utcDate,
+        timestamp: m.timestamp,
+        goals: m.goals,
+        odds: m.odds,
+        espnEventId: m.espnEventId,
+        espnLeagueCode: m.espnLeagueCode,
+        homeTeamId: m.homeTeamId,
+        awayTeamId: m.awayTeamId
+      });
+
       const payload = {
-        matches: this.matches,
-        yesterdayMatches: this.yesterdayMatches || [],
-        todayCompletedMatches: this.todayCompletedMatches || [],
+        matches: this.matches.map(stripPredictions),
+        yesterdayMatches: (this.yesterdayMatches || []).map(stripPredictions),
+        todayCompletedMatches: (this.todayCompletedMatches || []).map(stripPredictions),
         cachedAt: new Date().toISOString()
       };
       fs.writeFileSync(filePath, JSON.stringify(payload, null, 2), 'utf8');
-      this.log('FixturesCache', `Successfully cached ${this.matches.length} fixtures to disk.`);
+      this.log('FixturesCache', `Saved ${this.matches.length} raw unanalyzed fixtures to disk (predictions are always computed fresh dynamically).`);
     } catch (err) {
       console.warn('[FixturesCache] Notice saving fixtures cache:', err.message);
     }
