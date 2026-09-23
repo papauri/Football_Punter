@@ -650,6 +650,17 @@ export default function BinaryPicksPage({
                         <span className="text-slate-900 font-bold">{p.home}</span>
                         <span className="text-[10px] text-slate-400 font-normal">vs</span>
                         <span className="text-slate-900 font-bold">{p.away}</span>
+                        {p.isLive && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(p.match); }}
+                            className="inline-flex items-center gap-1 text-[9px] font-extrabold bg-rose-600 hover:bg-rose-700 text-white px-2 py-0.5 rounded-full shadow-xs animate-pulse cursor-pointer shrink-0"
+                            title="Match is LIVE NOW! Click to Watch Stream"
+                          >
+                            <Play className="w-2 h-2 fill-white text-white" />
+                            <span>Watch Now</span>
+                          </button>
+                        )}
                       </div>
                     </td>
 
@@ -712,11 +723,15 @@ export default function BinaryPicksPage({
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(p.match); }}
-                          className="px-2 py-1 rounded text-[11px] font-bold border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors cursor-pointer inline-flex items-center gap-1"
+                          className={`px-2 py-1 rounded text-[11px] font-bold transition-all cursor-pointer inline-flex items-center gap-1 ${
+                            p.isLive
+                              ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm ring-2 ring-rose-400 animate-pulse'
+                              : 'border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700'
+                          }`}
                           title="Watch Match Live & In-Play Radar Simulator"
                         >
-                          <Play className="w-3 h-3 fill-indigo-600 text-indigo-600" />
-                          <span>Watch</span>
+                          <Play className={`w-3 h-3 ${p.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
+                          <span>{p.isLive ? 'Watch Now' : 'Watch'}</span>
                         </button>
 
                         <button

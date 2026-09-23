@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Zap, Clock, Lock, CheckCircle2, ChevronDown, ChevronUp,
-  Target, Award, Shield, Plus, Check, Globe
+  Target, Award, Shield, Plus, Check, Globe, Play, Tv
 } from 'lucide-react';
 import { safeParseFloat, safeToFixed, formatKellyStake, formatSmartMarket } from '../utils/numberUtils';
 import { isLeagueBlacklisted } from '../utils/leagueUtils';
@@ -49,6 +49,7 @@ export default function DailyBriefingPanel({
   matches = [],
   tzSettings = {},
   onAddToSlip,
+  onOpenWatchLive,
   accaMatchIds = new Set(),
   bankrollEuro = 1000
 }) {
@@ -268,7 +269,7 @@ export default function DailyBriefingPanel({
                   <th className="py-2 px-3 w-36 text-center">Model Pick</th>
                   <th className="py-2 px-3 w-28 text-center">Confidence</th>
                   <th className="py-2 px-3 w-44 text-center">LiveScore Odds &amp; Return</th>
-                  <th className="py-2 px-3 w-24 text-center">Slip</th>
+                  <th className="py-2 px-3 w-36 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -312,10 +313,17 @@ export default function DailyBriefingPanel({
                             {kickoffStr}
                           </div>
                           <div className="mt-1">
-                            <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold border ${countdown.color}`}>
-                              {countdown.isWindow && <Lock className="w-2.5 h-2.5" />}
-                              {countdown.label}
-                            </span>
+                            {m.isLive ? (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-rose-600 text-white border border-rose-700 shadow-xs animate-pulse">
+                                <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+                                LIVE {m.liveMinute ? `${m.liveMinute}'` : ''}
+                              </span>
+                            ) : (
+                              <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold border ${countdown.color}`}>
+                                {countdown.isWindow && <Lock className="w-2.5 h-2.5" />}
+                                {countdown.label}
+                              </span>
+                            )}
                           </div>
                         </td>
 
@@ -329,6 +337,11 @@ export default function DailyBriefingPanel({
                             <span className={!isHome && pick === 'AWAY' ? 'font-bold text-slate-900 text-xs' : 'font-medium text-slate-700 text-xs'}>
                               {m.away}
                             </span>
+                            {m.isLive && (
+                              <span className="text-[9px] bg-rose-600 text-white font-extrabold px-1.5 py-0.2 rounded shadow-xs animate-pulse">
+                                LIVE
+                              </span>
+                            )}
                             {isUnanimous && (
                               <span className="text-[9px] bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.2 rounded font-bold shrink-0">
                                 👑 6/6
@@ -390,33 +403,47 @@ export default function DailyBriefingPanel({
                           </KellyTooltip>
                         </td>
 
-                        {/* Slip Action */}
-                        <td className="py-2.5 px-3 text-center">
-                          {onAddToSlip && !isPass ? (
+                        {/* Actions (Watch Now + Slip) */}
+                        <td className="py-2.5 px-3 text-center whitespace-nowrap">
+                          <div className="inline-flex items-center gap-1.5 justify-center">
                             <button
                               type="button"
-                              onClick={() => onAddToSlip(m)}
-                              className={`px-2.5 py-1 rounded-md text-[11px] font-bold border transition-colors cursor-pointer inline-flex items-center gap-1 ${
-                                inSlip
-                                  ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-300'
-                                  : 'bg-slate-900 hover:bg-slate-800 text-white border-slate-900'
+                              onClick={() => onOpenWatchLive && onOpenWatchLive(m)}
+                              className={`px-2 py-1 rounded-md text-[11px] font-bold border transition-all cursor-pointer inline-flex items-center gap-1 ${
+                                m.isLive
+                                  ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
+                                  : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
                               }`}
+                              title={m.isLive ? "Watch Match LIVE NOW in Iframe" : "Watch Match Live & In-Play Radar Simulator"}
                             >
-                              {inSlip ? (
-                                <>
-                                  <Check className="w-3 h-3" />
-                                  <span>In Slip</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Plus className="w-3 h-3" />
-                                  <span>+ Slip</span>
-                                </>
-                              )}
+                              <Play className={`w-3 h-3 ${m.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
+                              <span>{m.isLive ? 'Watch Now' : 'Watch'}</span>
                             </button>
-                          ) : (
-                            <span className="text-slate-300 text-xs">—</span>
-                          )}
+
+                            {onAddToSlip && !isPass ? (
+                              <button
+                                type="button"
+                                onClick={() => onAddToSlip(m)}
+                                className={`px-2 py-1 rounded-md text-[11px] font-bold border transition-colors cursor-pointer inline-flex items-center gap-1 ${
+                                  inSlip
+                                    ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-300'
+                                    : 'bg-slate-900 hover:bg-slate-800 text-white border-slate-900'
+                                }`}
+                              >
+                                {inSlip ? (
+                                  <>
+                                    <Check className="w-3 h-3" />
+                                    <span>In Slip</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Plus className="w-3 h-3" />
+                                    <span>+ Slip</span>
+                                  </>
+                                )}
+                              </button>
+                            ) : null}
+                          </div>
                         </td>
                       </tr>
                     );

@@ -778,6 +778,7 @@ export default function Dashboard() {
                   matches={matches}
                   tzSettings={tzSettings}
                   onAddToSlip={handleToggleAccaPick}
+                  onOpenWatchLive={(m) => setActivePlayerMatch(m)}
                   accaMatchIds={new Set(accaPicks.map(p => p.id))}
                   bankrollEuro={state.bankrollEuro || 1000}
                 />
@@ -820,6 +821,7 @@ export default function Dashboard() {
                 accaMatchIds={new Set(accaPicks.map(p => p.id))}
                 onClearSlip={handleClearAcca}
                 onOpenDeepResearch={handleOpenDeepResearch}
+                onOpenWatchLive={(m) => setActivePlayerMatch(m)}
                 scoreTrainingStats={state.scoreTrainingStats || state.trainingStats}
                 onSelectMarketMode={setActivePage}
               />

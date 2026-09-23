@@ -1761,11 +1761,15 @@ export default function FixturesTablePage({
                             <button
                               type="button"
                               onClick={() => onOpenWatchLive && onOpenWatchLive(leg.match || leg)}
-                              className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded border border-indigo-200 shadow-2xs transition-colors cursor-pointer"
-                              title="Watch live in iframe player"
+                              className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded border shadow-2xs transition-colors cursor-pointer ${
+                                (leg.match?.isLive || leg.isLive)
+                                  ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 animate-pulse font-extrabold'
+                                  : 'text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border-indigo-200'
+                              }`}
+                              title={(leg.match?.isLive || leg.isLive) ? "Watch Match LIVE NOW in Iframe" : "Watch live in iframe player"}
                             >
-                              <Play className="w-3 h-3 fill-indigo-600 text-indigo-600" />
-                              <span>Watch</span>
+                              <Play className={`w-3 h-3 ${(leg.match?.isLive || leg.isLive) ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
+                              <span>{(leg.match?.isLive || leg.isLive) ? 'Watch Now' : 'Watch'}</span>
                             </button>
 
                             {inSlip ? (
@@ -2673,11 +2677,15 @@ export default function FixturesTablePage({
                                   e.stopPropagation();
                                   if (onOpenWatchLive) onOpenWatchLive(m);
                                 }}
-                                className="px-2 py-1 rounded text-[10px] font-bold border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors cursor-pointer inline-flex items-center gap-1"
-                                title="Watch Live in Iframe Player"
+                                className={`px-2.5 py-1 rounded text-[10px] font-bold border transition-all cursor-pointer inline-flex items-center gap-1 ${
+                                  m.isLive
+                                    ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
+                                    : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
+                                }`}
+                                title={m.isLive ? "Watch Match LIVE NOW in Iframe" : "Watch Live in Iframe Player"}
                               >
-                                <Play className="w-2.5 h-2.5 fill-indigo-600 text-indigo-600" />
-                                <span>Watch</span>
+                                <Play className={`w-2.5 h-2.5 ${m.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
+                                <span>{m.isLive ? 'Watch Now' : 'Watch'}</span>
                               </button>
                               <button
                                 onClick={(e) => {
@@ -2742,6 +2750,17 @@ export default function FixturesTablePage({
                             <span className="font-semibold text-slate-900 truncate">
                               {m.home} vs {m.away}
                             </span>
+                            {m.isLive && (
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(m); }}
+                                className="inline-flex items-center gap-1 text-[9px] font-extrabold bg-rose-600 hover:bg-rose-700 text-white px-2 py-0.5 rounded-full shadow-xs animate-pulse cursor-pointer shrink-0"
+                                title="Match is LIVE NOW! Click to Watch Stream"
+                              >
+                                <Play className="w-2 h-2 fill-white text-white" />
+                                <span>Watch Now</span>
+                              </button>
+                            )}
                             {isUnanimous ? (
                               <span 
                                 className="inline-flex items-center text-[9px] font-bold bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded border border-amber-300 shrink-0" 
@@ -2854,11 +2873,15 @@ export default function FixturesTablePage({
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(m); }}
-                              className="px-2 py-1 rounded text-[11px] font-bold border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors cursor-pointer inline-flex items-center gap-1"
-                              title="Watch Match Live & In-Play Radar Simulator"
+                              className={`px-2.5 py-1 rounded text-[11px] font-bold border transition-all cursor-pointer inline-flex items-center gap-1 shadow-xs ${
+                                m.isLive
+                                  ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-rose-200 animate-pulse font-extrabold'
+                                  : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
+                              }`}
+                              title={m.isLive ? "Watch Match LIVE NOW in Iframe" : "Watch Match Live & In-Play Radar Simulator"}
                             >
-                              <Play className="w-3 h-3 fill-indigo-600 text-indigo-600" />
-                              <span>Watch</span>
+                              <Play className={`w-3 h-3 ${m.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
+                              <span>{m.isLive ? 'Watch Now' : 'Watch'}</span>
                             </button>
 
                             {/* Deep Analysis Page */}
