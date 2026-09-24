@@ -90,82 +90,162 @@ export default function ScoresTablePage({
     return 'Upcoming';
   };
 
-  // Extract leagues
-  const leagueOptions = useMemo(() => {
-    const set = new Set();
-    matches.forEach(m => {
-      if (m.league) set.add(m.league);
+  // Pre-evaluate all upcoming active matches
+  const rawScoresMatches = useMemo(() => {
+    return (matches || []).filter(m => {
+      if (!m) return false;
+      if (m.isCompleted || m.status === 'FT' || m.status === 'FINISHED') return false;
+      return true;
+    }).map(m => {
+      const timeVal = m.timestamp || m.utcDate || m.dateIso || m.date;
+      const dateKey = timeVal ? getLocalizedDateKey(timeVal, tzSettings) : 'Upcoming';
+      const over25 = safeParseFloat(m.scoreModel?.overUnder?.over25 ?? m.over25Prob, 50);
+      const bttsYes = safeParseFloat(m.scoreModel?.btts?.yes, 50);
+      const topScoreProb = safeParseFloat(m.scoreModel?.topScorelines?.[0]?.prob, 0);
+
+      return {
+        match: m,
+        id: m.id,
+        league: m.league,
+        home: m.home,
+        away: m.away,
+        dateKey,
+        timeVal,
+        over25,
+        bttsYes,
+        topScoreProb
+      };
     });
+  }, [matches, tzSettings]);
+
+  // Universal filter checker
+  const checkMatchPasses = (item, skipDimension = null) => {
+    if (!item) return false;
+
+    // Search query
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const home = (item.home || '').toLowerCase();
+      const away = (item.away || '').toLowerCase();
+      const league = (item.league || '').toLowerCase();
+      if (!home.includes(q) && !away.includes(q) && !league.includes(q)) return false;
+    }
+
+    // League filter
+    if (skipDimension !== 'league' && selectedLeague !== 'All') {
+      if (item.league !== selectedLeague) return false;
+    }
+
+    // Date filter
+    if (skipDimension !== 'date' && selectedDate !== 'All') {
+      if (item.dateKey !== selectedDate) return false;
+    }
+
+    // Market filter
+    if (skipDimension !== 'market' && marketFilter !== 'ALL') {
+      if (marketFilter === 'OVER_25' && item.over25 < 58) return false;
+      if (marketFilter === 'OVER_25_HIGH_CONF' && item.over25 < 65) return false;
+      if (marketFilter === 'UNDER_25' && item.over25 > 45) return false;
+      if (marketFilter === 'UNDER_25_HIGH_CONF' && item.over25 > 35) return false;
+      if (marketFilter === 'BTTS_YES' && item.bttsYes < 55) return false;
+      if (marketFilter === 'BTTS_YES_HIGH_CONF' && item.bttsYes < 65) return false;
+      if (marketFilter === 'BTTS_NO_HIGH_CONF' && item.bttsYes > 40) return false;
+      if (marketFilter === 'HIGH_PROB' && item.topScoreProb < 14) return false;
+      if (marketFilter === 'EXACT_SCORE_HIGH_CONF' && item.topScoreProb < 16) return false;
+    }
+
+    return true;
+  };
+
+  // Dynamic Faceted League Options
+  const leagueOptions = useMemo(() => {
+    const leagues = {};
+    let totalEligible = 0;
+
+    rawScoresMatches.forEach(item => {
+      if (!checkMatchPasses(item, 'league')) return;
+      totalEligible++;
+      if (item.league) {
+        leagues[item.league] = (leagues[item.league] || 0) + 1;
+      }
+    });
+
+    const sortedLeagues = Object.keys(leagues).sort();
     return [
-      { value: 'All', label: `All Leagues (${matches.length})` },
-      ...Array.from(set).sort().map(l => {
-        const count = matches.filter(m => m.league === l).length;
+      { value: 'All', label: `All Leagues (${totalEligible})` },
+      ...sortedLeagues.map(l => {
         const perf = leaguePerformance.find(p => p.league === l);
         const perfStr = perf ? ` - ${perf.accuracy}% Acc` : '';
-        return { value: l, label: `${l} (${count})${perfStr}` };
+        return { value: l, label: `${l} (${leagues[l]})${perfStr}` };
       })
     ];
-  }, [matches, leaguePerformance]);
+  }, [rawScoresMatches, searchQuery, selectedDate, marketFilter, leaguePerformance]);
 
-  // Extract unique date options
+  // Dynamic Faceted Date Options
   const dateOptions = useMemo(() => {
     const dates = {};
-    matches.forEach(m => {
-      const timeVal = m.timestamp || m.utcDate || m.dateIso || m.date;
-      const dKey = timeVal ? getLocalizedDateKey(timeVal, tzSettings) : 'Upcoming';
-      dates[dKey] = (dates[dKey] || 0) + 1;
+    let totalEligible = 0;
+
+    rawScoresMatches.forEach(item => {
+      if (!checkMatchPasses(item, 'date')) return;
+      totalEligible++;
+      dates[item.dateKey] = (dates[item.dateKey] || 0) + 1;
     });
-    const keys = Object.keys(dates).sort();
+
+    const sortedKeys = Object.keys(dates).sort();
     return [
-      { value: 'All', label: `All Dates (${matches.length})` },
-      ...keys.map(k => ({ value: k, label: `${k} (${dates[k]})` }))
+      { value: 'All', label: `All Dates (${totalEligible})` },
+      ...sortedKeys.map(k => ({ value: k, label: `${k} (${dates[k]})` }))
     ];
-  }, [matches]);
+  }, [rawScoresMatches, searchQuery, selectedLeague, marketFilter]);
 
+  // Dynamic Faceted Market Options
+  const marketOptions = useMemo(() => {
+    let all = 0;
+    let o25 = 0;
+    let o25High = 0;
+    let u25 = 0;
+    let u25High = 0;
+    let btts = 0;
+    let bttsHigh = 0;
+    let bttsNoHigh = 0;
+    let highProb = 0;
+    let exactScoreHigh = 0;
 
-  // Filter and sort
+    rawScoresMatches.forEach(item => {
+      if (!checkMatchPasses(item, 'market')) return;
+      all++;
+      if (item.over25 >= 58) o25++;
+      if (item.over25 >= 65) o25High++;
+      if (item.over25 <= 45) u25++;
+      if (item.over25 <= 35) u25High++;
+      if (item.bttsYes >= 55) btts++;
+      if (item.bttsYes >= 65) bttsHigh++;
+      if (item.bttsYes <= 40) bttsNoHigh++;
+      if (item.topScoreProb >= 14) highProb++;
+      if (item.topScoreProb >= 16) exactScoreHigh++;
+    });
+
+    return [
+      { value: 'ALL', label: `All Totals Markets (${all})` },
+      { value: 'OVER_25', label: `Over 2.5 Goals (${o25})` },
+      { value: 'OVER_25_HIGH_CONF', label: `Over 2.5 (High Conf ≥65%) (${o25High})` },
+      { value: 'UNDER_25', label: `Under 2.5 Goals (${u25})` },
+      { value: 'UNDER_25_HIGH_CONF', label: `Under 2.5 (High Conf ≥65%) (${u25High})` },
+      { value: 'BTTS_YES', label: `Both Teams To Score (${btts})` },
+      { value: 'BTTS_YES_HIGH_CONF', label: `BTTS Yes (High Conf ≥65%) (${bttsHigh})` },
+      { value: 'BTTS_NO_HIGH_CONF', label: `BTTS No (High Conf ≥60%) (${bttsNoHigh})` },
+      { value: 'HIGH_PROB', label: `High Score Prob (≥14%) (${highProb})` },
+      { value: 'EXACT_SCORE_HIGH_CONF', label: `Exact Score (High Conf ≥16%) (${exactScoreHigh})` }
+    ];
+  }, [rawScoresMatches, searchQuery, selectedLeague, selectedDate]);
+
+  // Filter and sort matches
   const filteredMatches = useMemo(() => {
-    return matches.filter(m => {
-      // Exclude finished matches from upcoming fixtures view
-      if (m.isCompleted || m.status === 'FT' || m.status === 'FINISHED') return false;
-
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const home = (m.home || '').toLowerCase();
-        const away = (m.away || '').toLowerCase();
-        const league = (m.league || '').toLowerCase();
-        if (!home.includes(q) && !away.includes(q) && !league.includes(q)) return false;
-      }
-
-      if (selectedLeague !== 'All' && m.league !== selectedLeague) return false;
-      if (selectedDate !== 'All') {
-        const timeVal = m.timestamp || m.utcDate || m.dateIso || m.date;
-        const mDate = timeVal ? getLocalizedDateKey(timeVal, tzSettings) : 'Upcoming';
-        if (mDate !== selectedDate) return false;
-      }
-
-      const over25 = m.scoreModel?.overUnder?.over25 || (m.over25Prob || 50);
-      const bttsYes = m.scoreModel?.btts?.yes || 50;
-
-      if (marketFilter === 'OVER_25' && over25 < 58) return false;
-      if (marketFilter === 'OVER_25_HIGH_CONF' && over25 < 65) return false;
-      if (marketFilter === 'UNDER_25' && over25 > 45) return false;
-      if (marketFilter === 'UNDER_25_HIGH_CONF' && over25 > 35) return false; // i.e., under25 >= 65
-      if (marketFilter === 'BTTS_YES' && bttsYes < 55) return false;
-      if (marketFilter === 'BTTS_YES_HIGH_CONF' && bttsYes < 65) return false;
-      if (marketFilter === 'BTTS_NO_HIGH_CONF' && bttsYes > 40) return false; // i.e., bttsNo >= 60
-
-      if (marketFilter === 'HIGH_PROB') {
-        const topScoreProb = m.scoreModel?.topScorelines?.[0]?.prob || 0;
-        if (topScoreProb < 14) return false;
-      }
-      if (marketFilter === 'EXACT_SCORE_HIGH_CONF') {
-        const topScoreProb = m.scoreModel?.topScorelines?.[0]?.prob || 0;
-        if (topScoreProb < 16) return false;
-      }
-
-      return true;
-    }).sort((a, b) => {
+    return rawScoresMatches
+      .filter(item => checkMatchPasses(item, null))
+      .map(item => item.match)
+      .sort((a, b) => {
       const multiplier = sortDirection === 'asc' ? 1 : -1;
 
       if (sortField === 'time') {
@@ -351,18 +431,7 @@ export default function ScoresTablePage({
               label="Market"
               value={marketFilter}
               onChange={setMarketFilter}
-              options={[
-                { value: 'ALL', label: 'All Totals Markets' },
-                { value: 'OVER_25', label: 'Over 2.5 Goals (Favored)' },
-                { value: 'OVER_25_HIGH_CONF', label: 'Over 2.5 Goals (High Conf ≥65%)' },
-                { value: 'UNDER_25', label: 'Under 2.5 Goals (Favored)' },
-                { value: 'UNDER_25_HIGH_CONF', label: 'Under 2.5 Goals (High Conf ≥65%)' },
-                { value: 'BTTS_YES', label: 'Both Teams To Score (Yes)' },
-                { value: 'BTTS_YES_HIGH_CONF', label: 'BTTS Yes (High Conf ≥65%)' },
-                { value: 'BTTS_NO_HIGH_CONF', label: 'BTTS No (High Conf ≥60%)' },
-                { value: 'HIGH_PROB', label: 'High Score Prob (≥14%)' },
-                { value: 'EXACT_SCORE_HIGH_CONF', label: 'Exact Score Hit (High Conf ≥16%)' }
-              ]}
+              options={marketOptions}
             />
 
             <UniformDropdown

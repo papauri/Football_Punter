@@ -479,43 +479,86 @@ export default function FixturesTablePage({
     return timeVal ? getLocalizedDateKey(timeVal, tzSettings) : 'Upcoming';
   };
 
-  // Council Selections Date Options
+  // Helper to check if a council leg passes filters, skipping one dimension for faceted counts
+  const checkCouncilLegPasses = (leg, skip = null) => {
+    if (!leg) return false;
+    // Date filter
+    if (skip !== 'date' && councilDate !== 'All') {
+      const dKey = getLegDateKey(leg);
+      if (dKey !== councilDate) return false;
+    }
+    // League filter
+    if (skip !== 'league' && councilLeague !== 'All') {
+      if (leg.league !== councilLeague) return false;
+    }
+    // Pick filter
+    if (skip !== 'pick' && councilPick !== 'ALL') {
+      if (leg.pick !== councilPick) return false;
+    }
+    // Min rate
+    if (skip !== 'rate') {
+      const minP = parseFloat(councilMinRate) || 0;
+      if (minP > 0 && leg.prob < minP) return false;
+    }
+    // Search
+    if (councilSearch.trim()) {
+      const q = councilSearch.toLowerCase();
+      const home = (leg.home || '').toLowerCase();
+      const away = (leg.away || '').toLowerCase();
+      const league = (leg.league || '').toLowerCase();
+      if (!home.includes(q) && !away.includes(q) && !league.includes(q)) return false;
+    }
+    return true;
+  };
+
+  // Dynamic Council Selections Date Options
   const councilDateOptions = useMemo(() => {
     if (!dailySwarmAcca || !dailySwarmAcca.legs) return [{ value: 'All', label: 'All Dates' }];
     const counts = {};
+    let total = 0;
     dailySwarmAcca.legs.forEach(leg => {
+      if (!checkCouncilLegPasses(leg, 'date')) return;
+      total++;
       const dKey = getLegDateKey(leg);
       counts[dKey] = (counts[dKey] || 0) + 1;
     });
     const keys = Object.keys(counts).sort();
     return [
-      { value: 'All', label: `All Dates (${dailySwarmAcca.legs.length})` },
+      { value: 'All', label: `All Dates (${total})` },
       ...keys.map(k => ({ value: k, label: formatFriendlyDateOption(k, counts[k], tzSettings) }))
     ];
-  }, [dailySwarmAcca, tzSettings]);
+  }, [dailySwarmAcca, councilLeague, councilPick, councilMinRate, councilSearch, tzSettings]);
 
-  // Council Selections League Options
+  // Dynamic Council Selections League Options
   const councilLeagueOptions = useMemo(() => {
     if (!dailySwarmAcca || !dailySwarmAcca.legs) return [{ value: 'All', label: 'All Leagues' }];
     const counts = {};
+    let total = 0;
     dailySwarmAcca.legs.forEach(leg => {
+      if (!checkCouncilLegPasses(leg, 'league')) return;
+      total++;
       const l = leg.league || 'Other';
       counts[l] = (counts[l] || 0) + 1;
     });
     const keys = Object.keys(counts).sort();
     return [
-      { value: 'All', label: `All Leagues (${dailySwarmAcca.legs.length})` },
+      { value: 'All', label: `All Leagues (${total})` },
       ...keys.map(k => ({ value: k, label: `${k} (${counts[k]})` }))
     ];
-  }, [dailySwarmAcca]);
+  }, [dailySwarmAcca, councilDate, councilPick, councilMinRate, councilSearch]);
 
-  const homePicksCount = useMemo(() => {
-    return (dailySwarmAcca?.legs || []).filter(l => l.pick === 'HOME').length;
-  }, [dailySwarmAcca]);
-
-  const awayPicksCount = useMemo(() => {
-    return (dailySwarmAcca?.legs || []).filter(l => l.pick === 'AWAY').length;
-  }, [dailySwarmAcca]);
+  const { homePicksCount, awayPicksCount, totalPicksCount } = useMemo(() => {
+    let home = 0;
+    let away = 0;
+    let total = 0;
+    (dailySwarmAcca?.legs || []).forEach(leg => {
+      if (!checkCouncilLegPasses(leg, 'pick')) return;
+      total++;
+      if (leg.pick === 'HOME') home++;
+      else if (leg.pick === 'AWAY') away++;
+    });
+    return { homePicksCount: home, awayPicksCount: away, totalPicksCount: total };
+  }, [dailySwarmAcca, councilDate, councilLeague, councilMinRate, councilSearch]);
 
   // Filtered & Sorted Council Selections
   const filteredCouncilLegs = useMemo(() => {
@@ -858,37 +901,181 @@ export default function FixturesTablePage({
     }
   };
 
-  // Extract unique leagues
+  // Helper to evaluate full match criteria for filtering
+  const evaluateMatchItem = (m) => {
+    if (!m) return null;
+    const isCompleted = isMatchCompleted(m);
+    const timeVal = m.timestamp || m.utcDate || m.dateIso || m.date;
+    const dateKey = timeVal ? getLocalizedDateKey(timeVal, tzSettings) : 'Upcoming';
+
+    const homeProb = safeParseFloat(m.prob?.home, 0);
+    const drawProb = safeParseFloat(m.prob?.draw, 0);
+    const awayProb = safeParseFloat(m.prob?.away, 0);
+    const topProb = Math.max(homeProb, drawProb, awayProb);
+    const conf = safeParseFloat(m.confidence ?? m.binaryModel?.confidence, topProb);
+
+    const sw = m.aiSwarm || m.imperialSwarm;
+    const isTrap = Boolean(sw?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap || m.disruptionModel?.isPassFlagged);
+    const isUnanimous = Boolean(
+      sw?.is100Unanimous || 
+      sw?.isTopValueLeg || 
+      sw?.isUnanimousDirective || 
+      sw?.consensusTier === 'UNANIMOUS_DIRECTIVE' || 
+      sw?.agreementPercentage === 100
+    );
+    const isDerivative = m.smartMarket?.marketType === 'DOUBLE_CHANCE' || m.smartMarket?.marketType === 'DRAW_NO_BET' || m.smartMarket?.marketType === 'OVER_15';
+    const isDnbAdvised = Boolean(m.smartMarket?.dnbProtection?.isAdvised || m.smartMarket?.marketType === 'DRAW_NO_BET' || drawProb >= 24.0);
+    const favProb = Math.max(homeProb, awayProb);
+    const isDoubleChanceAdvised = Boolean(m.smartMarket?.marketType === 'DOUBLE_CHANCE' || (drawProb >= 24.0 && (favProb + drawProb) >= 68));
+    const leagueTierObj = m.leagueTier || getLeaguePredictabilityTier(m.league);
+    const isTier1 = leagueTierObj?.tier === 1;
+
+    const matchPick = getMatchPick(m);
+
+    return {
+      match: m,
+      id: m.id,
+      isCompleted,
+      dateKey,
+      league: m.league,
+      home: m.home,
+      away: m.away,
+      homeProb,
+      drawProb,
+      awayProb,
+      topProb,
+      conf,
+      isTrap,
+      isUnanimous,
+      isDerivative,
+      isDnbAdvised,
+      isDoubleChanceAdvised,
+      isTier1,
+      matchPick
+    };
+  };
+
+  // Pre-evaluated match items for ultra-fast filtering
+  const evaluatedItems = useMemo(() => {
+    return matches.map(evaluateMatchItem).filter(Boolean);
+  }, [matches, tzSettings]);
+
+  // Universal filter checker: checks if an item passes all filters, optionally skipping one dimension for faceted counts
+  const checkItemPasses = (item, skipDimension = null) => {
+    if (!item || item.isCompleted) return false;
+
+    // Search query
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const home = (item.home || '').toLowerCase();
+      const away = (item.away || '').toLowerCase();
+      const league = (item.league || '').toLowerCase();
+      if (!home.includes(q) && !away.includes(q) && !league.includes(q)) return false;
+    }
+
+    // Strict League Pruning
+    if (strictLeaguePruning) {
+      if (isLeagueBlacklisted(item.league)) return false;
+      const tierObj = getLeaguePredictabilityTier(item.league);
+      if (tierObj?.tier === 3 || tierObj === 'TIER_3') return false;
+    }
+
+    // 1. Date filter (skipped when computing dateOptions)
+    if (skipDimension !== 'date' && selectedDate !== 'All') {
+      const isClubSearch = searchQuery.trim().length >= 2;
+      if (!isClubSearch && item.dateKey !== selectedDate) return false;
+    }
+
+    // 2. League filter (skipped when computing leagueOptions)
+    if (skipDimension !== 'league' && selectedLeague !== 'All') {
+      if (item.league !== selectedLeague) return false;
+    }
+
+    // 3. Outcome filter (skipped when computing outcomeCounts)
+    if (skipDimension !== 'outcome' && selectedOutcome !== 'ALL') {
+      if (selectedOutcome === 'WIN_LOSE') {
+        if (item.matchPick !== 'HOME' && item.matchPick !== 'AWAY') return false;
+      } else if (selectedOutcome === 'DRAW') {
+        if (item.matchPick !== 'DRAW') return false;
+      } else if (selectedOutcome === 'HOME') {
+        if (item.matchPick !== 'HOME') return false;
+      } else if (selectedOutcome === 'AWAY') {
+        if (item.matchPick !== 'AWAY') return false;
+      }
+    }
+
+    // 4. Conviction / Quality filter (skipped when computing qualityOptions)
+    if (skipDimension !== 'quality') {
+      if (convictionMode === 'HIGH') {
+        if (item.topProb < 60.0 && item.conf < 60.0 && !item.match.isHighConviction) return false;
+      } else if (convictionMode === 'ELITE') {
+        if (item.topProb < 68.0 && item.conf < 68.0 && !item.isUnanimous && !item.match.isEliteConviction) return false;
+      } else if (convictionMode === 'UNANIMOUS') {
+        if (!item.isUnanimous) return false;
+      }
+    }
+
+    // 5. Special Filter Mode (skipped when computing qualityOptions)
+    if (skipDimension !== 'quality') {
+      if (filterMode === 'UNANIMOUS' && !item.isUnanimous) return false;
+      if (filterMode === 'HIGH_CONFIDENCE' && item.conf < 60 && item.topProb < 60) return false;
+      if (filterMode === 'ELITE' && item.conf < 68 && item.topProb < 68 && !item.isUnanimous) return false;
+      if (filterMode === 'NO_TRAPS' && item.isTrap) return false;
+      if (filterMode === 'DERIVATIVE_SAFETY' && !item.isDerivative) return false;
+      if (filterMode === 'UPSET_RISK' && !item.isTrap) return false;
+      if (filterMode === 'CAUTION' && item.conf >= 65) return false;
+      if (filterMode === 'TIER_1_ONLY' && !item.isTier1) return false;
+      if (filterMode === 'DNB_ONLY' && !item.isDnbAdvised) return false;
+    }
+
+    // 6. Market Mode filter
+    if (skipDimension !== 'market' && filterByMarketOnly) {
+      if (marketMode === 'DNB' && !item.isDnbAdvised) return false;
+      if (marketMode === 'DOUBLE_CHANCE' && !item.isDoubleChanceAdvised) return false;
+    }
+
+    return true;
+  };
+
+  // Extract unique leagues dynamically faceted across all other active filters
   const leagueOptions = useMemo(() => {
-    const set = new Set();
-    matches.forEach(m => {
-      if (m.league) set.add(m.league);
+    const leagues = {};
+    let totalEligible = 0;
+
+    evaluatedItems.forEach(item => {
+      if (!checkItemPasses(item, 'league')) return;
+      totalEligible++;
+      if (item.league) {
+        leagues[item.league] = (leagues[item.league] || 0) + 1;
+      }
     });
-    const sorted = Array.from(set).sort();
+
+    const sortedLeagues = Object.keys(leagues).sort();
+
     return [
-      { value: 'All', label: `All Leagues (${matches.length})` },
-      ...sorted.map(l => {
-        const count = matches.filter(m => m.league === l).length;
+      { value: 'All', label: `All Leagues (${totalEligible})` },
+      ...sortedLeagues.map(l => {
         const perf = leaguePerformance.find(p => p.league === l);
         const perfStr = perf ? ` - ${perf.accuracy}% Acc` : '';
-        return { value: l, label: `${l} (${count})${perfStr}` };
+        return { value: l, label: `${l} (${leagues[l]})${perfStr}` };
       })
     ];
-  }, [matches, leaguePerformance]);
+  }, [evaluatedItems, searchQuery, strictLeaguePruning, selectedDate, selectedOutcome, convictionMode, filterMode, marketMode, filterByMarketOnly, leaguePerformance]);
 
-  // Extract unique date options with friendly localized labels
+  // Extract unique date options dynamically faceted across all other active filters
   const { dateOptions, nearestUpcomingDateKey, todayMatchCount, nearestUpcomingCount, totalActiveCount } = useMemo(() => {
     const dates = {};
+    let totalEligible = 0;
     let todayCount = 0;
-    matches.forEach(m => {
-      if (isMatchCompleted(m)) return;
-      const timeVal = m.timestamp || m.utcDate || m.dateIso || m.date;
-      const dKey = timeVal ? getLocalizedDateKey(timeVal, tzSettings) : 'Upcoming';
-      dates[dKey] = (dates[dKey] || 0) + 1;
-      if (dKey === todayKey) todayCount++;
+
+    evaluatedItems.forEach(item => {
+      if (!checkItemPasses(item, 'date')) return;
+      totalEligible++;
+      dates[item.dateKey] = (dates[item.dateKey] || 0) + 1;
+      if (item.dateKey === todayKey) todayCount++;
     });
 
-    // Ensure Today is ALWAYS represented in the filter list so user knows today's slate status
+    // Ensure Today is always present so user sees today's active count under current filters
     if (!dates[todayKey]) {
       dates[todayKey] = 0;
     }
@@ -897,13 +1084,11 @@ export default function FixturesTablePage({
     const upcomingKeys = sortedKeys.filter(k => k !== 'Upcoming' && k >= todayKey && dates[k] > 0);
     const nearestKey = upcomingKeys[0] || null;
 
-    const totalActive = matches.filter(m => !isMatchCompleted(m)).length;
-
     const options = [
-      { value: 'All', label: `All Upcoming Dates (${totalActive})` },
+      { value: 'All', label: `All Upcoming Dates (${totalEligible})` },
       ...sortedKeys.map(k => ({
         value: k,
-        label: formatFriendlyDateOption(k, dates[k], tzSettings)
+        label: formatFriendlyDateOption(k, dates[k] || 0, tzSettings)
       }))
     ];
 
@@ -911,49 +1096,111 @@ export default function FixturesTablePage({
       dateOptions: options,
       nearestUpcomingDateKey: nearestKey,
       todayMatchCount: todayCount,
-      nearestUpcomingCount: nearestKey ? dates[nearestKey] : 0,
-      totalActiveCount: totalActive
+      nearestUpcomingCount: nearestKey ? (dates[nearestKey] || 0) : 0,
+      totalActiveCount: totalEligible
     };
-  }, [matches, tzSettings, todayKey]);
+  }, [evaluatedItems, searchQuery, strictLeaguePruning, selectedLeague, selectedOutcome, convictionMode, filterMode, marketMode, filterByMarketOnly, tzSettings, todayKey]);
 
-  // 1. First, apply base filters (date, league, search, exclude finished)
-  const baseMatches = useMemo(() => {
-    return matches.filter(m => {
-      if (isMatchCompleted(m)) return false;
+  // Dynamic Outcome Counts
+  const outcomeCounts = useMemo(() => {
+    let all = 0;
+    let winLose = 0;
+    let draw = 0;
+    let home = 0;
+    let away = 0;
 
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const home = (m.home || '').toLowerCase();
-        const away = (m.away || '').toLowerCase();
-        const league = (m.league || '').toLowerCase();
-        if (!home.includes(q) && !away.includes(q) && !league.includes(q)) {
-          return false;
-        }
+    evaluatedItems.forEach(item => {
+      if (!checkItemPasses(item, 'outcome')) return;
+      all++;
+      if (item.matchPick === 'HOME') {
+        home++;
+        winLose++;
+      } else if (item.matchPick === 'AWAY') {
+        away++;
+        winLose++;
+      } else if (item.matchPick === 'DRAW') {
+        draw++;
       }
-
-      if (selectedLeague !== 'All' && m.league !== selectedLeague) {
-        return false;
-      }
-
-      if (selectedDate !== 'All') {
-        const isClubSearch = searchQuery.trim().length >= 2;
-        if (!isClubSearch) {
-          const timeVal = m.timestamp || m.utcDate || m.dateIso || m.date;
-          const mDate = timeVal ? getLocalizedDateKey(timeVal, tzSettings) : 'Upcoming';
-          if (mDate !== selectedDate) return false;
-        }
-      }
-
-      // Strict League Pruning (Signal-to-Noise Ratio filter)
-      if (strictLeaguePruning) {
-        if (isLeagueBlacklisted(m.league)) return false;
-        const tierObj = m.leagueTier || getLeaguePredictabilityTier(m.league);
-        if (tierObj?.tier === 3 || tierObj === 'TIER_3') return false;
-      }
-
-      return true;
     });
-  }, [matches, searchQuery, selectedLeague, selectedDate, tzSettings, strictLeaguePruning]);
+
+    return { all, winLose, draw, home, away };
+  }, [evaluatedItems, searchQuery, strictLeaguePruning, selectedDate, selectedLeague, convictionMode, filterMode, marketMode, filterByMarketOnly]);
+
+  const outcomeOptions = useMemo(() => [
+    { value: 'ALL', label: `All Outcomes (${outcomeCounts.all})` },
+    { value: 'WIN_LOSE', label: `Win / Lose Only (${outcomeCounts.winLose})` },
+    { value: 'DRAW', label: `Draw Only (${outcomeCounts.draw})` },
+    { value: 'HOME', label: `Home Win Only (${outcomeCounts.home})` },
+    { value: 'AWAY', label: `Away Win Only (${outcomeCounts.away})` }
+  ], [outcomeCounts]);
+
+  // Dynamic Quality / Conviction Options
+  const convictionOptions = useMemo(() => {
+    let all = 0;
+    let high = 0;
+    let elite = 0;
+    let unanimous = 0;
+
+    evaluatedItems.forEach(item => {
+      if (!checkItemPasses(item, 'quality')) return;
+      all++;
+      if (item.topProb >= 60.0 || item.conf >= 60.0 || item.match.isHighConviction) high++;
+      if (item.topProb >= 68.0 || item.conf >= 68.0 || item.isUnanimous || item.match.isEliteConviction) elite++;
+      if (item.isUnanimous) unanimous++;
+    });
+
+    return [
+      { value: 'ALL', label: `All Qualities (${all})` },
+      { value: 'HIGH', label: `Top Picks (≥60%) (${high})` },
+      { value: 'ELITE', label: `Elite Picks (≥68%) (${elite})` },
+      { value: 'UNANIMOUS', label: `👑 Council Consensus (100%) (${unanimous})` }
+    ];
+  }, [evaluatedItems, searchQuery, strictLeaguePruning, selectedDate, selectedLeague, selectedOutcome, marketMode, filterByMarketOnly]);
+
+  // Dynamic Special Filter Options
+  const specialFilterOptions = useMemo(() => {
+    let all = 0;
+    let unanimous = 0;
+    let high = 0;
+    let elite = 0;
+    let noTraps = 0;
+    let dnb = 0;
+    let safeAlt = 0;
+    let tier1 = 0;
+    let traps = 0;
+
+    evaluatedItems.forEach(item => {
+      if (!checkItemPasses(item, 'quality')) return;
+      all++;
+      if (item.isUnanimous) unanimous++;
+      if (item.conf >= 60 || item.topProb >= 60) high++;
+      if (item.conf >= 68 || item.topProb >= 68 || item.isUnanimous) elite++;
+      if (!item.isTrap) noTraps++;
+      if (item.isDnbAdvised) dnb++;
+      if (item.isDerivative) safeAlt++;
+      if (item.isTier1) tier1++;
+      if (item.isTrap) traps++;
+    });
+
+    return [
+      { value: 'All', label: `All Picks (${all})` },
+      { value: 'UNANIMOUS', label: `👑 Council Consensus (${unanimous})` },
+      { value: 'HIGH_CONFIDENCE', label: `💎 High Confidence (${high})` },
+      { value: 'ELITE', label: `⭐ Elite Picks (${elite})` },
+      { value: 'NO_TRAPS', label: `🛡️ Low Risk Only (${noTraps})` },
+      { value: 'DNB_ONLY', label: `🛡️ Draw Protected (${dnb})` },
+      { value: 'DERIVATIVE_SAFETY', label: `🔄 Safe Alternatives (${safeAlt})` },
+      { value: 'TIER_1_ONLY', label: `🏆 Top Leagues Only (${tier1})` },
+      { value: 'UPSET_RISK', label: `⚠️ Upset Alerts (${traps})` }
+    ];
+  }, [evaluatedItems, searchQuery, strictLeaguePruning, selectedDate, selectedLeague, selectedOutcome, marketMode, filterByMarketOnly]);
+
+  // Base Matches remaining (for stats & search reference)
+  const baseMatches = useMemo(() => {
+    return evaluatedItems
+      .filter(item => checkItemPasses(item, null))
+      .map(item => item.match);
+  }, [evaluatedItems, searchQuery, strictLeaguePruning, selectedDate, selectedLeague, selectedOutcome, convictionMode, filterMode, marketMode, filterByMarketOnly]);
 
   const prunedNoiseMatchesCount = useMemo(() => {
     return matches.filter(m => {
@@ -1006,7 +1253,7 @@ export default function FixturesTablePage({
     return recentCompletedMatches.slice(start, start + historyPageSize);
   }, [recentCompletedMatches, historyPage, historyPageSize]);
 
-  // 2. Pre-calculate if any true unanimous match exists in the base filtered set
+  // Pre-calculate if any true unanimous match exists in the filtered set
   const { hasUnanimous, maxBaseConfidence } = useMemo(() => {
     let hasUnan = false;
     let maxConf = 0;
@@ -1023,102 +1270,9 @@ export default function FixturesTablePage({
     return { hasUnanimous: hasUnan, maxBaseConfidence: maxConf };
   }, [baseMatches]);
 
-  // Dynamic counts for Outcome filter based on base filtered matches
-  const outcomeCounts = useMemo(() => {
-    let winLose = 0;
-    let draw = 0;
-    let home = 0;
-    let away = 0;
-    baseMatches.forEach(m => {
-      const pick = getMatchPick(m);
-      if (pick === 'HOME') {
-        home++;
-        winLose++;
-      } else if (pick === 'AWAY') {
-        away++;
-        winLose++;
-      } else if (pick === 'DRAW') {
-        draw++;
-      }
-    });
-    return {
-      all: baseMatches.length,
-      winLose,
-      draw,
-      home,
-      away
-    };
-  }, [baseMatches]);
-
   // Filter and sort matches
   const filteredMatches = useMemo(() => {
-    // 3. Apply the final strategy and outcome filter logic
-    return baseMatches.filter(m => {
-      const homeProb = safeParseFloat(m.prob?.home, 0);
-      const drawProb = safeParseFloat(m.prob?.draw, 0);
-      const awayProb = safeParseFloat(m.prob?.away, 0);
-      const conf = safeParseFloat(m.confidence ?? m.binaryModel?.confidence, Math.max(homeProb, drawProb, awayProb));
-
-      const isTrap = (m.aiSwarm || m.imperialSwarm)?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap;
-      const isUnanimous = (m.aiSwarm || m.imperialSwarm)?.isTopValueLeg || (m.aiSwarm || m.imperialSwarm)?.consensusTier === 'UNANIMOUS_DIRECTIVE' || (m.aiSwarm || m.imperialSwarm)?.isUnanimousDirective;
-      const isDerivative = m.smartMarket?.marketType === 'DOUBLE_CHANCE' || m.smartMarket?.marketType === 'DRAW_NO_BET' || m.smartMarket?.marketType === 'OVER_15';
-
-      // 3a. Dedicated Outcome Filter (Win/Lose Only vs Draw Only)
-      const matchPick = getMatchPick(m);
-      if (selectedOutcome === 'WIN_LOSE') {
-        if (matchPick !== 'HOME' && matchPick !== 'AWAY') return false;
-      } else if (selectedOutcome === 'DRAW') {
-        if (matchPick !== 'DRAW') return false;
-      } else if (selectedOutcome === 'HOME') {
-        if (matchPick !== 'HOME') return false;
-      } else if (selectedOutcome === 'AWAY') {
-        if (matchPick !== 'AWAY') return false;
-      }
-
-      // Strategy filter options
-      if (filterMode === 'UNANIMOUS' && !isUnanimous) return false;
-      if (filterMode === 'HIGH_CONFIDENCE') {
-        const topProb = Math.max(homeProb, drawProb, awayProb);
-        if (conf < 60 && topProb < 60) return false;
-      }
-      if (filterMode === 'ELITE') {
-        const topProb = Math.max(homeProb, drawProb, awayProb);
-        if (conf < 68 && topProb < 68 && !isUnanimous) return false;
-      }
-      if (filterMode === 'NO_TRAPS' && isTrap) return false;
-      if (filterMode === 'DERIVATIVE_SAFETY' && !isDerivative) return false;
-      if (filterMode === 'UPSET_RISK' && !isTrap) return false;
-      if (filterMode === 'CAUTION' && conf >= 65) return false;
-
-      const leagueTierObj = m.leagueTier || getLeaguePredictabilityTier(m.league);
-      const isDnbAdvised = m.smartMarket?.dnbProtection?.isAdvised || m.smartMarket?.marketType === 'DRAW_NO_BET' || drawProb >= 24.0;
-      const favProb = Math.max(homeProb, awayProb);
-      const isDoubleChanceAdvised = m.smartMarket?.marketType === 'DOUBLE_CHANCE' || (drawProb >= 24.0 && (favProb + drawProb) >= 68);
-
-      if (filterMode === 'TIER_1_ONLY' && leagueTierObj?.tier !== 1) return false;
-      if (filterMode === 'DNB_ONLY' && !isDnbAdvised) return false;
-
-      // Bet Safety Mode (Market Mode) Filtering
-      if (filterByMarketOnly) {
-        if (marketMode === 'DNB' && !isDnbAdvised) return false;
-        if (marketMode === 'DOUBLE_CHANCE' && !isDoubleChanceAdvised) return false;
-      }
-
-      // Confidence / Pick Quality Filter
-      if (convictionMode === 'HIGH') {
-        const topProb = Math.max(homeProb, drawProb, awayProb);
-        const isHigh = topProb >= 60.0 || conf >= 60.0 || m.isHighConviction;
-        if (!isHigh) return false;
-      } else if (convictionMode === 'ELITE') {
-        const topProb = Math.max(homeProb, drawProb, awayProb);
-        const isElite = topProb >= 68.0 || conf >= 68.0 || isUnanimous || m.isEliteConviction;
-        if (!isElite) return false;
-      } else if (convictionMode === 'UNANIMOUS') {
-        if (!isUnanimous) return false;
-      }
-
-      return true;
-    }).sort((a, b) => {
+    return [...baseMatches].sort((a, b) => {
       const multiplier = sortDirection === 'asc' ? 1 : -1;
 
       if (sortField === 'probs') {
@@ -1127,13 +1281,11 @@ export default function FixturesTablePage({
         if (maxA !== maxB) {
           return (maxA - maxB) * multiplier;
         }
-        // Secondary tiebreaker: Model Confidence
         const confA = safeParseFloat(a.confidence ?? a.binaryModel?.confidence, maxA);
         const confB = safeParseFloat(b.confidence ?? b.binaryModel?.confidence, maxB);
         if (confA !== confB) {
           return (confA - confB) * multiplier;
         }
-        // Tertiary tiebreaker: Kickoff time
         const tA = a.timestamp || (a.utcDate ? new Date(a.utcDate).getTime() : 0);
         const tB = b.timestamp || (b.utcDate ? new Date(b.utcDate).getTime() : 0);
         return tA - tB;
@@ -1194,7 +1346,7 @@ export default function FixturesTablePage({
       }
       return 0;
     });
-  }, [baseMatches, hasUnanimous, maxBaseConfidence, selectedOutcome, filterMode, convictionMode, marketMode, filterByMarketOnly, sortField, sortDirection]);
+  }, [baseMatches, sortField, sortDirection]);
 
   const renderMarketPrediction = (m, predictedWinner, homeProb, drawProb, awayProb, matchOdds = null) => {
     const isFavHome = homeProb >= awayProb;
@@ -1463,7 +1615,7 @@ export default function FixturesTablePage({
                 value={councilPick}
                 onChange={setCouncilPick}
                 options={[
-                  { value: 'ALL', label: `All Picks (${dailySwarmAcca.legs.length})` },
+                  { value: 'ALL', label: `All Picks (${totalPicksCount})` },
                   { value: 'HOME', label: `Home Win (${homePicksCount})` },
                   { value: 'AWAY', label: `Away Win (${awayPicksCount})` }
                 ]}
@@ -2138,12 +2290,7 @@ export default function FixturesTablePage({
                     setFilterMode('All');
                   }
                 }}
-                options={[
-                  { value: 'ALL', label: 'All Qualities' },
-                  { value: 'HIGH', label: 'Top Picks (≥60% | 78.8%)' },
-                  { value: 'ELITE', label: 'Elite Picks (≥68% | 84.3%)' },
-                  { value: 'UNANIMOUS', label: '👑 Council Consensus (100%)' }
-                ]}
+                options={convictionOptions}
               />
 
               <UniformDropdown
@@ -2230,13 +2377,7 @@ export default function FixturesTablePage({
                 label="Outcome"
                 value={selectedOutcome}
                 onChange={setSelectedOutcome}
-                options={[
-                  { value: 'ALL', label: `All Outcomes (${outcomeCounts.all})` },
-                  { value: 'WIN_LOSE', label: `Win / Lose Only (${outcomeCounts.winLose})` },
-                  { value: 'DRAW', label: `Draw Only (${outcomeCounts.draw})` },
-                  { value: 'HOME', label: `Home Win Only (${outcomeCounts.home})` },
-                  { value: 'AWAY', label: `Away Win Only (${outcomeCounts.away})` }
-                ]}
+                options={outcomeOptions}
               />
               <UniformDropdown
                 label="Special Filter"
@@ -2248,17 +2389,7 @@ export default function FixturesTablePage({
                   else if (val === 'UNANIMOUS') setConvictionMode('UNANIMOUS');
                   else if (val === 'All') setConvictionMode('ALL');
                 }}
-                options={[
-                  { value: 'All', label: 'All Picks' },
-                  { value: 'UNANIMOUS', label: '👑 Council Consensus (All 6 Agree)' },
-                  { value: 'HIGH_CONFIDENCE', label: '💎 High Confidence (≥60%)' },
-                  { value: 'ELITE', label: '⭐ Elite Picks (≥68% or Consensus)' },
-                  { value: 'NO_TRAPS', label: '🛡️ Low Risk Only (No Traps)' },
-                  { value: 'DNB_ONLY', label: '🛡️ Draw Protected (DNB Only)' },
-                  { value: 'DERIVATIVE_SAFETY', label: '🔄 Safe Alternatives Only' },
-                  { value: 'TIER_1_ONLY', label: '🏆 Top Leagues Only' },
-                  { value: 'UPSET_RISK', label: '⚠️ Upset Alerts & Traps' }
-                ]}
+                options={specialFilterOptions}
               />
               <UniformDropdown
                 label="Sort"

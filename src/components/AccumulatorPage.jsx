@@ -184,11 +184,12 @@ export default function AccumulatorPage({
     : `${aiSwarm?.directives?.telemetry?.unanimousHitRate || '76.2%'} (All AI Agree)`;
   const accaMatchIds = useMemo(() => new Set(accaPicks.map(p => String(p.id))), [accaPicks]);
 
-  // Resolved active legs
+  // Resolved active legs - strictly ordered chronologically by kickoff time
   const activeLegs = useMemo(() => {
-    return accaPicks.map((pick, idx) => {
+    const resolved = accaPicks.map((pick, idx) => {
       const pMatch = pick.match || matches.find(m => String(m.id) === String(pick.id) || (m.home === pick.home && m.away === pick.away)) || pick;
       const timeVal = pMatch.timestamp || pMatch.utcDate || pMatch.dateIso || pMatch.date;
+      const rawTime = pMatch.timestamp || (pMatch.utcDate ? new Date(pMatch.utcDate).getTime() : 0);
       const dateDisplay = timeVal ? formatRelativeDayTime(timeVal, tzSettings) : (pMatch.time || 'Upcoming');
       const pickVal = pick.pick || (typeof pMatch.predictedWinner === 'string' ? pMatch.predictedWinner : pMatch.predictedWinner?.pick) || 'HOME';
       const realOdds = resolveMatchOdds(pMatch, pickVal, pick.odds);
@@ -199,8 +200,8 @@ export default function AccumulatorPage({
       return {
         pickId: pick.pickId || `${pick.id}-${idx}`,
         id: pick.id,
+        rawTime,
         match: pMatch,
-        legNum: idx + 1,
         home: pick.home,
         away: pick.away,
         league: pick.league || pMatch.league,
@@ -214,6 +215,14 @@ export default function AccumulatorPage({
         status
       };
     });
+
+    // Chronological order: earliest kickoff (Leg 1) to latest kickoff
+    resolved.sort((a, b) => (a.rawTime || 0) - (b.rawTime || 0));
+
+    return resolved.map((leg, idx) => ({
+      ...leg,
+      legNum: idx + 1
+    }));
   }, [accaPicks, matches, tzSettings]);
 
   // Combined metrics
@@ -817,6 +826,13 @@ export default function AccumulatorPage({
     const count = presetLegCount === 'ALL' ? candidatePool.length : (parseInt(presetLegCount, 10) || 3);
     const selected = candidatePool.slice(0, count);
 
+    // Sort selected legs chronologically by kickoff time
+    selected.sort((a, b) => {
+      const tA = a.match?.timestamp || (a.match?.utcDate ? new Date(a.match.utcDate).getTime() : 0);
+      const tB = b.match?.timestamp || (b.match?.utcDate ? new Date(b.match.utcDate).getTime() : 0);
+      return tA - tB;
+    });
+
     const picksToLoad = selected.map(item => {
       const legProb = resolveMatchProb(item.match, item.pick);
       const legOdds = resolveMatchOdds(item.match, item.pick, item.odds);
@@ -830,6 +846,14 @@ export default function AccumulatorPage({
       const fallbackMatches = (matches || [])
         .filter(m => !m.disruptionModel?.isPassFlagged && !m.isMarketDivergence && !m.isFavoriteTrap && !(m.aiSwarm || m.imperialSwarm)?.isContrarianTrap)
         .slice(0, typeof presetLegCount === 'number' ? presetLegCount : 3);
+      
+      // Sort fallback matches chronologically by kickoff time
+      fallbackMatches.sort((a, b) => {
+        const tA = a.timestamp || (a.utcDate ? new Date(a.utcDate).getTime() : 0);
+        const tB = b.timestamp || (b.utcDate ? new Date(b.utcDate).getTime() : 0);
+        return tA - tB;
+      });
+
       if (fallbackMatches.length > 0) {
         const fallbackPicks = fallbackMatches.map(m => {
           let pickVal = (typeof m.predictedWinner === 'string' ? m.predictedWinner : m.predictedWinner?.pick) || 'HOME';

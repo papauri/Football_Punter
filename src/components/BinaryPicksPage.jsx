@@ -83,41 +83,14 @@ export default function BinaryPicksPage({
     } else if (newVal === 'kelly_desc') {
       setSortField('kelly');
       setSortDirection('desc');
+    } else if (newVal === 'time_asc') {
+      setSortField('time');
+      setSortDirection('asc');
+    } else if (newVal === 'time_desc') {
+      setSortField('time');
+      setSortDirection('desc');
     }
   };
-
-  // Extract leagues
-  const leagueOptions = useMemo(() => {
-    const set = new Set();
-    matches.forEach(m => {
-      if (m.league) set.add(m.league);
-    });
-    return [
-      { value: 'All', label: `All Leagues (${matches.length})` },
-      ...Array.from(set).sort().map(l => {
-        const count = matches.filter(m => m.league === l).length;
-        const perf = leaguePerformance.find(p => p.league === l);
-        const perfStr = perf ? ` - ${perf.accuracy}% Acc` : '';
-        return { value: l, label: `${l} (${count})${perfStr}` };
-      })
-    ];
-  }, [matches, leaguePerformance]);
-
-  // Extract unique date options
-  const dateOptions = useMemo(() => {
-    const dates = {};
-    matches.forEach(m => {
-      const timeVal = m.timestamp || m.utcDate || m.dateIso || m.date;
-      const dKey = timeVal ? getLocalizedDateKey(timeVal, tzSettings) : 'Upcoming';
-      dates[dKey] = (dates[dKey] || 0) + 1;
-    });
-    const keys = Object.keys(dates).sort();
-    return [
-      { value: 'All', label: `All Dates (${matches.length})` },
-      ...keys.map(k => ({ value: k, label: `${k} (${dates[k]})` }))
-    ];
-  }, [matches]);
-
 
   // Helper to check if match is finished
   const isMatchCompleted = (m) => {
@@ -129,11 +102,11 @@ export default function BinaryPicksPage({
     return false;
   };
 
-  // Compute binary edges for all matches
-  const binaryPicks = useMemo(() => {
+  // Pre-calculate all available raw binary value picks from active matches
+  const rawBinaryPicks = useMemo(() => {
     const picks = [];
 
-    matches.forEach(m => {
+    (matches || []).forEach(m => {
       // Exclude finished/completed matches strictly
       if (isMatchCompleted(m)) return;
 
@@ -174,10 +147,12 @@ export default function BinaryPicksPage({
 
       const timeVal = m.timestamp || m.utcDate || m.dateIso || m.date;
       const formattedTime = timeVal ? formatRelativeDayTime(timeVal, tzSettings) : (m.time || 'Upcoming');
+      const dateKey = timeVal ? getLocalizedDateKey(timeVal, tzSettings) : 'Upcoming';
 
       picks.push({
         match: m,
         id: m.id,
+        dateKey,
         time: formattedTime,
         dt: formatSafeDateTime(timeVal, null, tzSettings),
         league: m.league,
@@ -200,28 +175,105 @@ export default function BinaryPicksPage({
       });
     });
 
-    return picks.filter(p => {
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        if (!p.home.toLowerCase().includes(q) && !p.away.toLowerCase().includes(q) && !p.league.toLowerCase().includes(q)) {
-          return false;
-        }
-      }
+    return picks;
+  }, [matches, tzSettings]);
 
-      if (selectedLeague !== 'All' && p.league !== selectedLeague) return false;
-      
-      if (selectedDate !== 'All') {
-        const mDateObj = p.match;
-        const timeVal = mDateObj.timestamp || mDateObj.utcDate || mDateObj.dateIso || mDateObj.date;
-        const mDate = timeVal ? getLocalizedDateKey(timeVal, tzSettings) : 'Upcoming';
-        if (mDate !== selectedDate) return false;
-      }
+  // Universal faceted filter checker
+  const checkPickPasses = (p, skipDimension = null) => {
+    if (!p) return false;
 
+    // Search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      if (!p.home.toLowerCase().includes(q) && !p.away.toLowerCase().includes(q) && !p.league.toLowerCase().includes(q)) {
+        return false;
+      }
+    }
+
+    // League filter
+    if (skipDimension !== 'league' && selectedLeague !== 'All') {
+      if (p.league !== selectedLeague) return false;
+    }
+
+    // Date filter
+    if (skipDimension !== 'date' && selectedDate !== 'All') {
+      if (p.dateKey !== selectedDate) return false;
+    }
+
+    // Edge / Conviction Tier filter
+    if (skipDimension !== 'conviction') {
       if (convictionTier === 'ELITE' && (p.edge < 8 || p.confidence < 65)) return false;
       if (convictionTier === 'HIGH_VALUE' && p.edge < 5) return false;
+    }
 
-      return true;
-    }).sort((a, b) => {
+    return true;
+  };
+
+  // Dynamic Faceted League Options
+  const leagueOptions = useMemo(() => {
+    const leagues = {};
+    let totalEligible = 0;
+
+    rawBinaryPicks.forEach(p => {
+      if (!checkPickPasses(p, 'league')) return;
+      totalEligible++;
+      if (p.league) {
+        leagues[p.league] = (leagues[p.league] || 0) + 1;
+      }
+    });
+
+    const sortedLeagues = Object.keys(leagues).sort();
+    return [
+      { value: 'All', label: `All Leagues (${totalEligible})` },
+      ...sortedLeagues.map(l => {
+        const perf = leaguePerformance.find(lp => lp.league === l);
+        const perfStr = perf ? ` - ${perf.accuracy}% Acc` : '';
+        return { value: l, label: `${l} (${leagues[l]})${perfStr}` };
+      })
+    ];
+  }, [rawBinaryPicks, searchQuery, selectedDate, convictionTier, leaguePerformance]);
+
+  // Dynamic Faceted Date Options
+  const dateOptions = useMemo(() => {
+    const dates = {};
+    let totalEligible = 0;
+
+    rawBinaryPicks.forEach(p => {
+      if (!checkPickPasses(p, 'date')) return;
+      totalEligible++;
+      dates[p.dateKey] = (dates[p.dateKey] || 0) + 1;
+    });
+
+    const sortedKeys = Object.keys(dates).sort();
+    return [
+      { value: 'All', label: `All Dates (${totalEligible})` },
+      ...sortedKeys.map(k => ({ value: k, label: `${k} (${dates[k]})` }))
+    ];
+  }, [rawBinaryPicks, searchQuery, selectedLeague, convictionTier]);
+
+  // Dynamic Faceted Conviction / Edge Tier Options
+  const convictionOptions = useMemo(() => {
+    let all = 0;
+    let highValue = 0;
+    let elite = 0;
+
+    rawBinaryPicks.forEach(p => {
+      if (!checkPickPasses(p, 'conviction')) return;
+      all++;
+      if (p.edge >= 5) highValue++;
+      if (p.edge >= 8 && p.confidence >= 65) elite++;
+    });
+
+    return [
+      { value: 'ALL', label: `All Value Bets (${all})` },
+      { value: 'ELITE', label: `Elite Value (Edge ≥8%) (${elite})` },
+      { value: 'HIGH_VALUE', label: `High Value (Edge ≥5%) (${highValue})` }
+    ];
+  }, [rawBinaryPicks, searchQuery, selectedLeague, selectedDate]);
+
+  // Filter and sort picks
+  const binaryPicks = useMemo(() => {
+    return rawBinaryPicks.filter(p => checkPickPasses(p, null)).sort((a, b) => {
       const multiplier = sortDirection === 'asc' ? 1 : -1;
 
       if (sortField === 'time') {
@@ -260,7 +312,7 @@ export default function BinaryPicksPage({
       }
       return 0;
     });
-  }, [matches, searchQuery, selectedLeague, selectedDate, convictionTier, sortField, sortDirection, tzSettings]);
+  }, [rawBinaryPicks, searchQuery, selectedLeague, selectedDate, convictionTier, sortField, sortDirection]);
 
   return (
     <div className="space-y-4">
@@ -363,11 +415,7 @@ export default function BinaryPicksPage({
               label="Edge Tier"
               value={convictionTier}
               onChange={setConvictionTier}
-              options={[
-                { value: 'ALL', label: 'All Value Bets' },
-                { value: 'ELITE', label: 'Elite Value (Edge ≥8%)' },
-                { value: 'HIGH_VALUE', label: 'High Value (Edge ≥5%)' }
-              ]}
+              options={convictionOptions}
             />
 
             <UniformDropdown
@@ -375,6 +423,8 @@ export default function BinaryPicksPage({
               value={sortBy}
               onChange={handleDropdownSortChange}
               options={[
+                { value: 'time_asc', label: 'Earliest Kickoff' },
+                { value: 'time_desc', label: 'Latest Kickoff' },
                 { value: 'edge_desc', label: 'Highest Betting Edge' },
                 { value: 'conf_desc', label: 'Highest Model Confidence' },
                 { value: 'kelly_desc', label: 'Largest Kelly' }

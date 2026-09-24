@@ -43,8 +43,8 @@ export default function AllDayWinnerPage({
   const [stake, setStake] = useState(20);
   const [searchQuery, setSearchQuery] = useState('');
   const [outcomeFilter, setOutcomeFilter] = useState('ALL'); // ALL, HOME, AWAY
-  const [sortField, setSortField] = useState('prob'); // prob, odds, time
-  const [sortDir, setSortDir] = useState('desc');
+  const [sortField, setSortField] = useState('time'); // time, prob, odds
+  const [sortDir, setSortDir] = useState('asc');
   const [lottoData, setLottoData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -57,6 +57,21 @@ export default function AllDayWinnerPage({
 
   const toggleExpand = (id) => {
     setExpandedLegId(prev => (prev === id ? null : id));
+  };
+
+  const getLegTimestamp = (leg) => {
+    if (!leg) return 0;
+    if (leg.timestamp && !isNaN(leg.timestamp)) return Number(leg.timestamp);
+    if (leg.utcDate) {
+      const ms = new Date(leg.utcDate).getTime();
+      if (!isNaN(ms) && ms > 0) return ms;
+    }
+    const t = String(leg.kickoffTime || leg.time || '');
+    const match = t.match(/(\d{1,2}):(\d{2})/);
+    if (match) {
+      return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
+    }
+    return 0;
   };
 
   const fetchLottoAcca = async (isManualRefresh = false) => {
@@ -89,6 +104,25 @@ export default function AllDayWinnerPage({
   const rawLegs = lottoData?.legs || [];
   const currentDate = lottoData?.date || new Date().toISOString().slice(0, 10);
 
+  // Dynamic outcome counts faceted across search query
+  const outcomeCounts = useMemo(() => {
+    let all = 0, home = 0, away = 0;
+    rawLegs.forEach(leg => {
+      if (searchQuery.trim().length > 0) {
+        const q = searchQuery.toLowerCase().trim();
+        const matchesTeam = leg.home?.toLowerCase().includes(q) || 
+                            leg.away?.toLowerCase().includes(q) || 
+                            leg.league?.toLowerCase().includes(q) ||
+                            leg.winningTeam?.toLowerCase().includes(q);
+        if (!matchesTeam) return;
+      }
+      all++;
+      if (leg.pick === 'HOME') home++;
+      else if (leg.pick === 'AWAY') away++;
+    });
+    return { all, home, away };
+  }, [rawLegs, searchQuery]);
+
   // Filter and sort legs for the table view
   const displayLegs = useMemo(() => {
     return rawLegs.filter(leg => {
@@ -108,14 +142,17 @@ export default function AllDayWinnerPage({
       return true;
     }).sort((a, b) => {
       const mult = sortDir === 'asc' ? 1 : -1;
+      if (sortField === 'time') {
+        const tA = getLegTimestamp(a);
+        const tB = getLegTimestamp(b);
+        if (tA !== tB) return (tA - tB) * mult;
+        return String(a.kickoffTime || a.time || '').localeCompare(String(b.kickoffTime || b.time || '')) * mult;
+      }
       if (sortField === 'prob') {
         return ((a.prob || 0) - (b.prob || 0)) * mult;
       }
       if (sortField === 'odds') {
         return ((a.odds || 0) - (b.odds || 0)) * mult;
-      }
-      if (sortField === 'time') {
-        return String(a.kickoffTime || '').localeCompare(String(b.kickoffTime || '')) * mult;
       }
       return 0;
     });
@@ -137,13 +174,14 @@ export default function AllDayWinnerPage({
       setSortDir(prev => (prev === 'asc' ? 'desc' : 'asc'));
     } else {
       setSortField(field);
-      setSortDir('desc');
+      setSortDir(field === 'time' ? 'asc' : 'desc');
     }
   };
 
   const handleCopySlip = () => {
     if (!lottoData) return;
-    const text = lottoData.slipText || rawLegs.map((l, i) => `${i + 1}. [${l.league}] ${l.home} vs ${l.away} -> ${l.winningTeam} WIN @ ${l.odds} (${l.prob}% win prob)`).join('\n');
+    const sortedForSlip = [...rawLegs].sort((a, b) => getLegTimestamp(a) - getLegTimestamp(b));
+    const text = sortedForSlip.map((l, i) => `${i + 1}. [${l.kickoffTime || l.time || 'Today'}] [${l.league}] ${l.home} vs ${l.away} -> ${l.winningTeam} WIN @ ${l.odds} (${l.prob}% win prob)`).join('\n');
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
@@ -182,7 +220,8 @@ export default function AllDayWinnerPage({
 
   const handleLoadAllToSlip = () => {
     if (!rawLegs || rawLegs.length === 0) return;
-    const accaPicks = rawLegs.map(l => ({
+    const sortedForSlip = [...rawLegs].sort((a, b) => getLegTimestamp(a) - getLegTimestamp(b));
+    const accaPicks = sortedForSlip.map(l => ({
       pickId: `${l.id || l.espnEventId}_${l.pick}`,
       fixtureId: l.id || l.espnEventId,
       home: l.home,
@@ -382,9 +421,27 @@ export default function AllDayWinnerPage({
             value={outcomeFilter}
             onChange={setOutcomeFilter}
             options={[
-              { value: 'ALL', label: 'All Picks' },
-              { value: 'HOME', label: 'Home Win (1)' },
-              { value: 'AWAY', label: 'Away Win (2)' }
+              { value: 'ALL', label: `All Picks (${outcomeCounts.all})` },
+              { value: 'HOME', label: `Home Win (${outcomeCounts.home})` },
+              { value: 'AWAY', label: `Away Win (${outcomeCounts.away})` }
+            ]}
+          />
+
+          <UniformDropdown
+            label="Sort"
+            value={`${sortField}_${sortDir}`}
+            onChange={(val) => {
+              const [f, d] = val.split('_');
+              setSortField(f);
+              setSortDir(d);
+            }}
+            options={[
+              { value: 'time_asc', label: 'Earliest Kickoff (Time)' },
+              { value: 'time_desc', label: 'Latest Kickoff' },
+              { value: 'prob_desc', label: 'Highest Win Probability' },
+              { value: 'prob_asc', label: 'Lowest Win Probability' },
+              { value: 'odds_desc', label: 'Highest Odds' },
+              { value: 'odds_asc', label: 'Lowest Odds' }
             ]}
           />
 
