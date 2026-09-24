@@ -1358,15 +1358,17 @@ export default function FixturesTablePage({
     const dcCode = isFavHome ? '1X' : 'X2';
     const odds = matchOdds || resolveMatchOdds(m, predictedWinner);
 
-    // 1. SMART_ADAPTIVE (Default view: Auto DNB / DC when draw risk is high)
+    // 1. SMART_ADAPTIVE (Auto DNB / DC when draw risk is high)
     if (marketMode === 'SMART_ADAPTIVE') {
       const isHighDraw = drawProb >= 24.0;
       if (m.smartMarket?.marketType === 'DOUBLE_CHANCE' || (isHighDraw && dcProb >= 72 && favProb < 55)) {
         const dcOdds = resolveMatchOdds(m, dcCode);
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-300 shadow-2xs" title={`Smart Double Chance (${dcProb}%): Win or Draw protects against stalemate.`}>
-            <ShieldCheck className="w-3 h-3 text-amber-600 shrink-0" />
-            <span className="truncate max-w-[85px]">{favTeam}</span>/Draw <span className="text-[10px] text-amber-700 font-mono">@{safeToFixed(dcOdds, 2)}</span>
+          <span 
+            className="inline-flex items-center px-1.5 py-0.5 rounded text-[10.5px] font-bold bg-amber-50 text-amber-800 border border-amber-300 shadow-2xs whitespace-nowrap" 
+            title={`Smart Double Chance (${dcCode}, ${dcProb}%): ${favTeam} or Draw protects against stalemate (@${safeToFixed(dcOdds, 2)})`}
+          >
+            {dcCode} ({isFavHome ? 'Home/X' : 'Away/X'})
           </span>
         );
       }
@@ -1374,17 +1376,21 @@ export default function FixturesTablePage({
       if (m.smartMarket?.marketType === 'DRAW_NO_BET' || isHighDraw) {
         const dnbOdds = resolveMatchOdds(m, isFavHome ? '1' : '2');
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-50 text-indigo-900 border border-indigo-300 shadow-2xs" title={`Smart Draw-No-Bet (${dnbProb}%): Stake refunded on draw. 78.3% empirical hit rate.`}>
-            <ShieldCheck className="w-3 h-3 text-indigo-600 shrink-0" />
-            <span className="truncate max-w-[85px]">{favTeam}</span> <span className="text-[10px] font-mono text-indigo-700">DNB @{safeToFixed(dnbOdds, 2)}</span>
+          <span 
+            className="inline-flex items-center px-1.5 py-0.5 rounded text-[10.5px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 shadow-2xs whitespace-nowrap" 
+            title={`Smart Draw-No-Bet (${dnbProb}%): ${favTeam} Win, refunded if draw (@${safeToFixed(dnbOdds, 2)})`}
+          >
+            {isFavHome ? 'Home DNB' : 'Away DNB'}
           </span>
         );
       }
 
       return (
-        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold border ${getWinnerBadgeClass(predictedWinner)}`}>
-          <span>{predictedWinner === 'HOME' ? `${m.home?.slice(0, 10)} WIN` : predictedWinner === 'AWAY' ? `${m.away?.slice(0, 10)} WIN` : 'DRAW'}</span>
-          <span className="text-[10px] font-mono opacity-80 font-normal">@{safeToFixed(odds, 2)}</span>
+        <span 
+          className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10.5px] font-bold border whitespace-nowrap shadow-2xs ${getWinnerBadgeClass(predictedWinner)}`}
+          title={`Outright Pick: ${predictedWinner === 'HOME' ? m.home : predictedWinner === 'AWAY' ? m.away : 'Draw'} (@${safeToFixed(odds, 2)})`}
+        >
+          {predictedWinner === 'HOME' ? 'Home Win' : predictedWinner === 'AWAY' ? 'Away Win' : 'Draw (X)'}
         </span>
       );
     }
@@ -1393,9 +1399,11 @@ export default function FixturesTablePage({
     if (marketMode === 'DNB') {
       const dnbOdds = resolveMatchOdds(m, isFavHome ? '1' : '2');
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-50 text-indigo-900 border border-indigo-300 shadow-2xs" title={`Draw-No-Bet (${dnbProb}%): Push/refund on tie.`}>
-          <ShieldCheck className="w-3 h-3 text-indigo-600 shrink-0" />
-          <span className="truncate max-w-[85px]">{favTeam}</span> DNB <span className="text-[10px] font-mono text-indigo-700">@{safeToFixed(dnbOdds, 2)}</span>
+        <span 
+          className="inline-flex items-center px-1.5 py-0.5 rounded text-[10.5px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 shadow-2xs whitespace-nowrap" 
+          title={`Draw-No-Bet (${dnbProb}%): ${favTeam} Win, refunded on tie (@${safeToFixed(dnbOdds, 2)})`}
+        >
+          {isFavHome ? 'Home DNB' : 'Away DNB'}
         </span>
       );
     }
@@ -1404,18 +1412,22 @@ export default function FixturesTablePage({
     if (marketMode === 'DOUBLE_CHANCE') {
       const dcOdds = resolveMatchOdds(m, dcCode);
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-900 border border-emerald-300 shadow-2xs" title={`Double Chance: ${dcCode} (${dcProb}%)`}>
-          <ShieldCheck className="w-3 h-3 text-emerald-600 shrink-0" />
-          <span className="truncate max-w-[85px]">{favTeam}</span>/Draw <span className="text-[10px] text-emerald-700 font-mono">@{safeToFixed(dcOdds, 2)}</span>
+        <span 
+          className="inline-flex items-center px-1.5 py-0.5 rounded text-[10.5px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-2xs whitespace-nowrap" 
+          title={`Double Chance (${dcCode}, ${dcProb}%): ${favTeam} or Draw (@${safeToFixed(dcOdds, 2)})`}
+        >
+          {dcCode} ({isFavHome ? 'Home/X' : 'Away/X'})
         </span>
       );
     }
 
     // 4. Straight 1X2
     return (
-      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold border ${getWinnerBadgeClass(predictedWinner)}`}>
-        <span>{predictedWinner === 'HOME' ? `${m.home?.slice(0, 10)} WIN` : predictedWinner === 'AWAY' ? `${m.away?.slice(0, 10)} WIN` : 'DRAW'}</span>
-        <span className="text-[10px] font-mono opacity-80 font-normal">@{safeToFixed(odds, 2)}</span>
+      <span 
+        className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10.5px] font-bold border whitespace-nowrap shadow-2xs ${getWinnerBadgeClass(predictedWinner)}`}
+        title={`Outright Pick: ${predictedWinner === 'HOME' ? m.home : predictedWinner === 'AWAY' ? m.away : 'Draw'} (@${safeToFixed(odds, 2)})`}
+      >
+        {predictedWinner === 'HOME' ? 'Home Win' : predictedWinner === 'AWAY' ? 'Away Win' : 'Draw (X)'}
       </span>
     );
   };
@@ -2238,228 +2250,232 @@ export default function FixturesTablePage({
         </div>
 
         {!collapsedMatchPredictions && (
-          <div className="p-3 sm:p-3.5 space-y-3">
+          <>
             {/* Feedback Alert for Lineup Calibration */}
             {lineupCalibrateResult && (
-          <div className="px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between shadow-2xs animate-in fade-in duration-200">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span className="font-medium">{lineupCalibrateResult}</span>
-            </div>
-            <button 
-              onClick={() => setLineupCalibrateResult(null)}
-              className="text-emerald-700 hover:text-emerald-900 cursor-pointer p-0.5"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
+              <div className="mx-3 mt-2.5 px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between shadow-2xs animate-in fade-in duration-200">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span className="font-medium">{lineupCalibrateResult}</span>
+                </div>
+                <button 
+                  onClick={() => setLineupCalibrateResult(null)}
+                  className="text-emerald-700 hover:text-emerald-900 cursor-pointer p-0.5"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
 
-        {/* Strategy, Quality, Draw-Type & Filter Control Panel */}
-        <div className="bg-slate-50/90 rounded-xl p-2.5 border border-slate-200/90 space-y-2">
-          {/* Row 1: Search, Quality Dropdown, Draw / Bet Type Dropdown & Major Leagues Toggle */}
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            {/* Left: Search Box */}
-            <div className="relative flex-1 min-w-[140px] max-w-sm">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search club or league..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-8 w-full pl-8 pr-3 text-xs bg-white text-slate-800 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-colors shadow-2xs"
-              />
-            </div>
+            {/* Compact Unified Filter Toolbar */}
+            <div className="px-3 py-2 bg-slate-50/80 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="flex flex-wrap items-center gap-1.5 flex-1 min-w-[240px]">
+                {/* Search Box */}
+                <div className="relative flex-1 min-w-[130px] max-w-xs">
+                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Filter club / league..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-8 pr-6 py-1 text-xs bg-white text-slate-800 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400 placeholder:text-slate-400 shadow-2xs"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 font-bold text-xs"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
 
-            {/* Quality & Draw Type Dropdowns */}
-            <div className="flex flex-wrap items-center gap-2">
-              <UniformDropdown
-                label="Quality"
-                value={convictionMode}
-                onChange={(val) => {
-                  setConvictionMode(val);
-                  if (val === 'ALL') {
-                    if (filterMode === 'ELITE' || filterMode === 'HIGH_CONFIDENCE' || filterMode === 'UNANIMOUS') {
+                {/* Date Dropdown */}
+                <UniformDropdown
+                  label="Date"
+                  value={selectedDate}
+                  onChange={setSelectedDate}
+                  options={dateOptions}
+                  selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
+                />
+
+                {/* League Dropdown */}
+                <UniformDropdown
+                  label="League"
+                  value={selectedLeague}
+                  onChange={setSelectedLeague}
+                  options={leagueOptions}
+                  selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
+                />
+
+                {/* Outcome Dropdown */}
+                <UniformDropdown
+                  label="Outcome"
+                  value={selectedOutcome}
+                  onChange={setSelectedOutcome}
+                  options={outcomeOptions}
+                  selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
+                />
+
+                {/* Quality Dropdown */}
+                <UniformDropdown
+                  label="Quality"
+                  value={convictionMode}
+                  onChange={(val) => {
+                    setConvictionMode(val);
+                    if (val === 'ALL') {
+                      if (filterMode === 'ELITE' || filterMode === 'HIGH_CONFIDENCE' || filterMode === 'UNANIMOUS') {
+                        setFilterMode('All');
+                      }
+                    } else if (val === 'HIGH' || val === 'ELITE' || val === 'UNANIMOUS') {
                       setFilterMode('All');
                     }
-                  } else if (val === 'HIGH') {
-                    setFilterMode('All');
-                  } else if (val === 'ELITE') {
-                    setFilterMode('All');
-                  } else if (val === 'UNANIMOUS') {
-                    setFilterMode('All');
-                  }
-                }}
-                options={convictionOptions}
-              />
+                  }}
+                  options={convictionOptions}
+                  selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
+                />
 
-              <UniformDropdown
-                label="Draw / Market"
-                value={marketMode}
-                onChange={setMarketMode}
-                options={[
-                  { value: 'SMART_ADAPTIVE', label: '🛡️ Smart Safety (Auto DNB/DC)' },
-                  { value: 'DNB', label: 'Draw-No-Bet (DNB Refund)' },
-                  { value: 'DOUBLE_CHANCE', label: 'Double Chance (1X/X2)' },
-                  { value: 'STRAIGHT_1X2', label: 'Straight Win (1X2 Outright)' }
-                ]}
-              />
+                {/* Market Dropdown */}
+                <UniformDropdown
+                  label="Market"
+                  value={marketMode}
+                  onChange={setMarketMode}
+                  options={[
+                    { value: 'SMART_ADAPTIVE', label: '🛡️ Smart Safety (Auto DNB/DC)' },
+                    { value: 'DNB', label: 'Draw-No-Bet (DNB Refund)' },
+                    { value: 'DOUBLE_CHANCE', label: 'Double Chance (1X/X2)' },
+                    { value: 'STRAIGHT_1X2', label: 'Straight Win (1X2 Outright)' }
+                  ]}
+                  selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
+                />
 
-              {/* Filter toggle when DNB or Double Chance is active */}
-              {(marketMode === 'DNB' || marketMode === 'DOUBLE_CHANCE') && (
+                {/* Special Filter Dropdown */}
+                <UniformDropdown
+                  label="Special"
+                  value={filterMode}
+                  onChange={(val) => {
+                    setFilterMode(val);
+                    if (val === 'ELITE') setConvictionMode('ELITE');
+                    else if (val === 'HIGH_CONFIDENCE') setConvictionMode('HIGH');
+                    else if (val === 'UNANIMOUS') setConvictionMode('UNANIMOUS');
+                    else if (val === 'All') setConvictionMode('ALL');
+                  }}
+                  options={specialFilterOptions}
+                  selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
+                />
+
+                {/* Sort Dropdown */}
+                <UniformDropdown
+                  label="Sort"
+                  value={sortBy}
+                  onChange={handleDropdownSortChange}
+                  options={[
+                    { value: 'probs_desc', label: 'Highest Probability' },
+                    { value: 'probs_asc', label: 'Lowest Probability' },
+                    { value: 'conf_desc', label: 'Highest Confidence' },
+                    { value: 'time_asc', label: 'Earliest Kickoff' },
+                    { value: 'time_desc', label: 'Latest Kickoff' },
+                    { value: 'home_desc', label: 'Home Win %' },
+                    { value: 'draw_desc', label: 'Draw %' },
+                    { value: 'away_desc', label: 'Away Win %' },
+                    { value: 'xg_desc', label: 'Total Goals (xG)' },
+                    { value: 'kelly_desc', label: 'Best Value / Stake' }
+                  ]}
+                  selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
+                />
+
+                {/* Safety Bet Recommended Only Filter */}
+                {(marketMode === 'DNB' || marketMode === 'DOUBLE_CHANCE') && (
+                  <button
+                    type="button"
+                    onClick={() => setFilterByMarketOnly(!filterByMarketOnly)}
+                    className={`h-7 px-2 rounded text-[11px] font-semibold border transition-all cursor-pointer flex items-center gap-1 shadow-2xs ${
+                      filterByMarketOnly
+                        ? 'bg-amber-50 text-amber-900 border-amber-400 font-bold'
+                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                    }`}
+                    title={filterByMarketOnly ? "Showing only games where safety bet is recommended" : "Filter by recommended safety bet"}
+                  >
+                    <span>{filterByMarketOnly ? '✓ Rec Only' : 'Rec Only'}</span>
+                  </button>
+                )}
+
+                {/* Major Leagues Toggle */}
                 <button
                   type="button"
-                  onClick={() => setFilterByMarketOnly(!filterByMarketOnly)}
-                  className={`h-8 px-2.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs ${
-                    filterByMarketOnly
-                      ? 'bg-amber-50 text-amber-900 border-amber-400 font-bold'
-                      : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                  onClick={handleToggleStrictPruning}
+                  className={`h-7 px-2 rounded text-[11px] font-semibold transition-all cursor-pointer flex items-center gap-1 border shadow-2xs ${
+                    strictLeaguePruning
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                      : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                   }`}
-                  title={filterByMarketOnly ? "Currently showing only games where this safety bet is recommended. Click to show all games." : "Click to only show games where this safety bet is actively recommended by the models."}
+                  title="Focus on major, highly predictable leagues and exclude low-reliability divisions."
                 >
-                  <span className={`w-3.5 h-3.5 rounded flex items-center justify-center border text-[9px] ${
-                    filterByMarketOnly ? 'bg-amber-600 text-white border-amber-600 font-bold' : 'border-slate-400 bg-white'
+                  <span className={`w-3 h-3 rounded flex items-center justify-center border text-[8.5px] ${
+                    strictLeaguePruning ? 'bg-emerald-600 text-white border-emerald-600 font-bold' : 'border-slate-300 bg-white'
                   }`}>
-                    {filterByMarketOnly ? '✓' : ''}
+                    {strictLeaguePruning ? '✓' : ''}
                   </span>
-                  <span>Recommended Only</span>
+                  <span>Major Leagues</span>
+                  {strictLeaguePruning && prunedNoiseMatchesCount > 0 && (
+                    <span className="text-[9px] font-normal text-emerald-700">
+                      ({prunedNoiseMatchesCount})
+                    </span>
+                  )}
                 </button>
-              )}
 
-              {/* Major Leagues Only Checkbox Button */}
-              <button
-                type="button"
-                onClick={handleToggleStrictPruning}
-                className={`h-8 px-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 border shadow-2xs ${
-                  strictLeaguePruning
-                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
-                    : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
-                }`}
-                title="Focus on major, highly predictable leagues (Premier League, La Liga, Serie A, Champions League) and exclude low-reliability divisions."
-              >
-                <span className={`w-3.5 h-3.5 rounded flex items-center justify-center border text-[9px] ${
-                  strictLeaguePruning ? 'bg-emerald-600 text-white border-emerald-600 font-bold' : 'border-slate-400 bg-white'
-                }`}>
-                  {strictLeaguePruning ? '✓' : ''}
-                </span>
-                <span>Major Leagues</span>
-                {strictLeaguePruning && prunedNoiseMatchesCount > 0 && (
-                  <span className="text-[9.5px] font-normal text-emerald-700">
-                    ({prunedNoiseMatchesCount} excl.)
+                <InfoTooltip
+                  title="Adaptive Safety Bet Strategy"
+                  content="Auto-selects Draw-No-Bet (DNB) or Double Chance (1X/X2) when model draw probability is ≥24.0%, protecting your initial stake against draw stalemates. Safety hit rate: 78.3% – 83.6%."
+                  align="right"
+                />
+              </div>
+
+              {/* Status and Clear Filters */}
+              <div className="flex items-center gap-2 text-slate-500 text-[11px] shrink-0">
+                <span>Showing <strong>{filteredMatches.length}</strong> of {matches.length} fixtures</span>
+                {selectedOutcome === 'WIN_LOSE' && (
+                  <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                    Win/Lose
                   </span>
                 )}
-              </button>
-
-              <InfoTooltip
-                title="Adaptive Safety Bet Strategy"
-                content="Auto-selects Draw-No-Bet (DNB) or Double Chance (1X/X2) when model draw probability is ≥24.0%, protecting your initial stake against draw stalemates. Safety hit rate: 78.3% – 83.6%."
-                align="right"
-              />
+                {selectedOutcome === 'DRAW' && (
+                  <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                    Draw
+                  </span>
+                )}
+                {selectedOutcome === 'HOME' && (
+                  <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    Home
+                  </span>
+                )}
+                {selectedOutcome === 'AWAY' && (
+                  <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                    Away
+                  </span>
+                )}
+                {(searchQuery || selectedLeague !== 'All' || selectedDate !== 'All' || selectedOutcome !== 'ALL' || filterMode !== 'All' || sortBy !== 'probs_desc' || convictionMode !== 'ALL' || filterByMarketOnly) && (
+                  <button
+                    onClick={() => {
+                      setSearchQuery('');
+                      setSelectedLeague('All');
+                      setSelectedDate('All');
+                      setSelectedOutcome('ALL');
+                      setFilterMode('All');
+                      setConvictionMode('ALL');
+                      setFilterByMarketOnly(false);
+                      setSortBy('probs_desc');
+                      setSortField('probs');
+                      setSortDirection('desc');
+                    }}
+                    className="font-semibold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer"
+                  >
+                    Clear Filters
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-
-          {/* Row 2: Date, League, Outcome, Special Filter, Sort Dropdowns */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200/70">
-            <div className="flex flex-wrap items-center gap-2">
-              <UniformDropdown
-                label="Date"
-                value={selectedDate}
-                onChange={setSelectedDate}
-                options={dateOptions}
-              />
-              <UniformDropdown
-                label="League"
-                value={selectedLeague}
-                onChange={setSelectedLeague}
-                options={leagueOptions}
-              />
-              <UniformDropdown
-                label="Outcome"
-                value={selectedOutcome}
-                onChange={setSelectedOutcome}
-                options={outcomeOptions}
-              />
-              <UniformDropdown
-                label="Special Filter"
-                value={filterMode}
-                onChange={(val) => {
-                  setFilterMode(val);
-                  if (val === 'ELITE') setConvictionMode('ELITE');
-                  else if (val === 'HIGH_CONFIDENCE') setConvictionMode('HIGH');
-                  else if (val === 'UNANIMOUS') setConvictionMode('UNANIMOUS');
-                  else if (val === 'All') setConvictionMode('ALL');
-                }}
-                options={specialFilterOptions}
-              />
-              <UniformDropdown
-                label="Sort"
-                value={sortBy}
-                onChange={handleDropdownSortChange}
-                options={[
-                  { value: 'probs_desc', label: 'Highest Probability' },
-                  { value: 'probs_asc', label: 'Lowest Probability' },
-                  { value: 'conf_desc', label: 'Highest Confidence' },
-                  { value: 'time_asc', label: 'Earliest Kickoff' },
-                  { value: 'time_desc', label: 'Latest Kickoff' },
-                  { value: 'home_desc', label: 'Home Win %' },
-                  { value: 'draw_desc', label: 'Draw %' },
-                  { value: 'away_desc', label: 'Away Win %' },
-                  { value: 'xg_desc', label: 'Total Goals (xG)' },
-                  { value: 'kelly_desc', label: 'Best Value / Stake' }
-                ]}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Showing matches count */}
-      <div className="flex items-center justify-between px-1 text-xs text-slate-500 font-medium">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span>Showing <strong>{filteredMatches.length}</strong> of {matches.length} fixtures</span>
-          {selectedOutcome === 'WIN_LOSE' && (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-              ⚡ Win / Lose Only
-            </span>
-          )}
-          {selectedOutcome === 'DRAW' && (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
-              🤝 Draw Only
-            </span>
-          )}
-          {selectedOutcome === 'HOME' && (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-              🏠 Home Win Only
-            </span>
-          )}
-          {selectedOutcome === 'AWAY' && (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
-              ✈️ Away Win Only
-            </span>
-          )}
-          {sortBy === 'probs_desc' && (
-            <span className="hidden sm:inline-block text-[10px] text-slate-400 font-medium">
-              (Sorted: High → Low Probability)
-            </span>
-          )}
-        </div>
-        {(searchQuery || selectedLeague !== 'All' || selectedDate !== 'All' || selectedOutcome !== 'ALL' || filterMode !== 'All' || sortBy !== 'probs_desc') && (
-          <button
-            onClick={() => {
-              setSearchQuery('');
-              setSelectedLeague('All');
-              setSelectedDate('All');
-              setSelectedOutcome('ALL');
-              setFilterMode('All');
-              setSortBy('probs_desc');
-              setSortField('probs');
-              setSortDirection('desc');
-            }}
-            className="text-indigo-600 hover:text-indigo-800 font-semibold cursor-pointer"
-          >
-            Clear Filters
-          </button>
-        )}
-      </div>
 
       {/* Midweek Off-Day Notice Banner if Today has 0 matches */}
       {todayMatchCount === 0 && (
@@ -2652,15 +2668,14 @@ export default function FixturesTablePage({
       )}
 
         {/* Matches League Table */}
-        <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
-          <div className="w-full overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead className="hidden md:table-header-group">
-                <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead className="hidden md:table-header-group">
+              <tr className="bg-slate-50/80 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
                 {/* Time */}
                 <th 
                   onClick={() => handleSort('time')}
-                  className={`py-1 px-1.5 w-24 text-center cursor-pointer transition-colors group select-none ${
+                  className={`py-1 px-2 w-24 text-center cursor-pointer transition-colors group select-none ${
                     sortField === 'time' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
                   title="Click to sort by Kickoff Time"
@@ -2678,7 +2693,7 @@ export default function FixturesTablePage({
                 {/* Fixture */}
                 <th 
                   onClick={() => handleSort('fixture')}
-                  className={`py-1 px-1.5 min-w-[170px] cursor-pointer transition-colors group select-none ${
+                  className={`py-1 px-2 min-w-[180px] cursor-pointer transition-colors group select-none ${
                     sortField === 'fixture' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
                   title="Click to sort by Teams / Competition"
@@ -2732,7 +2747,7 @@ export default function FixturesTablePage({
                 {/* 1 | X | 2 Probs */}
                 <th 
                   onClick={() => handleSort('probs')}
-                  className={`py-1 px-1.5 w-32 text-center cursor-pointer transition-colors group select-none ${
+                  className={`py-1 px-1.5 w-28 text-center cursor-pointer transition-colors group select-none ${
                     ['probs', 'home_prob', 'draw_prob', 'away_prob'].includes(sortField) ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
                   title="Click to sort by Win Probability"
@@ -2750,7 +2765,7 @@ export default function FixturesTablePage({
                 {/* Conf */}
                 <th 
                   onClick={() => handleSort('conf')}
-                  className={`py-1 px-1.5 w-20 text-center cursor-pointer transition-colors group select-none ${
+                  className={`py-1 px-1.5 w-16 text-center cursor-pointer transition-colors group select-none ${
                     sortField === 'conf' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
                   title="Click to sort by Confidence"
@@ -2790,7 +2805,7 @@ export default function FixturesTablePage({
                 {/* LiveScore Bet Odds & Potential Return */}
                 <th 
                   onClick={() => handleSort('kelly')}
-                  className={`py-1 px-1.5 w-40 text-left cursor-pointer transition-colors group select-none ${
+                  className={`py-1 px-2 w-36 text-left cursor-pointer transition-colors group select-none ${
                     sortField === 'kelly' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
                   title="Click to sort by Value Bet"
@@ -2808,7 +2823,7 @@ export default function FixturesTablePage({
                 </th>
 
                 {/* Actions */}
-                <th className="py-1 px-1.5 w-44 text-center">Actions</th>
+                <th className="py-1 px-2 w-44 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="p-2.5 sm:p-0 flex flex-col md:table-row-group md:divide-y md:divide-slate-100 space-y-2.5 md:space-y-0">
@@ -2924,10 +2939,10 @@ export default function FixturesTablePage({
                   return (
                     <React.Fragment key={m.id || idx}>
                       <tr 
-                        className={`flex flex-col md:table-row bg-white rounded-xl md:rounded-none border border-slate-200/90 md:border-0 shadow-2xs md:shadow-none hover:border-slate-300 transition-all md:h-10 cursor-pointer md:cursor-default ${
+                        className={`flex flex-col md:table-row bg-white rounded-xl md:rounded-none border border-slate-200/90 md:border-0 shadow-2xs md:shadow-none hover:border-slate-300 transition-all md:h-10 cursor-pointer ${
                           isUnanimous ? 'ring-1 ring-amber-300 md:ring-0 bg-amber-50/20' : idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'
                         }`}
-                        onClick={() => { if (window.innerWidth < 768) toggleExpand(m.id || idx); }}
+                        onClick={() => toggleExpand(m.id || idx)}
                       >
                         {/* ---------------- MOBILE VIEW ---------------- */}
                         <td className="md:hidden p-3 block">
@@ -2987,10 +3002,7 @@ export default function FixturesTablePage({
                             </div>
                             <div className="flex flex-col items-end">
                               <span className="text-[8.5px] uppercase font-bold text-slate-400 mb-0.5">Top Pick</span>
-                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10.5px] font-bold border shadow-xs ${getWinnerBadgeClass(predictedWinner)}`}>
-                                <span>{predictedWinner === 'HOME' ? `${m.home?.slice(0, 10)} WIN` : predictedWinner === 'AWAY' ? `${m.away?.slice(0, 10)} WIN` : 'DRAW'}</span>
-                                <span className="text-[9.5px] font-mono opacity-80">@{safeToFixed(matchOdds, 2)}</span>
-                              </span>
+                              {renderMarketPrediction(m, predictedWinner, homeProb, drawProb, awayProb, matchOdds)}
                             </div>
                           </div>
                           
@@ -3048,42 +3060,37 @@ export default function FixturesTablePage({
 
                         {/* ---------------- DESKTOP CELLS ---------------- */}
                         {/* Time / Status */}
-                        <td className="hidden md:table-cell py-1 px-1.5 text-center">
-                          <span className="font-semibold text-slate-700 font-mono text-[11px] block">
-                            {formatMatchKickoff(m)}
-                          </span>
-                          {m.isLive ? (
-                            <span 
-                              className="inline-flex items-center justify-center gap-1 px-1 py-0.2 mt-0.5 rounded text-[9px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse max-w-[85px] mx-auto"
-                              title={`Match currently live: ${m.liveMinute || 0}' (${m.liveScore?.home ?? 0}-${m.liveScore?.away ?? 0})`}
-                            >
-                              <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
-                              <span>LIVE {m.liveMinute ? `${m.liveMinute}'` : ''}</span>
+                        <td className="hidden md:table-cell py-1.5 px-2 text-center whitespace-nowrap">
+                          <div className="inline-flex items-center justify-center gap-1 font-mono text-[11px]">
+                            <span className="font-semibold text-slate-700">
+                              {formatMatchKickoff(m)}
                             </span>
-                          ) : countdown ? (
-                            <span 
-                              className={`inline-flex items-center justify-center gap-0.5 px-1 py-0.2 mt-0.5 rounded text-[9px] font-bold border max-w-[85px] mx-auto ${countdown.color}`}
-                              title={countdown.isWindow ? "Pre-kickoff lock window (≤60m): Prediction is locked & frozen" : "Time until match kickoff"}
-                            >
-                              {countdown.isWindow && <Lock className="w-2 h-2 shrink-0" />}
-                              <span>{countdown.label}</span>
-                            </span>
-                          ) : (
-                            <span className="text-[9.5px] text-slate-400 block truncate max-w-[65px] mx-auto">
-                              {m.league?.split(' ')[0] || 'Soccer'}
-                            </span>
-                          )}
-                          {m.broadcast && (
-                            <span className="text-[8.5px] text-indigo-600 font-semibold block truncate max-w-[90px] mx-auto mt-0.5" title={`Broadcast: ${m.broadcast}`}>
-                              📺 {m.broadcast.split(',')[0]}
-                            </span>
-                          )}
+                            {m.isLive ? (
+                              <span 
+                                className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white animate-pulse"
+                                title={`Match currently live: ${m.liveMinute || 0}' (${m.liveScore?.home ?? 0}-${m.liveScore?.away ?? 0})`}
+                              >
+                                <span>LIVE {m.liveMinute ? `${m.liveMinute}'` : ''}</span>
+                              </span>
+                            ) : countdown ? (
+                              <span 
+                                className={`inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-bold border ${countdown.color}`}
+                                title={countdown.isWindow ? "Pre-kickoff lock window (≤60m): Prediction is locked & frozen" : "Time until match kickoff"}
+                              >
+                                {countdown.isWindow && <Lock className="w-2 h-2 shrink-0" />}
+                                <span>{countdown.label}</span>
+                              </span>
+                            ) : null}
+                            {m.broadcast && (
+                              <Tv className="w-2.5 h-2.5 text-indigo-500 shrink-0" title={`Broadcast: ${m.broadcast}`} />
+                            )}
+                          </div>
                         </td>
 
                         {/* Fixture / Teams */}
-                        <td className="hidden md:table-cell py-1 px-1.5">
-                          <div className="flex items-center gap-1">
-                            <span className="font-semibold text-slate-900 truncate text-[11.5px]">
+                        <td className="hidden md:table-cell py-1.5 px-2">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-slate-900 truncate text-[11.5px] max-w-[155px]">
                               {m.home} vs {m.away}
                             </span>
                             {m.isLive && (
@@ -3100,7 +3107,7 @@ export default function FixturesTablePage({
                             {isUnanimous ? (
                               <span 
                                 className="inline-flex items-center text-[8.5px] font-bold bg-amber-100 text-amber-900 px-1 py-0.2 rounded border border-amber-300 shrink-0" 
-                                title={`6-Agent Unanimous Consensus (All 6 AI agents agree · Historical Strategy Win Rate: ${unanimousRateDisplay})`}
+                                title={`6-Agent Unanimous Consensus (${unanimousRateDisplay})`}
                               >
                                 👑 Unanimous
                               </span>
@@ -3117,18 +3124,18 @@ export default function FixturesTablePage({
                                 {m.teamTrends.home.badge}
                               </span>
                             ) : null}
-                          </div>
-                          <div className="text-[9.5px] text-slate-500 truncate max-w-[170px]">
-                            {m.league}
+                            <span className="text-[9.5px] text-slate-400 truncate max-w-[110px] ml-auto">
+                              {m.league}
+                            </span>
                           </div>
                         </td>
 
                         {/* Lineup XI Badge Button */}
-                        <td className="hidden md:table-cell py-1 px-1.5 text-center">
+                        <td className="hidden md:table-cell py-1.5 px-1.5 text-center">
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); onOpenLineup && onOpenLineup(m); }}
-                            className={`px-1.5 py-0.2 rounded text-[9.5px] font-semibold border transition-colors cursor-pointer inline-block ${
+                            className={`px-1.5 py-0.5 rounded text-[9.5px] font-semibold border transition-colors cursor-pointer inline-block ${
                               m.lineupAdjusted
                                 ? 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100 font-bold'
                                 : hasLineup
@@ -3142,12 +3149,12 @@ export default function FixturesTablePage({
                         </td>
 
                         {/* AI Prediction Pick */}
-                        <td className="hidden md:table-cell py-1 px-1.5 text-center">
+                        <td className="hidden md:table-cell py-1.5 px-1.5 text-center whitespace-nowrap">
                           {renderMarketPrediction(m, predictedWinner, homeProb, drawProb, awayProb, matchOdds)}
                         </td>
 
                         {/* Probabilities 1 | X | 2 */}
-                        <td className="hidden md:table-cell py-1 px-1.5 text-center">
+                        <td className="hidden md:table-cell py-1.5 px-1.5 text-center whitespace-nowrap">
                           <div className="flex items-center justify-center gap-1 text-[11px] font-mono">
                             <span className={`px-0.5 rounded ${homeProb > awayProb && homeProb > drawProb ? 'font-bold text-emerald-700 bg-emerald-50' : 'text-slate-600'}`}>
                               {safeToFixed(homeProb, 0)}%
@@ -3164,57 +3171,49 @@ export default function FixturesTablePage({
                         </td>
 
                         {/* Confidence */}
-                        <td className="hidden md:table-cell py-1 px-1.5 text-center">
+                        <td className="hidden md:table-cell py-1.5 px-1.5 text-center whitespace-nowrap">
                           <ConfidenceGauge confidence={conf} size="sm" />
                         </td>
 
                         {/* Score/xG */}
-                        <td className="hidden md:table-cell py-1 px-1.5 text-center">
-                          <span className="font-bold text-slate-800 text-[11.5px] font-mono block">
-                            {score}
-                          </span>
-                          <span className="text-[9.5px] text-slate-500 font-mono block">
-                            xG {safeToFixed(homeXg, 1, '1.5')}-{safeToFixed(awayXg, 1, '1.1')}
-                          </span>
+                        <td className="hidden md:table-cell py-1.5 px-1.5 text-center whitespace-nowrap">
+                          <div className="inline-flex items-center justify-center gap-1 font-mono text-[11px]" title={`Projected score ${score} · Expected goals: xG ${safeToFixed(homeXg, 1, '1.5')}-${safeToFixed(awayXg, 1, '1.1')}`}>
+                            <span className="font-bold text-slate-800">{score}</span>
+                            <span className="text-[9.5px] text-slate-400">({safeToFixed(homeXg, 1, '1.5')}-{safeToFixed(awayXg, 1, '1.1')})</span>
+                          </div>
                         </td>
 
                         {/* LiveScore Bet Odds & Potential Return */}
-                        <td className="hidden md:table-cell py-1 px-1.5">
-                          <div className="text-[10.5px]">
-                            <div className="flex items-center gap-1">
-                              <span className="font-semibold text-slate-800 truncate max-w-[100px]" title={smartMarketDisplay}>
-                                {smartMarketDisplay}
+                        <td className="hidden md:table-cell py-1.5 px-2 whitespace-nowrap">
+                          <div className="flex items-center gap-1.5 text-[10.5px] font-mono">
+                            <span className="font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1 py-0.2 rounded" title={`${oddsProvider} Odds`}>
+                              @{safeToFixed(matchOdds, 2)}
+                            </span>
+                            <KellyTooltip showIcon={false} align="right">
+                              <span className="text-emerald-800 font-bold bg-emerald-50/90 border border-emerald-200 px-1 py-0.2 rounded cursor-help" title={`Stake €${rowStake.toFixed(0)} (${kellyDisplay})`}>
+                                €{rowStake.toFixed(0)}
                               </span>
-                              <span className="text-[9.5px] font-bold font-mono text-indigo-700 bg-indigo-50 border border-indigo-200 px-1 py-0.2 rounded shrink-0" title={`${oddsProvider} Odds`}>
-                                @{safeToFixed(matchOdds, 2)}
-                              </span>
-                            </div>
-                            <div className="mt-0.5 flex items-center gap-1 flex-wrap">
-                              <KellyTooltip showIcon={false} align="right">
-                                <span className="text-[9.5px] text-emerald-800 font-bold font-mono bg-emerald-50/90 border border-emerald-200 px-1 py-0.2 rounded cursor-help hover:bg-emerald-100 transition-colors" title={`Recommended wager based on €${bankrollEuro} bankroll (${kellyDisplay})`}>
-                                  💰 €{rowStake.toFixed(0)}
-                                </span>
-                              </KellyTooltip>
-                              <span className="text-[9.5px] font-semibold text-slate-600 font-mono whitespace-nowrap">
-                                → <strong className="text-emerald-700">€{returns.payoutStr}</strong>
-                              </span>
-                            </div>
+                            </KellyTooltip>
+                            <span className="text-slate-400">→</span>
+                            <span className="font-bold text-emerald-700" title="Potential Payout">
+                              €{returns.payoutStr}
+                            </span>
                           </div>
                         </td>
 
                         {/* Actions */}
-                        <td className="hidden md:table-cell py-1 px-1.5 text-center">
+                        <td className="hidden md:table-cell py-1.5 px-2 text-center whitespace-nowrap">
                           <div className="flex items-center justify-center gap-1">
                             {/* Watch Live in Iframe Player */}
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(m); }}
-                              className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer inline-flex items-center gap-1 shadow-xs ${
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer inline-flex items-center gap-0.5 shadow-2xs ${
                                 m.isLive
-                                  ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-rose-200 animate-pulse font-extrabold'
+                                  ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 animate-pulse font-extrabold'
                                   : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
                               }`}
-                              title={m.isLive ? "Watch Match LIVE NOW in Iframe" : "Watch Match Live & In-Play Radar Simulator"}
+                              title={m.isLive ? "Watch Match LIVE NOW in Iframe" : "Watch Match Live"}
                             >
                               <Play className={`w-2.5 h-2.5 ${m.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
                               <span>{m.isLive ? 'Watch Now' : 'Watch'}</span>
@@ -3245,10 +3244,11 @@ export default function FixturesTablePage({
                             {/* Expand Row Details */}
                             <button
                               onClick={(e) => { e.stopPropagation(); toggleExpand(m.id || idx); }}
-                              className="px-1 py-0.5 rounded text-[10px] font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+                              className="px-1 py-0.5 rounded text-[10px] font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer inline-flex items-center gap-0.5"
                               title="Toggle tactical analysis details"
                             >
-                              {isExpanded ? 'Hide' : 'Tactics'}
+                              <span>{isExpanded ? 'Hide' : 'Tactics'}</span>
+                              {isExpanded ? <ChevronUp className="w-2.5 h-2.5" /> : <ChevronDown className="w-2.5 h-2.5" />}
                             </button>
                           </div>
                         </td>
@@ -3485,10 +3485,9 @@ export default function FixturesTablePage({
             </tbody>
           </table>
         </div>
-      </div>
-          </div>
-        )}
-      </div>
+      </>
+    )}
+  </div>
 
       {/* Empirical Strategy Proof & Benchmark Modal */}
       <StrategyProofModal
