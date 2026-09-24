@@ -377,7 +377,7 @@ export default function DeepResearchPage({
             {/* Matchup Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
               <div>
-                <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+                <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
                   <span>{activeMatch?.home}</span>
                   <span className="text-slate-400 font-normal text-xs">vs</span>
                   <span>{activeMatch?.away}</span>

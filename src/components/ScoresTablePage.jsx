@@ -325,8 +325,13 @@ export default function ScoresTablePage({
       
       {/* Top Bar with Accuracy Summary */}
       <div className="bg-white border border-slate-200 rounded-xl p-2.5 sm:p-3 shadow-xs flex flex-wrap items-center justify-between gap-2.5 text-xs">
-        <div className="flex items-center gap-1.5">
-          <div className="font-bold text-slate-800 text-sm">Statistical Scoreline Model</div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <span>Statistical Scoreline Model</span>
+            <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
+              Poisson Distributions &amp; BTTS
+            </span>
+          </h2>
           <InfoTooltip title="Statistical Scoreline Model" content="Dynamic expected hit rates and Poisson predicted score distributions for currently filtered matches." />
         </div>
 
@@ -469,12 +474,15 @@ export default function ScoresTablePage({
 
       {/* Compact Scores Table */}
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
-        <div className="p-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="p-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Target className="w-4 h-4 text-indigo-600" />
-            <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider">
-              Exact Scorelines &amp; Goals Totals
-            </h3>
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <span>Exact Scorelines &amp; Goals Totals</span>
+              <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
+                O/U 2.5 &amp; Probabilities
+              </span>
+            </h2>
             <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold">
               {filteredMatches.length} Matches
             </span>
@@ -494,7 +502,7 @@ export default function ScoresTablePage({
         {!collapsedScores && (
           <table className="w-full text-left border-collapse text-xs">
           <thead className="hidden md:table-header-group">
-            <tr className="bg-slate-50 border-b border-slate-200 select-none h-8">
+            <tr className="bg-slate-50/80 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
               {/* Expand Toggle */}
               <th className="py-1 px-1.5 w-7 text-center"></th>
 

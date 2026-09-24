@@ -141,9 +141,9 @@ export default function LeagueProfilesPage({
               <Trophy className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-bold text-slate-900 text-base flex items-center gap-2">
+              <h2 className="font-bold text-slate-900 text-sm sm:text-base tracking-tight flex items-center gap-2 flex-wrap">
                 <span>League Predictability & Volatility Profiles</span>
-                <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold">
+                <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
                   Calibrated Tiers (4,303 Match Benchmark)
                 </span>
               </h2>

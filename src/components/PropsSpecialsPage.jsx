@@ -239,19 +239,21 @@ export default function PropsSpecialsPage({
   return (
     <div className="space-y-6">
       {/* Header & KPI Summary Banner */}
-      <div className="bg-white rounded-xl shadow-xs border border-slate-200 p-5 md:p-6">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
+      <div className="bg-white rounded-xl shadow-xs border border-slate-200 p-3 sm:p-4">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-4">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg border border-indigo-100">
-                <Target className="w-5 h-5" />
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <span className="p-1 bg-indigo-50 text-indigo-600 rounded-md border border-indigo-100">
+                <Target className="w-4 h-4" />
               </span>
-              <h1 className="text-xl font-bold text-slate-900 tracking-tight">Props & Specials Analytics</h1>
-              <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-emerald-200">
-                High Achievement Engine
-              </span>
+              <h1 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                <span>Props &amp; Specials Analytics</span>
+                <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
+                  High Achievement Engine
+                </span>
+              </h1>
             </div>
-            <p className="text-sm text-slate-600 max-w-2xl">
+            <p className="text-xs text-slate-500 max-w-2xl">
               Poisson quantitative distribution modeling for Corners, Cards, Offsides, and First-Half specials. Calibrated with real referee strictness ratings and wing transition metrics for high-probability covers.
             </p>
           </div>
@@ -354,8 +356,11 @@ export default function PropsSpecialsPage({
                 ~2.20x Combined Odds &bull; &ge;80% Avg Hit Rate
               </span>
             </div>
-            <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">
-              Instant AI Props Accumulator &amp; Dedicated LiveScore Bet Slip
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
+              <span>Instant AI Props Accumulator &amp; Dedicated LiveScore Bet Slip</span>
+              <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
+                LiveScore Bet IE
+              </span>
             </h2>
             <p className="text-xs text-slate-600 leading-relaxed">
               Poisson quantitative distribution model automatically compiles 2 to 4 independent anchor legs across distinct fixtures, prices them directly against <strong>LiveScore Bet Ireland</strong>, and formats a 1-click bet slip with Kelly staking.
@@ -739,9 +744,12 @@ export default function PropsSpecialsPage({
         <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
           <div className="flex items-center gap-2">
             <Target className="w-4 h-4 text-indigo-600" />
-            <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider">
-              Match-by-Match Prop Analysis &amp; Anchor Lines
-            </h3>
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
+              <span>Match-by-Match Prop Analysis &amp; Anchor Lines</span>
+              <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
+                Anchor Lines
+              </span>
+            </h2>
             <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold">
               {filteredInsights.length} Fixtures
             </span>

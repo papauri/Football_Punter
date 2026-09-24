@@ -319,8 +319,13 @@ export default function BinaryPicksPage({
       
       {/* Top Banner */}
       <div className="bg-white border border-slate-200 rounded-xl p-2.5 sm:p-3 shadow-xs flex flex-wrap items-center justify-between gap-2.5 text-xs">
-        <div className="flex items-center gap-1.5">
-          <div className="font-bold text-slate-800 text-sm">Value Bets & Staking</div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <span>Value Bets &amp; Staking</span>
+            <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
+              1/4 Fractional Kelly
+            </span>
+          </h2>
           <InfoTooltip title="Value Bets & Staking" content="Strict mathematical edges against bookmaker implied probability based on Poisson probability and fractional Kelly staking." />
         </div>
 
@@ -468,12 +473,15 @@ export default function BinaryPicksPage({
 
       {/* Compact Binary Picks Table */}
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
-        <div className="p-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="p-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Scale className="w-4 h-4 text-emerald-600" />
-            <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider">
-              Value Bets &amp; Kelly Stakes (+EV)
-            </h3>
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <span>Value Bets &amp; Kelly Stakes (+EV)</span>
+              <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
+                +EV Mathematical Edge
+              </span>
+            </h2>
             <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">
               {binaryPicks.length} Value Markets
             </span>
@@ -493,7 +501,7 @@ export default function BinaryPicksPage({
         {!collapsedBinary && (
           <table className="w-full text-left border-collapse text-xs">
           <thead className="hidden md:table-header-group">
-            <tr className="bg-slate-50 border-b border-slate-200 select-none h-8">
+            <tr className="bg-slate-50/80 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
               {/* Expand Toggle */}
               <th className="py-1 px-1.5 w-7 text-center"></th>
 

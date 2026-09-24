@@ -248,7 +248,7 @@ export default function LineupsPage({
                   : (activeMatch?.time || 'Upcoming')}
               </span>
             </div>
-            <h2 className="text-xl font-black text-slate-900 mt-1 flex items-center gap-2">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 mt-1 flex items-center gap-2">
               <span>{home}</span>
               <span className="text-slate-400 font-normal text-sm">vs</span>
               <span>{away}</span>

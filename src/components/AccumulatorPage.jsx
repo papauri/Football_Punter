@@ -1111,11 +1111,14 @@ export default function AccumulatorPage({
               <ListChecks className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-sm sm:text-base font-bold text-slate-900">
-                  Bet Slips &amp; Accumulators
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                  <span>Bet Slips &amp; Accumulators</span>
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
+                    Ticket Portfolio
+                  </span>
                 </h2>
-                <span className="text-xs px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold">
+                <span className="text-[10px] sm:text-[10.5px] px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold">
                   {activeLegs.length} {activeLegs.length === 1 ? 'Leg' : 'Legs'}
                 </span>
               </div>
@@ -1290,11 +1293,14 @@ export default function AccumulatorPage({
       {/* 3. Autonomous Presets Generator Bar (Strict Outrights Only & 100% AI Consensus) */}
       <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
         <div className="p-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2.5">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Sparkles className="w-4 h-4 text-amber-500" />
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              Autonomous Acca Generator
-            </h3>
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <span>Autonomous Acca Generator</span>
+              <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
+                +EV AI Consensus
+              </span>
+            </h2>
             <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold hidden sm:inline">
               Historical Win Rate: {strategyWinRate}
             </span>
@@ -1393,10 +1399,13 @@ export default function AccumulatorPage({
       {/* 4. Active Legs Table (Clean, modern look) */}
       <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
         <div className="p-3 border-b border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider">
-              Active Selections
-            </h3>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <span>Active Selections</span>
+              <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
+                Chronological Slip
+              </span>
+            </h2>
             <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold">
               {activeLegs.length === 0 ? 'No selections' : `${activeLegs.length} ready`}
             </span>
@@ -1484,7 +1493,7 @@ export default function AccumulatorPage({
               <div className="overflow-hidden">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead className="hidden md:table-header-group">
-                    <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
+                    <tr className="bg-slate-50/80 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
                       <th className="py-1 px-1 w-6 text-center"></th>
                       <th className="py-1 px-1.5 w-8 text-center">#</th>
                       <th className="py-1 px-2 min-w-[140px]">Fixture</th>

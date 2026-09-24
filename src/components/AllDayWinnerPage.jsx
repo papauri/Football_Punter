@@ -268,9 +268,12 @@ export default function AllDayWinnerPage({
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <h1 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-                All-Day Winner Bet
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                <span>All-Day Winner Bet</span>
+                <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
+                  LiveScore Bet IE Engine
+                </span>
               </h1>
               <InfoTooltip 
                 title="All-Day Winner Bet" 
@@ -507,11 +510,14 @@ export default function AllDayWinnerPage({
         <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
           {/* Table Header */}
           <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Trophy className="w-4 h-4 text-amber-600" />
-              <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider">
-                All-Day Winner Accumulator Slate
-              </h3>
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                <span>All-Day Winner Accumulator Slate</span>
+                <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
+                  Today's Rolling Slate
+                </span>
+              </h2>
               <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 font-semibold">
                 {displayLegs.length} Legs
               </span>
@@ -544,7 +550,7 @@ export default function AllDayWinnerPage({
               <div className="overflow-hidden">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead className="hidden md:table-header-group">
-                    <tr className="bg-slate-100/90 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
+                    <tr className="bg-slate-50/80 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
                       {/* Expand Toggle */}
                       <th className="py-1 px-1 w-6 text-center"></th>
 
@@ -627,7 +633,7 @@ export default function AllDayWinnerPage({
                       return (
                         <React.Fragment key={legKey}>
                           <tr 
-                            className="flex flex-col md:table-row bg-white rounded-xl md:rounded-none border border-slate-200/90 md:border-0 shadow-2xs md:shadow-none hover:border-slate-300 hover:bg-indigo-50/40 transition-all group md:h-10 cursor-pointer"
+                            className={`flex flex-col md:table-row bg-white rounded-xl md:rounded-none border border-slate-200/90 md:border-0 shadow-2xs md:shadow-none hover:border-slate-300 ${index % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} hover:bg-slate-50/80 transition-all group md:h-10 cursor-pointer`}
                             onClick={() => toggleExpand(legKey)}
                           >
                             {/* ================= MOBILE COMPACT VIEW ================= */}

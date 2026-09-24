@@ -163,35 +163,38 @@ export default function DailyBriefingPanel({
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden mb-4">
-      {/* Executive Header — Aligned to Council Acca & Top Value styling */}
-      <div className="p-4 sm:p-5 bg-white border-b border-slate-200">
+      {/* Executive Header — Aligned to Council Selections styling */}
+      <div className="p-3 sm:p-4 bg-white border-b border-slate-200">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           <div className="space-y-1.5 max-w-2xl">
-            <div className="flex items-center gap-2 flex-wrap text-xs">
-              <span className="bg-slate-900 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-md flex items-center gap-1 shadow-2xs">
-                <Zap className="w-3.5 h-3.5 text-amber-400" />
+            <div className="flex items-center gap-1.5 flex-wrap text-xs">
+              <span className="bg-slate-900 text-white text-[10px] sm:text-[10.5px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 shadow-2xs">
+                <Zap className="w-3 h-3 text-amber-400" />
                 <span>{isToday ? 'Today\'s Briefing' : 'Next Active Matchday'}</span>
               </span>
-              <span className="bg-slate-100 text-slate-800 border border-slate-200 text-[11px] font-semibold px-2.5 py-0.5 rounded-md">
+              <span className="bg-slate-100 text-slate-800 border border-slate-200 text-[10px] sm:text-[10.5px] font-semibold px-2 py-0.5 rounded-md">
                 {targetDateFormatted} ({slateMatches.length} Matches)
               </span>
               {readyToBet.length > 0 && (
-                <span className="bg-emerald-50 text-emerald-800 border border-emerald-300 text-[11px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 shadow-2xs">
-                  <Lock className="w-3 h-3 text-emerald-600" />
+                <span className="bg-emerald-50 text-emerald-800 border border-emerald-300 text-[10px] sm:text-[10.5px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 shadow-2xs">
+                  <Lock className="w-2.5 h-2.5 text-emerald-600" />
                   <span>{readyToBet.length} Ready to Bet (≤60m)</span>
                 </span>
               )}
-              <span className="bg-indigo-50 text-indigo-700 border border-indigo-200 text-[11px] font-mono font-medium px-2 py-0.5 rounded-md flex items-center gap-1" title="Active Timezone">
-                <Globe className="w-3 h-3 text-indigo-500" />
+              <span className="bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] sm:text-[10.5px] font-mono font-medium px-2 py-0.5 rounded-md flex items-center gap-1" title="Active Timezone">
+                <Globe className="w-2.5 h-2.5 text-indigo-500" />
                 <span>{tzLabel}</span>
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
-                {isToday
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
+                <span>{isToday
                   ? `Autonomous Matchday Briefing • Today's Slate`
-                  : `Next Matchday Slate • ${targetDateFormatted}`}
+                  : `Next Matchday Slate • ${targetDateFormatted}`}</span>
+                <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
+                  Poisson + ML Clocks
+                </span>
               </h2>
               <InfoTooltip
                 title={isToday ? "Matchday Briefing" : "Next Matchday Slate"}
@@ -208,10 +211,10 @@ export default function DailyBriefingPanel({
             <button
               type="button"
               onClick={() => setCollapsed(!collapsed)}
-              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
+              className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
             >
               <span>{collapsed ? 'Expand Slate' : 'Collapse'}</span>
-              {collapsed ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
+              {collapsed ? <ChevronDown className="w-3.5 h-3.5 text-slate-500" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-500" />}
             </button>
           </div>
         </div>
@@ -220,9 +223,9 @@ export default function DailyBriefingPanel({
       {!collapsed && (
         <>
           {/* Uniform Tabs Bar — Matches Council Acca Filter Toolbar */}
-          <div className="px-4 py-2.5 bg-slate-50/80 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+          <div className="px-3 py-2 bg-slate-50/80 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mr-1">Filter Queue:</span>
+              <span className="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider mr-1">Filter Queue:</span>
               <button
                 type="button"
                 onClick={() => setActiveTab('all')}
