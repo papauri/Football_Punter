@@ -141,7 +141,7 @@ export default function LeagueProfilesPage({
               <Trophy className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="font-bold text-slate-900 text-sm sm:text-base tracking-tight flex items-center gap-2 flex-wrap">
+              <h2 className="font-bold text-slate-900 text-sm tracking-tight flex items-center gap-2 flex-wrap">
                 <span>League Predictability & Volatility Profiles</span>
                 <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
                   Calibrated Tiers (4,303 Match Benchmark)
@@ -255,20 +255,20 @@ export default function LeagueProfilesPage({
 
       {/* Compact League Table */}
       <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-        <div className="overflow-hidden">
+        <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead className="hidden md:table-header-group">
-              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-10">
-                <th className="py-1.5 px-1 w-6 text-center"></th>
-                <th className="py-1.5 px-2 w-12 text-center">Rank</th>
-                <th className="py-1.5 px-2 min-w-[200px]">Competition</th>
-                <th className="py-1.5 px-2 w-40 text-center">Predictability Tier</th>
-                <th className="py-1.5 px-2 w-32 text-center">Conviction Hit Rate</th>
-                <th className="py-1.5 px-2 w-36 text-center">DNB Staking Rule</th>
-                <th className="py-1.5 px-2 w-20 text-center">Draw Rate</th>
-                <th className="py-1.5 px-2 w-20 text-center">Avg Goals</th>
-                <th className="py-1.5 px-2 w-20 text-center">Pace Factor</th>
-                <th className="py-1.5 px-2 w-24 text-center">Index</th>
+              <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
+                <th className="py-1 px-1 w-6 text-center"></th>
+                <th className="py-1 px-1.5 w-10 text-center">Rank</th>
+                <th className="py-1 px-2 min-w-[180px]">Competition</th>
+                <th className="py-1 px-2 w-36 text-center">Predictability Tier</th>
+                <th className="py-1 px-2 w-28 text-center">Conviction Hit Rate</th>
+                <th className="py-1 px-2 w-32 text-center">DNB Staking Rule</th>
+                <th className="py-1 px-1.5 w-16 text-center">Draw Rate</th>
+                <th className="py-1 px-1.5 w-16 text-center">Avg Goals</th>
+                <th className="py-1 px-1.5 w-16 text-center">Pace Factor</th>
+                <th className="py-1 px-2 w-20 text-center">Index</th>
               </tr>
             </thead>
             <tbody className="flex flex-col md:table-row-group divide-y divide-slate-100">
@@ -278,7 +278,7 @@ export default function LeagueProfilesPage({
                 return (
                   <React.Fragment key={l.name}>
                     <tr 
-                      className={`flex flex-col md:table-row hover:bg-indigo-50/30 transition-colors md:h-12 cursor-pointer ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
+                      className={`flex flex-col md:table-row hover:bg-indigo-50/30 transition-colors md:h-10 cursor-pointer ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
                       onClick={() => toggleLeagueExpand(l.name)}
                     >
                       {/* ================= MOBILE COMPACT VIEW ================= */}

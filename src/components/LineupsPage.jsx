@@ -182,16 +182,16 @@ export default function LineupsPage({
             </button>
             <div className="h-6 w-px bg-slate-200 hidden sm:block" />
             <div>
-              <div className="font-bold text-slate-900 text-base flex items-center gap-2">
+              <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
                 <span>Tactical Lineup Analysis</span>
-                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border flex items-center gap-1 ${
+                <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium border flex items-center gap-1 ${
                   isOfficial 
                     ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
                     : 'bg-amber-50 text-amber-800 border-amber-200'
                 }`}>
                   {isOfficial ? 'Official Confirmed Lineup' : 'Projected XI'}
                 </span>
-              </div>
+              </h2>
               <p className="text-xs text-slate-500 mt-0.5">
                 Real-time starting XI scrape and engine probability recalibration.
               </p>
@@ -248,9 +248,9 @@ export default function LineupsPage({
                   : (activeMatch?.time || 'Upcoming')}
               </span>
             </div>
-            <h2 className="text-base sm:text-lg font-bold text-slate-900 mt-1 flex items-center gap-2">
+            <h2 className="text-sm font-bold text-slate-900 tracking-tight mt-1 flex items-center gap-2">
               <span>{home}</span>
-              <span className="text-slate-400 font-normal text-sm">vs</span>
+              <span className="text-slate-400 font-normal text-xs">vs</span>
               <span>{away}</span>
             </h2>
           </div>
@@ -726,12 +726,12 @@ export default function LineupsPage({
               ) : (
                 <table className="w-full text-left border-collapse text-xs">
                   <thead className="hidden sm:table-header-group">
-                    <tr className="bg-slate-50/80 border-b border-slate-200 text-[10.5px] font-semibold text-slate-500 uppercase tracking-wider select-none h-8">
-                      <th className="py-1.5 px-2 w-10 text-center">#</th>
-                      <th className="py-1.5 px-3 min-w-[120px]">Player</th>
-                      <th className="py-1.5 px-2 w-28 text-center">Position</th>
-                      <th className="py-1.5 px-2 w-20 text-center">Role</th>
-                      <th className="py-1.5 px-2 w-8 text-center"></th>
+                    <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
+                      <th className="py-1 px-1.5 w-10 text-center">#</th>
+                      <th className="py-1 px-2 min-w-[120px]">Player</th>
+                      <th className="py-1 px-2 w-28 text-center">Position</th>
+                      <th className="py-1 px-2 w-20 text-center">Role</th>
+                      <th className="py-1 px-1.5 w-8 text-center"></th>
                     </tr>
                   </thead>
                   <tbody className="flex flex-col sm:table-row-group divide-y divide-slate-100">
@@ -883,12 +883,12 @@ export default function LineupsPage({
               ) : (
                 <table className="w-full text-left border-collapse text-xs">
                   <thead className="hidden sm:table-header-group">
-                    <tr className="bg-slate-50/80 border-b border-slate-200 text-[10.5px] font-semibold text-slate-500 uppercase tracking-wider select-none h-8">
-                      <th className="py-1.5 px-2 w-10 text-center">#</th>
-                      <th className="py-1.5 px-3 min-w-[120px]">Player</th>
-                      <th className="py-1.5 px-2 w-28 text-center">Position</th>
-                      <th className="py-1.5 px-2 w-20 text-center">Role</th>
-                      <th className="py-1.5 px-2 w-8 text-center"></th>
+                    <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
+                      <th className="py-1 px-1.5 w-10 text-center">#</th>
+                      <th className="py-1 px-2 min-w-[120px]">Player</th>
+                      <th className="py-1 px-2 w-28 text-center">Position</th>
+                      <th className="py-1 px-2 w-20 text-center">Role</th>
+                      <th className="py-1 px-1.5 w-8 text-center"></th>
                     </tr>
                   </thead>
                   <tbody className="flex flex-col sm:table-row-group divide-y divide-slate-100">

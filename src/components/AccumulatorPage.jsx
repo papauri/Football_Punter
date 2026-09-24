@@ -1114,7 +1114,7 @@ export default function AccumulatorPage({
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
                   <span>Bet Slips &amp; Accumulators</span>
                   <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
                     Ticket Portfolio
@@ -1297,7 +1297,7 @@ export default function AccumulatorPage({
         <div className="p-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2.5">
           <div className="flex items-center gap-2 flex-wrap">
             <Sparkles className="w-4 h-4 text-amber-500" />
-            <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
               <span>Autonomous Acca Generator</span>
               <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
                 +EV AI Consensus
@@ -1402,7 +1402,7 @@ export default function AccumulatorPage({
       <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
         <div className="p-3 border-b border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
               <span>Active Selections</span>
               <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
                 Chronological Slip

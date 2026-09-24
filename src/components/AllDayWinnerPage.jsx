@@ -269,12 +269,12 @@ export default function AllDayWinnerPage({
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
                 <span>All-Day Winner Bet</span>
                 <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
                   LiveScore Bet IE Engine
                 </span>
-              </h1>
+              </h2>
               <InfoTooltip 
                 title="All-Day Winner Bet" 
                 content={`Super-conviction accumulator curated strictly from matches taking place today (${currentDate}). League blacklist restrictions are bypassed, draw-risk games are systematically discarded, and exact win probabilities are computed against calibrated LiveScore Bet Ireland sportsbook odds.`} 
@@ -512,7 +512,7 @@ export default function AllDayWinnerPage({
           <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-2 flex-wrap">
               <Trophy className="w-4 h-4 text-amber-600" />
-              <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
                 <span>All-Day Winner Accumulator Slate</span>
                 <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
                   Today's Rolling Slate

@@ -201,8 +201,8 @@ export default function TuningPage({
             <Sliders className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="font-bold text-slate-900 text-base">
-              Statistical &amp; Dixon-Coles Hyperparameters
+            <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <span>Statistical &amp; Dixon-Coles Hyperparameters</span>
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
               Live mathematical parameters governing scoring rate adjustments, goal dependency, and Kelly sizing
@@ -429,13 +429,13 @@ export default function TuningPage({
               <Globe className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-sm font-bold text-slate-800">Verified Model Leagues &amp; Whitelist Controls</h2>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">Verified Model Leagues &amp; Whitelist Controls</h2>
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
                   {verifiedLeagues.length} Solid Leagues Active
                 </span>
                 {disabledLeagues.length > 0 && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
                     {disabledLeagues.length} Excluded
                   </span>
                 )}
@@ -586,7 +586,7 @@ export default function TuningPage({
               <Clock className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-800">Timezone & Clock Display</h2>
+              <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">Timezone &amp; Clock Display</h2>
               <p className="text-xs text-slate-500">Synchronize match kickoff times and log stamps to your region</p>
             </div>
           </div>

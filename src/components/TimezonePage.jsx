@@ -99,8 +99,8 @@ export default function TimezonePage({
           <Clock className="w-5 h-5" />
         </div>
         <div>
-          <h2 className="font-bold text-slate-900 text-base">
-            Timezone &amp; Kickoff Clock Preferences
+          <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <span>Timezone &amp; Kickoff Clock Preferences</span>
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
             Configure how kickoff times, live minutes, and scheduled scrapes are displayed across the platform

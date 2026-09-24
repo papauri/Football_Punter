@@ -200,12 +200,12 @@ export default function AutonomousPatchCenter({
               <span className="p-1.5 rounded-lg bg-teal-50 border border-teal-200 text-teal-700">
                 <Brain className="w-5 h-5 animate-pulse" />
               </span>
-              <h3 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
-                System Updates & Patches
-                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-teal-50 border border-teal-200 text-teal-800 font-bold">
+              <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
+                <span>System Updates &amp; Patches</span>
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-teal-50 border border-teal-200 text-teal-800">
                   Active Continuous Tuning
                 </span>
-                <span className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded-full border font-bold flex items-center gap-1 ${
+                <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border flex items-center gap-1 ${
                   hasAiKey 
                     ? 'bg-purple-50 border-purple-200 text-purple-800' 
                     : 'bg-slate-100 border-slate-200 text-slate-600'
@@ -213,11 +213,11 @@ export default function AutonomousPatchCenter({
                   <Sparkles className={`w-3 h-3 ${hasAiKey ? 'text-purple-600' : 'text-slate-400'}`} />
                   {hasAiKey ? 'AI Research Agent Active' : 'Statistical Engine'}
                 </span>
-                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold flex items-center gap-1">
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-1">
                   <Zap className="w-3 h-3 text-emerald-600" />
                   Reasoning Core • Credit Efficient
                 </span>
-              </h3>
+              </h2>
             </div>
             <p className="text-xs text-slate-500 max-w-2xl leading-relaxed">
               Analyzes past predictions, finds model errors, and updates parameters automatically to improve future accuracy.
@@ -331,7 +331,9 @@ export default function AutonomousPatchCenter({
             </span>
             <div>
               <div className="flex items-center gap-2">
-                <h4 className="text-sm font-bold text-slate-900">Patch Governor &amp; Early-Stopping Sentinel</h4>
+                <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                  <span>Patch Governor &amp; Early-Stopping Sentinel</span>
+                </h2>
                 <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border uppercase ${
                   state.patchGovernorState?.status === 'CONVERGED_OPTIMAL'
                     ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
@@ -479,7 +481,9 @@ export default function AutonomousPatchCenter({
         <div className="flex items-center justify-between gap-3 mb-3">
           <div className="flex items-center gap-2">
             <History className="w-4 h-4 text-teal-600" />
-            <h4 className="text-sm font-bold text-slate-900">Update History</h4>
+            <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <span>Update History</span>
+            </h2>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
               {patches.length} Recent Patches
             </span>

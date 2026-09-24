@@ -356,7 +356,7 @@ export default function PropsSpecialsPage({
                 ~2.20x Combined Odds &bull; &ge;80% Avg Hit Rate
               </span>
             </div>
-            <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
+            <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
               <span>Instant AI Props Accumulator &amp; Dedicated LiveScore Bet Slip</span>
               <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
                 LiveScore Bet IE
@@ -530,12 +530,12 @@ export default function PropsSpecialsPage({
                 <Activity className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
                   <span>Verified Past Performance &amp; Line Coverage</span>
-                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
                     Graded Accuracy: {data.overallAccuracy || (data.recentEvaluations?.length ? `${((data.recentEvaluations.filter(e => e.isHit).length / data.recentEvaluations.length) * 100).toFixed(1)}%` : '84.5%')}
                   </span>
-                </h3>
+                </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Empirical post-match audit verifying Poisson props against real match corner, card, and goal outcomes
                 </p>
@@ -545,7 +545,7 @@ export default function PropsSpecialsPage({
             <button
               type="button"
               onClick={() => setCollapsedPropsProof(!collapsedPropsProof)}
-              className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+              className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
               title={collapsedPropsProof ? 'Expand Proof' : 'Collapse Proof'}
             >
               <span>{collapsedPropsProof ? 'Expand' : 'Collapse'}</span>
@@ -554,18 +554,18 @@ export default function PropsSpecialsPage({
           </div>
 
           {!collapsedPropsProof && (
-            <div className="overflow-hidden">
+            <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead className="hidden md:table-header-group">
-                <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-10">
-                  <th className="py-1.5 px-1.5 w-7 text-center"></th>
-                  <th className="py-1.5 px-2 w-16 text-center">Outcome</th>
-                  <th className="py-1.5 px-2 min-w-[170px]">Fixture</th>
-                  <th className="py-1.5 px-2 w-28 text-center">Date &amp; Kickoff</th>
-                  <th className="py-1.5 px-2 min-w-[190px]">Audited Prop Line</th>
-                  <th className="py-1.5 px-2 w-20 text-center">Odds</th>
-                  <th className="py-1.5 px-2 min-w-[170px]">Actual Whistle Result</th>
-                  <th className="py-1.5 px-2 w-24 text-center">Expected Hit</th>
+                <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
+                  <th className="py-1 px-1.5 w-7 text-center"></th>
+                  <th className="py-1 px-2 w-16 text-center">Outcome</th>
+                  <th className="py-1 px-2 min-w-[170px]">Fixture</th>
+                  <th className="py-1 px-2 w-28 text-center">Date &amp; Kickoff</th>
+                  <th className="py-1 px-2 min-w-[180px]">Audited Prop Line</th>
+                  <th className="py-1 px-2 w-20 text-center">Odds</th>
+                  <th className="py-1 px-2 min-w-[170px]">Actual Whistle Result</th>
+                  <th className="py-1 px-2 w-24 text-center">Expected Hit</th>
                 </tr>
               </thead>
               <tbody className="p-2.5 sm:p-0 flex flex-col md:table-row-group md:divide-y md:divide-slate-100 space-y-2.5 md:space-y-0">
@@ -576,7 +576,7 @@ export default function PropsSpecialsPage({
                   return (
                     <React.Fragment key={evalKey}>
                       <tr 
-                        className={`flex flex-col md:table-row bg-white rounded-xl md:rounded-none border border-slate-200/90 md:border-0 shadow-2xs md:shadow-none hover:border-slate-300 hover:bg-indigo-50/30 transition-all md:h-12 cursor-pointer ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
+                        className={`flex flex-col md:table-row bg-white rounded-xl md:rounded-none border border-slate-200/90 md:border-0 shadow-2xs md:shadow-none hover:border-slate-300 hover:bg-indigo-50/30 transition-all md:h-10 cursor-pointer ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
                         onClick={() => toggleEvalExpand(evalKey)}
                       >
                         {/* ================= MOBILE COMPACT VIEW ================= */}
@@ -744,7 +744,7 @@ export default function PropsSpecialsPage({
         <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
           <div className="flex items-center gap-2">
             <Target className="w-4 h-4 text-indigo-600" />
-            <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
+            <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
               <span>Match-by-Match Prop Analysis &amp; Anchor Lines</span>
               <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
                 Anchor Lines
@@ -758,7 +758,7 @@ export default function PropsSpecialsPage({
           <button
             type="button"
             onClick={() => setCollapsedMatchProps(!collapsedMatchProps)}
-            className="px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+            className="h-8 px-3 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
             title={collapsedMatchProps ? 'Expand Match Props' : 'Collapse Match Props'}
           >
             <span>{collapsedMatchProps ? 'Expand' : 'Collapse'}</span>

@@ -1,0 +1,52 @@
+[
+  {
+    "id": "401916365",
+    "home": "Deportes Iquique",
+    "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/10142.png",
+    "away": "Antofagasta",
+    "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/6071.png",
+    "league": "Copa Chile",
+    "kickoffUtc": "2026-09-23T23:30Z",
+    "snapshotAt": "2026-09-23T22:30:48.454Z",
+    "minutesBeforeKickoff": 59,
+    "predictedWinner": "AWAY",
+    "predictedScore": "1-2",
+    "prob": {
+      "home": "33.7",
+      "draw": "29.0",
+      "away": "37.3"
+    },
+    "confidence": "37.3",
+    "smartMarket": {
+      "pick": "PASS",
+      "label": "Pass / Entropy Floor"
+    },
+    "isHit": null,
+    "resolvedAt": null
+  },
+  {
+    "id": "401916366",
+    "home": "Unión La Calera",
+    "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/10144.png",
+    "away": "Universidad Católica",
+    "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/885.png",
+    "league": "Copa Chile",
+    "kickoffUtc": "2026-09-23T23:30Z",
+    "snapshotAt": "2026-09-23T22:30:48.454Z",
+    "minutesBeforeKickoff": 59,
+    "predictedWinner": "AWAY",
+    "predictedScore": "1-2",
+    "prob": {
+      "home": "33.0",
+      "draw": "26.2",
+      "away": "40.8"
+    },
+    "confidence": "40.8",
+    "smartMarket": {
+      "pick": "PASS",
+      "label": "Pass / Entropy Floor"
+    },
+    "isHit": null,
+    "resolvedAt": null
+  }
+]

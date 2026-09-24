@@ -326,7 +326,7 @@ export default function ScoresTablePage({
       {/* Top Bar with Accuracy Summary */}
       <div className="bg-white border border-slate-200 rounded-xl p-2.5 sm:p-3 shadow-xs flex flex-wrap items-center justify-between gap-2.5 text-xs">
         <div className="flex items-center gap-2 flex-wrap">
-          <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+          <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <span>Statistical Scoreline Model</span>
             <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
               Poisson Distributions &amp; BTTS
@@ -477,7 +477,7 @@ export default function ScoresTablePage({
         <div className="p-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2 flex-wrap">
             <Target className="w-4 h-4 text-indigo-600" />
-            <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
               <span>Exact Scorelines &amp; Goals Totals</span>
               <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
                 O/U 2.5 &amp; Probabilities
@@ -500,8 +500,9 @@ export default function ScoresTablePage({
         </div>
 
         {!collapsedScores && (
-          <table className="w-full text-left border-collapse text-xs">
-          <thead className="hidden md:table-header-group">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+            <thead className="hidden md:table-header-group">
             <tr className="bg-slate-50/80 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
               {/* Expand Toggle */}
               <th className="py-1 px-1.5 w-7 text-center"></th>
@@ -1091,7 +1092,8 @@ export default function ScoresTablePage({
             )}
           </tbody>
         </table>
-        )}
+      </div>
+      )}
       </div>
 
     </div>

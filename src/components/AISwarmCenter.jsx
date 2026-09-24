@@ -524,16 +524,16 @@ export default function AISwarmCenter({
                 <Award className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 flex-wrap">
+                <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
                   <span>Top Value Picks</span>
-                  <span className="text-[10px] bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full font-bold">
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
                     👑 Unanimous Hit Rate: {unanimousHitRate}
                   </span>
-                  <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded-full font-bold">
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded">
                     {sortedTopValueLegs.length} {sortedTopValueLegs.length === 1 ? 'Pick' : 'Picks'}
                     {isTvFiltered && ` (Filtered from ${enrichedTopValueLegs.length})`}
                   </span>
-                </h3>
+                </h2>
                 <p className="text-[11px] text-slate-500 mt-0.5">
                   Multi-agent consensus combining fixtures with unanimous council alignment, positive expectation, and zero contrarian trap vulnerability.
                 </p>
@@ -648,30 +648,30 @@ export default function AISwarmCenter({
           </div>
 
           {/* Top Value Picks Interactive Table */}
-          <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-2xs">
+          <div className="bg-white border border-slate-200 rounded-lg overflow-x-auto shadow-2xs">
             <table className="w-full text-left border-collapse text-xs">
               <thead className="hidden md:table-header-group">
-                <tr className="bg-slate-50 border-b border-slate-200 select-none h-9">
-                  <th className="py-2 px-1 w-6 text-center"></th>
-                  <th className="py-2 px-2.5 w-10 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
+                  <th className="py-1 px-1.5 w-6 text-center"></th>
+                  <th className="py-1 px-1.5 w-8 text-center">
                     #
                   </th>
                   
                   {/* Kickoff Day & Time (Sortable) */}
                   <th
                     onClick={() => handleToggleTvSort('kickoff')}
-                    className={`py-2 px-3 min-w-[155px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                    className={`py-1 px-2 min-w-[140px] cursor-pointer hover:bg-slate-100 transition-colors ${
                       tvSortField === 'kickoff' ? 'text-amber-800 bg-amber-50/60' : 'text-slate-500'
                     }`}
                     title="Click to sort by Kickoff Day & Time"
                   >
                     <div className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-indigo-500" />
-                      <span>Kickoff (Day & Time)</span>
+                      <Calendar className="w-2.5 h-2.5 text-indigo-500" />
+                      <span>Kickoff</span>
                       {tvSortField === 'kickoff' ? (
                         <span className="text-amber-600 font-bold">{tvSortOrder === 'asc' ? '↑' : '↓'}</span>
                       ) : (
-                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                        <ArrowUpDown className="w-2 h-2 text-slate-400 opacity-60" />
                       )}
                     </div>
                   </th>
@@ -679,7 +679,7 @@ export default function AISwarmCenter({
                   {/* League (Sortable) */}
                   <th
                     onClick={() => handleToggleTvSort('league')}
-                    className={`py-2 px-3 min-w-[130px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                    className={`py-1 px-2 min-w-[110px] cursor-pointer hover:bg-slate-100 transition-colors ${
                       tvSortField === 'league' ? 'text-amber-800 bg-amber-50/60' : 'text-slate-500'
                     }`}
                     title="Click to sort by League"
@@ -689,25 +689,25 @@ export default function AISwarmCenter({
                       {tvSortField === 'league' ? (
                         <span className="text-amber-600 font-bold">{tvSortOrder === 'asc' ? '↑' : '↓'}</span>
                       ) : (
-                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                        <ArrowUpDown className="w-2 h-2 text-slate-400 opacity-60" />
                       )}
                     </div>
                   </th>
 
                   {/* Fixture */}
-                  <th className="py-2 px-3 min-w-[200px] text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  <th className="py-1 px-2 min-w-[180px]">
                     Fixture
                   </th>
 
                   {/* Consensus Pick */}
-                  <th className="py-2 px-2.5 w-28 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  <th className="py-1 px-2 w-28 text-center">
                     Consensus Pick
                   </th>
 
                   {/* Agreement (Sortable) */}
                   <th
                     onClick={() => handleToggleTvSort('agreement')}
-                    className={`py-2 px-2.5 w-28 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                    className={`py-1 px-2 w-24 text-center cursor-pointer hover:bg-slate-100 transition-colors ${
                       tvSortField === 'agreement' ? 'text-amber-800 bg-amber-50/60' : 'text-slate-500'
                     }`}
                     title="Click to sort by Council Agreement"
@@ -717,7 +717,7 @@ export default function AISwarmCenter({
                       {tvSortField === 'agreement' ? (
                         <span className="text-amber-600 font-bold">{tvSortOrder === 'asc' ? '↑' : '↓'}</span>
                       ) : (
-                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                        <ArrowUpDown className="w-2 h-2 text-slate-400 opacity-60" />
                       )}
                     </div>
                   </th>
@@ -725,7 +725,7 @@ export default function AISwarmCenter({
                   {/* Swarm Score (Sortable) */}
                   <th
                     onClick={() => handleToggleTvSort('score')}
-                    className={`py-2 px-2.5 w-24 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                    className={`py-1 px-2 w-20 text-center cursor-pointer hover:bg-slate-100 transition-colors ${
                       tvSortField === 'score' ? 'text-amber-800 bg-amber-50/60' : 'text-slate-500'
                     }`}
                     title="Click to sort by Swarm Score"
@@ -735,13 +735,13 @@ export default function AISwarmCenter({
                       {tvSortField === 'score' ? (
                         <span className="text-amber-600 font-bold">{tvSortOrder === 'asc' ? '↑' : '↓'}</span>
                       ) : (
-                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
+                        <ArrowUpDown className="w-2 h-2 text-slate-400 opacity-60" />
                       )}
                     </div>
                   </th>
 
                   {/* Action */}
-                  <th className="py-2 px-2.5 w-24 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  <th className="py-1 px-2 w-20 text-center">
                     Slip
                   </th>
                 </tr>
@@ -773,7 +773,7 @@ export default function AISwarmCenter({
                     return (
                       <React.Fragment key={leg.id || idx}>
                         <tr 
-                          className={`flex flex-col md:table-row hover:bg-amber-50/30 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} md:h-11 cursor-pointer`}
+                          className={`flex flex-col md:table-row hover:bg-amber-50/30 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} md:h-10 cursor-pointer`}
                           onClick={() => toggleTvExpand(leg.id || idx)}
                         >
                           {/* ================= MOBILE COMPACT VIEW ================= */}
@@ -1015,13 +1015,13 @@ export default function AISwarmCenter({
       {/* 6 Specialized Agents Cards (Collapsible to reduce clutter) */}
       <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs space-y-3">
         <div className="flex items-center justify-between gap-3">
-          <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+          <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <Cpu className="w-4 h-4 text-indigo-600" />
             <span>The 6 Simultaneous Analytical Agents</span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 font-mono">
               6 Active Micro-Models
             </span>
-          </h3>
+          </h2>
 
           <button
             type="button"
@@ -1161,6 +1161,19 @@ export default function AISwarmCenter({
 
       {/* Match-by-Match Swarm Consensus Explorer */}
       <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-100 flex-wrap gap-2">
+          <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <Cpu className="w-4 h-4 text-indigo-600" />
+            <span>Swarm Consensus Explorer</span>
+            <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
+              Match-by-Match Consensus &amp; Agent Voting
+            </span>
+          </h2>
+          <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+            {displayedMatches.length} Matches
+          </span>
+        </div>
+
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="relative flex-1 min-w-[200px] max-w-sm">
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -1189,38 +1202,38 @@ export default function AISwarmCenter({
         </div>
 
         {/* Match-by-Match Swarm Consensus Explorer Table */}
-        <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-2xs">
+        <div className="bg-white border border-slate-200 rounded-lg overflow-x-auto shadow-2xs">
           <table className="w-full text-left border-collapse text-xs">
             <thead className="hidden md:table-header-group">
-              <tr className="bg-slate-50 border-b border-slate-200 select-none h-9">
-                <th className="py-2 px-2.5 w-10 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+              <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
+                <th className="py-1 px-1.5 w-8 text-center">
                   #
                 </th>
-                <th className="py-2 px-2.5 w-16 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="py-1 px-1.5 w-14 text-center">
                   Score
                 </th>
-                <th className="py-2 px-3 min-w-[155px] text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="py-1 px-2 min-w-[140px]">
                   <div className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3 text-indigo-500" />
-                    <span>Kickoff (Day & Time)</span>
+                    <Calendar className="w-2.5 h-2.5 text-indigo-500" />
+                    <span>Kickoff</span>
                   </div>
                 </th>
-                <th className="py-2 px-3 min-w-[120px] text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="py-1 px-2 min-w-[110px]">
                   League
                 </th>
-                <th className="py-2 px-3 min-w-[190px] text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="py-1 px-2 min-w-[180px]">
                   Fixture
                 </th>
-                <th className="py-2 px-2.5 w-28 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="py-1 px-2 w-28 text-center">
                   Directive
                 </th>
-                <th className="py-2 px-2.5 min-w-[150px] text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="py-1 px-2 min-w-[140px] text-center">
                   Agent Voting
                 </th>
-                <th className="py-2 px-2.5 w-24 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="py-1 px-1.5 w-20 text-center">
                   Debate
                 </th>
-                <th className="py-2 px-2.5 w-20 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="py-1 px-1.5 w-16 text-center">
                   Slip
                 </th>
               </tr>
@@ -1247,7 +1260,7 @@ export default function AISwarmCenter({
 
                   return (
                     <React.Fragment key={m.id}>
-                      <tr className={`flex flex-col md:table-row hover:bg-indigo-50/20 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} md:h-11 ${isExpanded ? 'bg-indigo-50/20' : ''}`}>
+                      <tr className={`flex flex-col md:table-row hover:bg-indigo-50/20 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} md:h-10 ${isExpanded ? 'bg-indigo-50/20' : ''}`}>
                         
                         {/* ================= MOBILE COMPACT VIEW ================= */}
                         <td className="md:hidden p-3 block">

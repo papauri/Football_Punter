@@ -320,7 +320,7 @@ export default function BinaryPicksPage({
       {/* Top Banner */}
       <div className="bg-white border border-slate-200 rounded-xl p-2.5 sm:p-3 shadow-xs flex flex-wrap items-center justify-between gap-2.5 text-xs">
         <div className="flex items-center gap-2 flex-wrap">
-          <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+          <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <span>Value Bets &amp; Staking</span>
             <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
               1/4 Fractional Kelly
@@ -476,7 +476,7 @@ export default function BinaryPicksPage({
         <div className="p-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2 flex-wrap">
             <Scale className="w-4 h-4 text-emerald-600" />
-            <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
               <span>Value Bets &amp; Kelly Stakes (+EV)</span>
               <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
                 +EV Mathematical Edge

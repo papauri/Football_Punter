@@ -378,11 +378,13 @@ export default function ResultsProofPage({
         <div className="flex flex-wrap items-center justify-between gap-4">
           
           <div>
-            <div className="font-bold text-slate-900 text-base flex items-center gap-2">
-              <span>Verified Match Audit &amp; Performance Proof</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold">
-                Audited Real Data
-              </span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                <span>Verified Match Audit &amp; Performance Proof</span>
+                <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
+                  Audited Real Data
+                </span>
+              </h2>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
               Full transparent verification against official final whistle scores from ESPN &amp; Understat
@@ -541,11 +543,14 @@ export default function ResultsProofPage({
       {/* Compact Results Table */}
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
         <div className="p-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider">
-              Audited Match Outcomes &amp; Post-Mortem
-            </h3>
+            <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <span>Audited Match Outcomes &amp; Post-Mortem</span>
+              <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
+                Official Results
+              </span>
+            </h2>
             <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">
               {filteredResults.length} Audited Matches
             </span>
@@ -566,23 +571,23 @@ export default function ResultsProofPage({
           <>
             <table className="w-full text-left border-collapse text-xs">
           <thead className="hidden md:table-header-group">
-            <tr className="bg-slate-50 border-b border-slate-200 select-none h-9">
+            <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
               {/* Expand Toggle */}
-              <th className="py-2 px-1.5 w-7 text-center"></th>
+              <th className="py-1 px-1.5 w-7 text-center"></th>
 
               {/* Kickoff Day & Time */}
               <th 
                 onClick={() => handleSort('time')}
-                className={`py-2 px-3 min-w-[155px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                className={`py-1 px-2 min-w-[155px] cursor-pointer hover:bg-slate-100 transition-colors ${
                   sortField === 'time' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
                 }`}
                 title="Click to sort by Kickoff Day & Time"
               >
                 <div className="flex items-center gap-1">
-                  <Calendar className="w-3 h-3 text-indigo-600" />
+                  <Calendar className="w-2.5 h-2.5 text-indigo-600" />
                   <span>Kickoff (Day & Time)</span>
                   {sortField === 'time' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -592,7 +597,7 @@ export default function ResultsProofPage({
               {/* League */}
               <th 
                 onClick={() => handleSort('league')}
-                className={`py-2 px-3 min-w-[130px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                className={`py-1 px-2 min-w-[130px] cursor-pointer hover:bg-slate-100 transition-colors ${
                   sortField === 'league' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
                 }`}
                 title="Click to sort by League"
@@ -600,7 +605,7 @@ export default function ResultsProofPage({
                 <div className="flex items-center gap-1">
                   <span>League</span>
                   {sortField === 'league' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -610,7 +615,7 @@ export default function ResultsProofPage({
               {/* Fixture */}
               <th 
                 onClick={() => handleSort('fixture')}
-                className={`py-2 px-3 min-w-[190px] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                className={`py-1 px-2 min-w-[190px] cursor-pointer hover:bg-slate-100 transition-colors ${
                   sortField === 'fixture' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
                 }`}
                 title="Click to sort by Fixture (A-Z / Z-A)"
@@ -618,7 +623,7 @@ export default function ResultsProofPage({
                 <div className="flex items-center gap-1">
                   <span>Fixture</span>
                   {sortField === 'fixture' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -628,7 +633,7 @@ export default function ResultsProofPage({
               {/* Actual Score */}
               <th 
                 onClick={() => handleSort('actual')}
-                className={`py-2 px-2.5 w-24 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                className={`py-1 px-2 w-24 text-center cursor-pointer hover:bg-slate-100 transition-colors ${
                   sortField === 'actual' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
                 }`}
                 title="Click to sort by Actual Goals"
@@ -636,7 +641,7 @@ export default function ResultsProofPage({
                 <div className="flex items-center justify-center gap-1">
                   <span>Actual Score</span>
                   {sortField === 'actual' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -646,7 +651,7 @@ export default function ResultsProofPage({
               {/* Predicted Score */}
               <th 
                 onClick={() => handleSort('predicted')}
-                className={`py-2 px-2.5 w-24 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                className={`py-1 px-2 w-24 text-center cursor-pointer hover:bg-slate-100 transition-colors ${
                   sortField === 'predicted' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
                 }`}
                 title="Click to sort by Predicted Score"
@@ -654,7 +659,7 @@ export default function ResultsProofPage({
                 <div className="flex items-center justify-center gap-1">
                   <span>Predicted</span>
                   {sortField === 'predicted' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -664,7 +669,7 @@ export default function ResultsProofPage({
               {/* Pick Res Hit/Miss/Push/Pass */}
               <th 
                 onClick={() => handleSort('result')}
-                className={`py-2 px-2.5 w-28 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                className={`py-1 px-2 w-28 text-center cursor-pointer hover:bg-slate-100 transition-colors ${
                   sortField === 'result' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
                 }`}
                 title="Click to sort by Pick Outcome"
@@ -672,7 +677,7 @@ export default function ResultsProofPage({
                 <div className="flex items-center justify-center gap-1">
                   <span>Pick Res</span>
                   {sortField === 'result' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -682,7 +687,7 @@ export default function ResultsProofPage({
               {/* Confidence */}
               <th 
                 onClick={() => handleSort('conf')}
-                className={`py-2 px-2 w-16 text-center text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
+                className={`py-1 px-1.5 w-16 text-center cursor-pointer hover:bg-slate-100 transition-colors ${
                   sortField === 'conf' ? 'text-indigo-800 bg-indigo-50/60 font-bold' : 'text-slate-500'
                 }`}
                 title="Click to sort by Confidence"
@@ -690,7 +695,7 @@ export default function ResultsProofPage({
                 <div className="flex items-center justify-center gap-1">
                   <span>Conf</span>
                   {sortField === 'conf' ? (
-                    sortDirection === 'asc' ? <ArrowUp className="w-3 h-3 text-indigo-600" /> : <ArrowDown className="w-3 h-3 text-indigo-600" />
+                    sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
                     <ArrowUpDown className="w-2.5 h-2.5 text-slate-400 opacity-60" />
                   )}
@@ -698,12 +703,12 @@ export default function ResultsProofPage({
               </th>
 
               {/* Market Verification */}
-              <th className="py-2 px-3 min-w-[170px] text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+              <th className="py-1 px-2 min-w-[170px]">
                 Market Verification
               </th>
 
               {/* Actions */}
-              <th className="py-2 px-2.5 w-24 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+              <th className="py-1 px-2 w-24 text-center">
                 Actions
               </th>
             </tr>
@@ -1132,18 +1137,20 @@ export default function ResultsProofPage({
       {/* ── Pre-Kickoff Snapshot Ledger Panel ── */}
       {showLedger && (
         <div className="bg-white border border-amber-200 rounded-xl shadow-xs overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 bg-amber-50 border-b border-amber-200">
+          <div className="flex items-center justify-between px-4 py-2.5 bg-amber-50 border-b border-amber-200">
             <div className="flex items-center gap-2">
-              <Lock className="w-4 h-4 text-amber-700" />
-              <span className="font-bold text-amber-900 text-sm">Pre-Kickoff Snapshot Ledger</span>
-              <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 font-semibold">
+              <h2 className="text-sm font-bold text-amber-950 tracking-tight flex items-center gap-2">
+                <Lock className="w-4 h-4 text-amber-700 shrink-0" />
+                <span>Pre-Kickoff Snapshot Ledger</span>
+              </h2>
+              <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-200 text-amber-900 border border-amber-300">
                 {ledgerEntries.length} snapshots
               </span>
             </div>
             <button
               onClick={fetchLedger}
               disabled={ledgerLoading}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold text-amber-800 bg-white border border-amber-200 rounded-lg hover:bg-amber-50 transition-colors cursor-pointer"
+              className="h-8 px-3 rounded-lg text-xs font-semibold text-amber-800 bg-white border border-amber-200 hover:bg-amber-50 transition-colors cursor-pointer flex items-center gap-1.5"
             >
               <RefreshCw className={`w-3 h-3 ${ledgerLoading ? 'animate-spin' : ''}`} />
               Refresh
@@ -1169,18 +1176,18 @@ export default function ResultsProofPage({
             ) : (
               <table className="w-full text-left border-collapse text-xs">
                 <thead className="hidden md:table-header-group">
-                  <tr className="bg-slate-50 border-b border-slate-200 h-9 select-none">
-                    <th className="py-2 px-1.5 w-7 text-center"></th>
-                    <th className="py-2 px-3 min-w-[145px] text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                      <div className="flex items-center gap-1"><Clock className="w-3 h-3 text-amber-500" /><span>Snapshot Frozen</span></div>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
+                    <th className="py-1 px-1.5 w-7 text-center"></th>
+                    <th className="py-1 px-2 min-w-[145px]">
+                      <div className="flex items-center gap-1"><Clock className="w-2.5 h-2.5 text-amber-500" /><span>Snapshot Frozen</span></div>
                     </th>
-                    <th className="py-2 px-3 min-w-[120px] text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Kickoff</th>
-                    <th className="py-2 px-3 min-w-[120px] text-[11px] font-semibold text-slate-500 uppercase tracking-wider">League</th>
-                    <th className="py-2 px-3 min-w-[190px] text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Fixture</th>
-                    <th className="py-2 px-2.5 w-24 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Predicted</th>
-                    <th className="py-2 px-2.5 w-28 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Smart Pick</th>
-                    <th className="py-2 px-2 w-16 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Conf</th>
-                    <th className="py-2 px-2.5 w-24 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Result</th>
+                    <th className="py-1 px-2 min-w-[100px]">Kickoff</th>
+                    <th className="py-1 px-2 min-w-[110px]">League</th>
+                    <th className="py-1 px-2 min-w-[180px]">Fixture</th>
+                    <th className="py-1 px-2 w-24 text-center">Predicted</th>
+                    <th className="py-1 px-2 w-28 text-center">Smart Pick</th>
+                    <th className="py-1 px-1.5 w-16 text-center">Conf</th>
+                    <th className="py-1 px-2 w-24 text-center">Result</th>
                   </tr>
                 </thead>
                 <tbody className="p-2.5 sm:p-0 flex flex-col md:table-row-group md:divide-y md:divide-slate-100 space-y-2.5 md:space-y-0">
@@ -1194,7 +1201,7 @@ export default function ResultsProofPage({
                     return (
                       <React.Fragment key={ledgerKey}>
                         <tr 
-                          className={`flex flex-col md:table-row bg-white rounded-xl md:rounded-none border border-amber-200/90 md:border-0 shadow-2xs md:shadow-none hover:border-amber-300 transition-all md:h-11 cursor-pointer ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}
+                          className={`flex flex-col md:table-row bg-white rounded-xl md:rounded-none border border-amber-200/90 md:border-0 shadow-2xs md:shadow-none hover:border-amber-300 transition-all md:h-10 cursor-pointer ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}
                           onClick={() => toggleLedgerExpand(ledgerKey)}
                         >
                           {/* ================= MOBILE COMPACT CARD VIEW ================= */}

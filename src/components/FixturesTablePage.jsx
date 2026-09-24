@@ -1487,7 +1487,7 @@ export default function FixturesTablePage({
                 </div>
 
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                  <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
                     <span>Highest Win Rate Council Selections</span>
                     <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
                       100% Unanimous Straight Outrights
@@ -2192,7 +2192,7 @@ export default function FixturesTablePage({
               </div>
 
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
                   <span>Match Predictions &amp; Win Probabilities</span>
                   <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
                     Poisson + ML

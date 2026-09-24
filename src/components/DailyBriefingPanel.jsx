@@ -188,7 +188,7 @@ export default function DailyBriefingPanel({
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
+              <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
                 <span>{isToday
                   ? `Autonomous Matchday Briefing • Today's Slate`
                   : `Next Matchday Slate • ${targetDateFormatted}`}</span>

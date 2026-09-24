@@ -68,8 +68,8 @@ export default function LogsPage({
           <FileText className="w-5 h-5" />
         </div>
         <div>
-          <h2 className="font-bold text-slate-900 text-base">
-            System &amp; Autonomous Agent Activity Logs
+          <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
+            <span>System &amp; Autonomous Agent Activity Logs</span>
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
             Real-time audit trail of background scraping, Statistical recalibrations, swarm council debate rounds, and autonomous patches
@@ -131,12 +131,12 @@ export default function LogsPage({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead className="hidden md:table-header-group">
-              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-10">
-                <th className="py-1.5 px-2 w-7 text-center"></th>
-                <th className="py-1.5 px-2 w-32">Timestamp</th>
-                <th className="py-1.5 px-2 w-24 text-center">Level</th>
-                <th className="py-1.5 px-2 w-40">Component / Agent</th>
-                <th className="py-1.5 px-2 min-w-[300px]">Message Details</th>
+              <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
+                <th className="py-1 px-1.5 w-7 text-center"></th>
+                <th className="py-1 px-2 w-32">Timestamp</th>
+                <th className="py-1 px-2 w-20 text-center">Level</th>
+                <th className="py-1 px-2 w-36">Component / Agent</th>
+                <th className="py-1 px-2 min-w-[280px]">Message Details</th>
               </tr>
             </thead>
             <tbody className="flex flex-col md:table-row-group divide-y divide-slate-100 font-mono">
