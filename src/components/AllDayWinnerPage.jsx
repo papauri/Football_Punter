@@ -23,10 +23,13 @@ import {
   Plus,
   ArrowUpDown,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { safeToFixed, safeParseFloat } from '../utils/numberUtils';
 import InfoTooltip from './InfoTooltip';
+import UniformDropdown from './UniformDropdown';
 
 export default function AllDayWinnerPage({
   state,
@@ -49,6 +52,12 @@ export default function AllDayWinnerPage({
   const [copied, setCopied] = useState(false);
   const [addedToSlip, setAddedToSlip] = useState(false);
   const [addedLegIds, setAddedLegIds] = useState(new Set());
+  const [expandedLegId, setExpandedLegId] = useState(null);
+  const [collapsedAcca, setCollapsedAcca] = useState(false);
+
+  const toggleExpand = (id) => {
+    setExpandedLegId(prev => (prev === id ? null : id));
+  };
 
   const fetchLottoAcca = async (isManualRefresh = false) => {
     if (isManualRefresh) setIsRefreshing(true);
@@ -232,11 +241,11 @@ export default function AllDayWinnerPage({
           </div>
 
           {/* Header Action Buttons */}
-          <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+          <div className="flex items-center gap-2 shrink-0 flex-wrap">
             <button
               onClick={() => fetchLottoAcca(true)}
               disabled={isLoading || isRefreshing}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-300 transition-colors cursor-pointer"
+              className="h-8 flex items-center gap-1.5 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-300 transition-colors cursor-pointer"
               title="Re-query live feeds from LiveScore Ireland and recalculate Poisson probabilities"
             >
               <RefreshCw className={`w-3.5 h-3.5 text-slate-600 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -246,7 +255,7 @@ export default function AllDayWinnerPage({
             <button
               onClick={handleCopySlip}
               disabled={!rawLegs.length}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-300 shadow-2xs transition-colors cursor-pointer"
+              className="h-8 flex items-center gap-1.5 px-3 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-300 shadow-2xs transition-colors cursor-pointer"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-500" />}
               <span>{copied ? 'Copied Slip!' : 'Copy Acca'}</span>
@@ -255,7 +264,7 @@ export default function AllDayWinnerPage({
             <button
               onClick={handleLoadAllToSlip}
               disabled={!rawLegs.length}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+              className="h-8 flex items-center gap-1.5 px-3.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
             >
               {addedToSlip ? <Check className="w-3.5 h-3.5 text-emerald-200" /> : <PlusCircle className="w-3.5 h-3.5" />}
               <span>{addedToSlip ? 'Loaded to Slip 1!' : 'Load All to Slip 1'}</span>
@@ -323,110 +332,73 @@ export default function AllDayWinnerPage({
       </div>
 
       {/* Interactive Control & Filter Bar */}
-      <div className="bg-white rounded-xl p-3.5 border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-3 flex-wrap">
-          {/* Accumulator Size */}
-          <div className="flex items-center gap-1.5">
-            <span className="font-bold text-slate-700">Acca Size:</span>
-            <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50">
-              {[6, 8, 10, 12].map(size => (
-                <button
-                  key={size}
-                  onClick={() => setLegCount(size)}
-                  className={`px-2.5 py-1 rounded text-xs font-bold transition-colors cursor-pointer ${
-                    legCount === size 
-                      ? 'bg-indigo-600 text-white shadow-xs' 
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  {size} Legs {size === 8 ? '(Default)' : ''}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Min Model Confidence */}
-          <div className="flex items-center gap-1.5 border-l border-slate-200 pl-3">
-            <span className="font-bold text-slate-700">Min Win Prob:</span>
-            <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50">
-              {[55, 60, 65, 70].map(c => (
-                <button
-                  key={c}
-                  onClick={() => setMinConfidence(c)}
-                  className={`px-2 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
-                    minConfidence === c 
-                      ? 'bg-slate-800 text-white' 
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  ≥ {c}%
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Outcome Filter */}
-          <div className="flex items-center gap-1.5 border-l border-slate-200 pl-3">
-            <span className="font-bold text-slate-700">Selection:</span>
-            <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50">
-              {[
-                { id: 'ALL', label: 'All Picks' },
-                { id: 'HOME', label: 'Home Win (1)' },
-                { id: 'AWAY', label: 'Away Win (2)' }
-              ].map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => setOutcomeFilter(opt.id)}
-                  className={`px-2 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
-                    outcomeFilter === opt.id
-                      ? 'bg-slate-800 text-white'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
+      <div className="bg-white rounded-xl p-2.5 border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-2.5 text-xs">
+        <div className="relative flex-1 min-w-[140px] max-w-sm">
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search club or league..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-8 pr-7 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
+          />
+          {searchQuery && (
+            <button 
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+            >
+              ✕
+            </button>
+          )}
         </div>
 
-        {/* Stake simulation & Quick Search */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search club or league..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 pr-3 py-1 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 w-44 sm:w-52"
-            />
-            {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              >
-                ✕
-              </button>
-            )}
-          </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <UniformDropdown
+            label="Acca Size"
+            value={legCount}
+            onChange={(val) => setLegCount(Number(val))}
+            options={[
+              { value: 6, label: '6 Legs' },
+              { value: 8, label: '8 Legs (Default)' },
+              { value: 10, label: '10 Legs' },
+              { value: 12, label: '12 Legs' }
+            ]}
+          />
 
-          <div className="flex items-center gap-1 border-l border-slate-200 pl-3">
-            <span className="font-bold text-slate-700 mr-1">Stake:</span>
-            {[10, 20, 50, 100].map(amt => (
-              <button
-                key={amt}
-                onClick={() => setStake(amt)}
-                className={`px-2 py-1 rounded border text-xs font-semibold cursor-pointer ${
-                  stake === amt 
-                    ? 'border-emerald-600 bg-emerald-50 text-emerald-800' 
-                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                €{amt}
-              </button>
-            ))}
-          </div>
+          <UniformDropdown
+            label="Min Win Prob"
+            value={minConfidence}
+            onChange={(val) => setMinConfidence(Number(val))}
+            options={[
+              { value: 55, label: '≥ 55% Prob' },
+              { value: 60, label: '≥ 60% Prob' },
+              { value: 65, label: '≥ 65% Prob' },
+              { value: 70, label: '≥ 70% Prob' }
+            ]}
+          />
+
+          <UniformDropdown
+            label="Selection"
+            value={outcomeFilter}
+            onChange={setOutcomeFilter}
+            options={[
+              { value: 'ALL', label: 'All Picks' },
+              { value: 'HOME', label: 'Home Win (1)' },
+              { value: 'AWAY', label: 'Away Win (2)' }
+            ]}
+          />
+
+          <UniformDropdown
+            label="Stake"
+            value={stake}
+            onChange={(val) => setStake(Number(val))}
+            options={[
+              { value: 10, label: '€10' },
+              { value: 20, label: '€20' },
+              { value: 50, label: '€50' },
+              { value: 100, label: '€100' }
+            ]}
+          />
         </div>
       </div>
 
@@ -476,267 +448,397 @@ export default function AllDayWinnerPage({
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-          {/* Table Sub-header */}
-          <div className="p-3 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between gap-3 flex-wrap">
-            <div className="text-xs text-slate-700 flex items-center gap-2">
-              <span className="font-bold">Showing {displayLegs.length} High-Confidence Legs</span>
-              <span className="text-slate-400">•</span>
-              <span className="text-slate-500 font-mono text-[11px]">Strictly Playing on {currentDate}</span>
-              <span className="text-slate-400">•</span>
-              <span className="text-emerald-700 font-semibold text-[11px] bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                0% Draw Risk Guarantee
+          {/* Table Header */}
+          <div className="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-amber-600" />
+              <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider">
+                All-Day Winner Accumulator Slate
+              </h3>
+              <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 font-semibold">
+                {displayLegs.length} Legs
               </span>
             </div>
 
-            <div className="flex items-center gap-2 text-xs">
+            <div className="flex items-center gap-2">
               <button
                 onClick={handleLoadAllToSlip}
-                className="flex items-center gap-1 px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-colors cursor-pointer"
+                className="h-8 flex items-center gap-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition-colors cursor-pointer text-xs shadow-xs"
               >
                 {addedToSlip ? <Check className="w-3.5 h-3.5" /> : <PlusCircle className="w-3.5 h-3.5" />}
-                <span>{addedToSlip ? 'Loaded to Slip 1!' : 'Load All to Bet Slip 1'}</span>
+                <span>{addedToSlip ? 'Loaded!' : 'Load All'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setCollapsedAcca(!collapsedAcca)}
+                className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                title={collapsedAcca ? 'Expand Accumulator' : 'Collapse Accumulator'}
+              >
+                <span>{collapsedAcca ? 'Expand' : 'Collapse'}</span>
+                {collapsedAcca ? <ChevronDown className="w-3.5 h-3.5 text-slate-500" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-500" />}
               </button>
             </div>
           </div>
 
-          {/* High-Density Data Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-slate-100/90 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
-                  {/* Leg # */}
-                  <th className="py-1 px-1.5 w-8 text-center">#</th>
+          {!collapsedAcca && (
+            <>
+              {/* High-Density Data Table */}
+              <div className="overflow-hidden">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead className="hidden md:table-header-group">
+                    <tr className="bg-slate-100/90 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
+                      {/* Expand Toggle */}
+                      <th className="py-1 px-1 w-6 text-center"></th>
 
-                  {/* Kickoff & League */}
-                  <th 
-                    onClick={() => handleSort('time')}
-                    className="py-1 px-2 min-w-[130px] cursor-pointer hover:bg-slate-200/60 transition-colors"
-                  >
-                    <div className="inline-flex items-center gap-1">
-                      <span>Time & League</span>
-                      {sortField === 'time' && (
-                        sortDir === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-800" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-800" />
-                      )}
-                    </div>
-                  </th>
+                      {/* Leg # */}
+                      <th className="py-1 px-1.5 w-8 text-center">#</th>
 
-                  {/* Match Fixture */}
-                  <th className="py-1 px-2 min-w-[170px]">
-                    <span>Match Fixture</span>
-                  </th>
-
-                  {/* Model Selection */}
-                  <th className="py-1 px-2 min-w-[140px]">
-                    <span>Selection</span>
-                  </th>
-
-                  {/* Exact Win Probability */}
-                  <th 
-                    onClick={() => handleSort('prob')}
-                    className="py-1 px-1.5 min-w-[100px] cursor-pointer hover:bg-slate-200/60 transition-colors"
-                  >
-                    <div className="inline-flex items-center gap-1">
-                      <span>Win Prob</span>
-                      {sortField === 'prob' && (
-                        sortDir === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-800" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-800" />
-                      )}
-                    </div>
-                  </th>
-
-                  {/* LiveScore Bet IE Odds */}
-                  <th 
-                    onClick={() => handleSort('odds')}
-                    className="py-1 px-1.5 min-w-[100px] cursor-pointer hover:bg-slate-200/60 transition-colors"
-                  >
-                    <div className="inline-flex items-center gap-1">
-                      <span>LiveScore Odds</span>
-                      {sortField === 'odds' && (
-                        sortDir === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-800" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-800" />
-                      )}
-                    </div>
-                  </th>
-
-                  {/* Projected Score */}
-                  <th className="py-1 px-1.5 min-w-[70px] text-center">
-                    <span>Score</span>
-                  </th>
-
-                  {/* Tactical Intel & Rationale */}
-                  <th className="py-1 px-2 min-w-[200px]">
-                    <span>Model Tactical Intel</span>
-                  </th>
-
-                  {/* Actions */}
-                  <th className="py-1 px-2 min-w-[80px] text-right">
-                    <span>Actions</span>
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y divide-slate-100 bg-white">
-                {displayLegs.map((leg, index) => {
-                  const isHomePick = leg.pick === 'HOME';
-                  const isLegAdded = addedLegIds.has(leg.id);
-
-                  return (
-                    <tr 
-                      key={leg.id || index}
-                      className="hover:bg-indigo-50/40 transition-colors group h-9 md:h-10"
-                    >
-                      {/* # Leg index badge */}
-                      <td className="py-1 px-1.5 text-center align-middle">
-                        <span className="w-5 h-5 rounded-full bg-slate-900 text-white font-mono font-bold text-[10px] inline-flex items-center justify-center">
-                          {index + 1}
-                        </span>
-                      </td>
-
-                      {/* Time & League */}
-                      <td className="py-1 px-2 align-middle">
-                        <div className="flex flex-col gap-0.2">
-                          <span className="font-mono font-bold text-slate-900 text-[11px] flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                            {leg.kickoffTime || 'Today'}
-                          </span>
-                          <span className="text-[10px] font-semibold text-slate-600 line-clamp-1" title={leg.league}>
-                            {leg.league}
-                          </span>
-                          <div className="flex items-center gap-1 mt-0.5">
-                            {leg.isBypassedBlacklist && (
-                              <span className="px-1 py-0.2 rounded text-[8.5px] font-mono font-semibold bg-amber-50 text-amber-800 border border-amber-200">
-                                Overridden
-                              </span>
-                            )}
-                            <span className="px-1 py-0.2 rounded text-[8.5px] font-mono bg-sky-50 text-sky-800 border border-sky-200">
-                              LiveScore IE
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Match Fixture (Home vs Away) */}
-                      <td className="py-1 px-2 align-middle">
-                        <div className="flex flex-col gap-0.5">
-                          <div className="flex items-center gap-1.5">
-                            {leg.homeLogo && (
-                              <img 
-                                src={leg.homeLogo} 
-                                alt="" 
-                                className="w-3.5 h-3.5 object-contain shrink-0 rounded-full"
-                                onError={(e) => { e.target.style.display = 'none'; }}
-                              />
-                            )}
-                            <span className={`text-[11.5px] ${isHomePick ? 'font-bold text-indigo-950' : 'font-medium text-slate-600'}`}>
-                              {leg.home}
-                              {isHomePick && <span className="ml-1 text-indigo-600 font-mono text-[10px]">★</span>}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-1.5">
-                            {leg.awayLogo && (
-                              <img 
-                                src={leg.awayLogo} 
-                                alt="" 
-                                className="w-3.5 h-3.5 object-contain shrink-0 rounded-full"
-                                onError={(e) => { e.target.style.display = 'none'; }}
-                              />
-                            )}
-                            <span className={`text-[11.5px] ${!isHomePick ? 'font-bold text-indigo-950' : 'font-medium text-slate-600'}`}>
-                              {leg.away}
-                              {!isHomePick && <span className="ml-1 text-indigo-600 font-mono text-[10px]">★</span>}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Model Selection */}
-                      <td className="py-1 px-2 align-middle">
-                        <div className="flex flex-col gap-0.5">
-                          <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-950 font-bold text-[10.5px]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 shrink-0" />
-                            <span>{leg.winningTeam}</span>
-                            <span className="text-[9.5px] font-mono text-indigo-700 bg-white px-1 py-0.2 rounded border border-indigo-100">
-                              {leg.pick === 'HOME' ? 'Home' : 'Away'}
-                            </span>
-                          </div>
-                          <span className="text-[9px] text-emerald-700 font-semibold flex items-center gap-0.5 pl-0.5">
-                            <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
-                            Win/Lose • 0% Draw
-                          </span>
-                        </div>
-                      </td>
-
-                      {/* Exact Win Probability */}
-                      <td className="py-1 px-1.5 align-middle">
-                        <div className="flex flex-col gap-0.5">
-                          <div className="flex items-center justify-between text-[11px] font-mono font-bold text-slate-900">
-                            <span>{leg.prob}%</span>
-                            <span className="text-[9px] font-normal text-slate-400">strike</span>
-                          </div>
-                          <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-full"
-                              style={{ width: `${Math.min(100, Math.max(10, leg.prob))}%` }}
-                            />
-                          </div>
-                          <span className="text-[8.5px] text-slate-400 font-mono">
-                            Draw: {leg.drawRisk || 12}%
-                          </span>
-                        </div>
-                      </td>
-
-                      {/* LiveScore Bet IE Odds */}
-                      <td className="py-1 px-1.5 align-middle">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-[11px] font-mono font-bold text-indigo-700 bg-slate-50 border border-slate-200 px-1.5 py-0.2 rounded inline-block text-center w-fit shadow-2xs">
-                            @{leg.odds.toFixed(2)}
-                          </span>
-                          {leg.evPercent !== undefined && (
-                            <span className={`text-[8.5px] font-mono font-semibold ${leg.evPercent >= 0 ? 'text-emerald-600' : 'text-slate-500'}`}>
-                              {leg.evPercent >= 0 ? `+${leg.evPercent}% EV` : `${leg.evPercent}% EV`}
-                            </span>
+                      {/* Kickoff & League */}
+                      <th 
+                        onClick={() => handleSort('time')}
+                        className="py-1 px-2 min-w-[130px] cursor-pointer hover:bg-slate-200/60 transition-colors"
+                      >
+                        <div className="inline-flex items-center gap-1">
+                          <span>Time & League</span>
+                          {sortField === 'time' && (
+                            sortDir === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-800" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-800" />
                           )}
                         </div>
-                      </td>
+                      </th>
 
-                      {/* Scoreline Projection */}
-                      <td className="py-1 px-1.5 text-center align-middle">
-                        <span className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 font-mono font-bold text-slate-800 text-[10.5px]">
-                          {leg.predictedScore || '2-0'}
-                        </span>
-                      </td>
+                      {/* Match Fixture */}
+                      <th className="py-1 px-2 min-w-[170px]">
+                        <span>Match Fixture</span>
+                      </th>
+
+                      {/* Model Selection */}
+                      <th className="py-1 px-2 min-w-[140px]">
+                        <span>Selection</span>
+                      </th>
+
+                      {/* Exact Win Probability */}
+                      <th 
+                        onClick={() => handleSort('prob')}
+                        className="py-1 px-1.5 min-w-[100px] cursor-pointer hover:bg-slate-200/60 transition-colors"
+                      >
+                        <div className="inline-flex items-center gap-1">
+                          <span>Win Prob</span>
+                          {sortField === 'prob' && (
+                            sortDir === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-800" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-800" />
+                          )}
+                        </div>
+                      </th>
+
+                      {/* LiveScore Bet IE Odds */}
+                      <th 
+                        onClick={() => handleSort('odds')}
+                        className="py-1 px-1.5 min-w-[100px] cursor-pointer hover:bg-slate-200/60 transition-colors"
+                      >
+                        <div className="inline-flex items-center gap-1">
+                          <span>LiveScore Odds</span>
+                          {sortField === 'odds' && (
+                            sortDir === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-800" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-800" />
+                          )}
+                        </div>
+                      </th>
+
+                      {/* Projected Score */}
+                      <th className="py-1 px-1.5 min-w-[70px] text-center">
+                        <span>Score</span>
+                      </th>
 
                       {/* Tactical Intel & Rationale */}
-                      <td className="py-1 px-2 align-middle">
-                        <p className="text-[10px] text-slate-600 line-clamp-1 leading-snug" title={leg.rationale}>
-                          {leg.rationale}
-                        </p>
-                      </td>
+                      <th className="py-1 px-2 min-w-[200px]">
+                        <span>Model Tactical Intel</span>
+                      </th>
 
-                      {/* Action buttons (Deep Research & Add to Slip) */}
-                      <td className="py-1 px-2 text-right align-middle">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => {
-                              if (typeof onOpenDeepResearch === 'function') {
-                                onOpenDeepResearch(leg);
-                              }
-                            }}
-                            className="p-1 rounded text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200 transition-colors cursor-pointer"
-                            title="Open Deep AI Forensic Research for this fixture"
-                          >
-                            <Brain className="w-3 h-3" />
-                          </button>
-
-                          <button
-                            onClick={() => handleLoadSingleLegToSlip(leg)}
-                            className="p-1 rounded text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 border border-slate-200 transition-colors cursor-pointer"
-                            title="Add single pick to Bet Slip 1"
-                          >
-                            {isLegAdded ? <Check className="w-3 h-3 text-emerald-600" /> : <Plus className="w-3 h-3" />}
-                          </button>
-                        </div>
-                      </td>
+                      {/* Actions */}
+                      <th className="py-1 px-2 min-w-[80px] text-right">
+                        <span>Actions</span>
+                      </th>
                     </tr>
+                  </thead>
+
+                  <tbody className="p-2.5 sm:p-0 flex flex-col md:table-row-group md:divide-y md:divide-slate-100 space-y-2.5 md:space-y-0 bg-white">
+                    {displayLegs.map((leg, index) => {
+                      const isHomePick = leg.pick === 'HOME';
+                      const isLegAdded = addedLegIds.has(leg.id);
+                      const legKey = leg.id || `${leg.home}-${leg.away}-${index}`;
+                      const isExpanded = expandedLegId === legKey;
+
+                      return (
+                        <React.Fragment key={legKey}>
+                          <tr 
+                            className="flex flex-col md:table-row bg-white rounded-xl md:rounded-none border border-slate-200/90 md:border-0 shadow-2xs md:shadow-none hover:border-slate-300 hover:bg-indigo-50/40 transition-all group md:h-10 cursor-pointer"
+                            onClick={() => toggleExpand(legKey)}
+                          >
+                            {/* ================= MOBILE COMPACT VIEW ================= */}
+                            <td className="md:hidden p-3 block">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="w-5 h-5 rounded-full bg-slate-900 text-white font-mono font-bold text-[10px] inline-flex items-center justify-center shrink-0">
+                                {index + 1}
+                              </span>
+                              <span className="font-mono font-bold text-slate-900 text-[10px] flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                {leg.kickoffTime || 'Today'}
+                              </span>
+                              <span className="text-[9.5px] font-semibold text-slate-500 bg-slate-100 px-1 rounded border border-slate-200">
+                                {leg.league}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                              <button
+                                onClick={() => {
+                                  if (typeof onOpenDeepResearch === 'function') {
+                                    onOpenDeepResearch(leg);
+                                  }
+                                }}
+                                className="p-1 rounded text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200 transition-colors cursor-pointer"
+                                title="Open Deep AI Forensic Research"
+                              >
+                                <Brain className="w-3 h-3" />
+                              </button>
+                              <button
+                                onClick={() => handleLoadSingleLegToSlip(leg)}
+                                className="p-1 rounded text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 border border-slate-200 transition-colors cursor-pointer"
+                                title="Add to Bet Slip 1"
+                              >
+                                {isLegAdded ? <Check className="w-3 h-3 text-emerald-600" /> : <Plus className="w-3 h-3" />}
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="font-bold text-slate-900 text-xs">
+                              <span className={isHomePick ? 'text-indigo-950 font-bold' : 'text-slate-700'}>{leg.home}</span>
+                              <span className="text-slate-400 font-normal mx-1">vs</span>
+                              <span className={!isHomePick ? 'text-indigo-950 font-bold' : 'text-slate-700'}>{leg.away}</span>
+                            </div>
+                            <span className="text-[11px] font-mono font-bold text-indigo-700 bg-slate-50 border border-slate-200 px-1.5 py-0.2 rounded shadow-2xs">
+                              @{leg.odds.toFixed(2)}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-between text-[10px] bg-slate-50 p-1.5 rounded border border-slate-200 mb-1">
+                            <div className="flex items-center gap-1">
+                              <span className="font-bold text-indigo-900 bg-white px-1.5 py-0.5 rounded border border-slate-200">
+                                {leg.winningTeam} ({leg.pick === 'HOME' ? 'Home' : 'Away'})
+                              </span>
+                              <span className="text-emerald-700 font-semibold">0% Draw</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 font-mono">
+                              <span className="font-bold text-slate-900">{leg.prob}% strike</span>
+                              {leg.evPercent !== undefined && (
+                                <span className={leg.evPercent >= 0 ? 'text-emerald-600 font-bold' : 'text-slate-500'}>
+                                  {leg.evPercent >= 0 ? `+${leg.evPercent}% EV` : `${leg.evPercent}% EV`}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-1 text-[10px]">
+                            <span className="text-slate-500 font-mono">
+                              Projected Score: <strong className="text-slate-800">{leg.predictedScore || '2-0'}</strong>
+                            </span>
+                            <span className="text-indigo-600 font-semibold flex items-center gap-0.5 cursor-pointer">
+                              {isExpanded ? 'Hide' : 'Rationale'}
+                              {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                            </span>
+                          </div>
+
+                          {isExpanded && (
+                            <div className="mt-2 pt-2 border-t border-slate-100 text-[10px] space-y-1 bg-slate-50/60 p-2 rounded">
+                              <div className="text-slate-700 leading-snug">
+                                <strong>Tactical Rationale:</strong> {leg.rationale}
+                              </div>
+                              <div className="flex items-center justify-between text-slate-500 pt-1 font-mono">
+                                <span>Draw Risk: <strong>{leg.drawRisk || 12}%</strong></span>
+                                <span>Platform: <strong>LiveScore Bet IE</strong></span>
+                              </div>
+                            </div>
+                          )}
+                        </td>
+
+                        {/* ================= DESKTOP 1-ROW VIEW ================= */}
+                        {/* Dropdown Chevron */}
+                        <td className="hidden md:table-cell py-1 px-1 text-center text-slate-400">
+                          {isExpanded ? <ChevronUp className="w-3.5 h-3.5 mx-auto text-indigo-600" /> : <ChevronDown className="w-3.5 h-3.5 mx-auto" />}
+                        </td>
+
+                        {/* # Leg index badge */}
+                        <td className="hidden md:table-cell py-1 px-1.5 text-center align-middle">
+                          <span className="w-5 h-5 rounded-full bg-slate-900 text-white font-mono font-bold text-[10px] inline-flex items-center justify-center">
+                            {index + 1}
+                          </span>
+                        </td>
+
+                        {/* Time & League */}
+                        <td className="hidden md:table-cell py-1 px-2 align-middle">
+                          <div className="flex flex-col gap-0.2">
+                            <span className="font-mono font-bold text-slate-900 text-[11px] flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                              {leg.kickoffTime || 'Today'}
+                            </span>
+                            <span className="text-[10px] font-semibold text-slate-600 line-clamp-1" title={leg.league}>
+                              {leg.league}
+                            </span>
+                            <div className="flex items-center gap-1 mt-0.5">
+                              {leg.isBypassedBlacklist && (
+                                <span className="px-1 py-0.2 rounded text-[8.5px] font-mono font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+                                  Overridden
+                                </span>
+                              )}
+                              <span className="px-1 py-0.2 rounded text-[8.5px] font-mono bg-sky-50 text-sky-800 border border-sky-200">
+                                LiveScore IE
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Match Fixture (Home vs Away) */}
+                        <td className="hidden md:table-cell py-1 px-2 align-middle">
+                          <div className="flex flex-col gap-0.5">
+                            <div className="flex items-center gap-1.5">
+                              {leg.homeLogo && (
+                                <img 
+                                  src={leg.homeLogo} 
+                                  alt="" 
+                                  className="w-3.5 h-3.5 object-contain shrink-0 rounded-full"
+                                  onError={(e) => { e.target.style.display = 'none'; }}
+                                />
+                              )}
+                              <span className={`text-[11.5px] ${isHomePick ? 'font-bold text-indigo-950' : 'font-medium text-slate-600'}`}>
+                                {leg.home}
+                                {isHomePick && <span className="ml-1 text-indigo-600 font-mono text-[10px]">★</span>}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-1.5">
+                              {leg.awayLogo && (
+                                <img 
+                                  src={leg.awayLogo} 
+                                  alt="" 
+                                  className="w-3.5 h-3.5 object-contain shrink-0 rounded-full"
+                                  onError={(e) => { e.target.style.display = 'none'; }}
+                                />
+                              )}
+                              <span className={`text-[11.5px] ${!isHomePick ? 'font-bold text-indigo-950' : 'font-medium text-slate-600'}`}>
+                                {leg.away}
+                                {!isHomePick && <span className="ml-1 text-indigo-600 font-mono text-[10px]">★</span>}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Model Selection */}
+                        <td className="hidden md:table-cell py-1 px-2 align-middle">
+                          <div className="flex flex-col gap-0.5">
+                            <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-950 font-bold text-[10.5px]">
+                              <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 shrink-0" />
+                              <span>{leg.winningTeam}</span>
+                              <span className="text-[9.5px] font-mono text-indigo-700 bg-white px-1 py-0.2 rounded border border-indigo-100">
+                                {leg.pick === 'HOME' ? 'Home' : 'Away'}
+                              </span>
+                            </div>
+                            <span className="text-[9px] text-emerald-700 font-semibold flex items-center gap-0.5 pl-0.5">
+                              <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
+                              Win/Lose • 0% Draw
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Exact Win Probability */}
+                        <td className="hidden md:table-cell py-1 px-1.5 align-middle">
+                          <div className="flex flex-col gap-0.5">
+                            <div className="flex items-center justify-between text-[11px] font-mono font-bold text-slate-900">
+                              <span>{leg.prob}%</span>
+                              <span className="text-[9px] font-normal text-slate-400">strike</span>
+                            </div>
+                            <div className="w-full bg-slate-100 h-1 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-full"
+                                style={{ width: `${Math.min(100, Math.max(10, leg.prob))}%` }}
+                              />
+                            </div>
+                            <span className="text-[8.5px] text-slate-400 font-mono">
+                              Draw: {leg.drawRisk || 12}%
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* LiveScore Bet IE Odds */}
+                        <td className="hidden md:table-cell py-1 px-1.5 align-middle">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-[11px] font-mono font-bold text-indigo-700 bg-slate-50 border border-slate-200 px-1.5 py-0.2 rounded inline-block text-center w-fit shadow-2xs">
+                              @{leg.odds.toFixed(2)}
+                            </span>
+                            {leg.evPercent !== undefined && (
+                              <span className={`text-[8.5px] font-mono font-semibold ${leg.evPercent >= 0 ? 'text-emerald-600' : 'text-slate-500'}`}>
+                                {leg.evPercent >= 0 ? `+${leg.evPercent}% EV` : `${leg.evPercent}% EV`}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Scoreline Projection */}
+                        <td className="hidden md:table-cell py-1 px-1.5 text-center align-middle">
+                          <span className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 font-mono font-bold text-slate-800 text-[10.5px]">
+                            {leg.predictedScore || '2-0'}
+                          </span>
+                        </td>
+
+                        {/* Tactical Intel & Rationale */}
+                        <td className="hidden md:table-cell py-1 px-2 align-middle">
+                          <p className="text-[10px] text-slate-600 line-clamp-1 leading-snug" title={leg.rationale}>
+                            {leg.rationale}
+                          </p>
+                        </td>
+
+                        {/* Action buttons (Deep Research & Add to Slip) */}
+                        <td className="hidden md:table-cell py-1 px-2 text-right align-middle" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => {
+                                if (typeof onOpenDeepResearch === 'function') {
+                                  onOpenDeepResearch(leg);
+                                }
+                              }}
+                              className="p-1 rounded text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200 transition-colors cursor-pointer"
+                              title="Open Deep AI Forensic Research for this fixture"
+                            >
+                              <Brain className="w-3 h-3" />
+                            </button>
+
+                            <button
+                              onClick={() => handleLoadSingleLegToSlip(leg)}
+                              className="p-1 rounded text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 border border-slate-200 transition-colors cursor-pointer"
+                              title="Add single pick to Bet Slip 1"
+                            >
+                              {isLegAdded ? <Check className="w-3 h-3 text-emerald-600" /> : <Plus className="w-3 h-3" />}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+
+                      {/* DESKTOP EXPANDED DETAIL ROW */}
+                      {isExpanded && (
+                        <tr className="hidden md:table-row bg-slate-50/80 border-b border-slate-200">
+                          <td colSpan={10} className="p-3">
+                            <div className="bg-white rounded-lg border border-slate-200 p-2.5 flex items-center justify-between text-xs">
+                              <div>
+                                <span className="font-bold text-slate-800">Tactical Forensics &amp; Rationale:</span> {leg.rationale}
+                              </div>
+                              <div className="font-mono text-slate-600 shrink-0 pl-3">
+                                Draw Risk: <strong>{leg.drawRisk || 12}%</strong> &bull; Scoreline: <strong>{leg.predictedScore || '2-0'}</strong>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>
@@ -771,6 +873,8 @@ export default function AllDayWinnerPage({
               </button>
             </div>
           </div>
+            </>
+          )}
         </div>
       )}
     </div>

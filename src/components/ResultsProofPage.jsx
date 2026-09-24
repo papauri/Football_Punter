@@ -16,7 +16,8 @@ import {
   ArrowDown,
   Lock,
   Clock,
-  ChevronDown
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
 import BacktestAccuracyTrendChart from './BacktestAccuracyTrendChart';
@@ -77,6 +78,16 @@ export default function ResultsProofPage({
   const [showBacktestChart, setShowBacktestChart] = useState(false);
   const [sortField, setSortField] = useState('time');
   const [sortDirection, setSortDirection] = useState('asc'); // 'asc' | 'desc'
+  const [expandedMatchId, setExpandedMatchId] = useState(null);
+  const [expandedLedgerId, setExpandedLedgerId] = useState(null);
+  const [collapsedResults, setCollapsedResults] = useState(false);
+
+  const toggleExpand = (id) => {
+    setExpandedMatchId(prev => (prev === id ? null : id));
+  };
+  const toggleLedgerExpand = (id) => {
+    setExpandedLedgerId(prev => (prev === id ? null : id));
+  };
   const [showLedger, setShowLedger] = useState(false);
   const [ledgerEntries, setLedgerEntries] = useState([]);
   const [ledgerLoading, setLedgerLoading] = useState(false);
@@ -405,7 +416,7 @@ export default function ResultsProofPage({
 
             <button
               onClick={() => setShowBacktestChart(!showBacktestChart)}
-              className={`px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
+              className={`h-8 px-3 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
                 showBacktestChart 
                   ? 'bg-indigo-600 text-white shadow-xs' 
                   : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200'
@@ -418,7 +429,7 @@ export default function ResultsProofPage({
 
             <button
               onClick={() => setShowLedger(!showLedger)}
-              className={`px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
+              className={`h-8 px-3 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
                 showLedger
                   ? 'bg-amber-600 text-white shadow-xs'
                   : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200'
@@ -451,7 +462,7 @@ export default function ResultsProofPage({
               placeholder="Search team name (e.g. Real Madrid, Arsenal, Barcelona)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-8 py-2 text-xs font-medium bg-slate-50 text-slate-900 placeholder:text-slate-400 border border-slate-200 rounded-lg shadow-2xs hover:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all"
+              className="h-8 w-full pl-9 pr-8 text-xs font-medium bg-slate-50 text-slate-900 placeholder:text-slate-400 border border-slate-200 rounded-lg shadow-2xs hover:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all"
             />
             {searchQuery && (
               <button
@@ -528,10 +539,37 @@ export default function ResultsProofPage({
       </div>
 
       {/* Compact Results Table */}
-      <div className="bg-white border border-slate-200 rounded-lg overflow-x-auto shadow-2xs">
-        <table className="w-full text-left border-collapse text-xs">
-          <thead>
+      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
+        <div className="p-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider">
+              Audited Match Outcomes &amp; Post-Mortem
+            </h3>
+            <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">
+              {filteredResults.length} Audited Matches
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setCollapsedResults(!collapsedResults)}
+            className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+            title={collapsedResults ? 'Expand Results' : 'Collapse Results'}
+          >
+            <span>{collapsedResults ? 'Expand' : 'Collapse'}</span>
+            {collapsedResults ? <ChevronDown className="w-3.5 h-3.5 text-slate-500" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-500" />}
+          </button>
+        </div>
+
+        {!collapsedResults && (
+          <>
+            <table className="w-full text-left border-collapse text-xs">
+          <thead className="hidden md:table-header-group">
             <tr className="bg-slate-50 border-b border-slate-200 select-none h-9">
+              {/* Expand Toggle */}
+              <th className="py-2 px-1.5 w-7 text-center"></th>
+
               {/* Kickoff Day & Time */}
               <th 
                 onClick={() => handleSort('time')}
@@ -671,17 +709,17 @@ export default function ResultsProofPage({
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="p-2.5 sm:p-0 flex flex-col md:table-row-group md:divide-y md:divide-slate-100 space-y-2.5 md:space-y-0">
             {isLoading ? (
-              <tr>
-                <td colSpan={9} className="py-12 text-center text-slate-400">
+              <tr className="flex flex-col md:table-row">
+                <td colSpan={10} className="py-12 text-center text-slate-400 block md:table-cell">
                   <RefreshCw className="w-6 h-6 animate-spin mx-auto text-indigo-600 mb-2" />
                   <span className="font-semibold text-slate-600 text-xs">Auditing results against historical data...</span>
                 </td>
               </tr>
             ) : filteredResults.length === 0 ? (
-              <tr>
-                <td colSpan={9} className="py-12 text-center text-slate-400">
+              <tr className="flex flex-col md:table-row">
+                <td colSpan={10} className="py-12 text-center text-slate-400 block md:table-cell">
                   {selectedDate === getTodayIso() ? (
                     <div className="max-w-md mx-auto p-5 bg-slate-50/80 rounded-2xl border border-slate-200 text-center">
                       <Calendar className="w-8 h-8 text-indigo-500 mx-auto mb-2.5" />
@@ -735,104 +773,299 @@ export default function ResultsProofPage({
                 const dt = formatSafeDateTime(m, null, tzSettings);
                 const relativeText = formatRelativeDayTime(m, tzSettings);
 
+                const matchKey = m.id || `${m.home}-${m.away}-${m.date || idx}`;
+                const isExpanded = expandedMatchId === matchKey;
+
                 return (
-                  <tr 
-                    key={m.id || idx} 
-                    className={`hover:bg-indigo-50/20 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} h-11`}
-                  >
-                    {/* Kickoff Day & Time */}
-                    <td className="py-2 px-3 whitespace-nowrap">
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs">
-                          <Calendar className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                          <span>{relativeText}</span>
-                        </div>
-                        {dt.day && (relativeText.startsWith('Today') || relativeText.startsWith('Tomorrow') || relativeText.startsWith('Yesterday')) && (
-                          <span className="text-[10px] text-slate-400 pl-5 font-medium">
-                            {dt.day}, {dt.date}
+                  <React.Fragment key={matchKey}>
+                    <tr 
+                      className={`flex flex-col md:table-row bg-white rounded-xl md:rounded-none border border-slate-200/90 md:border-0 shadow-2xs md:shadow-none hover:border-slate-300 transition-all md:h-11 cursor-pointer ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}
+                      onClick={() => toggleExpand(matchKey)}
+                    >
+                      {/* ================= MOBILE COMPACT CARD VIEW ================= */}
+                      <td className="md:hidden p-3 block">
+                        <div className="flex justify-between items-start mb-1.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-semibold text-slate-700 font-mono text-[10px] flex items-center gap-1">
+                              <Calendar className="w-2.5 h-2.5 text-indigo-600 shrink-0" />
+                              {relativeText}
+                            </span>
+                            <span className="text-[9.5px] text-slate-400 bg-slate-100 px-1 rounded border border-slate-200">
+                              {m.league || 'Soccer'}
+                            </span>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] border ${
+                            isHit
+                              ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                              : isPush
+                              ? 'bg-amber-100 text-amber-800 border-amber-300'
+                              : isPass
+                              ? 'bg-slate-100 text-slate-700 border-slate-300'
+                              : 'bg-rose-100 text-rose-800 border-rose-300'
+                          }`}>
+                            {isHit ? 'HIT' : isPush ? 'PUSH' : isPass ? 'PASS' : 'MISS'}
                           </span>
+                        </div>
+
+                        {/* Matchup */}
+                        <div className="flex justify-between items-center mb-1.5">
+                          <div className="font-bold text-slate-900 text-xs truncate">
+                            {m.home} <span className="text-slate-400 font-normal">vs</span> {m.away}
+                          </div>
+                          <div className="flex items-center gap-1 font-mono text-xs shrink-0">
+                            <span className="font-black bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-slate-900">
+                              {actualScore}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Prediction vs Actual line */}
+                        <div className="flex items-center justify-between text-[10px] bg-slate-50 p-1.5 rounded border border-slate-200 mb-1.5">
+                          <div className="truncate">
+                            <span className="text-slate-500">Pick: </span>
+                            <strong className="text-slate-800">
+                              {m.smartMarket?.pickLabel || (m.predictedWinner === 'HOME' ? m.home : m.predictedWinner === 'AWAY' ? m.away : 'Draw')}
+                            </strong>
+                          </div>
+                          <div className="flex items-center gap-1 font-mono shrink-0 pl-1">
+                            <span className="text-slate-500">Pred:</span>
+                            <span className="font-bold text-slate-700">{predictedScore}</span>
+                            {isExactScore && <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />}
+                          </div>
+                        </div>
+
+                        {/* Action row & Collapsible trigger */}
+                        <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[10px]">
+                          <span className="text-slate-400 font-mono">
+                            Conf: <strong>{(m.confidence != null) ? `${safeToFixed(m.confidence, 0)}%` : '68%'}</strong>
+                          </span>
+                          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(m); }}
+                              className="px-2 py-0.5 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
+                            >
+                              Forensics
+                            </button>
+                            <span className="text-indigo-600 font-semibold flex items-center gap-0.5 cursor-pointer pl-1" onClick={() => toggleExpand(matchKey)}>
+                              {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Collapsible Mobile Content */}
+                        {isExpanded && (
+                          <div className="mt-2 pt-2 border-t border-slate-100 space-y-1.5 bg-slate-50/80 p-2 rounded-lg text-[10px]">
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="bg-white p-2 rounded border border-slate-200">
+                                <span className="text-slate-500 font-semibold block mb-0.5">Verification Details</span>
+                                <div className="space-y-0.5 text-slate-700 font-mono">
+                                  <div>Actual Winner: <strong>{actualWinner}</strong></div>
+                                  <div>Model Predicted: <strong>{m.predictedWinner || 'N/A'}</strong></div>
+                                  <div>Outcome Status: <strong>{isHit ? 'Verified Hit' : isPush ? 'Push' : 'Missed Prediction'}</strong></div>
+                                </div>
+                              </div>
+                              <div className="bg-white p-2 rounded border border-slate-200">
+                                <span className="text-slate-500 font-semibold block mb-0.5">Statistical Expectancy</span>
+                                <div className="space-y-0.5 text-slate-700 font-mono">
+                                  <div>Projected Score: <strong>{predictedScore}</strong></div>
+                                  <div>Full-Time Score: <strong>{actualScore}</strong></div>
+                                  <div>Confidence Level: <strong>{(m.confidence != null) ? `${safeToFixed(m.confidence, 0)}%` : '68%'}</strong></div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         )}
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* League */}
-                    <td className="py-2 px-3">
-                      <span 
-                        className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[11px] truncate max-w-[130px] border border-slate-200"
-                        title={m.league}
-                      >
-                        {m.league || 'Soccer'}
-                      </span>
-                    </td>
+                      {/* ================= DESKTOP 1-ROW TABLE VIEW ================= */}
+                      {/* Dropdown Chevron */}
+                      <td className="hidden md:table-cell py-2 px-1.5 text-center text-slate-400">
+                        {isExpanded ? <ChevronUp className="w-3.5 h-3.5 mx-auto text-indigo-600" /> : <ChevronDown className="w-3.5 h-3.5 mx-auto" />}
+                      </td>
 
-                    {/* Fixture */}
-                    <td className="py-2 px-3 min-w-[190px]">
-                      <div className="font-semibold text-slate-900 flex items-center gap-1.5 flex-wrap">
-                        <span className="text-slate-900 font-bold">{m.home}</span>
-                        <span className="text-[10px] text-slate-400 font-normal">vs</span>
-                        <span className="text-slate-900 font-bold">{m.away}</span>
-                      </div>
-                    </td>
+                      {/* Kickoff Day & Time */}
+                      <td className="hidden md:table-cell py-2 px-3 whitespace-nowrap">
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs">
+                            <Calendar className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                            <span>{relativeText}</span>
+                          </div>
+                          {dt.day && (relativeText.startsWith('Today') || relativeText.startsWith('Tomorrow') || relativeText.startsWith('Yesterday')) && (
+                            <span className="text-[10px] text-slate-400 pl-5 font-medium">
+                              {dt.day}, {dt.date}
+                            </span>
+                          )}
+                        </div>
+                      </td>
 
-                    {/* Actual Score */}
-                    <td className="py-2 px-2.5 text-center whitespace-nowrap">
-                      <span className="font-black font-mono text-slate-900 text-xs bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                        {actualScore}
-                      </span>
-                    </td>
-
-                    {/* Predicted Score */}
-                    <td className="py-2 px-2.5 text-center whitespace-nowrap">
-                      <div className="flex items-center justify-center gap-1.5">
-                        <span className="font-mono text-slate-700 text-xs font-semibold">{predictedScore}</span>
-                        {isExactScore && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" title="Exact score predicted!" />}
-                      </div>
-                    </td>
-
-                    {/* Pick Res Hit/Miss/Push/Pass */}
-                    <td className="py-2 px-2.5 text-center whitespace-nowrap">
-                      <span className={`inline-block px-2.5 py-0.5 rounded-full font-bold text-[11px] border ${
-                        isHit
-                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                          : isPush
-                          ? 'bg-amber-100 text-amber-800 border-amber-300'
-                          : isPass
-                          ? 'bg-slate-100 text-slate-700 border-slate-300'
-                          : 'bg-rose-100 text-rose-800 border-rose-300'
-                      }`}>
-                        {isHit ? 'HIT' : isPush ? 'PUSH' : isPass ? 'PASS' : 'MISS'}
-                      </span>
-                    </td>
-
-                    {/* Confidence */}
-                    <td className="py-2 px-2 text-center font-mono font-bold text-slate-700 text-xs whitespace-nowrap">
-                      {(m.confidence != null) ? `${safeToFixed(m.confidence, 0)}%` : '68%'}
-                    </td>
-
-                    {/* Market Verification */}
-                    <td className="py-2 px-3 text-[11px] whitespace-nowrap">
-                      <div className="flex flex-col">
-                        <span className="font-medium text-slate-800 truncate max-w-[170px]">
-                          Pick: <strong>{m.smartMarket?.pickLabel || (m.predictedWinner === 'HOME' ? m.home : m.predictedWinner === 'AWAY' ? m.away : 'Draw')}</strong>
+                      {/* League */}
+                      <td className="hidden md:table-cell py-2 px-3">
+                        <span 
+                          className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[11px] truncate max-w-[130px] border border-slate-200"
+                          title={m.league}
+                        >
+                          {m.league || 'Soccer'}
                         </span>
-                        <span className="text-[10px] text-slate-500">
-                          Actual: {actualWinner === 'HOME' ? `${m.home} Win` : actualWinner === 'AWAY' ? `${m.away} Win` : 'Draw'}
+                      </td>
+
+                      {/* Fixture */}
+                      <td className="hidden md:table-cell py-2 px-3 min-w-[190px]">
+                        <div className="font-semibold text-slate-900 flex items-center gap-1.5 flex-wrap">
+                          <span className="text-slate-900 font-bold">{m.home}</span>
+                          <span className="text-[10px] text-slate-400 font-normal">vs</span>
+                          <span className="text-slate-900 font-bold">{m.away}</span>
+                        </div>
+                      </td>
+
+                      {/* Actual Score */}
+                      <td className="hidden md:table-cell py-2 px-2.5 text-center whitespace-nowrap">
+                        <span className="font-black font-mono text-slate-900 text-xs bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                          {actualScore}
                         </span>
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* Analysis Button */}
-                    <td className="py-2 px-2.5 text-center whitespace-nowrap">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(m); }}
-                        className="px-2 py-1 rounded text-[11px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
-                        title="Open tactical root cause forensics"
-                      >
-                        Analysis
-                      </button>
-                    </td>
+                      {/* Predicted Score */}
+                      <td className="hidden md:table-cell py-2 px-2.5 text-center whitespace-nowrap">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <span className="font-mono text-slate-700 text-xs font-semibold">{predictedScore}</span>
+                          {isExactScore && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" title="Exact score predicted!" />}
+                        </div>
+                      </td>
 
-                  </tr>
+                      {/* Pick Res Hit/Miss/Push/Pass */}
+                      <td className="hidden md:table-cell py-2 px-2.5 text-center whitespace-nowrap">
+                        <span className={`inline-block px-2.5 py-0.5 rounded-full font-bold text-[11px] border ${
+                          isHit
+                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                            : isPush
+                            ? 'bg-amber-100 text-amber-800 border-amber-300'
+                            : isPass
+                            ? 'bg-slate-100 text-slate-700 border-slate-300'
+                            : 'bg-rose-100 text-rose-800 border-rose-300'
+                        }`}>
+                          {isHit ? 'HIT' : isPush ? 'PUSH' : isPass ? 'PASS' : 'MISS'}
+                        </span>
+                      </td>
+
+                      {/* Confidence */}
+                      <td className="hidden md:table-cell py-2 px-2 text-center font-mono font-bold text-slate-700 text-xs whitespace-nowrap">
+                        {(m.confidence != null) ? `${safeToFixed(m.confidence, 0)}%` : '68%'}
+                      </td>
+
+                      {/* Market Verification */}
+                      <td className="hidden md:table-cell py-2 px-3 text-[11px] whitespace-nowrap">
+                        <div className="flex flex-col">
+                          <span className="font-medium text-slate-800 truncate max-w-[170px]">
+                            Pick: <strong>{m.smartMarket?.pickLabel || (m.predictedWinner === 'HOME' ? m.home : m.predictedWinner === 'AWAY' ? m.away : 'Draw')}</strong>
+                          </span>
+                          <span className="text-[10px] text-slate-500">
+                            Actual: {actualWinner === 'HOME' ? `${m.home} Win` : actualWinner === 'AWAY' ? `${m.away} Win` : 'Draw'}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* Analysis Button */}
+                      <td className="hidden md:table-cell py-2 px-2.5 text-center whitespace-nowrap">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(m); }}
+                          className="px-2 py-1 rounded text-[11px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
+                          title="Open tactical root cause forensics"
+                        >
+                          Forensics
+                        </button>
+                      </td>
+                    </tr>
+
+                    {/* ================= DESKTOP EXPANDED DETAIL ROW ================= */}
+                    {isExpanded && (
+                      <tr className="hidden md:table-row bg-slate-50/80 border-b border-slate-200">
+                        <td colSpan={10} className="p-3">
+                          <div className="bg-white rounded-lg border border-slate-200 p-3 space-y-3 shadow-2xs">
+                            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-slate-800 text-xs">
+                                  Full-Time Post-Match Forensic Audit:
+                                </span>
+                                <span className="text-[11px] text-slate-500 font-mono">
+                                  {m.home} vs {m.away} ({m.league || 'League Match'})
+                                </span>
+                              </div>
+                              <span className={`text-[11px] font-bold px-2 py-0.5 rounded border ${
+                                isHit
+                                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                                  : isPush
+                                  ? 'bg-amber-50 text-amber-800 border-amber-300'
+                                  : 'bg-rose-50 text-rose-800 border-rose-300'
+                              }`}>
+                                {isHit ? '✓ Model Pick Verified' : isPush ? 'Push Returned' : 'Model Pick Missed'}
+                              </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                              <div className="bg-slate-50/60 p-2.5 rounded-lg border border-slate-200">
+                                <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                                  Score &amp; Outcome Accuracy
+                                </div>
+                                <div className="space-y-1 font-mono text-[11px]">
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-600">Actual Full-Time:</span>
+                                    <span className="font-black text-slate-900">{actualScore}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-600">Model Predicted Score:</span>
+                                    <span className="font-bold text-indigo-700">{predictedScore}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-600">Score Hit Type:</span>
+                                    <span className="font-medium text-slate-800">{isExactScore ? 'Exact Score Hit' : 'Trend Match'}</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="bg-slate-50/60 p-2.5 rounded-lg border border-slate-200">
+                                <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                                  Model Calibration
+                                </div>
+                                <div className="space-y-1 font-mono text-[11px]">
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-600">Model Confidence:</span>
+                                    <span className="font-bold text-slate-800">{(m.confidence != null) ? `${safeToFixed(m.confidence, 0)}%` : '68%'}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-600">Smart Pick:</span>
+                                    <span className="font-bold text-indigo-700">{m.smartMarket?.pickLabel || 'Outcome Pick'}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-600">Match Winner:</span>
+                                    <span className="font-medium text-slate-700">{actualWinner}</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="bg-slate-50/60 p-2.5 rounded-lg border border-slate-200 flex flex-col justify-between">
+                                <div>
+                                  <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                                    Forensic Deep Dive
+                                  </div>
+                                  <p className="text-[10px] text-slate-500 leading-tight">
+                                    Open root-cause analytics to inspect Poisson goal parameters, tactical setup, and expected goals (xG) differentials.
+                                  </p>
+                                </div>
+                                <div className="pt-2">
+                                  <button
+                                    onClick={() => onOpenDeepResearch && onOpenDeepResearch(m)}
+                                    className="w-full py-1 text-center bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold border border-teal-200 rounded text-[11px] transition-colors cursor-pointer"
+                                  >
+                                    Launch Tactical Forensics
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 );
               })
             )}
@@ -892,6 +1125,8 @@ export default function ResultsProofPage({
             </div>
           </div>
         )}
+          </>
+        )}
       </div>
 
       {/* ── Pre-Kickoff Snapshot Ledger Panel ── */}
@@ -933,8 +1168,9 @@ export default function ResultsProofPage({
               </div>
             ) : (
               <table className="w-full text-left border-collapse text-xs">
-                <thead>
+                <thead className="hidden md:table-header-group">
                   <tr className="bg-slate-50 border-b border-slate-200 h-9 select-none">
+                    <th className="py-2 px-1.5 w-7 text-center"></th>
                     <th className="py-2 px-3 min-w-[145px] text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                       <div className="flex items-center gap-1"><Clock className="w-3 h-3 text-amber-500" /><span>Snapshot Frozen</span></div>
                     </th>
@@ -947,94 +1183,212 @@ export default function ResultsProofPage({
                     <th className="py-2 px-2.5 w-24 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Result</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="p-2.5 sm:p-0 flex flex-col md:table-row-group md:divide-y md:divide-slate-100 space-y-2.5 md:space-y-0">
                   {ledgerEntries.map((entry, idx) => {
                     const snapshotDate = entry.snapshotAt ? new Date(entry.snapshotAt) : null;
                     const kickoffDate = entry.kickoffUtc ? new Date(entry.kickoffUtc) : null;
                     const isResolved = entry.isHit !== null;
+                    const ledgerKey = entry.id || `ledger-${idx}`;
+                    const isExpanded = expandedLedgerId === ledgerKey;
 
                     return (
-                      <tr key={entry.id || idx} className={`hover:bg-amber-50/20 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} h-11`}>
-                        {/* Snapshot timestamp */}
-                        <td className="py-2 px-3 whitespace-nowrap">
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-1 font-bold text-slate-800 text-xs">
-                              <Lock className="w-3 h-3 text-amber-500 shrink-0" />
-                              <span>{snapshotDate ? snapshotDate.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' }) : '—'}</span>
+                      <React.Fragment key={ledgerKey}>
+                        <tr 
+                          className={`flex flex-col md:table-row bg-white rounded-xl md:rounded-none border border-amber-200/90 md:border-0 shadow-2xs md:shadow-none hover:border-amber-300 transition-all md:h-11 cursor-pointer ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}
+                          onClick={() => toggleLedgerExpand(ledgerKey)}
+                        >
+                          {/* ================= MOBILE COMPACT CARD VIEW ================= */}
+                          <td className="md:hidden p-3 block">
+                            <div className="flex justify-between items-start mb-1.5">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="font-semibold text-slate-700 font-mono text-[10px] flex items-center gap-1">
+                                  <Lock className="w-2.5 h-2.5 text-amber-500 shrink-0" />
+                                  {snapshotDate ? snapshotDate.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' }) : '—'}
+                                </span>
+                                <span className="text-[9.5px] text-slate-400 bg-slate-100 px-1 rounded border border-slate-200">
+                                  {entry.league || 'Soccer'}
+                                </span>
+                              </div>
+                              <div>
+                                {!isResolved ? (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border bg-slate-100 text-slate-600 border-slate-200">
+                                    <Clock className="w-2.5 h-2.5" /> Pending
+                                  </span>
+                                ) : entry.isHit ? (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border bg-emerald-100 text-emerald-800 border-emerald-300">
+                                    <CheckCircle2 className="w-2.5 h-2.5" /> HIT
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border bg-rose-100 text-rose-800 border-rose-300">
+                                    <XCircle className="w-2.5 h-2.5" /> MISS
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                            <span className="text-[10px] text-slate-400 pl-4">
-                              {snapshotDate ? snapshotDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}{' '}
-                              {entry.minutesBeforeKickoff != null ? `(${entry.minutesBeforeKickoff} min before)` : ''}
+
+                            {/* Fixture */}
+                            <div className="flex justify-between items-center mb-1.5">
+                              <div className="font-bold text-slate-900 text-xs truncate">
+                                {entry.home} <span className="text-slate-400 font-normal">vs</span> {entry.away}
+                              </div>
+                              <span className="font-mono text-xs font-semibold text-slate-700 shrink-0">
+                                Pred: {entry.predictedScore || '—'}
+                              </span>
+                            </div>
+
+                            {/* Prediction details */}
+                            <div className="flex items-center justify-between text-[10px] bg-amber-50/50 p-1.5 rounded border border-amber-200/80 mb-1.5">
+                              <div className="flex items-center gap-1 truncate">
+                                <span className="text-slate-500">Pick:</span>
+                                <span className={`font-bold ${
+                                  entry.predictedWinner === 'HOME' ? 'text-indigo-600' :
+                                  entry.predictedWinner === 'AWAY' ? 'text-rose-600' : 'text-amber-600'
+                                }`}>
+                                  {entry.smartMarket?.label || entry.smartMarket?.pick || (entry.predictedWinner === 'HOME' ? entry.home : entry.predictedWinner === 'AWAY' ? entry.away : 'Draw')}
+                                </span>
+                              </div>
+                              <span className="font-mono text-slate-600 shrink-0">
+                                Conf: <strong>{entry.confidence != null ? `${safeToFixed(entry.confidence, 0)}%` : '—'}</strong>
+                              </span>
+                            </div>
+
+                            {/* Collapsible trigger */}
+                            <div className="pt-1 border-t border-slate-100 flex items-center justify-between text-[10px] text-amber-700 font-semibold select-none">
+                              <span>{isExpanded ? 'Hide Freeze Details' : 'Show Immutable Verification Data'}</span>
+                              {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                            </div>
+
+                            {/* Collapsible mobile drawer */}
+                            {isExpanded && (
+                              <div className="mt-2 pt-2 border-t border-slate-100 space-y-1 bg-amber-50/40 p-2 rounded-lg text-[10px] font-mono text-slate-700">
+                                <div>Frozen Time: <strong>{snapshotDate ? snapshotDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</strong> {entry.minutesBeforeKickoff != null ? `(${entry.minutesBeforeKickoff}m before kickoff)` : ''}</div>
+                                <div>Kickoff UTC: <strong>{kickoffDate ? kickoffDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</strong></div>
+                                <div>Immutability: <strong>SHA-256 Validated Pre-Kickoff</strong></div>
+                              </div>
+                            )}
+                          </td>
+
+                          {/* ================= DESKTOP 1-ROW TABLE VIEW ================= */}
+                          {/* Dropdown Chevron */}
+                          <td className="hidden md:table-cell py-2 px-1.5 text-center text-slate-400">
+                            {isExpanded ? <ChevronUp className="w-3.5 h-3.5 mx-auto text-amber-600" /> : <ChevronDown className="w-3.5 h-3.5 mx-auto" />}
+                          </td>
+
+                          {/* Snapshot timestamp */}
+                          <td className="hidden md:table-cell py-2 px-3 whitespace-nowrap">
+                            <div className="flex flex-col">
+                              <div className="flex items-center gap-1 font-bold text-slate-800 text-xs">
+                                <Lock className="w-3 h-3 text-amber-500 shrink-0" />
+                                <span>{snapshotDate ? snapshotDate.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' }) : '—'}</span>
+                              </div>
+                              <span className="text-[10px] text-slate-400 pl-4">
+                                {snapshotDate ? snapshotDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}{' '}
+                                {entry.minutesBeforeKickoff != null ? `(${entry.minutesBeforeKickoff} min before)` : ''}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Kickoff time */}
+                          <td className="hidden md:table-cell py-2 px-3 whitespace-nowrap text-xs text-slate-700 font-medium">
+                            {kickoffDate ? kickoffDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+                          </td>
+
+                          {/* League */}
+                          <td className="hidden md:table-cell py-2 px-3">
+                            <span className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[11px] truncate max-w-[120px] border border-slate-200" title={entry.league}>
+                              {entry.league || 'Soccer'}
                             </span>
-                          </div>
-                        </td>
+                          </td>
 
-                        {/* Kickoff time */}
-                        <td className="py-2 px-3 whitespace-nowrap text-xs text-slate-700 font-medium">
-                          {kickoffDate ? kickoffDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
-                        </td>
+                          {/* Fixture */}
+                          <td className="hidden md:table-cell py-2 px-3 min-w-[190px]">
+                            <div className="font-semibold text-slate-900 flex items-center gap-1.5 flex-wrap">
+                              <span className="font-bold text-slate-900">{entry.home}</span>
+                              <span className="text-[10px] text-slate-400 font-normal">vs</span>
+                              <span className="font-bold text-slate-900">{entry.away}</span>
+                            </div>
+                          </td>
 
-                        {/* League */}
-                        <td className="py-2 px-3">
-                          <span className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[11px] truncate max-w-[120px] border border-slate-200" title={entry.league}>
-                            {entry.league || 'Soccer'}
-                          </span>
-                        </td>
+                          {/* Predicted score + winner */}
+                          <td className="hidden md:table-cell py-2 px-2.5 text-center whitespace-nowrap">
+                            <div className="flex flex-col items-center gap-0.5">
+                              <span className="font-mono text-slate-700 text-xs font-semibold">{entry.predictedScore || '—'}</span>
+                              <span className={`text-[10px] font-bold ${
+                                entry.predictedWinner === 'HOME' ? 'text-indigo-600' :
+                                entry.predictedWinner === 'AWAY' ? 'text-rose-600' : 'text-amber-600'
+                              }`}>
+                                {entry.predictedWinner === 'HOME' ? entry.home :
+                                 entry.predictedWinner === 'AWAY' ? entry.away : 'Draw'}
+                              </span>
+                            </div>
+                          </td>
 
-                        {/* Fixture */}
-                        <td className="py-2 px-3 min-w-[190px]">
-                          <div className="font-semibold text-slate-900 flex items-center gap-1.5 flex-wrap">
-                            <span className="font-bold text-slate-900">{entry.home}</span>
-                            <span className="text-[10px] text-slate-400 font-normal">vs</span>
-                            <span className="font-bold text-slate-900">{entry.away}</span>
-                          </div>
-                        </td>
+                          {/* Smart market pick */}
+                          <td className="hidden md:table-cell py-2 px-2.5 text-center whitespace-nowrap">
+                            {entry.smartMarket?.pick ? (
+                              <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border bg-indigo-50 text-indigo-800 border-indigo-200">
+                                {entry.smartMarket.label || entry.smartMarket.pick}
+                              </span>
+                            ) : <span className="text-slate-400">—</span>}
+                          </td>
 
-                        {/* Predicted score + winner */}
-                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
-                          <div className="flex flex-col items-center gap-0.5">
-                            <span className="font-mono text-slate-700 text-xs font-semibold">{entry.predictedScore || '—'}</span>
-                            <span className={`text-[10px] font-bold ${
-                              entry.predictedWinner === 'HOME' ? 'text-indigo-600' :
-                              entry.predictedWinner === 'AWAY' ? 'text-rose-600' : 'text-amber-600'
-                            }`}>
-                              {entry.predictedWinner === 'HOME' ? entry.home :
-                               entry.predictedWinner === 'AWAY' ? entry.away : 'Draw'}
-                            </span>
-                          </div>
-                        </td>
+                          {/* Confidence */}
+                          <td className="hidden md:table-cell py-2 px-2 text-center font-mono font-bold text-slate-700 text-xs whitespace-nowrap">
+                            {entry.confidence != null ? `${safeToFixed(entry.confidence, 0)}%` : '—'}
+                          </td>
 
-                        {/* Smart market pick */}
-                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
-                          {entry.smartMarket?.pick ? (
-                            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border bg-indigo-50 text-indigo-800 border-indigo-200">
-                              {entry.smartMarket.label || entry.smartMarket.pick}
-                            </span>
-                          ) : <span className="text-slate-400">—</span>}
-                        </td>
+                          {/* Result badge */}
+                          <td className="hidden md:table-cell py-2 px-2.5 text-center whitespace-nowrap">
+                            {!isResolved ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border bg-slate-100 text-slate-600 border-slate-200">
+                                <Clock className="w-3 h-3" /> Pending
+                              </span>
+                            ) : entry.isHit ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border bg-emerald-100 text-emerald-800 border-emerald-300">
+                                <CheckCircle2 className="w-3 h-3" /> HIT
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border bg-rose-100 text-rose-800 border-rose-300">
+                                <XCircle className="w-3 h-3" /> MISS
+                              </span>
+                            )}
+                          </td>
+                        </tr>
 
-                        {/* Confidence */}
-                        <td className="py-2 px-2 text-center font-mono font-bold text-slate-700 text-xs whitespace-nowrap">
-                          {entry.confidence != null ? `${safeToFixed(entry.confidence, 0)}%` : '—'}
-                        </td>
-
-                        {/* Result badge */}
-                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
-                          {!isResolved ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border bg-slate-100 text-slate-600 border-slate-200">
-                              <Clock className="w-3 h-3" /> Pending
-                            </span>
-                          ) : entry.isHit ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border bg-emerald-100 text-emerald-800 border-emerald-300">
-                              <CheckCircle2 className="w-3 h-3" /> HIT
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border bg-rose-100 text-rose-800 border-rose-300">
-                              <XCircle className="w-3 h-3" /> MISS
-                            </span>
-                          )}
-                        </td>
-                      </tr>
+                        {/* Desktop Collapsible Details */}
+                        {isExpanded && (
+                          <tr className="hidden md:table-row bg-amber-50/40 border-b border-amber-200/80">
+                            <td colSpan={9} className="p-3">
+                              <div className="bg-white rounded-lg border border-amber-200 p-3 text-xs space-y-2">
+                                <div className="flex items-center justify-between border-b border-amber-100 pb-1.5">
+                                  <div className="flex items-center gap-2">
+                                    <Lock className="w-3.5 h-3.5 text-amber-600" />
+                                    <span className="font-bold text-slate-800">Pre-Kickoff Cryptographic Snapshot Audit:</span>
+                                    <span className="font-mono text-slate-500 text-[11px]">{entry.home} vs {entry.away}</span>
+                                  </div>
+                                  <span className="text-[10px] font-mono font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded">
+                                    Frozen {entry.minutesBeforeKickoff != null ? `${entry.minutesBeforeKickoff} mins before kickoff` : 'pre-match'}
+                                  </span>
+                                </div>
+                                <div className="grid grid-cols-3 gap-3 font-mono text-[11px]">
+                                  <div className="bg-slate-50 p-2 rounded border border-slate-200">
+                                    <span className="text-slate-400 block font-sans text-[10px] uppercase">Snapshot Timestamp</span>
+                                    <span className="font-bold text-slate-800">{snapshotDate ? snapshotDate.toISOString() : '—'}</span>
+                                  </div>
+                                  <div className="bg-slate-50 p-2 rounded border border-slate-200">
+                                    <span className="text-slate-400 block font-sans text-[10px] uppercase">Model Prediction</span>
+                                    <span className="font-bold text-indigo-700">{entry.predictedScore} ({entry.predictedWinner})</span>
+                                  </div>
+                                  <div className="bg-slate-50 p-2 rounded border border-slate-200">
+                                    <span className="text-slate-400 block font-sans text-[10px] uppercase">Smart Market</span>
+                                    <span className="font-bold text-emerald-700">{entry.smartMarket?.label || 'Direct ML'}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     );
                   })}
                 </tbody>

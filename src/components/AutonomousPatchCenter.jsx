@@ -19,7 +19,9 @@ import {
   Info,
   X,
   Play,
-  Layers
+  Layers,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { formatSafeDateTime } from '../utils/dateUtils';
@@ -63,6 +65,8 @@ export default function AutonomousPatchCenter({
   const [rollingBackId, setRollingBackId] = useState(null);
   const [feedbackMessage, setFeedbackMessage] = useState(null);
   const [patchSummaryModal, setPatchSummaryModal] = useState(null);
+  const [collapsedGovernor, setCollapsedGovernor] = useState(false);
+  const [collapsedHistory, setCollapsedHistory] = useState(false);
 
   const patches = state.autonomousPatches || [];
   const telemetry = state.patchTelemetry || {
@@ -224,26 +228,22 @@ export default function AutonomousPatchCenter({
             <button
               onClick={() => handleRunAutonomousPatch({ patchAllScheduled: true })}
               disabled={isRunningPatch}
-              className="px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer disabled:opacity-60"
+              className="h-8 px-3.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-60"
               title="Autonomously patch all scheduled and pending match misses with 1-click and receive instant full summary"
             >
-              <Zap className={`w-4 h-4 text-emerald-200 fill-emerald-200 ${isRunningPatch ? 'animate-bounce' : ''}`} />
-              <div className="text-left leading-tight">
-                <div className="flex items-center gap-1.5">
-                  <span>Patch All Scheduled</span>
-                  {scheduledCount > 0 && (
-                    <span className="px-1.5 py-0.2 text-[10px] font-mono rounded bg-emerald-900/40 text-emerald-100 font-extrabold">
-                      {scheduledCount} pending
-                    </span>
-                  )}
-                </div>
-              </div>
+              <Zap className={`w-3.5 h-3.5 text-emerald-200 fill-emerald-200 ${isRunningPatch ? 'animate-bounce' : ''}`} />
+              <span>Patch All Scheduled</span>
+              {scheduledCount > 0 && (
+                <span className="px-1.5 py-0.5 text-[10px] font-mono rounded bg-emerald-900/40 text-emerald-100 font-bold leading-none">
+                  {scheduledCount}
+                </span>
+              )}
             </button>
 
             <button
               onClick={() => handleRunAutonomousPatch({ patchAllScheduled: false })}
               disabled={isRunningPatch}
-              className="px-3.5 py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center gap-2 border border-slate-200 shadow-2xs transition-colors cursor-pointer disabled:opacity-60"
+              className="h-8 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center gap-1.5 border border-slate-200 shadow-2xs transition-colors cursor-pointer disabled:opacity-60"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isRunningPatch ? 'animate-spin' : ''}`} />
               <span>{isRunningPatch ? 'Diagnosing...' : 'Incremental Cycle (5)'}</span>
@@ -352,14 +352,28 @@ export default function AutonomousPatchCenter({
             </div>
           </div>
 
-          <div className="text-right shrink-0">
-            <span className="text-[10px] text-slate-400 block font-mono">Last Stopping Decision</span>
-            <span className="text-xs font-semibold text-slate-700 block max-w-xs truncate" title={state.patchGovernorState?.lastStoppingReason}>
-              {state.patchGovernorState?.lastStoppingReason || 'Equilibrium reached: Model operating at target strike rate.'}
-            </span>
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="text-right hidden sm:block">
+              <span className="text-[10px] text-slate-400 block font-mono">Last Stopping Decision</span>
+              <span className="text-xs font-semibold text-slate-700 block max-w-xs truncate" title={state.patchGovernorState?.lastStoppingReason}>
+                {state.patchGovernorState?.lastStoppingReason || 'Equilibrium reached: Model operating at target strike rate.'}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setCollapsedGovernor(!collapsedGovernor)}
+              className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+              title={collapsedGovernor ? 'Expand Governor' : 'Collapse Governor'}
+            >
+              <span>{collapsedGovernor ? 'Expand' : 'Collapse'}</span>
+              {collapsedGovernor ? <ChevronDown className="w-3.5 h-3.5 text-slate-500" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-500" />}
+            </button>
           </div>
         </div>
 
+        {!collapsedGovernor && (
+          <>
         {/* 5 Mathematical Early-Stopping Guardrails */}
         <div className="mt-3.5">
           <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider mb-2">
@@ -456,6 +470,8 @@ export default function AutonomousPatchCenter({
             </div>
           </div>
         )}
+          </>
+        )}
       </div>
 
       {/* Autonomous Patch History Feed */}
@@ -468,11 +484,26 @@ export default function AutonomousPatchCenter({
               {patches.length} Recent Patches
             </span>
           </div>
-          <span className="text-xs text-slate-400 hidden sm:inline">
-            Safety Damping &amp; Rollback Capable
-          </span>
+          
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-400 hidden sm:inline">
+              Safety Damping &amp; Rollback Capable
+            </span>
+
+            <button
+              type="button"
+              onClick={() => setCollapsedHistory(!collapsedHistory)}
+              className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+              title={collapsedHistory ? 'Expand History' : 'Collapse History'}
+            >
+              <span>{collapsedHistory ? 'Expand' : 'Collapse'}</span>
+              {collapsedHistory ? <ChevronDown className="w-3.5 h-3.5 text-slate-500" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-500" />}
+            </button>
+          </div>
         </div>
 
+        {!collapsedHistory && (
+          <>
         {patches.length === 0 ? (
           <div className="bg-slate-50 rounded-lg p-8 border border-dashed border-slate-200 text-center">
             <Sparkles className="w-6 h-6 text-slate-400 mx-auto mb-2" />
@@ -665,6 +696,8 @@ export default function AutonomousPatchCenter({
               );
             })}
           </div>
+        )}
+          </>
         )}
       </div>
 

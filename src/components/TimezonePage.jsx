@@ -168,9 +168,9 @@ export default function TimezonePage({
         <div className="flex justify-end pt-3 border-t border-slate-100">
           <button
             onClick={handleSave}
-            className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
+            className="h-8 px-3.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
           >
-            {savedSuccess ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+            {savedSuccess ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5" />}
             <span>{savedSuccess ? 'Timezone Applied!' : 'Save & Apply Timezone'}</span>
           </button>
         </div>

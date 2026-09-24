@@ -340,10 +340,10 @@ export default function PropsAccumulatorModal({
         </div>
 
         {/* Footer Quick Betting Actions */}
-        <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2.5 shrink-0 flex-wrap sm:flex-nowrap">
+        <div className="p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2 shrink-0 flex-wrap sm:flex-nowrap">
           <button
             onClick={handleAddAllToSlip}
-            className="w-full sm:w-auto px-3.5 py-2.5 rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
+            className="w-full sm:w-auto h-8 px-3 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-semibold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
           >
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
             <span>Load into Props Slip ({slip?.legs?.length || 0})</span>
@@ -352,7 +352,7 @@ export default function PropsAccumulatorModal({
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
             <button
               onClick={handleCopySlip}
-              className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs ${
+              className={`flex-1 sm:flex-none h-8 px-3 rounded-lg font-semibold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs ${
                 copied 
                   ? 'bg-emerald-600 text-white' 
                   : 'bg-indigo-600 hover:bg-indigo-700 text-white'
@@ -360,12 +360,12 @@ export default function PropsAccumulatorModal({
             >
               {copied ? (
                 <>
-                  <Check className="w-4 h-4" />
+                  <Check className="w-3.5 h-3.5" />
                   <span>Copied for LiveScore Bet!</span>
                 </>
               ) : (
                 <>
-                  <Copy className="w-4 h-4" />
+                  <Copy className="w-3.5 h-3.5" />
                   <span>Copy Bet Slip</span>
                 </>
               )}
@@ -375,7 +375,7 @@ export default function PropsAccumulatorModal({
               href="https://www.livescorebet.com/ie/sports/football"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-xs shrink-0"
+              className="h-8 px-3 rounded-lg bg-slate-900 hover:bg-black text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-xs shrink-0"
               title="Open LiveScore Bet Ireland sportsbook"
             >
               <span>Bet on LiveScore Bet</span>

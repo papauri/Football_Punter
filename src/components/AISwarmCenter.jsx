@@ -12,6 +12,7 @@ import {
   CheckCircle2, 
   ChevronRight, 
   ChevronDown, 
+  ChevronUp,
   Zap, 
   Award, 
   Search, 
@@ -43,6 +44,12 @@ export default function AISwarmCenter({
   const [filterType, setFilterType] = useState('ALL'); // 'ALL' | 'UNANIMOUS' | 'TRAPS'
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedDebateId, setExpandedDebateId] = useState(null);
+  const [expandedTvLegId, setExpandedTvLegId] = useState(null);
+  const [collapsedAgents, setCollapsedAgents] = useState(true);
+
+  const toggleTvExpand = (id) => {
+    setExpandedTvLegId(prev => (prev === id ? null : id));
+  };
 
   // Top Value Picks Filter & Sorting State
   const [tvSearch, setTvSearch] = useState('');
@@ -406,7 +413,7 @@ export default function AISwarmCenter({
             <button
               onClick={handleRunSwarmCycle}
               disabled={isTriggering}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-lg font-semibold text-xs shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+              className="h-8 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 rounded-lg font-semibold text-xs shadow-xs transition-colors cursor-pointer disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isTriggering ? 'animate-spin' : ''}`} />
               <span>{isTriggering ? 'Agents Analyzing...' : 'Run Swarm Consensus Cycle'}</span>
@@ -543,7 +550,7 @@ export default function AISwarmCenter({
                 <button
                   onClick={handleAddAllFilteredToSlip}
                   disabled={sortedTopValueLegs.length === 0}
-                  className="bg-amber-500 hover:bg-amber-600 disabled:bg-slate-200 disabled:text-slate-400 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+                  className="h-8 bg-amber-500 hover:bg-amber-600 disabled:bg-slate-200 disabled:text-slate-400 text-white px-3 rounded-lg text-xs font-semibold shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
                   title="Add all currently filtered picks to your bet slip"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -565,7 +572,7 @@ export default function AISwarmCenter({
                   value={tvSearch}
                   onChange={e => setTvSearch(e.target.value)}
                   placeholder="Filter team, league, pick..."
-                  className="w-full pl-8 pr-7 py-1 text-xs bg-slate-50 text-slate-800 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 placeholder:text-slate-400"
+                  className="h-8 w-full pl-8 pr-7 text-xs bg-slate-50 text-slate-800 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 placeholder:text-slate-400"
                 />
                 {tvSearch && (
                   <button
@@ -630,7 +637,7 @@ export default function AISwarmCenter({
               {isTvFiltered && (
                 <button
                   onClick={resetTvFilters}
-                  className="px-2 py-1 text-[11px] font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg inline-flex items-center gap-1 transition-colors cursor-pointer"
+                  className="h-8 px-2.5 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg inline-flex items-center gap-1 transition-colors cursor-pointer"
                   title="Reset all filters"
                 >
                   <RotateCcw className="w-3 h-3" />
@@ -641,10 +648,11 @@ export default function AISwarmCenter({
           </div>
 
           {/* Top Value Picks Interactive Table */}
-          <div className="bg-white border border-slate-200 rounded-lg overflow-x-auto shadow-2xs">
+          <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-2xs">
             <table className="w-full text-left border-collapse text-xs">
-              <thead>
+              <thead className="hidden md:table-header-group">
                 <tr className="bg-slate-50 border-b border-slate-200 select-none h-9">
+                  <th className="py-2 px-1 w-6 text-center"></th>
                   <th className="py-2 px-2.5 w-10 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                     #
                   </th>
@@ -739,7 +747,7 @@ export default function AISwarmCenter({
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="flex flex-col md:table-row-group divide-y divide-slate-100">
                 {sortedTopValueLegs.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="py-8 text-center text-slate-400">
@@ -760,125 +768,224 @@ export default function AISwarmCenter({
                     const isHome = pickUpper === 'HOME';
                     const isAway = pickUpper === 'AWAY';
                     const isDraw = pickUpper === 'DRAW';
+                    const isExpanded = expandedTvLegId === (leg.id || idx);
 
                     return (
-                      <tr 
-                        key={leg.id || idx}
-                        className={`hover:bg-amber-50/30 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} h-11`}
-                      >
-                        {/* Index */}
-                        <td className="py-2 px-2.5 text-center text-[11px] font-mono text-slate-400 font-semibold">
-                          {idx + 1}
-                        </td>
+                      <React.Fragment key={leg.id || idx}>
+                        <tr 
+                          className={`flex flex-col md:table-row hover:bg-amber-50/30 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} md:h-11 cursor-pointer`}
+                          onClick={() => toggleTvExpand(leg.id || idx)}
+                        >
+                          {/* ================= MOBILE COMPACT VIEW ================= */}
+                          <td className="md:hidden p-3 block">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="w-5 h-5 rounded-full bg-slate-900 text-white font-mono font-bold text-[10px] inline-flex items-center justify-center shrink-0">
+                                  {idx + 1}
+                                </span>
+                                <span className="flex items-center gap-1 font-bold text-slate-900 text-xs">
+                                  <Calendar className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                                  {leg.formattedDayTime}
+                                </span>
+                                <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-semibold border border-slate-200">
+                                  {leg.league}
+                                </span>
+                              </div>
 
-                        {/* Kickoff Day & Time */}
-                        <td className="py-2 px-3 whitespace-nowrap">
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs">
-                              <Calendar className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                              <span>{leg.formattedDayTime}</span>
-                            </div>
-                            {leg.fullDateTime && (leg.formattedDayTime?.startsWith('Today') || leg.formattedDayTime?.startsWith('Tomorrow')) && (
-                              <span className="text-[10px] text-slate-400 pl-5 font-medium">
-                                {leg.day}, {leg.date}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-
-                        {/* League */}
-                        <td className="py-2 px-3">
-                          <span 
-                            className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[11px] truncate max-w-[130px] border border-slate-200"
-                            title={leg.league}
-                          >
-                            {leg.league}
-                          </span>
-                        </td>
-
-                        {/* Fixture */}
-                        <td className="py-2 px-3 min-w-[200px]">
-                          <div className="font-semibold text-slate-900 flex items-center gap-1.5 flex-wrap">
-                            <span className={isHome ? 'font-black text-slate-950' : 'text-slate-800'}>
-                              {leg.home}
-                            </span>
-                            <span className="text-[10px] text-slate-400 font-normal">vs</span>
-                            <span className={isAway ? 'font-black text-slate-950' : 'text-slate-800'}>
-                              {leg.away}
-                            </span>
-                          </div>
-                        </td>
-
-                        {/* Consensus Pick */}
-                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${
-                            isHome
-                              ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                              : isAway
-                              ? 'bg-blue-50 text-blue-800 border-blue-300'
-                              : isDraw
-                              ? 'bg-amber-50 text-amber-800 border-amber-300'
-                              : 'bg-indigo-50 text-indigo-800 border-indigo-300'
-                          }`}>
-                            {isHome ? 'HOME Win' : isAway ? 'AWAY Win' : isDraw ? 'DRAW' : leg.pick}
-                          </span>
-                        </td>
-
-                        {/* Agreement */}
-                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded font-bold font-mono text-[11px] bg-amber-50 text-amber-800 border border-amber-200">
-                            <span>👑</span>
-                            <span>{leg.agreement}</span>
-                          </span>
-                        </td>
-
-                        {/* Swarm Score */}
-                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
-                          <span className="inline-block px-2.5 py-0.5 rounded font-black font-mono text-xs bg-slate-100 text-slate-800 border border-slate-300">
-                            {leg.swarmScoreNum}/100
-                          </span>
-                        </td>
-
-                        {/* Action: Add to Slip */}
-                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
-                          <div className="flex items-center justify-center gap-1">
-                            {onAddToAcca && (
-                              <button
-                                onClick={() => handleAddLegToSlip(leg)}
-                                className={`px-2.5 py-1 rounded text-xs font-semibold shadow-2xs transition-all flex items-center gap-1 cursor-pointer ${
-                                  isAdded
-                                    ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                                    : 'bg-amber-500 hover:bg-amber-600 text-white'
-                                }`}
-                                title={isAdded ? 'Added to Slip' : 'Add to Slip / Acca'}
-                              >
-                                {isAdded ? (
-                                  <>
-                                    <Check className="w-3 h-3" />
-                                    <span>Added</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Plus className="w-3 h-3" />
-                                    <span>Slip</span>
-                                  </>
+                              <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                                {onAddToAcca && (
+                                  <button
+                                    onClick={() => handleAddLegToSlip(leg)}
+                                    className={`px-2 py-0.5 rounded text-xs font-semibold shadow-2xs transition-all flex items-center gap-1 cursor-pointer ${
+                                      isAdded
+                                        ? 'bg-emerald-600 text-white'
+                                        : 'bg-amber-500 hover:bg-amber-600 text-white'
+                                    }`}
+                                  >
+                                    {isAdded ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+                                    <span>{isAdded ? 'Added' : 'Slip'}</span>
+                                  </button>
                                 )}
-                              </button>
-                            )}
+                              </div>
+                            </div>
 
-                            {onOpenDeepResearch && leg.origMatch && (
-                              <button
-                                onClick={() => onOpenDeepResearch(leg.origMatch)}
-                                className="p-1 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-200 transition-colors cursor-pointer"
-                                title="Open Deep AI Research"
-                              >
-                                <Sparkles className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                          </div>
-                        </td>
+                            <div className="font-bold text-slate-900 text-xs mb-1.5">
+                              <span className={isHome ? 'font-black text-indigo-950' : 'text-slate-800'}>{leg.home}</span>
+                              <span className="text-slate-400 font-normal mx-1">vs</span>
+                              <span className={isAway ? 'font-black text-indigo-950' : 'text-slate-800'}>{leg.away}</span>
+                            </div>
 
-                      </tr>
+                            <div className="flex items-center justify-between bg-slate-50 p-1.5 rounded border border-slate-200 text-xs">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold border ${
+                                isHome
+                                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                                  : isAway
+                                  ? 'bg-blue-50 text-blue-800 border-blue-300'
+                                  : isDraw
+                                  ? 'bg-amber-50 text-amber-800 border-amber-300'
+                                  : 'bg-indigo-50 text-indigo-800 border-indigo-300'
+                              }`}>
+                                {isHome ? 'HOME Win' : isAway ? 'AWAY Win' : isDraw ? 'DRAW' : leg.pick}
+                              </span>
+
+                              <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded font-bold font-mono text-[10.5px] bg-amber-50 text-amber-800 border border-amber-200">
+                                  <span>👑</span>
+                                  <span>{leg.agreement}</span>
+                                </span>
+                                <span className="inline-block px-1.5 py-0.5 rounded font-black font-mono text-xs bg-slate-100 text-slate-800 border border-slate-300">
+                                  {leg.swarmScoreNum}/100
+                                </span>
+                              </div>
+                            </div>
+
+                            {isExpanded && (
+                              <div className="mt-2 pt-2 border-t border-slate-100 text-xs text-slate-600 bg-slate-50 p-2 rounded">
+                                <div className="font-mono text-[10.5px]">
+                                  Full Kickoff: <strong>{leg.date || 'Scheduled'} {leg.time || ''}</strong>
+                                </div>
+                                <div className="text-[11px] text-slate-700 mt-1">
+                                  Direct Swarm Council Consensus: <strong>{leg.agreement}</strong> agreement across all 6 specialized micro-models.
+                                </div>
+                              </div>
+                            )}
+                          </td>
+
+                          {/* ================= DESKTOP 1-ROW VIEW ================= */}
+                          {/* Chevron */}
+                          <td className="hidden md:table-cell py-2 px-1 text-center text-slate-400">
+                            {isExpanded ? <ChevronUp className="w-3.5 h-3.5 mx-auto text-amber-600" /> : <ChevronDown className="w-3.5 h-3.5 mx-auto" />}
+                          </td>
+
+                          {/* Index */}
+                          <td className="hidden md:table-cell py-2 px-2.5 text-center text-[11px] font-mono text-slate-400 font-semibold">
+                            {idx + 1}
+                          </td>
+
+                          {/* Kickoff Day & Time */}
+                          <td className="hidden md:table-cell py-2 px-3 whitespace-nowrap">
+                            <div className="flex flex-col">
+                              <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs">
+                                <Calendar className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                                <span>{leg.formattedDayTime}</span>
+                              </div>
+                              {leg.fullDateTime && (leg.formattedDayTime?.startsWith('Today') || leg.formattedDayTime?.startsWith('Tomorrow')) && (
+                                <span className="text-[10px] text-slate-400 pl-5 font-medium">
+                                  {leg.day}, {leg.date}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* League */}
+                          <td className="hidden md:table-cell py-2 px-3">
+                            <span 
+                              className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[11px] truncate max-w-[130px] border border-slate-200"
+                              title={leg.league}
+                            >
+                              {leg.league}
+                            </span>
+                          </td>
+
+                          {/* Fixture */}
+                          <td className="hidden md:table-cell py-2 px-3 min-w-[200px]">
+                            <div className="font-semibold text-slate-900 flex items-center gap-1.5 flex-wrap">
+                              <span className={isHome ? 'font-black text-slate-950' : 'text-slate-800'}>
+                                {leg.home}
+                              </span>
+                              <span className="text-[10px] text-slate-400 font-normal">vs</span>
+                              <span className={isAway ? 'font-black text-slate-950' : 'text-slate-800'}>
+                                {leg.away}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Consensus Pick */}
+                          <td className="hidden md:table-cell py-2 px-2.5 text-center whitespace-nowrap">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${
+                              isHome
+                                ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                                : isAway
+                                ? 'bg-blue-50 text-blue-800 border-blue-300'
+                                : isDraw
+                                ? 'bg-amber-50 text-amber-800 border-amber-300'
+                                : 'bg-indigo-50 text-indigo-800 border-indigo-300'
+                            }`}>
+                              {isHome ? 'HOME Win' : isAway ? 'AWAY Win' : isDraw ? 'DRAW' : leg.pick}
+                            </span>
+                          </td>
+
+                          {/* Agreement */}
+                          <td className="hidden md:table-cell py-2 px-2.5 text-center whitespace-nowrap">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded font-bold font-mono text-[11px] bg-amber-50 text-amber-800 border border-amber-200">
+                              <span>👑</span>
+                              <span>{leg.agreement}</span>
+                            </span>
+                          </td>
+
+                          {/* Swarm Score */}
+                          <td className="hidden md:table-cell py-2 px-2.5 text-center whitespace-nowrap">
+                            <span className="inline-block px-2.5 py-0.5 rounded font-black font-mono text-xs bg-slate-100 text-slate-800 border border-slate-300">
+                              {leg.swarmScoreNum}/100
+                            </span>
+                          </td>
+
+                          {/* Action: Add to Slip */}
+                          <td className="hidden md:table-cell py-2 px-2.5 text-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center justify-center gap-1">
+                              {onAddToAcca && (
+                                <button
+                                  onClick={() => handleAddLegToSlip(leg)}
+                                  className={`px-2.5 py-1 rounded text-xs font-semibold shadow-2xs transition-all flex items-center gap-1 cursor-pointer ${
+                                    isAdded
+                                      ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                                      : 'bg-amber-500 hover:bg-amber-600 text-white'
+                                  }`}
+                                  title={isAdded ? 'Added to Slip' : 'Add to Slip / Acca'}
+                                >
+                                  {isAdded ? (
+                                    <>
+                                      <Check className="w-3 h-3" />
+                                      <span>Added</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Plus className="w-3 h-3" />
+                                      <span>Slip</span>
+                                    </>
+                                  )}
+                                </button>
+                              )}
+
+                              {onOpenDeepResearch && leg.origMatch && (
+                                <button
+                                  onClick={() => onOpenDeepResearch(leg.origMatch)}
+                                  className="p-1 rounded text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-200 transition-colors cursor-pointer"
+                                  title="Open Deep AI Research"
+                                >
+                                  <Sparkles className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+
+                        {/* Desktop Expanded Detail Row */}
+                        {isExpanded && (
+                          <tr className="hidden md:table-row bg-amber-50/40 border-b border-slate-200">
+                            <td colSpan={9} className="p-3">
+                              <div className="bg-white rounded-lg border border-amber-200 p-2.5 flex items-center justify-between text-xs">
+                                <div>
+                                  <strong className="text-amber-950 font-bold">Consensus Synthesis:</strong> High-conviction unanimous selection with <strong>{leg.agreement}</strong> consensus agreement across the swarm council.
+                                </div>
+                                <div className="font-mono text-slate-600 shrink-0 pl-3">
+                                  Score: <strong>{leg.swarmScoreNum}/100</strong>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     );
                   })
                 )}
@@ -905,13 +1012,29 @@ export default function AISwarmCenter({
         </div>
       )}
 
-      {/* 6 Specialized Agents Cards */}
+      {/* 6 Specialized Agents Cards (Collapsible to reduce clutter) */}
       <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs space-y-3">
-        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-          <Cpu className="w-4 h-4 text-indigo-600" />
-          <span>The 6 Simultaneous Analytical Agents</span>
-        </h3>
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+            <Cpu className="w-4 h-4 text-indigo-600" />
+            <span>The 6 Simultaneous Analytical Agents</span>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+              6 Active Micro-Models
+            </span>
+          </h3>
 
+          <button
+            type="button"
+            onClick={() => setCollapsedAgents(!collapsedAgents)}
+            className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+            title={collapsedAgents ? 'Expand Agent Details' : 'Collapse Agent Details'}
+          >
+            <span>{collapsedAgents ? 'Expand' : 'Collapse'}</span>
+            {collapsedAgents ? <ChevronDown className="w-3.5 h-3.5 text-slate-500" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-500" />}
+          </button>
+        </div>
+
+        {!collapsedAgents && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 text-xs">
           {/* Agent 1 */}
           <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 flex flex-col justify-between">
@@ -1033,6 +1156,7 @@ export default function AISwarmCenter({
             </div>
           </div>
         </div>
+        )}
       </div>
 
       {/* Match-by-Match Swarm Consensus Explorer */}
@@ -1045,7 +1169,7 @@ export default function AISwarmCenter({
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search team or league..."
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 text-slate-800 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
+              className="h-8 w-full pl-8 pr-3 text-xs bg-slate-50 text-slate-800 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600"
             />
           </div>
 
@@ -1065,9 +1189,9 @@ export default function AISwarmCenter({
         </div>
 
         {/* Match-by-Match Swarm Consensus Explorer Table */}
-        <div className="bg-white border border-slate-200 rounded-lg overflow-x-auto shadow-2xs">
+        <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-2xs">
           <table className="w-full text-left border-collapse text-xs">
-            <thead>
+            <thead className="hidden md:table-header-group">
               <tr className="bg-slate-50 border-b border-slate-200 select-none h-9">
                 <th className="py-2 px-2.5 w-10 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                   #
@@ -1101,7 +1225,7 @@ export default function AISwarmCenter({
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="flex flex-col md:table-row-group divide-y divide-slate-100">
               {displayedMatches.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="py-8 text-center text-slate-400">
@@ -1123,15 +1247,129 @@ export default function AISwarmCenter({
 
                   return (
                     <React.Fragment key={m.id}>
-                      <tr className={`hover:bg-indigo-50/20 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} h-11 ${isExpanded ? 'bg-indigo-50/20' : ''}`}>
+                      <tr className={`flex flex-col md:table-row hover:bg-indigo-50/20 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} md:h-11 ${isExpanded ? 'bg-indigo-50/20' : ''}`}>
                         
+                        {/* ================= MOBILE COMPACT VIEW ================= */}
+                        <td className="md:hidden p-3 block">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className={`inline-block px-2 py-0.5 rounded font-black font-mono text-[11px] border ${
+                                isUnanimous 
+                                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
+                                  : isTrap 
+                                  ? 'bg-rose-50 text-rose-800 border-rose-300' 
+                                  : 'bg-slate-100 text-slate-700 border-slate-200'
+                              }`}>
+                                {swarmData?.swarmScore ?? swarmData?.aiSwarmScore ?? swarmData?.imperialSwarmScore ?? 75}
+                              </span>
+                              <span className="flex items-center gap-1 font-bold text-slate-900 text-xs">
+                                <Calendar className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                                {formatRelativeDayTime(m, tzSettings)}
+                              </span>
+                              <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-semibold border border-slate-200">
+                                {m.league}
+                              </span>
+                            </div>
+
+                            {onAddToAcca && (
+                              <button
+                                onClick={() => {
+                                  const prob = swarmData?.swarmScore || swarmData?.aiSwarmScore || m.confidence || 75;
+                                  const estOdds = (100 / Math.max(10, prob - 5)).toFixed(2);
+                                  onAddToAcca(m, pickValue, pickValue, estOdds, prob);
+                                  setAddedLegIds(prev => new Set([...prev, String(m.id)]));
+                                }}
+                                className={`px-2 py-0.5 rounded text-xs font-semibold shadow-2xs transition-all flex items-center gap-1 cursor-pointer ${
+                                  isSlipAdded
+                                    ? 'bg-emerald-600 text-white'
+                                    : 'bg-amber-500 hover:bg-amber-600 text-white'
+                                }`}
+                              >
+                                {isSlipAdded ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+                                <span>{isSlipAdded ? 'Added' : 'Slip'}</span>
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="font-bold text-slate-900 text-xs mb-1.5">
+                            <span className={isHome ? 'font-black text-indigo-950' : 'text-slate-800'}>{m.home}</span>
+                            <span className="text-slate-400 font-normal mx-1">vs</span>
+                            <span className={isAway ? 'font-black text-indigo-950' : 'text-slate-800'}>{m.away}</span>
+                          </div>
+
+                          <div className="flex items-center justify-between bg-slate-50 p-1.5 rounded border border-slate-200 text-xs mb-1.5">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold border ${
+                              isUnanimous
+                                ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                                : isTrap
+                                ? 'bg-rose-50 text-rose-800 border-rose-300'
+                                : isDraw
+                                ? 'bg-amber-50 text-amber-800 border-amber-300'
+                                : 'bg-indigo-50 text-indigo-800 border-indigo-300'
+                            }`}>
+                              {isHome ? 'HOME Win' : isAway ? 'AWAY Win' : isDraw ? 'DRAW' : pickValue}
+                            </span>
+
+                            <div className="flex items-center gap-1 text-[10px] font-mono">
+                              {['TACT', 'xG', 'SQD', 'MKT', 'PHYS', 'LRN'].map((label, aIdx) => {
+                                const rawVote = swarmData?.agentVotes?.[aIdx]?.predictedWinner;
+                                const shortVote = rawVote === 'HOME' ? 'H' : rawVote === 'AWAY' ? 'A' : rawVote === 'DRAW' ? 'D' : (rawVote || '-');
+                                return (
+                                  <span key={aIdx} className="px-1 py-0.2 rounded bg-white border border-slate-200 text-slate-700 font-semibold" title={swarmData?.agentVotes?.[aIdx]?.name}>
+                                    {label}:{shortVote}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => setExpandedDebateId(isExpanded ? null : m.id)}
+                            className="w-full py-1 rounded text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-indigo-700 border border-slate-200 flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 text-indigo-600" />
+                            <span>{isExpanded ? 'Hide Debate & Agent Intel' : 'View Agent Debate & Reasoning'}</span>
+                            {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                          </button>
+
+                          {/* Mobile Expanded Debate Drawer */}
+                          {isExpanded && (
+                            <div className="mt-2.5 pt-2 border-t border-slate-200 space-y-2">
+                              <div className="p-2.5 rounded bg-indigo-50/50 border border-indigo-200">
+                                <div className="font-bold text-indigo-900 text-xs mb-1 flex items-center gap-1.5">
+                                  <Cpu className="w-3.5 h-3.5 text-indigo-600" />
+                                  <span>Swarm Debate Transcript</span>
+                                </div>
+                                <p className="text-slate-700 italic text-xs leading-relaxed">
+                                  "{swarmData?.debateTranscript || 'All agents concur on structural edge without significant contradiction.'}"
+                                </p>
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {(swarmData?.agentVotes || []).map((vote, vIdx) => (
+                                  <div key={vIdx} className="p-2 rounded bg-white border border-slate-200 text-xs">
+                                    <div className="flex items-center justify-between font-bold text-slate-900 mb-0.5">
+                                      <span>{vote.avatar} {vote.name}</span>
+                                      <span className="text-indigo-700 font-mono text-[11px]">{vote.predictedWinner} ({vote.conviction}%)</span>
+                                    </div>
+                                    <p className="text-[11px] text-slate-600 leading-snug">
+                                      {vote.summary}
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </td>
+
+                        {/* ================= DESKTOP 1-ROW VIEW ================= */}
                         {/* Index */}
-                        <td className="py-2 px-2.5 text-center text-[11px] font-mono text-slate-400 font-semibold">
+                        <td className="hidden md:table-cell py-2 px-2.5 text-center text-[11px] font-mono text-slate-400 font-semibold">
                           {idx + 1}
                         </td>
 
                         {/* Score */}
-                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
+                        <td className="hidden md:table-cell py-2 px-2.5 text-center whitespace-nowrap">
                           <span className={`inline-block px-2.5 py-0.5 rounded font-black font-mono text-xs border ${
                             isUnanimous 
                               ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
@@ -1144,7 +1382,7 @@ export default function AISwarmCenter({
                         </td>
 
                         {/* Kickoff Day & Time */}
-                        <td className="py-2 px-3 whitespace-nowrap">
+                        <td className="hidden md:table-cell py-2 px-3 whitespace-nowrap">
                           <div className="flex flex-col">
                             <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs">
                               <Calendar className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
@@ -1159,7 +1397,7 @@ export default function AISwarmCenter({
                         </td>
 
                         {/* League */}
-                        <td className="py-2 px-3">
+                        <td className="hidden md:table-cell py-2 px-3">
                           <span 
                             className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[11px] truncate max-w-[120px] border border-slate-200"
                             title={m.league}
@@ -1169,7 +1407,7 @@ export default function AISwarmCenter({
                         </td>
 
                         {/* Fixture */}
-                        <td className="py-2 px-3 min-w-[190px]">
+                        <td className="hidden md:table-cell py-2 px-3 min-w-[190px]">
                           <div className="font-semibold text-slate-900 flex items-center gap-1.5 flex-wrap">
                             <span className={isHome ? 'font-black text-slate-950' : 'text-slate-800'}>
                               {m.home}
@@ -1182,7 +1420,7 @@ export default function AISwarmCenter({
                         </td>
 
                         {/* Directive */}
-                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
+                        <td className="hidden md:table-cell py-2 px-2.5 text-center whitespace-nowrap">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${
                             isUnanimous
                               ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
@@ -1197,7 +1435,7 @@ export default function AISwarmCenter({
                         </td>
 
                         {/* 6 mini agent votes */}
-                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
+                        <td className="hidden md:table-cell py-2 px-2.5 text-center whitespace-nowrap">
                           <div className="flex items-center justify-center gap-1 text-[10px] font-mono">
                             {['TACT', 'xG', 'SQD', 'MKT', 'PHYS', 'LRN'].map((label, aIdx) => {
                               const rawVote = swarmData?.agentVotes?.[aIdx]?.predictedWinner;
@@ -1212,7 +1450,7 @@ export default function AISwarmCenter({
                         </td>
 
                         {/* Debate toggle */}
-                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
+                        <td className="hidden md:table-cell py-2 px-2.5 text-center whitespace-nowrap">
                           <button
                             onClick={() => setExpandedDebateId(isExpanded ? null : m.id)}
                             className="px-2 py-1 rounded text-[11px] font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 inline-flex items-center gap-1 transition-colors cursor-pointer"
@@ -1224,7 +1462,7 @@ export default function AISwarmCenter({
                         </td>
 
                         {/* Acca action */}
-                        <td className="py-2 px-2.5 text-center whitespace-nowrap">
+                        <td className="hidden md:table-cell py-2 px-2.5 text-center whitespace-nowrap">
                           {onAddToAcca && (
                             <button
                               onClick={() => {
@@ -1257,9 +1495,9 @@ export default function AISwarmCenter({
 
                       </tr>
 
-                      {/* Expanded Debate Drawer */}
+                      {/* Desktop Expanded Debate Drawer */}
                       {isExpanded && (
-                        <tr className="bg-slate-50/80 border-b border-slate-200">
+                        <tr className="hidden md:table-row bg-slate-50/80 border-b border-slate-200">
                           <td colSpan={9} className="p-3 text-xs">
                             <div className="space-y-2.5">
                               <div className="p-3 rounded-lg bg-white border border-indigo-200">

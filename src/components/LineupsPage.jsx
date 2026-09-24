@@ -15,7 +15,9 @@ import {
   Info,
   Clock,
   Shirt,
-  BarChart3
+  BarChart3,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
 import { safeToFixed } from '../utils/numberUtils';
@@ -35,6 +37,11 @@ export default function LineupsPage({
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState('pitch'); // 'pitch' | 'list'
   const [activeTabSide, setActiveTabSide] = useState('all'); // 'all' | 'home' | 'away'
+  const [expandedPlayerKey, setExpandedPlayerKey] = useState(null);
+
+  const togglePlayerExpand = (key) => {
+    setExpandedPlayerKey(prev => (prev === key ? null : key));
+  };
 
   // Sync when prop changes
   useEffect(() => {
@@ -168,7 +175,7 @@ export default function LineupsPage({
             <button
               id="back-to-fixtures-btn"
               onClick={onBackToFixtures}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
+              className="h-8 flex items-center gap-1.5 px-3 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-colors cursor-pointer shadow-2xs"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back</span>
@@ -196,7 +203,7 @@ export default function LineupsPage({
               id="refresh-lineup-btn"
               onClick={() => fetchLineup(true)}
               disabled={isRefreshing || isLoading}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
+              className="h-8 flex items-center gap-1.5 px-3 text-xs font-semibold rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-indigo-600' : ''}`} />
               <span>{isRefreshing ? 'Scraping...' : 'Re-scrape XI'}</span>
@@ -705,45 +712,124 @@ export default function LineupsPage({
               </span>
             </div>
 
-            <div className="p-3">
+            <div className="p-0">
               {isLoading ? (
                 <div className="py-10 text-center text-slate-400">
                   <RefreshCw className="w-5 h-5 animate-spin mx-auto text-indigo-600 mb-1" />
                   <span className="text-xs font-medium">Fetching roster &amp; lineup...</span>
                 </div>
               ) : homeLineup.length === 0 ? (
-                <div className="py-8 text-center text-slate-400 text-xs">
+                <div className="py-8 text-center text-slate-400 text-xs p-4">
                   <p>Starting lineup not yet registered in ESPN database.</p>
                   <p className="text-[11px] text-slate-500 mt-1">Projected starting XI will update automatically 60 minutes before kickoff.</p>
                 </div>
               ) : (
-                <div className="divide-y divide-slate-100 text-xs">
-                  {homeLineup.map((player, idx) => (
-                    <div key={idx} className="py-2 flex items-center justify-between hover:bg-slate-50 px-1 rounded">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <span className="w-6 font-mono text-xs font-bold text-slate-500 text-center bg-slate-100 rounded py-0.5">
-                          {player.jersey || idx + 1}
-                        </span>
-                        <div className="truncate">
-                          <span className="font-semibold text-slate-800 block truncate">
-                            {player.name || player}
-                          </span>
-                          <span className="text-[10px] text-slate-400">
-                            {player.shortName || player.name}
-                          </span>
-                        </div>
-                      </div>
-                      <span className={`text-[10px] font-mono px-2 py-0.5 rounded border shrink-0 font-semibold ${
-                        player.posAbbr === 'G' ? 'bg-amber-50 text-amber-800 border-amber-200' :
-                        player.posAbbr === 'D' ? 'bg-blue-50 text-blue-800 border-blue-200' :
-                        player.posAbbr === 'M' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
-                        'bg-purple-50 text-purple-800 border-purple-200'
-                      }`}>
-                        {player.position || 'Starter'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead className="hidden sm:table-header-group">
+                    <tr className="bg-slate-50/80 border-b border-slate-200 text-[10.5px] font-semibold text-slate-500 uppercase tracking-wider select-none h-8">
+                      <th className="py-1.5 px-2 w-10 text-center">#</th>
+                      <th className="py-1.5 px-3 min-w-[120px]">Player</th>
+                      <th className="py-1.5 px-2 w-28 text-center">Position</th>
+                      <th className="py-1.5 px-2 w-20 text-center">Role</th>
+                      <th className="py-1.5 px-2 w-8 text-center"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="flex flex-col sm:table-row-group divide-y divide-slate-100">
+                    {homeLineup.map((player, idx) => {
+                      const playerKey = `home-${player.jersey || idx}-${player.name || idx}`;
+                      const isExpanded = expandedPlayerKey === playerKey;
+
+                      return (
+                        <React.Fragment key={playerKey}>
+                          <tr 
+                            className={`flex flex-col sm:table-row hover:bg-slate-50/80 transition-colors sm:h-10 cursor-pointer ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/20'}`}
+                            onClick={() => togglePlayerExpand(playerKey)}
+                          >
+                            {/* Mobile Card */}
+                            <td className="sm:hidden p-2.5 block">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span className="w-6 h-6 rounded font-mono text-xs font-bold text-slate-700 bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200">
+                                    {player.jersey || idx + 1}
+                                  </span>
+                                  <div className="truncate">
+                                    <div className="font-semibold text-slate-900 text-xs truncate">
+                                      {player.name || player}
+                                    </div>
+                                    <div className="text-[10px] text-slate-400">
+                                      {player.shortName || player.name}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded border font-semibold ${
+                                    player.posAbbr === 'G' ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                                    player.posAbbr === 'D' ? 'bg-blue-50 text-blue-800 border-blue-200' :
+                                    player.posAbbr === 'M' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                                    'bg-purple-50 text-purple-800 border-purple-200'
+                                  }`}>
+                                    {player.posAbbr || player.position || 'Starter'}
+                                  </span>
+                                  <span className="text-slate-400">
+                                    {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {isExpanded && (
+                                <div className="mt-2 pt-2 border-t border-slate-100 text-[11px] text-slate-600 bg-slate-50 p-2 rounded flex items-center justify-between">
+                                  <span>Position: <strong>{player.position || 'Starter'}</strong></span>
+                                  <span>Squad status: <strong className="text-emerald-700">Starting XI</strong></span>
+                                </div>
+                              )}
+                            </td>
+
+                            {/* Desktop 1-Row */}
+                            <td className="hidden sm:table-cell py-1.5 px-2 text-center font-mono font-bold text-slate-500">
+                              {player.jersey || idx + 1}
+                            </td>
+                            <td className="hidden sm:table-cell py-1.5 px-3">
+                              <span className="font-semibold text-slate-900 block truncate">
+                                {player.name || player}
+                              </span>
+                              <span className="text-[10px] text-slate-400 block">
+                                {player.shortName || player.name}
+                              </span>
+                            </td>
+                            <td className="hidden sm:table-cell py-1.5 px-2 text-center">
+                              <span className={`text-[10px] font-mono px-2 py-0.5 rounded border inline-block font-semibold ${
+                                player.posAbbr === 'G' ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                                player.posAbbr === 'D' ? 'bg-blue-50 text-blue-800 border-blue-200' :
+                                player.posAbbr === 'M' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                                'bg-purple-50 text-purple-800 border-purple-200'
+                              }`}>
+                                {player.position || 'Starter'}
+                              </span>
+                            </td>
+                            <td className="hidden sm:table-cell py-1.5 px-2 text-center text-[11px] text-slate-500 font-medium">
+                              Starter
+                            </td>
+                            <td className="hidden sm:table-cell py-1.5 px-2 text-center text-slate-400">
+                              {isExpanded ? <ChevronUp className="w-3.5 h-3.5 mx-auto text-indigo-600" /> : <ChevronDown className="w-3.5 h-3.5 mx-auto" />}
+                            </td>
+                          </tr>
+
+                          {/* Desktop Expanded Detail */}
+                          {isExpanded && (
+                            <tr className="hidden sm:table-row bg-slate-50/70 border-b border-slate-200">
+                              <td colSpan={5} className="py-2 px-3 text-[11px] text-slate-600">
+                                <div className="flex items-center justify-between">
+                                  <span>Full Squad Details: <strong>{player.name || player}</strong> &bull; {player.position || 'Starter'}</span>
+                                  <span className="font-mono text-emerald-700 font-semibold">Confirmed Starter</span>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
               )}
             </div>
 
@@ -783,45 +869,124 @@ export default function LineupsPage({
               </span>
             </div>
 
-            <div className="p-3">
+            <div className="p-0">
               {isLoading ? (
                 <div className="py-10 text-center text-slate-400">
                   <RefreshCw className="w-5 h-5 animate-spin mx-auto text-indigo-600 mb-1" />
                   <span className="text-xs font-medium">Fetching roster &amp; lineup...</span>
                 </div>
               ) : awayLineup.length === 0 ? (
-                <div className="py-8 text-center text-slate-400 text-xs">
+                <div className="py-8 text-center text-slate-400 text-xs p-4">
                   <p>Starting lineup not yet registered in ESPN database.</p>
                   <p className="text-[11px] text-slate-500 mt-1">Projected starting XI will update automatically 60 minutes before kickoff.</p>
                 </div>
               ) : (
-                <div className="divide-y divide-slate-100 text-xs">
-                  {awayLineup.map((player, idx) => (
-                    <div key={idx} className="py-2 flex items-center justify-between hover:bg-slate-50 px-1 rounded">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <span className="w-6 font-mono text-xs font-bold text-slate-500 text-center bg-slate-100 rounded py-0.5">
-                          {player.jersey || idx + 1}
-                        </span>
-                        <div className="truncate">
-                          <span className="font-semibold text-slate-800 block truncate">
-                            {player.name || player}
-                          </span>
-                          <span className="text-[10px] text-slate-400">
-                            {player.shortName || player.name}
-                          </span>
-                        </div>
-                      </div>
-                      <span className={`text-[10px] font-mono px-2 py-0.5 rounded border shrink-0 font-semibold ${
-                        player.posAbbr === 'G' ? 'bg-amber-50 text-amber-800 border-amber-200' :
-                        player.posAbbr === 'D' ? 'bg-blue-50 text-blue-800 border-blue-200' :
-                        player.posAbbr === 'M' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
-                        'bg-purple-50 text-purple-800 border-purple-200'
-                      }`}>
-                        {player.position || 'Starter'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead className="hidden sm:table-header-group">
+                    <tr className="bg-slate-50/80 border-b border-slate-200 text-[10.5px] font-semibold text-slate-500 uppercase tracking-wider select-none h-8">
+                      <th className="py-1.5 px-2 w-10 text-center">#</th>
+                      <th className="py-1.5 px-3 min-w-[120px]">Player</th>
+                      <th className="py-1.5 px-2 w-28 text-center">Position</th>
+                      <th className="py-1.5 px-2 w-20 text-center">Role</th>
+                      <th className="py-1.5 px-2 w-8 text-center"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="flex flex-col sm:table-row-group divide-y divide-slate-100">
+                    {awayLineup.map((player, idx) => {
+                      const playerKey = `away-${player.jersey || idx}-${player.name || idx}`;
+                      const isExpanded = expandedPlayerKey === playerKey;
+
+                      return (
+                        <React.Fragment key={playerKey}>
+                          <tr 
+                            className={`flex flex-col sm:table-row hover:bg-slate-50/80 transition-colors sm:h-10 cursor-pointer ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/20'}`}
+                            onClick={() => togglePlayerExpand(playerKey)}
+                          >
+                            {/* Mobile Card */}
+                            <td className="sm:hidden p-2.5 block">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span className="w-6 h-6 rounded font-mono text-xs font-bold text-slate-700 bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200">
+                                    {player.jersey || idx + 1}
+                                  </span>
+                                  <div className="truncate">
+                                    <div className="font-semibold text-slate-900 text-xs truncate">
+                                      {player.name || player}
+                                    </div>
+                                    <div className="text-[10px] text-slate-400">
+                                      {player.shortName || player.name}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded border font-semibold ${
+                                    player.posAbbr === 'G' ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                                    player.posAbbr === 'D' ? 'bg-blue-50 text-blue-800 border-blue-200' :
+                                    player.posAbbr === 'M' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                                    'bg-purple-50 text-purple-800 border-purple-200'
+                                  }`}>
+                                    {player.posAbbr || player.position || 'Starter'}
+                                  </span>
+                                  <span className="text-slate-400">
+                                    {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {isExpanded && (
+                                <div className="mt-2 pt-2 border-t border-slate-100 text-[11px] text-slate-600 bg-slate-50 p-2 rounded flex items-center justify-between">
+                                  <span>Position: <strong>{player.position || 'Starter'}</strong></span>
+                                  <span>Squad status: <strong className="text-blue-700">Starting XI</strong></span>
+                                </div>
+                              )}
+                            </td>
+
+                            {/* Desktop 1-Row */}
+                            <td className="hidden sm:table-cell py-1.5 px-2 text-center font-mono font-bold text-slate-500">
+                              {player.jersey || idx + 1}
+                            </td>
+                            <td className="hidden sm:table-cell py-1.5 px-3">
+                              <span className="font-semibold text-slate-900 block truncate">
+                                {player.name || player}
+                              </span>
+                              <span className="text-[10px] text-slate-400 block">
+                                {player.shortName || player.name}
+                              </span>
+                            </td>
+                            <td className="hidden sm:table-cell py-1.5 px-2 text-center">
+                              <span className={`text-[10px] font-mono px-2 py-0.5 rounded border inline-block font-semibold ${
+                                player.posAbbr === 'G' ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                                player.posAbbr === 'D' ? 'bg-blue-50 text-blue-800 border-blue-200' :
+                                player.posAbbr === 'M' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                                'bg-purple-50 text-purple-800 border-purple-200'
+                              }`}>
+                                {player.position || 'Starter'}
+                              </span>
+                            </td>
+                            <td className="hidden sm:table-cell py-1.5 px-2 text-center text-[11px] text-slate-500 font-medium">
+                              Starter
+                            </td>
+                            <td className="hidden sm:table-cell py-1.5 px-2 text-center text-slate-400">
+                              {isExpanded ? <ChevronUp className="w-3.5 h-3.5 mx-auto text-indigo-600" /> : <ChevronDown className="w-3.5 h-3.5 mx-auto" />}
+                            </td>
+                          </tr>
+
+                          {/* Desktop Expanded Detail */}
+                          {isExpanded && (
+                            <tr className="hidden sm:table-row bg-slate-50/70 border-b border-slate-200">
+                              <td colSpan={5} className="py-2 px-3 text-[11px] text-slate-600">
+                                <div className="flex items-center justify-between">
+                                  <span>Full Squad Details: <strong>{player.name || player}</strong> &bull; {player.position || 'Starter'}</span>
+                                  <span className="font-mono text-blue-700 font-semibold">Confirmed Starter</span>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
               )}
             </div>
 

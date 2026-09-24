@@ -162,6 +162,14 @@ export default function AccumulatorPage({
   const [loadedNotice, setLoadedNotice] = useState(null);
   const [showStakingSettings, setShowStakingSettings] = useState(false);
   const [showVarianceExplainer, setShowVarianceExplainer] = useState(false);
+  const [expandedLegId, setExpandedLegId] = useState(null);
+  const [collapsedGenerator, setCollapsedGenerator] = useState(false);
+  const [collapsedSlip, setCollapsedSlip] = useState(false);
+  const [collapsedMetrics, setCollapsedMetrics] = useState(false);
+
+  const toggleLegExpand = (id) => {
+    setExpandedLegId(prev => (prev === id ? null : id));
+  };
 
   // Preset Builder Controls (Max Win Rate DC/DNB or Outrights)
   const [presetStrategy, setPresetStrategy] = useState('max_win_rate'); // 'max_win_rate' | 'unanimous' | 'antifragile' | 'value'
@@ -1118,7 +1126,7 @@ export default function AccumulatorPage({
                 <button
                   type="button"
                   onClick={handleAutoOptimizeSlip}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold text-xs transition-colors cursor-pointer shadow-xs"
+                  className="h-8 flex items-center gap-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold text-xs transition-colors cursor-pointer shadow-xs"
                   title="Enforce straight outright selections and 100% unanimous AI council consensus"
                 >
                   <Wand2 className="w-3.5 h-3.5" />
@@ -1128,7 +1136,7 @@ export default function AccumulatorPage({
                 <button
                   type="button"
                   onClick={handleCopyBetSlip}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs border border-slate-300 transition-colors cursor-pointer shadow-2xs"
+                  className="h-8 flex items-center gap-1.5 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs border border-slate-300 transition-colors cursor-pointer shadow-2xs"
                   title="Copy bet slip summary to clipboard"
                 >
                   {copiedSlip ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
@@ -1139,7 +1147,7 @@ export default function AccumulatorPage({
                   type="button"
                   onClick={handleFinalAnalysis}
                   disabled={isAnalyzing}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition-colors cursor-pointer shadow-xs disabled:opacity-50"
+                  className="h-8 flex items-center gap-1.5 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition-colors cursor-pointer shadow-xs disabled:opacity-50"
                   title="Review slip with AI assistant"
                 >
                   <BrainCircuit className={`w-3.5 h-3.5 ${isAnalyzing ? 'animate-spin' : ''}`} />
@@ -1149,7 +1157,7 @@ export default function AccumulatorPage({
                 <button
                   type="button"
                   onClick={onClearSlip}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                  className="h-8 px-2.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors cursor-pointer flex items-center justify-center"
                   title="Clear all selections in active slip"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -1162,8 +1170,8 @@ export default function AccumulatorPage({
 
       {/* 2. Autonomous Judgement & Key Metrics Card */}
       {activeLegs.length > 0 && autonomousJudgement && (
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+        <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+          <div className="p-3 sm:p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className={`px-2.5 py-1 rounded-lg border font-black text-sm ${autonomousJudgement.gradeColor}`}>
                 {autonomousJudgement.grade}
@@ -1179,158 +1187,151 @@ export default function AccumulatorPage({
               </div>
             </div>
 
-            {autonomousJudgement.canAutoOptimize && (
+            <div className="flex items-center gap-2">
+              {autonomousJudgement.canAutoOptimize && (
+                <button
+                  type="button"
+                  onClick={handleAutoOptimizeSlip}
+                  className="h-8 flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 rounded-lg transition-colors cursor-pointer shadow-2xs"
+                >
+                  <Zap className="w-3.5 h-3.5" />
+                  <span>Optimize to Outrights</span>
+                </button>
+              )}
+
               <button
                 type="button"
-                onClick={handleAutoOptimizeSlip}
-                className="flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                onClick={() => setCollapsedMetrics(!collapsedMetrics)}
+                className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                title={collapsedMetrics ? 'Expand Metrics' : 'Collapse Metrics'}
               >
-                <Zap className="w-3.5 h-3.5" />
-                <span>Optimize to Outrights</span>
+                <span>{collapsedMetrics ? 'Expand' : 'Collapse'}</span>
+                {collapsedMetrics ? <ChevronDown className="w-3.5 h-3.5 text-slate-500" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-500" />}
               </button>
-            )}
-          </div>
-
-          {/* Key Metrics Row */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
-            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-              <div className="text-[10px] text-slate-500 font-bold uppercase">Combined Odds</div>
-              <div className="text-base font-black font-mono text-indigo-700 mt-0.5">{safeToFixed(totalOdds, 2)}x</div>
-            </div>
-
-            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-              <div className="text-[10px] text-slate-500 font-bold uppercase">Win Probability</div>
-              <div className="text-base font-black font-mono text-emerald-700 mt-0.5">{safeToFixed(combinedProb, 1)}%</div>
-            </div>
-
-            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-              <div className="text-[10px] text-slate-500 font-bold uppercase">Value (EV)</div>
-              <div className={`text-base font-black font-mono mt-0.5 ${expectedValue > 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
-                {expectedValue > 0 ? '+' : ''}{safeToFixed(expectedValue * 100, 1)}%
-              </div>
-            </div>
-
-            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-              <div className="text-[10px] text-slate-500 font-bold uppercase">Suggested Stake</div>
-              <div className="text-base font-black font-mono text-slate-800 mt-0.5">
-                €{safeToFixed(effectiveWager, 2)}
-              </div>
-            </div>
-
-            <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-              <div className="text-[10px] text-slate-500 font-bold uppercase">Potential Return</div>
-              <div className="text-base font-black font-mono text-emerald-600 mt-0.5">
-                €{safeToFixed(effectiveWager * totalOdds, 2)}
-              </div>
             </div>
           </div>
 
-          {/* Recommendations List */}
-          {autonomousJudgement.recommendations.length > 0 && (
-            <div className="pt-2 border-t border-slate-100 space-y-1">
-              {autonomousJudgement.recommendations.map((rec, i) => (
-                <div key={i} className="text-[11px] text-slate-600 flex items-start gap-1.5">
-                  <span className="text-amber-500 font-bold">•</span>
-                  <span>{rec}</span>
+          {!collapsedMetrics && (
+            <div className="p-4 space-y-3">
+              {/* Key Metrics Row */}
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
+                <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                  <div className="text-[10px] text-slate-500 font-bold uppercase">Combined Odds</div>
+                  <div className="text-base font-black font-mono text-indigo-700 mt-0.5">{safeToFixed(totalOdds, 2)}x</div>
                 </div>
-              ))}
+
+                <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                  <div className="text-[10px] text-slate-500 font-bold uppercase">Win Probability</div>
+                  <div className="text-base font-black font-mono text-emerald-700 mt-0.5">{safeToFixed(combinedProb, 1)}%</div>
+                </div>
+
+                <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                  <div className="text-[10px] text-slate-500 font-bold uppercase">Value (EV)</div>
+                  <div className={`text-base font-black font-mono mt-0.5 ${expectedValue > 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
+                    {expectedValue > 0 ? '+' : ''}{safeToFixed(expectedValue * 100, 1)}%
+                  </div>
+                </div>
+
+                <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                  <div className="text-[10px] text-slate-500 font-bold uppercase">Suggested Stake</div>
+                  <div className="text-base font-black font-mono text-slate-800 mt-0.5">
+                    €{safeToFixed(effectiveWager, 2)}
+                  </div>
+                </div>
+
+                <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+                  <div className="text-[10px] text-slate-500 font-bold uppercase">Potential Return</div>
+                  <div className="text-base font-black font-mono text-emerald-600 mt-0.5">
+                    €{safeToFixed(effectiveWager * totalOdds, 2)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Recommendations List */}
+              {autonomousJudgement.recommendations.length > 0 && (
+                <div className="pt-2 border-t border-slate-100 space-y-1">
+                  {autonomousJudgement.recommendations.map((rec, i) => (
+                    <div key={i} className="text-[11px] text-slate-600 flex items-start gap-1.5">
+                      <span className="text-amber-500 font-bold">•</span>
+                      <span>{rec}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
       )}
 
       {/* 3. Autonomous Presets Generator Bar (Strict Outrights Only & 100% AI Consensus) */}
-      <div className="bg-white border border-slate-200 rounded-xl p-2.5 sm:p-3 shadow-xs">
-        <div className="flex flex-wrap items-center justify-between gap-2.5 mb-2.5">
-          <div className="flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+      <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+        <div className="p-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-amber-500" />
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
               Autonomous Acca Generator
             </h3>
+            <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold hidden sm:inline">
+              Historical Win Rate: {strategyWinRate}
+            </span>
             <InfoTooltip title="Autonomous Acca Generator" content="Builds mathematically optimized accumulators enforcing positive mathematical edge (+EV) and unanimous AI model consensus." />
           </div>
-          <span className="text-[11px] text-slate-500">
-            Historical Win Rate: <strong className="text-slate-800">{strategyWinRate}</strong>
-          </span>
-        </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Strategy mode pills */}
-          <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-lg border border-slate-200 flex-wrap">
+          <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setPresetStrategy('max_win_rate')}
-              className={`px-3 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                presetStrategy === 'max_win_rate'
-                  ? 'bg-emerald-600 text-white shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
+              onClick={() => setCollapsedGenerator(!collapsedGenerator)}
+              className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+              title={collapsedGenerator ? 'Expand Generator' : 'Collapse Generator'}
             >
-              🛡️ Max Win Rate (86.3%) ({allMaxWinRatePool.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setPresetStrategy('unanimous')}
-              className={`px-3 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                presetStrategy === 'unanimous'
-                  ? 'bg-white text-indigo-700 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              👑 All AI Agree Outright ({allUnanimousPool.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setPresetStrategy('antifragile')}
-              className={`px-3 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                presetStrategy === 'antifragile'
-                  ? 'bg-white text-emerald-700 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              ⭐ Prime Stable ({allEliteStraightPool.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setPresetStrategy('value')}
-              className={`px-3 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                presetStrategy === 'value'
-                  ? 'bg-white text-blue-700 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              💎 +EV Value ({allValuePool.length})
+              <span>{collapsedGenerator ? 'Expand' : 'Collapse'}</span>
+              {collapsedGenerator ? <ChevronDown className="w-3.5 h-3.5 text-slate-500" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-500" />}
             </button>
           </div>
+        </div>
 
-          {/* Leg count pills */}
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
-            {[2, 3, 4, 5, 'ALL'].map(num => (
+        {!collapsedGenerator && (
+          <div className="p-3 bg-white">
+            <div className="flex flex-wrap items-center justify-between gap-2.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <UniformDropdown
+                  label="Strategy"
+                  value={presetStrategy}
+                  onChange={setPresetStrategy}
+                  options={[
+                    { value: 'max_win_rate', label: `🛡️ Max Win Rate (86.3%) (${allMaxWinRatePool.length})` },
+                    { value: 'unanimous', label: `👑 All AI Agree Outright (${allUnanimousPool.length})` },
+                    { value: 'antifragile', label: `⭐ Prime Stable (${allEliteStraightPool.length})` },
+                    { value: 'value', label: `💎 +EV Value (${allValuePool.length})` }
+                  ]}
+                />
+
+                <UniformDropdown
+                  label="Acca Size"
+                  value={String(presetLegCount)}
+                  onChange={(val) => setPresetLegCount(val === 'ALL' ? 'ALL' : Number(val))}
+                  options={[
+                    { value: '2', label: '2 Legs' },
+                    { value: '3', label: '3 Legs (Optimal)' },
+                    { value: '4', label: '4 Legs' },
+                    { value: '5', label: '5 Legs' },
+                    { value: 'ALL', label: 'All Qualifying Legs' }
+                  ]}
+                />
+              </div>
+
+              {/* Generate Button - Standardized Uniform Size */}
               <button
-                key={num}
                 type="button"
-                onClick={() => setPresetLegCount(num)}
-                className={`px-2 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
-                  presetLegCount === num
-                    ? 'bg-slate-800 text-white shadow-2xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
+                onClick={handleLoadAutonomousPreset}
+                className="h-8 px-3.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
               >
-                {num === 'ALL' ? 'All' : `${num} Legs`}
+                <Zap className="w-3.5 h-3.5" />
+                <span>Build Ticket</span>
               </button>
-            ))}
+            </div>
           </div>
-
-          {/* Generate Button */}
-          <button
-            type="button"
-            onClick={handleLoadAutonomousPreset}
-            className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer ml-auto"
-          >
-            <Zap className="w-3.5 h-3.5" />
-            <span>Build Ticket</span>
-          </button>
-        </div>
+        )}
       </div>
 
       {/* Notice Banner */}
@@ -1367,176 +1368,342 @@ export default function AccumulatorPage({
 
       {/* 4. Active Legs Table (Clean, modern look) */}
       <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-        <div className="p-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-          <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider">
-            Active Selections
-          </h3>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setShowStakingSettings(!showStakingSettings)}
-              className="text-xs text-slate-600 hover:text-slate-900 font-semibold flex items-center gap-1 cursor-pointer"
-            >
-              <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500" />
-              <span>{showStakingSettings ? 'Hide Staking Options' : 'Staking Settings'}</span>
-            </button>
-            <span className="text-xs text-slate-500">
+        <div className="p-3 border-b border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider">
+              Active Selections
+            </h3>
+            <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold">
               {activeLegs.length === 0 ? 'No selections' : `${activeLegs.length} ready`}
             </span>
           </div>
-        </div>
 
-        {/* Collapsible Staking Controls */}
-        {showStakingSettings && (
-          <div className="p-3 bg-slate-50/70 border-b border-slate-200 flex flex-wrap items-end gap-3 text-xs">
-            <div>
-              <label className="block font-semibold text-slate-500 mb-1">Bankroll (€)</label>
-              <input 
-                type="number" 
-                value={bankroll} 
-                onChange={(e) => setBankroll(Number(e.target.value) || 0)}
-                className="w-24 px-2.5 py-1 bg-white border border-slate-200 rounded-md font-semibold text-slate-800"
-              />
-            </div>
-            <div>
-              <label className="block font-semibold text-slate-500 mb-1">Kelly Strategy</label>
-              <select 
-                value={kellyMultiplier} 
-                onChange={(e) => setKellyMultiplier(Number(e.target.value))}
-                className="px-2.5 py-1 bg-white border border-slate-200 rounded-md font-semibold text-slate-800 cursor-pointer"
-              >
-                <option value={0.125}>1/8 Kelly (Very Safe)</option>
-                <option value={0.25}>1/4 Kelly (Recommended)</option>
-                <option value={0.5}>1/2 Kelly (Moderate)</option>
-                <option value={1.0}>Full Kelly (Aggressive)</option>
-              </select>
-            </div>
-            <div>
-              <label className="block font-semibold text-slate-500 mb-1">Custom Wager (€)</label>
-              <input 
-                type="number" 
-                placeholder="Auto Kelly"
-                value={customWager} 
-                onChange={(e) => setCustomWager(e.target.value)}
-                className="w-28 px-2.5 py-1 bg-white border border-slate-200 rounded-md font-semibold text-slate-800 placeholder:text-slate-400"
-              />
-            </div>
-          </div>
-        )}
-
-        {activeLegs.length === 0 ? (
-          <div className="py-12 px-4 text-center">
-            <ListChecks className="w-10 h-10 mx-auto text-slate-300 mb-2" />
-            <h4 className="text-sm font-bold text-slate-700">Your Bet Slip is Empty</h4>
-            <p className="text-xs text-slate-500 max-w-md mx-auto mt-1 mb-4">
-              Select your preferred strategy and click <strong>"Build Ticket"</strong> above, or generate an instant high-conviction slip below.
-            </p>
+          <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={handleLoadAutonomousPreset}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer"
+              onClick={() => setShowStakingSettings(!showStakingSettings)}
+              className="h-8 px-3 text-xs text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg font-semibold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
             >
-              <Zap className="w-3.5 h-3.5" />
-              <span>Generate Autonomous Slip</span>
+              <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500" />
+              <span className="hidden sm:inline">{showStakingSettings ? 'Hide Staking' : 'Staking Settings'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setCollapsedSlip(!collapsedSlip)}
+              className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+              title={collapsedSlip ? 'Expand Selections' : 'Collapse Selections'}
+            >
+              <span>{collapsedSlip ? 'Expand' : 'Collapse'}</span>
+              {collapsedSlip ? <ChevronDown className="w-3.5 h-3.5 text-slate-500" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-500" />}
             </button>
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
-                  <th className="py-1 px-1.5 w-8 text-center">#</th>
-                  <th className="py-1 px-2 min-w-[140px]">Fixture</th>
-                  <th className="py-1 px-2 min-w-[110px]">Status</th>
-                  <th className="py-1 px-2 min-w-[130px]">Selection</th>
-                  <th className="py-1 px-1.5 w-16 text-center">Odds</th>
-                  <th className="py-1 px-1.5 w-20 text-center">Probability</th>
-                  <th className="py-1 px-1.5 w-20 text-center">Value (EV)</th>
-                  <th className="py-1 px-1.5 w-12 text-center">Remove</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {activeLegs.map((leg, idx) => {
-                  const b = leg.status.badge;
-                  const isDC = leg.status.isProtectedDC;
+        </div>
 
-                  return (
-                    <tr key={leg.pickId || leg.id || idx} className={`hover:bg-slate-50/80 transition-colors h-9 md:h-10 ${leg.status.isTrap ? 'bg-rose-50/40' : 'bg-white'}`}>
-                      <td className="py-1 px-1.5 text-center font-bold text-slate-400 text-xs">
-                        {leg.legNum}
-                      </td>
-                      <td className="py-1 px-2">
-                        <div className="font-semibold text-slate-900 leading-tight text-[11.5px]">
-                          {leg.home} vs {leg.away}
-                        </div>
-                        <div className="text-[9.5px] text-slate-400 leading-tight flex items-center gap-1">
-                          <span>{leg.league}</span>
-                          <span>•</span>
-                          <span>{leg.time}</span>
-                        </div>
-                      </td>
-                      <td className="py-1 px-2">
-                        <span 
-                          title={b.title}
-                          className={`inline-block px-1.5 py-0.2 rounded text-[10px] font-bold ${
-                            b.type === 'danger' ? 'bg-rose-100 text-rose-800 border border-rose-200' :
-                            b.type === 'warning' ? 'bg-amber-100 text-amber-900 border border-amber-200' :
-                            b.type === 'protected' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
-                            b.type === 'unanimous' ? 'bg-amber-100 text-amber-800 border border-amber-300' :
-                            b.type === 'positive-ev' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' :
-                            'bg-slate-100 text-slate-600 border border-slate-200'
-                          }`}
-                        >
-                          {b.label}
-                        </span>
-                      </td>
-                      <td className="py-1 px-2">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-slate-800 bg-slate-100 px-1.5 py-0.2 rounded text-[10.5px] border border-slate-200">
-                            {leg.market}
-                          </span>
-                          {isDC ? (
+        {!collapsedSlip && (
+          <div>
+            {/* Collapsible Staking Controls */}
+            {showStakingSettings && (
+              <div className="p-3 bg-slate-50/70 border-b border-slate-200 flex flex-wrap items-end gap-3 text-xs">
+                <div>
+                  <label className="block font-semibold text-slate-500 mb-1">Bankroll (€)</label>
+                  <input 
+                    type="number" 
+                    value={bankroll} 
+                    onChange={(e) => setBankroll(Number(e.target.value) || 0)}
+                    className="w-24 px-2.5 py-1 bg-white border border-slate-200 rounded-md font-semibold text-slate-800"
+                  />
+                </div>
+                <div>
+                  <UniformDropdown
+                    label="Kelly Strategy"
+                    value={kellyMultiplier}
+                    onChange={(val) => setKellyMultiplier(Number(val))}
+                    options={[
+                      { value: 0.125, label: '1/8 Kelly (Very Safe)' },
+                      { value: 0.25, label: '1/4 Kelly (Recommended)' },
+                      { value: 0.5, label: '1/2 Kelly (Moderate)' },
+                      { value: 1.0, label: 'Full Kelly (Aggressive)' },
+                    ]}
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-500 mb-1">Custom Wager (€)</label>
+                  <input 
+                    type="number" 
+                    placeholder="Auto Kelly"
+                    value={customWager} 
+                    onChange={(e) => setCustomWager(e.target.value)}
+                    className="w-28 px-2.5 py-1 bg-white border border-slate-200 rounded-md font-semibold text-slate-800 placeholder:text-slate-400"
+                  />
+                </div>
+              </div>
+            )}
+
+            {activeLegs.length === 0 ? (
+              <div className="py-12 px-4 text-center">
+                <ListChecks className="w-10 h-10 mx-auto text-slate-300 mb-2" />
+                <h4 className="text-sm font-bold text-slate-700">Your Bet Slip is Empty</h4>
+                <p className="text-xs text-slate-500 max-w-md mx-auto mt-1 mb-4">
+                  Select your preferred strategy and click <strong>"Build Ticket"</strong> above, or generate an instant high-conviction slip below.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleLoadAutonomousPreset}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer"
+                >
+                  <Zap className="w-3.5 h-3.5" />
+                  <span>Generate Autonomous Slip</span>
+                </button>
+              </div>
+            ) : (
+              <div className="overflow-hidden">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead className="hidden md:table-header-group">
+                    <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
+                      <th className="py-1 px-1 w-6 text-center"></th>
+                      <th className="py-1 px-1.5 w-8 text-center">#</th>
+                      <th className="py-1 px-2 min-w-[140px]">Fixture</th>
+                      <th className="py-1 px-2 min-w-[110px]">Status</th>
+                      <th className="py-1 px-2 min-w-[130px]">Selection</th>
+                      <th className="py-1 px-1.5 w-16 text-center">Odds</th>
+                      <th className="py-1 px-1.5 w-20 text-center">Probability</th>
+                      <th className="py-1 px-1.5 w-20 text-center">Value (EV)</th>
+                      <th className="py-1 px-1.5 w-12 text-center">Remove</th>
+                    </tr>
+                  </thead>
+                  <tbody className="p-2.5 sm:p-0 flex flex-col md:table-row-group md:divide-y md:divide-slate-100 space-y-2.5 md:space-y-0">
+                    {activeLegs.map((leg, idx) => {
+                      const b = leg.status.badge;
+                      const isDC = leg.status.isProtectedDC;
+                      const legKey = leg.pickId || leg.id || `${leg.home}-${leg.away}-${idx}`;
+                      const isExpanded = expandedLegId === legKey;
+
+                      return (
+                        <React.Fragment key={legKey}>
+                          <tr 
+                            className={`flex flex-col md:table-row bg-white rounded-xl md:rounded-none border border-slate-200/90 md:border-0 shadow-2xs md:shadow-none hover:border-slate-300 transition-all md:h-10 cursor-pointer ${
+                              leg.status.isTrap ? 'ring-1 ring-rose-300 md:ring-0 bg-rose-50/20' : idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'
+                            }`}
+                            onClick={() => toggleLegExpand(legKey)}
+                          >
+                            {/* ================= MOBILE COMPACT VIEW ================= */}
+                            <td className="md:hidden p-3 block">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-bold text-slate-400 font-mono text-[10px] bg-slate-100 px-1.5 py-0.5 rounded">
+                                #{leg.legNum}
+                              </span>
+                              <span 
+                                title={b.title}
+                                className={`inline-block px-1.5 py-0.2 rounded text-[9.5px] font-bold ${
+                                  b.type === 'danger' ? 'bg-rose-100 text-rose-800 border border-rose-200' :
+                                  b.type === 'warning' ? 'bg-amber-100 text-amber-900 border border-amber-200' :
+                                  b.type === 'protected' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
+                                  b.type === 'unanimous' ? 'bg-amber-100 text-amber-800 border border-amber-300' :
+                                  b.type === 'positive-ev' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' :
+                                  'bg-slate-100 text-slate-600 border border-slate-200'
+                                }`}
+                              >
+                                {b.label}
+                              </span>
+                            </div>
+
                             <button
                               type="button"
-                              onClick={() => handleConvertToOutright(leg)}
-                              className="text-[9.5px] font-bold px-1.5 py-0.2 rounded border border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer flex items-center gap-0.5"
-                              title="Convert non-outright Double Chance pick to straight outright win"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onRemovePick(leg.pickId || leg.id);
+                              }}
+                              className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                              title="Remove leg"
                             >
-                              <span>Convert to Outright</span>
+                              <Trash2 className="w-3.5 h-3.5" />
                             </button>
-                          ) : (
-                            <span className="text-[9.5px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 py-0.2 rounded">
-                              Straight Win
+                          </div>
+
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="font-semibold text-slate-900 text-xs">
+                              {leg.home} vs {leg.away}
+                            </div>
+                            <div className="font-mono text-xs font-bold text-slate-800">
+                              {safeToFixed(leg.odds, 2)}
+                            </div>
+                          </div>
+
+                          <div className="text-[10px] text-slate-400 mb-1.5 flex items-center gap-1">
+                            <span>{leg.league}</span>
+                            <span>•</span>
+                            <span>{leg.time}</span>
+                          </div>
+
+                          <div className="flex items-center justify-between text-[10px] bg-slate-50 p-1.5 rounded border border-slate-200 mb-1">
+                            <div className="flex items-center gap-1">
+                              <span className="font-bold text-slate-800 bg-white px-1.5 py-0.5 rounded border border-slate-200">
+                                {leg.market}
+                              </span>
+                              {isDC ? (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleConvertToOutright(leg);
+                                  }}
+                                  className="text-[9px] font-bold px-1 py-0.2 rounded border border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer"
+                                >
+                                  Outright
+                                </button>
+                              ) : (
+                                <span className="text-[9px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 py-0.2 rounded">
+                                  Straight Win
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 font-mono">
+                              <span className="text-emerald-700 font-semibold">{safeToFixed(leg.prob, 1)}%</span>
+                              <span className={leg.status.ev > 0 ? 'text-emerald-600 font-bold' : 'text-slate-400'}>
+                                {leg.status.ev > 0 ? '+' : ''}{safeToFixed(leg.status.ev * 100, 1)}% EV
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-end pt-1 text-[10px] text-indigo-600 font-semibold cursor-pointer">
+                            <span className="flex items-center gap-0.5">
+                              {isExpanded ? 'Hide Details' : 'View Details'}
+                              {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                             </span>
+                          </div>
+
+                          {isExpanded && (
+                            <div className="mt-2 pt-2 border-t border-slate-100 text-[10px] space-y-1 bg-slate-50/60 p-2 rounded">
+                              <div>Edge Status: <strong>{b.title}</strong></div>
+                              <div>Fair Probability: <strong>{safeToFixed(leg.prob, 1)}%</strong> &bull; Decimal Odds: <strong>{safeToFixed(leg.odds, 2)}</strong></div>
+                              <div>Expected Value: <strong className={leg.status.ev > 0 ? 'text-emerald-700' : 'text-slate-600'}>{leg.status.ev > 0 ? '+' : ''}{safeToFixed(leg.status.ev * 100, 1)}% EV</strong></div>
+                            </div>
                           )}
-                        </div>
-                      </td>
-                      <td className="py-1 px-1.5 text-center font-mono font-bold text-slate-800 text-[11px]">
-                        {safeToFixed(leg.odds, 2)}
-                      </td>
-                      <td className="py-1 px-1.5 text-center font-mono text-emerald-700 font-semibold text-[10.5px]">
-                        {safeToFixed(leg.prob, 1)}%
-                      </td>
-                      <td className="py-1 px-1.5 text-center font-mono font-bold text-[10.5px]">
-                        <span className={leg.status.ev > 0 ? 'text-emerald-600' : 'text-slate-400'}>
-                          {leg.status.ev > 0 ? '+' : ''}{safeToFixed(leg.status.ev * 100, 1)}%
-                        </span>
-                      </td>
-                      <td className="py-1 px-1.5 text-center">
-                        <button
-                          type="button"
-                          onClick={() => onRemovePick(leg.pickId || leg.id)}
-                          className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                          title="Remove leg"
-                        >
-                          <Trash2 className="w-3.5 h-3.5 mx-auto" />
-                        </button>
-                      </td>
-                    </tr>
+                        </td>
+
+                        {/* ================= DESKTOP 1-ROW VIEW ================= */}
+                        {/* Dropdown Chevron */}
+                        <td className="hidden md:table-cell py-1 px-1 text-center text-slate-400">
+                          {isExpanded ? <ChevronUp className="w-3.5 h-3.5 mx-auto text-indigo-600" /> : <ChevronDown className="w-3.5 h-3.5 mx-auto" />}
+                        </td>
+
+                        {/* Leg # */}
+                        <td className="hidden md:table-cell py-1 px-1.5 text-center font-bold text-slate-400 text-xs">
+                          {leg.legNum}
+                        </td>
+
+                        {/* Fixture */}
+                        <td className="hidden md:table-cell py-1 px-2">
+                          <div className="font-semibold text-slate-900 leading-tight text-[11.5px]">
+                            {leg.home} vs {leg.away}
+                          </div>
+                          <div className="text-[9.5px] text-slate-400 leading-tight flex items-center gap-1">
+                            <span>{leg.league}</span>
+                            <span>•</span>
+                            <span>{leg.time}</span>
+                          </div>
+                        </td>
+
+                        {/* Status */}
+                        <td className="hidden md:table-cell py-1 px-2">
+                          <span 
+                            title={b.title}
+                            className={`inline-block px-1.5 py-0.2 rounded text-[10px] font-bold ${
+                              b.type === 'danger' ? 'bg-rose-100 text-rose-800 border border-rose-200' :
+                              b.type === 'warning' ? 'bg-amber-100 text-amber-900 border border-amber-200' :
+                              b.type === 'protected' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
+                              b.type === 'unanimous' ? 'bg-amber-100 text-amber-800 border border-amber-300' :
+                              b.type === 'positive-ev' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' :
+                              'bg-slate-100 text-slate-600 border border-slate-200'
+                            }`}
+                          >
+                            {b.label}
+                          </span>
+                        </td>
+
+                        {/* Selection */}
+                        <td className="hidden md:table-cell py-1 px-2">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold text-slate-800 bg-slate-100 px-1.5 py-0.2 rounded text-[10.5px] border border-slate-200">
+                              {leg.market}
+                            </span>
+                            {isDC ? (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleConvertToOutright(leg);
+                                }}
+                                className="text-[9.5px] font-bold px-1.5 py-0.2 rounded border border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer flex items-center gap-0.5"
+                                title="Convert non-outright Double Chance pick to straight outright win"
+                              >
+                                <span>Convert to Outright</span>
+                              </button>
+                            ) : (
+                              <span className="text-[9.5px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 py-0.2 rounded">
+                                Straight Win
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Odds */}
+                        <td className="hidden md:table-cell py-1 px-1.5 text-center font-mono font-bold text-slate-800 text-[11px]">
+                          {safeToFixed(leg.odds, 2)}
+                        </td>
+
+                        {/* Probability */}
+                        <td className="hidden md:table-cell py-1 px-1.5 text-center font-mono text-emerald-700 font-semibold text-[10.5px]">
+                          {safeToFixed(leg.prob, 1)}%
+                        </td>
+
+                        {/* Value EV */}
+                        <td className="hidden md:table-cell py-1 px-1.5 text-center font-mono font-bold text-[10.5px]">
+                          <span className={leg.status.ev > 0 ? 'text-emerald-600' : 'text-slate-400'}>
+                            {leg.status.ev > 0 ? '+' : ''}{safeToFixed(leg.status.ev * 100, 1)}%
+                          </span>
+                        </td>
+
+                        {/* Remove */}
+                        <td className="hidden md:table-cell py-1 px-1.5 text-center">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onRemovePick(leg.pickId || leg.id);
+                            }}
+                            className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                            title="Remove leg"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 mx-auto" />
+                          </button>
+                        </td>
+                      </tr>
+
+                      {/* DESKTOP EXPANDED ROW */}
+                      {isExpanded && (
+                        <tr className="hidden md:table-row bg-slate-50/80 border-b border-slate-200">
+                          <td colSpan={9} className="p-3">
+                            <div className="bg-white rounded-lg border border-slate-200 p-2.5 flex items-center justify-between text-xs">
+                              <div>
+                                <span className="font-bold text-slate-800">Telemetry &amp; Safety:</span> {b.title}
+                              </div>
+                              <div className="font-mono text-slate-600">
+                                Model Implied Edge: <strong>{safeToFixed(leg.prob, 1)}% vs {safeToFixed((1 / leg.odds) * 100, 1)}% bookmaker implied</strong> &bull; EV: <strong className={leg.status.ev > 0 ? 'text-emerald-700' : 'text-slate-700'}>{leg.status.ev > 0 ? '+' : ''}{safeToFixed(leg.status.ev * 100, 1)}%</strong>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>
             </table>
+          </div>
+        )}
           </div>
         )}
       </div>

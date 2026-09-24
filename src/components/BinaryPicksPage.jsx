@@ -18,7 +18,9 @@ import {
   CheckCircle2,
   Calendar,
   Tv,
-  Play
+  Play,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
 import { safeParseFloat, safeToFixed } from '../utils/numberUtils';
@@ -45,6 +47,12 @@ export default function BinaryPicksPage({
   const [sortField, setSortField] = useState('edge');
   const [sortDirection, setSortDirection] = useState('desc'); // 'asc' | 'desc'
   const [sortBy, setSortBy] = useState('edge_desc');
+  const [expandedPickId, setExpandedPickId] = useState(null);
+  const [collapsedBinary, setCollapsedBinary] = useState(false);
+
+  const toggleExpand = (id) => {
+    setExpandedPickId(prev => (prev === id ? null : id));
+  };
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -398,7 +406,7 @@ export default function BinaryPicksPage({
             {accaMatchIds.size > 0 && typeof onClearSlip === 'function' && (
               <button
                 onClick={onClearSlip}
-                className="px-2.5 py-1 text-xs font-semibold rounded-md border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
+                className="h-8 px-3 text-xs font-semibold rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Clear Bet Slip ({accaMatchIds.size})</span>
@@ -409,10 +417,36 @@ export default function BinaryPicksPage({
       </div>
 
       {/* Compact Binary Picks Table */}
-      <div className="bg-white border border-slate-200 rounded-lg overflow-x-auto shadow-2xs">
-        <table className="w-full text-left border-collapse text-xs">
-          <thead>
+      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
+        <div className="p-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Scale className="w-4 h-4 text-emerald-600" />
+            <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider">
+              Value Bets &amp; Kelly Stakes (+EV)
+            </h3>
+            <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">
+              {binaryPicks.length} Value Markets
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setCollapsedBinary(!collapsedBinary)}
+            className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+            title={collapsedBinary ? 'Expand Value Bets' : 'Collapse Value Bets'}
+          >
+            <span>{collapsedBinary ? 'Expand' : 'Collapse'}</span>
+            {collapsedBinary ? <ChevronDown className="w-3.5 h-3.5 text-slate-500" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-500" />}
+          </button>
+        </div>
+
+        {!collapsedBinary && (
+          <table className="w-full text-left border-collapse text-xs">
+          <thead className="hidden md:table-header-group">
             <tr className="bg-slate-50 border-b border-slate-200 select-none h-8">
+              {/* Expand Toggle */}
+              <th className="py-1 px-1.5 w-7 text-center"></th>
+
               {/* Kickoff Day & Time */}
               <th 
                 onClick={() => handleSort('time')}
@@ -591,177 +625,382 @@ export default function BinaryPicksPage({
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="p-2.5 sm:p-0 flex flex-col md:table-row-group md:divide-y md:divide-slate-100 space-y-2.5 md:space-y-0">
             {binaryPicks.length === 0 ? (
-              <tr>
-                <td colSpan={10} className="py-8 text-center text-slate-400 text-xs">
+              <tr className="flex flex-col md:table-row">
+                <td colSpan={11} className="py-8 text-center text-slate-400 text-xs block md:table-cell">
                   No value picks match the selected filters.
                 </td>
               </tr>
             ) : (
               binaryPicks.map((p, idx) => {
+                const pickKey = p.id || idx;
+                const isExpanded = expandedPickId === pickKey;
                 const isSlipAdded = accaMatchIds.has(p.id);
                 const isElite = p.edge >= 8;
 
                 return (
-                  <tr 
-                    key={p.id || idx} 
-                    className={`hover:bg-indigo-50/20 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} h-9 md:h-10`}
-                  >
-                    {/* Kickoff Day & Time */}
-                    <td className="py-1 px-2 whitespace-nowrap">
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-1 font-bold text-slate-900 text-[11px]">
-                          <Calendar className="w-3 h-3 text-indigo-600 shrink-0" />
-                          <span>{p.time}</span>
-                          {p.isLive && (
-                            <span className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse">
-                              <span className="w-1 h-1 rounded-full bg-white"></span>
-                              LIVE {p.liveMinute ? `${p.liveMinute}'` : ''}
+                  <React.Fragment key={pickKey}>
+                    <tr 
+                      className={`flex flex-col md:table-row bg-white rounded-xl md:rounded-none border border-slate-200/90 md:border-0 shadow-2xs md:shadow-none hover:border-slate-300 transition-all md:h-10 cursor-pointer ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}
+                      onClick={() => toggleExpand(pickKey)}
+                    >
+                      {/* ================= MOBILE COMPACT CARD VIEW ================= */}
+                      <td className="md:hidden p-3 block">
+                        <div className="flex justify-between items-start mb-1.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-semibold text-slate-700 font-mono text-[10px] flex items-center gap-1">
+                              <Calendar className="w-2.5 h-2.5 text-indigo-600 shrink-0" />
+                              {p.time}
+                            </span>
+                            {p.isLive && (
+                              <span className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse">
+                                <span className="w-1 h-1 rounded-full bg-white"></span>
+                                LIVE {p.liveMinute ? `${p.liveMinute}'` : ''}
+                              </span>
+                            )}
+                            <span className="text-[9.5px] text-slate-400 bg-slate-100 px-1 rounded border border-slate-200">
+                              {p.league || 'Soccer'}
+                            </span>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                            isElite ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                          }`}>
+                            {p.market}
+                          </span>
+                        </div>
+
+                        {/* Matchup */}
+                        <div className="flex justify-between items-center mb-2">
+                          <div className="font-bold text-slate-900 text-xs truncate">
+                            {p.home} <span className="text-slate-400 font-normal">vs</span> {p.away}
+                          </div>
+                          <div className="flex items-center gap-1 font-mono text-xs shrink-0">
+                            <span className="font-bold text-slate-900">@{safeToFixed(p.marketOdds, 2)}</span>
+                            <span className={`px-1.5 py-0.2 rounded font-bold text-[10px] ${
+                              p.edge >= 8 ? 'bg-emerald-100 text-emerald-800' : p.edge > 3 ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'
+                            }`}>
+                              +{safeToFixed(p.edge, 1)}% Edge
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Metrics Bar & Actions */}
+                        <div className="flex items-center justify-between gap-1.5 pt-1.5 border-t border-slate-100">
+                          <div className="flex items-center gap-1.5 text-[10px] font-mono">
+                            <span className="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200">
+                              Win: {safeToFixed(p.modelProb, 0)}%
+                            </span>
+                            <span className="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200">
+                              Kelly: {p.kellyUnits > 0 ? `${p.kellyUnits}u` : 'No bet'}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(p.match); }}
+                              className="px-1.5 py-0.5 rounded text-[10px] font-bold border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors inline-flex items-center gap-0.5"
+                            >
+                              <Play className="w-2.5 h-2.5 fill-indigo-600 text-indigo-600" />
+                              <span>Live</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(p.match); }}
+                              className="px-1.5 py-0.5 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 text-teal-800 hover:bg-teal-100 transition-colors"
+                            >
+                              Intel
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); onAddToSlip && onAddToSlip(p.match); }}
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold transition-colors border ${
+                                isSlipAdded
+                                  ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                  : 'bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700'
+                              }`}
+                            >
+                              {isSlipAdded ? 'Remove' : '+ Slip'}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Collapsible Trigger */}
+                        <div className="mt-2 pt-1 border-t border-slate-100 flex items-center justify-between text-[10px] text-indigo-600 font-semibold select-none">
+                          <span>{isExpanded ? 'Hide Model Breakdown' : 'Show Divergence & Kelly Edge'}</span>
+                          {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                        </div>
+
+                        {/* Collapsible Mobile Content */}
+                        {isExpanded && (
+                          <div className="mt-2 pt-2 border-t border-slate-100 space-y-2 bg-slate-50/60 p-2 rounded-lg text-[10px]">
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="bg-white p-2 rounded border border-slate-200 space-y-1">
+                                <span className="text-slate-500 font-semibold block">Model Prob vs Bookmaker</span>
+                                <div className="font-mono text-slate-800 space-y-0.5">
+                                  <div>Engine Prob: <strong className="text-indigo-700">{safeToFixed(p.modelProb, 1)}%</strong></div>
+                                  <div>Implied Odds: <span>{safeToFixed(p.impliedProb, 1)}%</span></div>
+                                  <div>True Odds: <span>{(100 / Math.max(1, p.modelProb)).toFixed(2)}</span></div>
+                                </div>
+                              </div>
+                              <div className="bg-white p-2 rounded border border-slate-200 space-y-1">
+                                <span className="text-slate-500 font-semibold block">Kelly Staking</span>
+                                <div className="font-mono text-slate-800 space-y-0.5">
+                                  <div>Edge (+EV): <strong className="text-emerald-700">+{safeToFixed(p.edge, 1)}%</strong></div>
+                                  <div>Quarter Kelly: <span>{p.kellyUnits > 0 ? `${p.kellyUnits} units` : 'Zero EV'}</span></div>
+                                  <div>Confidence: <span>{safeToFixed(p.modelProb, 0)}%</span></div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </td>
+
+                      {/* ================= DESKTOP 1-ROW TABLE VIEW ================= */}
+                      {/* Dropdown Chevron */}
+                      <td className="hidden md:table-cell py-1 px-1.5 text-center text-slate-400">
+                        {isExpanded ? <ChevronUp className="w-3.5 h-3.5 mx-auto text-indigo-600" /> : <ChevronDown className="w-3.5 h-3.5 mx-auto" />}
+                      </td>
+
+                      {/* Kickoff Day & Time */}
+                      <td className="hidden md:table-cell py-1 px-2 whitespace-nowrap">
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-1 font-bold text-slate-900 text-[11px]">
+                            <Calendar className="w-3 h-3 text-indigo-600 shrink-0" />
+                            <span>{p.time}</span>
+                            {p.isLive && (
+                              <span className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse">
+                                <span className="w-1 h-1 rounded-full bg-white"></span>
+                                LIVE {p.liveMinute ? `${p.liveMinute}'` : ''}
+                              </span>
+                            )}
+                          </div>
+                          {p.dt?.day && (p.time?.startsWith('Today') || p.time?.startsWith('Tomorrow')) && (
+                            <span className="text-[9.5px] text-slate-400 pl-4 font-medium leading-tight">
+                              {p.dt.day}, {p.dt.date}
+                            </span>
+                          )}
+                          {p.broadcast && (
+                            <span className="text-[8.5px] text-indigo-700 font-semibold pl-4 pt-0.5 truncate max-w-[130px] leading-tight" title={`Broadcast: ${p.broadcast}`}>
+                              📺 {p.broadcast.split(',')[0]}
                             </span>
                           )}
                         </div>
-                        {p.dt?.day && (p.time?.startsWith('Today') || p.time?.startsWith('Tomorrow')) && (
-                          <span className="text-[9.5px] text-slate-400 pl-4 font-medium leading-tight">
-                            {p.dt.day}, {p.dt.date}
-                          </span>
-                        )}
-                        {p.broadcast && (
-                          <span className="text-[8.5px] text-indigo-700 font-semibold pl-4 pt-0.5 truncate max-w-[130px] leading-tight" title={`Broadcast: ${p.broadcast}`}>
-                            📺 {p.broadcast.split(',')[0]}
-                          </span>
-                        )}
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* League */}
-                    <td className="py-1 px-2">
-                      <span 
-                        className="inline-block px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[10px] truncate max-w-[110px] border border-slate-200"
-                        title={p.league}
-                      >
-                        {p.league || 'Soccer'}
-                      </span>
-                    </td>
+                      {/* League */}
+                      <td className="hidden md:table-cell py-1 px-2">
+                        <span 
+                          className="inline-block px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[10px] truncate max-w-[110px] border border-slate-200"
+                          title={p.league}
+                        >
+                          {p.league || 'Soccer'}
+                        </span>
+                      </td>
 
-                    {/* Fixture */}
-                    <td className="py-1 px-2 min-w-[170px]">
-                      <div className="font-semibold text-slate-900 flex items-center gap-1 flex-wrap text-[11.5px]">
-                        <span className="text-slate-900 font-bold">{p.home}</span>
-                        <span className="text-[9.5px] text-slate-400 font-normal">vs</span>
-                        <span className="text-slate-900 font-bold">{p.away}</span>
-                        {p.isLive && (
+                      {/* Fixture */}
+                      <td className="hidden md:table-cell py-1 px-2 min-w-[170px]">
+                        <div className="font-semibold text-slate-900 flex items-center gap-1 flex-wrap text-[11.5px]">
+                          <span className="text-slate-900 font-bold">{p.home}</span>
+                          <span className="text-[9.5px] text-slate-400 font-normal">vs</span>
+                          <span className="text-slate-900 font-bold">{p.away}</span>
+                          {p.isLive && (
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(p.match); }}
+                              className="inline-flex items-center gap-0.5 text-[8.5px] font-extrabold bg-rose-600 hover:bg-rose-700 text-white px-1.5 py-0.2 rounded-full shadow-xs animate-pulse cursor-pointer shrink-0"
+                              title="Match is LIVE NOW! Click to Watch Stream"
+                            >
+                              <Play className="w-1.5 h-1.5 fill-white text-white" />
+                              <span>Live</span>
+                            </button>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Pick */}
+                      <td className="hidden md:table-cell py-1 px-2 whitespace-nowrap">
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-[10.5px] font-bold border ${
+                          isElite 
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
+                            : 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                        }`}>
+                          {p.market}
+                        </span>
+                      </td>
+
+                      {/* Bookmaker Odds */}
+                      <td className="hidden md:table-cell py-1 px-1.5 text-center font-mono font-bold text-slate-800 text-[11px] whitespace-nowrap">
+                        {safeToFixed(p.marketOdds, 2)}
+                      </td>
+
+                      {/* Prob */}
+                      <td className="hidden md:table-cell py-1 px-1.5 text-center whitespace-nowrap">
+                        <ConfidenceGauge confidence={p.modelProb} size="sm" />
+                      </td>
+
+                      {/* Implied */}
+                      <td className="hidden md:table-cell py-1 px-1.5 text-center font-mono text-slate-500 text-[10.5px] whitespace-nowrap">
+                        {safeToFixed(p.impliedProb, 1)}%
+                      </td>
+
+                      {/* Edge */}
+                      <td className="hidden md:table-cell py-1 px-1.5 text-center font-mono whitespace-nowrap">
+                        <span className={`inline-block px-1.5 py-0.5 rounded font-bold text-[10.5px] ${
+                          p.edge >= 8 
+                            ? 'bg-emerald-100 text-emerald-800' 
+                            : p.edge > 3 
+                            ? 'bg-emerald-50 text-emerald-700' 
+                            : 'bg-slate-100 text-slate-600'
+                        }`}>
+                          {p.edge > 0 ? `+${safeToFixed(p.edge, 1)}%` : `${safeToFixed(p.edge, 1)}%`}
+                        </span>
+                      </td>
+
+                      {/* Kelly Sizing */}
+                      <td className="hidden md:table-cell py-1 px-1.5 text-center whitespace-nowrap">
+                        <KellyTooltip showIcon={false} align="center">
+                          <div className="cursor-help inline-block leading-tight">
+                            <span className="font-mono font-bold text-slate-800 text-[11px] block hover:text-indigo-600 transition-colors">
+                              {p.kellyUnits > 0 ? `${p.kellyUnits}u` : 'No bet'}
+                            </span>
+                            <span className="text-[9px] text-slate-400 block font-mono">
+                              1/4 Kelly
+                            </span>
+                          </div>
+                        </KellyTooltip>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="hidden md:table-cell py-1 px-2 text-center whitespace-nowrap">
+                        <div className="flex items-center justify-center gap-1">
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(p.match); }}
-                            className="inline-flex items-center gap-0.5 text-[8.5px] font-extrabold bg-rose-600 hover:bg-rose-700 text-white px-1.5 py-0.2 rounded-full shadow-xs animate-pulse cursor-pointer shrink-0"
-                            title="Match is LIVE NOW! Click to Watch Stream"
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer inline-flex items-center gap-0.5 ${
+                              p.isLive
+                                ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-xs animate-pulse'
+                                : 'border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700'
+                            }`}
+                            title="Watch Match Live & In-Play Radar Simulator"
                           >
-                            <Play className="w-1.5 h-1.5 fill-white text-white" />
-                            <span>Live</span>
+                            <Play className={`w-2.5 h-2.5 ${p.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
+                            <span>{p.isLive ? 'Live' : 'Watch'}</span>
                           </button>
-                        )}
-                      </div>
-                    </td>
 
-                    {/* Pick */}
-                    <td className="py-1 px-2 whitespace-nowrap">
-                      <span className={`inline-block px-2 py-0.5 rounded-full text-[10.5px] font-bold border ${
-                        isElite 
-                          ? 'bg-emerald-50 text-emerald-800 border-emerald-300' 
-                          : 'bg-indigo-50 text-indigo-700 border-indigo-200'
-                      }`}>
-                        {p.market}
-                      </span>
-                    </td>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(p.match); }}
+                            className="px-1.5 py-0.5 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
+                            title="Open Analysis"
+                          >
+                            Intel
+                          </button>
 
-                    {/* Bookmaker Odds */}
-                    <td className="py-1 px-1.5 text-center font-mono font-bold text-slate-800 text-[11px] whitespace-nowrap">
-                      {safeToFixed(p.marketOdds, 2)}
-                    </td>
-
-                    {/* Prob */}
-                    <td className="py-1 px-1.5 text-center whitespace-nowrap">
-                      <ConfidenceGauge confidence={p.modelProb} size="sm" />
-                    </td>
-
-                    {/* Implied */}
-                    <td className="py-1 px-1.5 text-center font-mono text-slate-500 text-[10.5px] whitespace-nowrap">
-                      {safeToFixed(p.impliedProb, 1)}%
-                    </td>
-
-                    {/* Edge */}
-                    <td className="py-1 px-1.5 text-center font-mono whitespace-nowrap">
-                      <span className={`inline-block px-1.5 py-0.5 rounded font-bold text-[10.5px] ${
-                        p.edge >= 8 
-                          ? 'bg-emerald-100 text-emerald-800' 
-                          : p.edge > 3 
-                          ? 'bg-emerald-50 text-emerald-700' 
-                          : 'bg-slate-100 text-slate-600'
-                      }`}>
-                        {p.edge > 0 ? `+${safeToFixed(p.edge, 1)}%` : `${safeToFixed(p.edge, 1)}%`}
-                      </span>
-                    </td>
-
-                    {/* Kelly Sizing */}
-                    <td className="py-1 px-1.5 text-center whitespace-nowrap">
-                      <KellyTooltip showIcon={false} align="center">
-                        <div className="cursor-help inline-block leading-tight">
-                          <span className="font-mono font-bold text-slate-800 text-[11px] block hover:text-indigo-600 transition-colors">
-                            {p.kellyUnits > 0 ? `${p.kellyUnits}u` : 'No bet'}
-                          </span>
-                          <span className="text-[9px] text-slate-400 block font-mono">
-                            1/4 Kelly
-                          </span>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onAddToSlip && onAddToSlip(p.match); }}
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-colors cursor-pointer border ${
+                              isSlipAdded
+                                ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
+                                : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
+                            }`}
+                            title={isSlipAdded ? 'Remove from Bet Slip' : 'Add to Bet Slip'}
+                          >
+                            {isSlipAdded ? 'Remove' : '+ Slip'}
+                          </button>
                         </div>
-                      </KellyTooltip>
-                    </td>
+                      </td>
+                    </tr>
 
-                    {/* Actions */}
-                    <td className="py-1 px-2 text-center whitespace-nowrap">
-                      <div className="flex items-center justify-center gap-1">
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(p.match); }}
-                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer inline-flex items-center gap-0.5 ${
-                            p.isLive
-                              ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-xs animate-pulse'
-                              : 'border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700'
-                          }`}
-                          title="Watch Match Live & In-Play Radar Simulator"
-                        >
-                          <Play className={`w-2.5 h-2.5 ${p.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
-                          <span>{p.isLive ? 'Live' : 'Watch'}</span>
-                        </button>
+                    {/* ================= DESKTOP EXPANDED DETAIL ROW ================= */}
+                    {isExpanded && (
+                      <tr className="hidden md:table-row bg-slate-50/80 border-b border-slate-200">
+                        <td colSpan={11} className="p-3">
+                          <div className="bg-white rounded-lg border border-slate-200 p-3 space-y-3 shadow-2xs">
+                            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-slate-800 text-xs">
+                                  Quantitative Edge &amp; Expected Value Breakdown:
+                                </span>
+                                <span className="text-[11px] text-slate-500 font-mono">
+                                  {p.home} vs {p.away} ({p.market})
+                                </span>
+                              </div>
+                              <span className={`text-[11px] font-bold px-2 py-0.5 rounded border ${
+                                isElite ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                              }`}>
+                                Divergence Edge: +{safeToFixed(p.edge, 1)}%
+                              </span>
+                            </div>
 
-                        <button
-                          onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(p.match); }}
-                          className="px-1.5 py-0.5 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
-                          title="Open Analysis"
-                        >
-                          Intel
-                        </button>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                              <div className="bg-slate-50/60 p-2.5 rounded-lg border border-slate-200">
+                                <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                                  Probability Divergence
+                                </div>
+                                <div className="space-y-1 font-mono text-[11px]">
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-600">Model Probability:</span>
+                                    <span className="font-bold text-indigo-700">{safeToFixed(p.modelProb, 1)}%</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-600">Market Implied Prob:</span>
+                                    <span className="font-bold text-slate-700">{safeToFixed(p.impliedProb, 1)}%</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-600">Model Fair Odds:</span>
+                                    <span className="font-bold text-slate-800">{(100 / Math.max(1, p.modelProb)).toFixed(2)}</span>
+                                  </div>
+                                </div>
+                              </div>
 
-                        <button
-                          onClick={(e) => { e.stopPropagation(); onAddToSlip && onAddToSlip(p.match); }}
-                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-colors cursor-pointer border ${
-                            isSlipAdded
-                              ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
-                              : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
-                          }`}
-                          title={isSlipAdded ? 'Remove from Bet Slip' : 'Add to Bet Slip'}
-                        >
-                          {isSlipAdded ? 'Remove' : '+ Slip'}
-                        </button>
-                      </div>
-                    </td>
+                              <div className="bg-slate-50/60 p-2.5 rounded-lg border border-slate-200">
+                                <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                                  Kelly Staking Protocol
+                                </div>
+                                <div className="space-y-1 font-mono text-[11px]">
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-600">Market Price:</span>
+                                    <span className="font-bold text-slate-800">@{safeToFixed(p.marketOdds, 2)}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-600">Calculated Stake:</span>
+                                    <span className="font-bold text-emerald-700">{p.kellyUnits > 0 ? `${p.kellyUnits} units` : 'No bet recommended'}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-600">Strategy Formula:</span>
+                                    <span className="text-slate-500 text-[10px]">Quarter-Kelly (Conservative)</span>
+                                  </div>
+                                </div>
+                              </div>
 
-                  </tr>
+                              <div className="bg-slate-50/60 p-2.5 rounded-lg border border-slate-200">
+                                <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                                  Signal Verification
+                                </div>
+                                <div className="space-y-1 font-mono text-[11px]">
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-600">Conviction Tier:</span>
+                                    <span className="font-bold text-indigo-700">{isElite ? 'Elite High Conviction' : 'Standard Value Pick'}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-600">Expected Value (+EV):</span>
+                                    <span className="font-bold text-emerald-700">+{safeToFixed(p.edge, 1)}% Edge</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 );
               })
             )}
           </tbody>
         </table>
+        )}
       </div>
 
     </div>

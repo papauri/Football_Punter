@@ -10,7 +10,9 @@ import {
   Sparkles,
   Layers,
   CheckCircle2,
-  Info
+  Info,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
 import { safeParseFloat, safeToFixed } from '../utils/numberUtils';
@@ -22,6 +24,12 @@ export default function LeagueProfilesPage({
   const [searchQuery, setSearchQuery] = useState('');
   const [tierFilter, setTierFilter] = useState('ALL');
   const [sortBy, setSortBy] = useState('accuracy_desc');
+  const [expandedLeague, setExpandedLeague] = useState(null);
+  const [collapsedTiers, setCollapsedTiers] = useState(false);
+
+  const toggleLeagueExpand = (name) => {
+    setExpandedLeague(prev => (prev === name ? null : name));
+  };
 
   const leagueList = useMemo(() => {
     const entries = Object.entries(leagueProfiles).filter(([name]) => !isLeagueBlacklisted(name));
@@ -247,10 +255,11 @@ export default function LeagueProfilesPage({
 
       {/* Compact League Table */}
       <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-hidden">
           <table className="w-full text-left border-collapse text-xs">
-            <thead>
+            <thead className="hidden md:table-header-group">
               <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-10">
+                <th className="py-1.5 px-1 w-6 text-center"></th>
                 <th className="py-1.5 px-2 w-12 text-center">Rank</th>
                 <th className="py-1.5 px-2 min-w-[200px]">Competition</th>
                 <th className="py-1.5 px-2 w-40 text-center">Predictability Tier</th>
@@ -262,70 +271,151 @@ export default function LeagueProfilesPage({
                 <th className="py-1.5 px-2 w-24 text-center">Index</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredLeagues.map((l, idx) => (
-                <tr key={l.name} className={`hover:bg-indigo-50/30 transition-colors md:h-12 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}>
-                  
-                  {/* Rank */}
-                  <td className="py-1.5 px-2 text-center font-bold text-slate-400">
-                    {idx + 1}
-                  </td>
+            <tbody className="flex flex-col md:table-row-group divide-y divide-slate-100">
+              {filteredLeagues.map((l, idx) => {
+                const isExpanded = expandedLeague === l.name;
 
-                  {/* League / Country */}
-                  <td className="py-1.5 px-2">
-                    <div className="font-semibold text-slate-900">{l.name}</div>
-                    <div className="text-[10px] text-slate-400">{l.country} • {l.matchesSampled} Matches Analyzed</div>
-                  </td>
+                return (
+                  <React.Fragment key={l.name}>
+                    <tr 
+                      className={`flex flex-col md:table-row hover:bg-indigo-50/30 transition-colors md:h-12 cursor-pointer ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
+                      onClick={() => toggleLeagueExpand(l.name)}
+                    >
+                      {/* ================= MOBILE COMPACT VIEW ================= */}
+                      <td className="md:hidden p-3 block">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center gap-2">
+                            <span className="w-5 h-5 rounded-full bg-slate-900 text-white font-mono font-bold text-[10px] inline-flex items-center justify-center shrink-0">
+                              {idx + 1}
+                            </span>
+                            <div>
+                              <div className="font-bold text-slate-900 text-xs">{l.name}</div>
+                              <div className="text-[10px] text-slate-400">{l.country}</div>
+                            </div>
+                          </div>
+                          <span className={`inline-block px-2 py-0.5 rounded text-[10.5px] font-bold border ${l.badgeStyle}`}>
+                            {l.tierBadge}
+                          </span>
+                        </div>
 
-                  {/* Tier Badge */}
-                  <td className="py-1.5 px-2 text-center">
-                    <span className={`inline-block px-2.5 py-0.5 rounded text-[11px] font-bold border ${l.badgeStyle}`}>
-                      {l.tierBadge}
-                    </span>
-                  </td>
+                        <div className="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-200 text-xs mb-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-slate-500 text-[10.5px]">Hit Rate:</span>
+                            <span className="font-mono font-bold text-emerald-700">{l.expectedHitRate}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-slate-500 text-[10.5px]">Index:</span>
+                            <span className="font-mono font-bold text-slate-900">{l.predictabilityIndex}</span>
+                          </div>
+                        </div>
 
-                  {/* Expected Hit Rate */}
-                  <td className="py-1.5 px-2 text-center font-mono font-bold text-emerald-700">
-                    {l.expectedHitRate}
-                  </td>
+                        <div className="flex items-center justify-between pt-1 text-[11px]">
+                          <span className="text-slate-600 truncate max-w-[200px]">
+                            Rule: <strong>{l.dnbRec}</strong>
+                          </span>
+                          <span className="text-indigo-600 font-semibold flex items-center gap-0.5 cursor-pointer">
+                            {isExpanded ? 'Hide' : 'Details'}
+                            {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                          </span>
+                        </div>
 
-                  {/* DNB Rule */}
-                  <td className="py-1.5 px-2 text-center text-[11px] text-slate-600 font-medium">
-                    {l.dnbRec}
-                  </td>
+                        {isExpanded && (
+                          <div className="mt-2.5 pt-2 border-t border-slate-100 text-[11px] space-y-1.5 bg-slate-50 p-2 rounded">
+                            <div className="text-slate-700 leading-snug">
+                              <strong>Tier Intel:</strong> {l.tierDesc || `${l.name} classified under ${l.tierLabel}.`}
+                            </div>
+                            <div className="grid grid-cols-3 gap-1 pt-1 text-slate-600 font-mono text-[10px]">
+                              <div>Draw: <strong>{safeToFixed(l.drawRate, 1)}%</strong></div>
+                              <div>Goals: <strong>{safeToFixed(l.avgGoals, 2)}</strong></div>
+                              <div>Pace: <strong>{safeToFixed(l.paceFactor, 2)}x</strong></div>
+                            </div>
+                          </div>
+                        )}
+                      </td>
 
-                  {/* Draw Rate */}
-                  <td className="py-1.5 px-2 text-center font-mono text-slate-700">
-                    {safeToFixed(l.drawRate, 1)}%
-                  </td>
+                      {/* ================= DESKTOP 1-ROW VIEW ================= */}
+                      {/* Chevron */}
+                      <td className="hidden md:table-cell py-1.5 px-1 text-center text-slate-400">
+                        {isExpanded ? <ChevronUp className="w-3.5 h-3.5 mx-auto text-indigo-600" /> : <ChevronDown className="w-3.5 h-3.5 mx-auto" />}
+                      </td>
 
-                  {/* Avg Goals */}
-                  <td className="py-1.5 px-2 text-center font-mono text-slate-700">
-                    {safeToFixed(l.avgGoals, 2)}
-                  </td>
+                      {/* Rank */}
+                      <td className="hidden md:table-cell py-1.5 px-2 text-center font-bold text-slate-400">
+                        {idx + 1}
+                      </td>
 
-                  {/* Pace Factor */}
-                  <td className="py-1.5 px-2 text-center font-mono text-indigo-700 font-semibold">
-                    {safeToFixed(l.paceFactor, 2)}x
-                  </td>
+                      {/* League / Country */}
+                      <td className="hidden md:table-cell py-1.5 px-2">
+                        <div className="font-semibold text-slate-900">{l.name}</div>
+                        <div className="text-[10px] text-slate-400">{l.country} • {l.matchesSampled} Matches Analyzed</div>
+                      </td>
 
-                  {/* Predictability Index */}
-                  <td className="py-1.5 px-2 text-center">
-                    <div className="flex items-center justify-center gap-1.5">
-                      <div className="w-10 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full rounded-full ${l.tier === 1 ? 'bg-emerald-500' : l.tier === 2 ? 'bg-blue-500' : 'bg-amber-500'}`} 
-                          style={{ width: `${l.predictabilityIndex}%` }}
-                        />
-                      </div>
-                      <span className="font-mono text-[11px] font-bold text-slate-700">
-                        {l.predictabilityIndex}
-                      </span>
-                    </div>
-                  </td>
+                      {/* Tier Badge */}
+                      <td className="hidden md:table-cell py-1.5 px-2 text-center">
+                        <span className={`inline-block px-2.5 py-0.5 rounded text-[11px] font-bold border ${l.badgeStyle}`}>
+                          {l.tierBadge}
+                        </span>
+                      </td>
 
-                </tr>
-              ))}
+                      {/* Expected Hit Rate */}
+                      <td className="hidden md:table-cell py-1.5 px-2 text-center font-mono font-bold text-emerald-700">
+                        {l.expectedHitRate}
+                      </td>
+
+                      {/* DNB Rule */}
+                      <td className="hidden md:table-cell py-1.5 px-2 text-center text-[11px] text-slate-600 font-medium">
+                        {l.dnbRec}
+                      </td>
+
+                      {/* Draw Rate */}
+                      <td className="hidden md:table-cell py-1.5 px-2 text-center font-mono text-slate-700">
+                        {safeToFixed(l.drawRate, 1)}%
+                      </td>
+
+                      {/* Avg Goals */}
+                      <td className="hidden md:table-cell py-1.5 px-2 text-center font-mono text-slate-700">
+                        {safeToFixed(l.avgGoals, 2)}
+                      </td>
+
+                      {/* Pace Factor */}
+                      <td className="hidden md:table-cell py-1.5 px-2 text-center font-mono text-indigo-700 font-semibold">
+                        {safeToFixed(l.paceFactor, 2)}x
+                      </td>
+
+                      {/* Predictability Index */}
+                      <td className="hidden md:table-cell py-1.5 px-2 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <div className="w-10 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full rounded-full ${l.tier === 1 ? 'bg-emerald-500' : l.tier === 2 ? 'bg-blue-500' : 'bg-amber-500'}`} 
+                              style={{ width: `${l.predictabilityIndex}%` }}
+                            />
+                          </div>
+                          <span className="font-mono text-[11px] font-bold text-slate-700">
+                            {l.predictabilityIndex}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+
+                    {/* Desktop Expanded Detail Row */}
+                    {isExpanded && (
+                      <tr className="hidden md:table-row bg-slate-50/80 border-b border-slate-200">
+                        <td colSpan={10} className="p-3">
+                          <div className="bg-white rounded-lg border border-slate-200 p-3 text-xs flex items-center justify-between gap-4">
+                            <div className="text-slate-700">
+                              <strong className="text-slate-900 font-bold">Tier Intel &amp; Guidelines:</strong> {l.tierDesc || `${l.name} is evaluated under the ${l.tierLabel} framework.`}
+                            </div>
+                            <div className="font-mono text-slate-600 shrink-0 text-right">
+                              Draw Rate: <strong>{safeToFixed(l.drawRate, 1)}%</strong> &bull; Avg Goals: <strong>{safeToFixed(l.avgGoals, 2)}</strong> &bull; Pace: <strong>{safeToFixed(l.paceFactor, 2)}x</strong>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>

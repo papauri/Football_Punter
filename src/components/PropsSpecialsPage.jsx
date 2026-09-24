@@ -33,6 +33,13 @@ export default function PropsSpecialsPage({
   const [searchQuery, setSearchQuery] = useState('');
   const [onlyDerbies, setOnlyDerbies] = useState(false);
   const [expandedInsights, setExpandedInsights] = useState(new Set());
+  const [expandedEvalId, setExpandedEvalId] = useState(null);
+
+  const toggleEvalExpand = (id) => {
+    setExpandedEvalId(prev => (prev === id ? null : id));
+  };
+  const [collapsedPropsProof, setCollapsedPropsProof] = useState(false);
+  const [collapsedMatchProps, setCollapsedMatchProps] = useState(false);
   const [isPropsAccaModalOpen, setIsPropsAccaModalOpen] = useState(false);
   const [loadedNotice, setLoadedNotice] = useState(null);
   const abortControllerRef = useRef(null);
@@ -355,12 +362,12 @@ export default function PropsSpecialsPage({
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto shrink-0">
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto shrink-0">
             <button
               onClick={() => setIsPropsAccaModalOpen(true)}
-              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+              className="h-8 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
             >
-              <Sparkles className="w-4 h-4 text-indigo-200" />
+              <Sparkles className="w-3.5 h-3.5 text-indigo-200" />
               <span>Generate AI Props Acca Slip</span>
             </button>
 
@@ -370,18 +377,18 @@ export default function PropsSpecialsPage({
                   onSetActiveSlipId?.('props-slip');
                   onNavigate?.('acca');
                 }}
-                className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                className="h-8 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                <Check className="w-4 h-4" />
+                <Check className="w-3.5 h-3.5" />
                 <span>View Props Slip ({propsSlipPicks.length})</span>
               </button>
             ) : (
               <button
                 onClick={handleAddTopAnchors}
                 disabled={allEliteAnchors.length === 0}
-                className="px-3.5 py-2.5 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                className="h-8 px-3 bg-slate-900 hover:bg-black text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
               >
-                <Plus className="w-4 h-4 text-emerald-400" />
+                <Plus className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Quick-Add Top 3 to Slip</span>
               </button>
             )}
@@ -390,7 +397,7 @@ export default function PropsSpecialsPage({
               href="https://www.livescorebet.com/ie/sports/football"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1"
+              className="h-8 px-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 shadow-2xs"
               title="Open LiveScore Bet Ireland"
             >
               <span>LiveScore Bet IE</span>
@@ -401,33 +408,43 @@ export default function PropsSpecialsPage({
       </div>
 
       {/* Filter & Market Navigation Controls */}
-      <div className="bg-white rounded-xl shadow-xs border border-slate-200 p-4 space-y-3">
-        <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-3">
-          {/* Category Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-hide">
-            {[
-              { id: 'ALL', label: 'All Special Markets' },
-              { id: 'BTTS', label: 'BTTS (Both Teams To Score)' },
-              { id: 'CORNERS', label: 'Corners (Lines & Teams)' },
-              { id: 'CARDS', label: 'Cards & Discipline' },
-              { id: 'SPECIALS', label: 'First Half & Goals' },
-            ].map(tab => (
+      <div className="bg-white rounded-xl shadow-xs border border-slate-200 p-2.5 space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {/* Left: Search Bar */}
+          <div className="relative flex-1 min-w-[140px] max-w-sm">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search team, league, prop..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-8 pr-7 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-colors"
+            />
+            {searchQuery && (
               <button
-                key={tab.id}
-                onClick={() => setSelectedCategory(tab.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                  selectedCategory === tab.id
-                    ? 'bg-indigo-600 text-white shadow-xs'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
               >
-                {tab.label}
+                ✕
               </button>
-            ))}
+            )}
           </div>
 
-          {/* League Dropdown and Search Bar */}
+          {/* Right: Dropdowns & Filter Controls */}
           <div className="flex flex-wrap items-center gap-2">
+            <UniformDropdown
+              label="Market"
+              value={selectedCategory}
+              onChange={setSelectedCategory}
+              options={[
+                { value: 'ALL', label: 'All Special Markets' },
+                { value: 'BTTS', label: 'BTTS (Both Teams To Score)' },
+                { value: 'CORNERS', label: 'Corners (Lines & Teams)' },
+                { value: 'CARDS', label: 'Cards & Discipline' },
+                { value: 'SPECIALS', label: 'First Half & Goals' },
+              ]}
+            />
+
             <UniformDropdown
               label="League"
               value={selectedLeague}
@@ -435,76 +452,54 @@ export default function PropsSpecialsPage({
               options={leagueOptions}
             />
 
-            <div className="relative min-w-[200px] flex-1 sm:w-56">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search team, league, prop..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-indigo-500"
-              />
-            </div>
-          </div>
-        </div>
+            <UniformDropdown
+              label="Confidence Floor"
+              value={minHitRate}
+              onChange={(val) => setMinHitRate(Number(val))}
+              options={[
+                { value: 60, label: 'All Value (≥60%)' },
+                { value: 70, label: 'High Conviction (≥70%)' },
+                { value: 75, label: '🛡️ Elite Anchors (≥75%)' },
+                { value: 80, label: '💎 Super Anchors (≥80%)' },
+              ]}
+            />
 
-        {/* Secondary filters */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100 text-xs">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-slate-500 font-medium">Confidence Floor:</span>
-            {[
-              { rate: 60, label: 'All Value (≥60%)' },
-              { rate: 70, label: 'High Conviction (≥70%)' },
-              { rate: 75, label: '🛡️ Elite Anchors (≥75%)' },
-              { rate: 80, label: '💎 Super Anchors (≥80%)' },
-            ].map(lvl => (
-              <button
-                key={lvl.rate}
-                onClick={() => setMinHitRate(lvl.rate)}
-                className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
-                  minHitRate === lvl.rate
-                    ? 'bg-slate-900 text-white border-slate-900'
-                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                }`}
-              >
-                {lvl.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-4 flex-wrap">
-            <label className="flex items-center gap-2 cursor-pointer text-slate-700 select-none">
-              <input
-                type="checkbox"
-                checked={onlyDerbies}
-                onChange={(e) => setOnlyDerbies(e.target.checked)}
-                className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
-              />
-              <span className="flex items-center gap-1 font-medium">
-                <Flame className="w-3.5 h-3.5 text-amber-500" />
-                Derby / Rivalry Matches Only
+            {/* Derby Checkbox Button */}
+            <button
+              type="button"
+              onClick={() => setOnlyDerbies(!onlyDerbies)}
+              className={`h-8 px-2.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs ${
+                onlyDerbies
+                  ? 'bg-amber-50 text-amber-900 border-amber-400 font-bold'
+                  : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+              }`}
+              title="Show only derby and high-intensity rivalry matches"
+            >
+              <span className={`w-3.5 h-3.5 rounded flex items-center justify-center border text-[9px] ${
+                onlyDerbies ? 'bg-amber-600 text-white border-amber-600 font-bold' : 'border-slate-400 bg-white'
+              }`}>
+                {onlyDerbies ? '✓' : ''}
               </span>
-            </label>
-            <span className="text-slate-400">|</span>
-            <span className="text-slate-500">
-              Showing <strong className="text-slate-800">{filteredInsights.length}</strong> matches
-            </span>
+              <span className="flex items-center gap-1">
+                <Flame className="w-3.5 h-3.5 text-amber-500" />
+                Derby Only
+              </span>
+            </button>
+
             {(selectedLeague !== 'All' || searchQuery || selectedCategory !== 'ALL' || onlyDerbies || minHitRate !== 60) && (
-              <>
-                <span className="text-slate-400">|</span>
-                <button
-                  onClick={() => {
-                    setSelectedLeague('All');
-                    setSearchQuery('');
-                    setSelectedCategory('ALL');
-                    setOnlyDerbies(false);
-                    setMinHitRate(60);
-                  }}
-                  className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold underline cursor-pointer"
-                >
-                  Reset filters
-                </button>
-              </>
+              <button
+                onClick={() => {
+                  setSelectedLeague('All');
+                  setSearchQuery('');
+                  setSelectedCategory('ALL');
+                  setOnlyDerbies(false);
+                  setMinHitRate(60);
+                }}
+                className="h-8 px-2.5 rounded-lg text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 font-semibold cursor-pointer transition-colors"
+                title="Reset all filters"
+              >
+                Reset
+              </button>
             )}
           </div>
         </div>
@@ -541,12 +536,24 @@ export default function PropsSpecialsPage({
                 </p>
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={() => setCollapsedPropsProof(!collapsedPropsProof)}
+              className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+              title={collapsedPropsProof ? 'Expand Proof' : 'Collapse Proof'}
+            >
+              <span>{collapsedPropsProof ? 'Expand' : 'Collapse'}</span>
+              {collapsedPropsProof ? <ChevronDown className="w-3.5 h-3.5 text-slate-500" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-500" />}
+            </button>
           </div>
 
-          <div className="overflow-x-auto">
+          {!collapsedPropsProof && (
+            <div className="overflow-hidden">
             <table className="w-full text-left border-collapse text-xs">
-              <thead>
+              <thead className="hidden md:table-header-group">
                 <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider select-none h-10">
+                  <th className="py-1.5 px-1.5 w-7 text-center"></th>
                   <th className="py-1.5 px-2 w-16 text-center">Outcome</th>
                   <th className="py-1.5 px-2 min-w-[170px]">Fixture</th>
                   <th className="py-1.5 px-2 w-28 text-center">Date &amp; Kickoff</th>
@@ -556,66 +563,152 @@ export default function PropsSpecialsPage({
                   <th className="py-1.5 px-2 w-24 text-center">Expected Hit</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
-                {data.recentEvaluations.map((ev, idx) => (
-                  <tr key={ev.matchId || idx} className={`hover:bg-indigo-50/30 transition-colors md:h-12 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}>
-                    
-                    {/* Outcome Badge */}
-                    <td className="py-1.5 px-2 text-center">
-                      <span className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold border ${
-                        ev.isHit 
-                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300' 
-                          : 'bg-rose-100 text-rose-800 border-rose-300'
-                      }`}>
-                        {ev.isHit ? 'HIT' : 'MISS'}
-                      </span>
-                    </td>
+              <tbody className="p-2.5 sm:p-0 flex flex-col md:table-row-group md:divide-y md:divide-slate-100 space-y-2.5 md:space-y-0">
+                {data.recentEvaluations.map((ev, idx) => {
+                  const evalKey = ev.matchId || `${ev.home}-${ev.away}-${idx}`;
+                  const isExpanded = expandedEvalId === evalKey;
 
-                    {/* Fixture */}
-                    <td className="py-1.5 px-2">
-                      <div className="font-semibold text-slate-900">{ev.home} vs {ev.away}</div>
-                      {ev.league && <div className="text-[10px] text-slate-400">{ev.league}</div>}
-                    </td>
+                  return (
+                    <React.Fragment key={evalKey}>
+                      <tr 
+                        className={`flex flex-col md:table-row bg-white rounded-xl md:rounded-none border border-slate-200/90 md:border-0 shadow-2xs md:shadow-none hover:border-slate-300 hover:bg-indigo-50/30 transition-all md:h-12 cursor-pointer ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
+                        onClick={() => toggleEvalExpand(evalKey)}
+                      >
+                        {/* ================= MOBILE COMPACT VIEW ================= */}
+                        <td className="md:hidden p-3 block">
+                          <div className="flex justify-between items-start mb-1.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-semibold text-slate-700 font-mono text-[10px]">
+                                {formatSafeDateTime(ev, null, tzSettings).time} ({formatSafeDateTime(ev, null, tzSettings).day})
+                              </span>
+                              {ev.league && (
+                                <span className="text-[9.5px] text-slate-400 bg-slate-100 px-1 rounded border border-slate-200">
+                                  {ev.league}
+                                </span>
+                              )}
+                            </div>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                              ev.isHit ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-rose-100 text-rose-800 border-rose-300'
+                            }`}>
+                              {ev.isHit ? 'HIT' : 'MISS'}
+                            </span>
+                          </div>
 
-                    {/* Date & Kickoff */}
-                    <td className="py-1.5 px-2 text-center whitespace-nowrap">
-                      <div className="font-semibold text-slate-800 font-mono text-[11px]">
-                        {formatSafeDateTime(ev, null, tzSettings).time}
-                      </div>
-                      <div className="text-[10px] text-slate-500 font-medium">
-                        {formatSafeDateTime(ev, null, tzSettings).day}, {formatSafeDateTime(ev, null, tzSettings).date}
-                      </div>
-                    </td>
+                          <div className="flex justify-between items-center mb-1.5">
+                            <div className="font-bold text-slate-900 text-xs">
+                              {ev.home} <span className="text-slate-400 font-normal">vs</span> {ev.away}
+                            </div>
+                            <div className="font-mono text-xs font-bold text-slate-800">
+                              {ev.odds ? `${Number(ev.odds).toFixed(2)}x` : '—'}
+                            </div>
+                          </div>
 
-                    {/* Audited Prop Line */}
-                    <td className="py-1.5 px-2">
-                      <span className="font-semibold text-slate-800 font-mono text-[11px] bg-slate-100 px-2 py-0.5 rounded border border-slate-200 inline-block">
-                        {ev.propPick}
-                      </span>
-                    </td>
+                          <div className="flex items-center justify-between text-[10px] bg-slate-50 p-1.5 rounded border border-slate-200 mb-1">
+                            <span className="font-semibold text-slate-800 font-mono truncate max-w-[190px]">
+                              {ev.propPick}
+                            </span>
+                            <span className={`font-medium ${ev.isHit ? 'text-emerald-700' : 'text-rose-700'}`}>
+                              {ev.actualResult}
+                            </span>
+                          </div>
 
-                    {/* Odds */}
-                    <td className="py-1.5 px-2 text-center font-mono font-bold text-slate-800">
-                      {ev.odds ? `${Number(ev.odds).toFixed(2)}x` : '—'}
-                    </td>
+                          <div className="flex items-center justify-between pt-1 text-[10px] text-slate-500">
+                            <span>Hit Rate Ref: <strong className="font-mono text-slate-700">{ev.hitRateRef || '84.5%'}</strong></span>
+                            <span className="text-indigo-600 font-semibold flex items-center gap-0.5">
+                              {isExpanded ? 'Hide' : 'Details'}
+                              {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                            </span>
+                          </div>
 
-                    {/* Actual Whistle Result */}
-                    <td className="py-1.5 px-2">
-                      <div className={`font-medium text-[11px] ${ev.isHit ? 'text-emerald-700' : 'text-rose-700'}`}>
-                        {ev.actualResult}
-                      </div>
-                    </td>
+                          {isExpanded && (
+                            <div className="mt-2 pt-2 border-t border-slate-100 text-[10px] space-y-1 bg-slate-50/60 p-2 rounded">
+                              <div>Audited Whistle Outcome: <strong>{ev.actualResult}</strong></div>
+                              <div>Statistical Frequency: <strong>{ev.hitRateRef || '84.5%'} line coverage</strong></div>
+                              <div>Evaluation Status: <strong className={ev.isHit ? 'text-emerald-700' : 'text-rose-700'}>{ev.isHit ? 'Model Line Cleared' : 'Line Missed'}</strong></div>
+                            </div>
+                          )}
+                        </td>
 
-                    {/* Expected Hit */}
-                    <td className="py-1.5 px-2 text-center font-mono text-slate-600 font-semibold text-[11px]">
-                      {ev.hitRateRef || '84.5%'}
-                    </td>
+                        {/* ================= DESKTOP 1-ROW VIEW ================= */}
+                        {/* Dropdown Chevron */}
+                        <td className="hidden md:table-cell py-1.5 px-1.5 text-center text-slate-400">
+                          {isExpanded ? <ChevronUp className="w-3.5 h-3.5 mx-auto text-indigo-600" /> : <ChevronDown className="w-3.5 h-3.5 mx-auto" />}
+                        </td>
 
-                  </tr>
-                ))}
+                        {/* Outcome Badge */}
+                        <td className="hidden md:table-cell py-1.5 px-2 text-center">
+                          <span className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold border ${
+                            ev.isHit 
+                              ? 'bg-emerald-100 text-emerald-800 border-emerald-300' 
+                              : 'bg-rose-100 text-rose-800 border-rose-300'
+                          }`}>
+                            {ev.isHit ? 'HIT' : 'MISS'}
+                          </span>
+                        </td>
+
+                        {/* Fixture */}
+                        <td className="hidden md:table-cell py-1.5 px-2">
+                          <div className="font-semibold text-slate-900">{ev.home} vs {ev.away}</div>
+                          {ev.league && <div className="text-[10px] text-slate-400">{ev.league}</div>}
+                        </td>
+
+                        {/* Date & Kickoff */}
+                        <td className="hidden md:table-cell py-1.5 px-2 text-center whitespace-nowrap">
+                          <div className="font-semibold text-slate-800 font-mono text-[11px]">
+                            {formatSafeDateTime(ev, null, tzSettings).time}
+                          </div>
+                          <div className="text-[10px] text-slate-500 font-medium">
+                            {formatSafeDateTime(ev, null, tzSettings).day}, {formatSafeDateTime(ev, null, tzSettings).date}
+                          </div>
+                        </td>
+
+                        {/* Audited Prop Line */}
+                        <td className="hidden md:table-cell py-1.5 px-2">
+                          <span className="font-semibold text-slate-800 font-mono text-[11px] bg-slate-100 px-2 py-0.5 rounded border border-slate-200 inline-block">
+                            {ev.propPick}
+                          </span>
+                        </td>
+
+                        {/* Odds */}
+                        <td className="hidden md:table-cell py-1.5 px-2 text-center font-mono font-bold text-slate-800">
+                          {ev.odds ? `${Number(ev.odds).toFixed(2)}x` : '—'}
+                        </td>
+
+                        {/* Actual Whistle Result */}
+                        <td className="hidden md:table-cell py-1.5 px-2">
+                          <div className={`font-medium text-[11px] ${ev.isHit ? 'text-emerald-700' : 'text-rose-700'}`}>
+                            {ev.actualResult}
+                          </div>
+                        </td>
+
+                        {/* Expected Hit */}
+                        <td className="hidden md:table-cell py-1.5 px-2 text-center font-mono text-slate-600 font-semibold text-[11px]">
+                          {ev.hitRateRef || '84.5%'}
+                        </td>
+                      </tr>
+
+                      {/* DESKTOP EXPANDED ROW */}
+                      {isExpanded && (
+                        <tr className="hidden md:table-row bg-slate-50/80 border-b border-slate-200">
+                          <td colSpan={8} className="p-3">
+                            <div className="bg-white rounded-lg border border-slate-200 p-2.5 flex items-center justify-between text-xs">
+                              <div>
+                                <span className="font-bold text-slate-800">Audited Prop Line:</span> {ev.propPick} &bull; <span className="font-bold text-slate-800">Whistle Result:</span> {ev.actualResult}
+                              </div>
+                              <div className="font-mono text-slate-600">
+                                Hit Probability Calibration: <strong>{ev.hitRateRef || '84.5%'}</strong> | Status: <strong className={ev.isHit ? 'text-emerald-700' : 'text-rose-700'}>{ev.isHit ? 'Line Cleared' : 'Missed Line'}</strong>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
               </tbody>
             </table>
           </div>
+          )}
         </div>
       )}
 
@@ -641,8 +734,33 @@ export default function PropsSpecialsPage({
         </div>
       )}
 
-      {/* Match Prop Analysis Cards */}
+      {/* Match Prop Analysis Header */}
       {filteredInsights.length > 0 && (
+        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+          <div className="flex items-center gap-2">
+            <Target className="w-4 h-4 text-indigo-600" />
+            <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider">
+              Match-by-Match Prop Analysis &amp; Anchor Lines
+            </h3>
+            <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold">
+              {filteredInsights.length} Fixtures
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setCollapsedMatchProps(!collapsedMatchProps)}
+            className="px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
+            title={collapsedMatchProps ? 'Expand Match Props' : 'Collapse Match Props'}
+          >
+            <span>{collapsedMatchProps ? 'Expand' : 'Collapse'}</span>
+            {collapsedMatchProps ? <ChevronDown className="w-3.5 h-3.5 text-slate-500" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-500" />}
+          </button>
+        </div>
+      )}
+
+      {/* Match Prop Analysis Cards */}
+      {!collapsedMatchProps && filteredInsights.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {filteredInsights.map((insight) => {
             const originalMatch = matches.find(m => m.id === insight.matchId) || {

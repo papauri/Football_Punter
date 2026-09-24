@@ -450,7 +450,7 @@ export default function TuningPage({
             <button 
               onClick={handleAiAutoFilter}
               type="button"
-              className="flex items-center gap-1.5 px-3 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+              className="h-8 flex items-center gap-1.5 px-3 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 rounded-lg text-xs font-semibold transition-colors cursor-pointer shadow-2xs"
             >
               <Sparkles className="w-3.5 h-3.5" /> AI Filter (&lt;62%)
             </button>
@@ -460,7 +460,7 @@ export default function TuningPage({
               onClick={() => handleSaveBlacklistOnly()}
               disabled={isSavingBlacklist || isSaving}
               type="button"
-              className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
+              className="h-8 flex items-center gap-1.5 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-all shadow-xs cursor-pointer disabled:opacity-50"
             >
               {isSavingBlacklist ? (
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -663,18 +663,18 @@ export default function TuningPage({
       <div className="sticky bottom-4 mt-6 mx-auto w-full max-w-lg bg-slate-900 shadow-xl rounded-2xl p-3 border border-slate-700 flex items-center justify-between z-50">
         <button
           onClick={() => handleApplyPreset('DEFAULT')}
-          className="px-4 py-2 rounded-xl border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1.5"
+          className="h-8 px-3.5 rounded-lg border border-slate-600 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
         >
-          <RotateCcw className="w-4 h-4" />
+          <RotateCcw className="w-3.5 h-3.5" />
           <span>Reset Defaults</span>
         </button>
 
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="px-5 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-sm transition-all cursor-pointer flex items-center gap-2 shadow-lg disabled:opacity-50"
+          className="h-8 px-4 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-xs transition-all cursor-pointer flex items-center gap-2 shadow-xs disabled:opacity-50"
         >
-          {savedSuccess ? <Check className="w-5 h-5" /> : <Save className="w-5 h-5" />}
+          {savedSuccess ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
           <span>{savedSuccess ? 'Saved!' : isSaving ? 'Saving...' : 'Save All Settings'}</span>
         </button>
       </div>

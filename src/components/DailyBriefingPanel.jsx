@@ -56,6 +56,11 @@ export default function DailyBriefingPanel({
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'bet' | 'watch'
+  const [expandedMatchId, setExpandedMatchId] = useState(null);
+
+  const toggleExpand = (id) => {
+    setExpandedMatchId(prev => (prev === id ? null : id));
+  };
   const now = useCountdowns();
 
   // 1. Resolve Localized Today Date Key in the user's active timezone
@@ -263,8 +268,9 @@ export default function DailyBriefingPanel({
           {/* Table — Aligned with Top Value Picks Table Design */}
           <div className="w-full overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
-              <thead>
+              <thead className="hidden md:table-header-group">
                 <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
+                  <th className="py-1 px-1.5 w-7 text-center"></th>
                   <th className="py-1 px-1.5 w-8 text-center">#</th>
                   <th className="py-1 px-2 w-32 text-center">Kickoff &amp; Clock</th>
                   <th className="py-1 px-2 min-w-[170px]">Fixture</th>
@@ -275,10 +281,10 @@ export default function DailyBriefingPanel({
                   <th className="py-1 px-2 w-28 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="p-2.5 sm:p-0 flex flex-col md:table-row-group md:divide-y md:divide-slate-100 space-y-2.5 md:space-y-0">
                 {displayList.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="py-8 text-center text-slate-400">
+                  <tr className="flex flex-col md:table-row">
+                    <td colSpan={9} className="py-8 text-center text-slate-400 block md:table-cell">
                       <p className="text-sm font-semibold text-slate-600">No matches found in this queue</p>
                       <p className="text-xs text-slate-500 mt-1">
                         {activeTab === 'bet'
@@ -290,6 +296,8 @@ export default function DailyBriefingPanel({
                 ) : (
                   displayList.map((item, idx) => {
                     const { m, pick, conf, isPass, isTrap, isUnanimous, inSnapshotWindow, isReadyToBet, msToKickoff, kelly, kellyUnits, stakeEuro, matchOdds, returns, oddsProvider } = item;
+                    const matchKey = m.id || `daily-${idx}`;
+                    const isExpanded = expandedMatchId === matchKey;
                     const inSlip = accaMatchIds.has(String(m.id)) || accaMatchIds.has(m.id);
                     const isHome = pick === 'HOME';
                     const pickTeam = isHome ? m.home : pick === 'AWAY' ? m.away : 'Draw';
@@ -299,156 +307,362 @@ export default function DailyBriefingPanel({
                     const kellyDisplay = formatKellyStake(kelly, '—');
 
                     return (
-                      <tr
-                        key={m.id || idx}
-                        className={`hover:bg-slate-50/70 transition-colors h-9 md:h-10 ${
-                          isReadyToBet ? 'bg-emerald-50/30' : idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'
-                        }`}
-                      >
-                        {/* # */}
-                        <td className="py-1 px-1.5 text-center text-slate-400 font-mono text-[10px]">
-                          {idx + 1}
-                        </td>
-
-                        {/* Kickoff & Clock */}
-                        <td className="py-1 px-2 text-center whitespace-nowrap">
-                          <div className="font-bold text-slate-800 text-[11px] leading-tight">
-                            {kickoffStr}
-                          </div>
-                          <div className="mt-0.5">
-                            {m.isLive ? (
-                              <span className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white border border-rose-700 shadow-xs animate-pulse">
-                                <span className="w-1 h-1 rounded-full bg-white"></span>
-                                LIVE {m.liveMinute ? `${m.liveMinute}'` : ''}
-                              </span>
-                            ) : (
-                              <span className={`inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-bold border ${countdown.color}`}>
-                                {countdown.isWindow && <Lock className="w-2 h-2" />}
-                                {countdown.label}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-
-                        {/* Fixture */}
-                        <td className="py-1 px-2">
-                          <div className="flex items-center gap-1 flex-wrap leading-tight text-[11.5px]">
-                            <span className={isHome ? 'font-bold text-slate-900' : 'font-medium text-slate-700'}>
-                              {m.home}
-                            </span>
-                            <span className="text-slate-400 font-normal text-[9.5px]">vs</span>
-                            <span className={!isHome && pick === 'AWAY' ? 'font-bold text-slate-900' : 'font-medium text-slate-700'}>
-                              {m.away}
-                            </span>
-                            {m.isLive && (
-                              <span className="text-[8.5px] bg-rose-600 text-white font-extrabold px-1 py-0.2 rounded shadow-xs animate-pulse">
-                                LIVE
-                              </span>
-                            )}
-                            {isUnanimous && (
-                              <span className="text-[8.5px] bg-amber-100 text-amber-900 border border-amber-300 px-1 py-0.2 rounded font-bold shrink-0">
-                                👑 6/6
-                              </span>
-                            )}
-                            {isTrap && (
-                              <span className="text-[8.5px] bg-rose-100 text-rose-800 border border-rose-300 px-1 py-0.2 rounded font-bold shrink-0">
-                                ⚠️ Risk
-                              </span>
-                            )}
-                          </div>
-                        </td>
-
-                        {/* League */}
-                        <td className="py-1 px-2 text-slate-500 text-[10px] truncate max-w-[120px]">
-                          {m.league}
-                        </td>
-
-                        {/* Top Pick */}
-                        <td className="py-1 px-2 text-center">
-                          <div className="inline-flex flex-col items-center leading-tight">
-                            <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold border ${
-                              isPass ? 'bg-slate-100 text-slate-600 border-slate-300'
-                              : isHome ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                              : pick === 'AWAY' ? 'bg-blue-50 text-blue-800 border-blue-300'
-                              : 'bg-amber-50 text-amber-800 border-amber-300'
-                            }`}>
-                              {isPass ? 'PASS' : pickTeam}
-                            </span>
-                            {smartMarketLabel && (
-                              <span className="text-[9px] text-slate-400 mt-0.5 truncate max-w-[110px]">
-                                {smartMarketLabel}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-
-                        {/* Confidence */}
-                        <td className="py-1 px-1.5 text-center">
-                          <ConfidenceGauge confidence={conf} size="sm" />
-                        </td>
-
-                        {/* LiveScore Bet Odds & Potential Return */}
-                        <td className="py-1 px-1.5 text-center">
-                          <KellyTooltip showIcon={false} align="right">
-                            <div className="flex flex-col items-center cursor-help leading-tight">
-                              <div className="inline-flex items-center gap-1">
-                                <span className="text-[10.5px] font-mono font-bold text-slate-800 bg-slate-100 border border-slate-200 px-1 py-0.2 rounded" title={`${oddsProvider} Odds`}>
-                                  @{safeToFixed(matchOdds, 2)}
+                      <React.Fragment key={matchKey}>
+                        <tr
+                          className={`flex flex-col md:table-row bg-white rounded-xl md:rounded-none border border-slate-200/90 md:border-0 shadow-2xs md:shadow-none hover:border-slate-300 transition-all md:h-10 cursor-pointer ${
+                            isReadyToBet ? 'ring-1 ring-emerald-300 md:ring-0 bg-emerald-50/20' : idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'
+                          }`}
+                          onClick={() => toggleExpand(matchKey)}
+                        >
+                          {/* ================= MOBILE COMPACT CARD VIEW ================= */}
+                          <td className="md:hidden p-3 block">
+                            <div className="flex justify-between items-start mb-1.5">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="w-5 h-5 rounded font-mono text-[10px] font-bold text-slate-600 bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200">
+                                  {idx + 1}
                                 </span>
-                                <span className="text-[10.5px] font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1 py-0.2 rounded" title="Recommended Wager">
-                                  €{stakeEuro.toFixed(0)}
+                                <span className="font-bold text-slate-800 text-[11px]">
+                                  {kickoffStr}
+                                </span>
+                                <span className="text-[9.5px] text-slate-400 bg-slate-100 px-1 rounded border border-slate-200 truncate max-w-[110px]">
+                                  {m.league}
                                 </span>
                               </div>
-                              <div className="text-[9.5px] font-medium text-slate-600 mt-0.5 whitespace-nowrap">
-                                Returns <strong className="text-emerald-700 font-mono">€{returns.payoutStr}</strong>
+                              <div>
+                                {m.isLive ? (
+                                  <span className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white border border-rose-700 shadow-xs animate-pulse">
+                                    <span className="w-1 h-1 rounded-full bg-white"></span>
+                                    LIVE {m.liveMinute ? `${m.liveMinute}'` : ''}
+                                  </span>
+                                ) : (
+                                  <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold border ${countdown.color}`}>
+                                    {countdown.isWindow && <Lock className="w-2.5 h-2.5" />}
+                                    {countdown.label}
+                                  </span>
+                                )}
                               </div>
                             </div>
-                          </KellyTooltip>
-                        </td>
 
-                        {/* Actions (Watch Now + Slip) */}
-                        <td className="py-1 px-2 text-center whitespace-nowrap">
-                          <div className="inline-flex items-center gap-1 justify-center">
-                            <button
-                              type="button"
-                              onClick={() => onOpenWatchLive && onOpenWatchLive(m)}
-                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer inline-flex items-center gap-0.5 ${
-                                m.isLive
-                                  ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
-                                  : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
-                              }`}
-                              title={m.isLive ? "Watch Match LIVE NOW in Iframe" : "Watch Match Live & In-Play Radar Simulator"}
-                            >
-                              <Play className={`w-2.5 h-2.5 ${m.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
-                              <span>{m.isLive ? 'Live' : 'Watch'}</span>
-                            </button>
+                            {/* Fixture */}
+                            <div className="flex justify-between items-center mb-1.5">
+                              <div className="font-bold text-slate-900 text-xs truncate">
+                                <span className={isHome ? 'font-black text-slate-900' : 'text-slate-800'}>{m.home}</span>
+                                <span className="text-slate-400 font-normal mx-1">vs</span>
+                                <span className={!isHome && pick === 'AWAY' ? 'font-black text-slate-900' : 'text-slate-800'}>{m.away}</span>
+                              </div>
+                              {isUnanimous && (
+                                <span className="text-[8.5px] bg-amber-100 text-amber-900 border border-amber-300 px-1 py-0.2 rounded font-bold shrink-0">
+                                  👑 6/6
+                                </span>
+                              )}
+                              {isTrap && (
+                                <span className="text-[8.5px] bg-rose-100 text-rose-800 border border-rose-300 px-1 py-0.2 rounded font-bold shrink-0">
+                                  ⚠️ Risk
+                                </span>
+                              )}
+                            </div>
 
-                            {onAddToSlip && !isPass ? (
+                            {/* Pick + Conf + Odds summary */}
+                            <div className="flex items-center justify-between text-[10.5px] bg-slate-50 p-1.5 rounded border border-slate-200/80 mb-2">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-slate-400 text-[10px]">Pick:</span>
+                                <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold border ${
+                                  isPass ? 'bg-slate-100 text-slate-600 border-slate-300'
+                                  : isHome ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                                  : pick === 'AWAY' ? 'bg-blue-50 text-blue-800 border-blue-300'
+                                  : 'bg-amber-50 text-amber-800 border-amber-300'
+                                }`}>
+                                  {isPass ? 'PASS' : pickTeam}
+                                </span>
+                                {smartMarketLabel && (
+                                  <span className="text-[9px] text-slate-400 truncate max-w-[80px]">
+                                    {smartMarketLabel}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1 font-mono text-[10px]">
+                                <span className="text-slate-600">@{safeToFixed(matchOdds, 2)}</span>
+                                <span className="text-emerald-700 font-bold">€{returns.payoutStr}</span>
+                              </div>
+                            </div>
+
+                            {/* Mobile action bar & collapse trigger */}
+                            <div className="flex items-center justify-between pt-1 border-t border-slate-100">
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onOpenWatchLive && onOpenWatchLive(m);
+                                  }}
+                                  className={`px-2 py-1 rounded text-[10px] font-bold border transition-all cursor-pointer inline-flex items-center gap-1 ${
+                                    m.isLive
+                                      ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
+                                      : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
+                                  }`}
+                                >
+                                  <Play className={`w-2.5 h-2.5 ${m.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
+                                  <span>{m.isLive ? 'Live' : 'Watch'}</span>
+                                </button>
+
+                                {onAddToSlip && !isPass ? (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onAddToSlip(m);
+                                    }}
+                                    className={`px-2 py-1 rounded text-[10px] font-bold border transition-colors cursor-pointer inline-flex items-center gap-1 ${
+                                      inSlip
+                                        ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-300'
+                                        : 'bg-slate-900 hover:bg-slate-800 text-white border-slate-900'
+                                    }`}
+                                  >
+                                    {inSlip ? (
+                                      <>
+                                        <Check className="w-2.5 h-2.5" />
+                                        <span>In Slip</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Plus className="w-2.5 h-2.5" />
+                                        <span>+ Slip</span>
+                                      </>
+                                    )}
+                                  </button>
+                                ) : null}
+                              </div>
+
+                              <div className="flex items-center gap-1 text-[10px] text-slate-500 font-medium select-none">
+                                <span>{isExpanded ? 'Less' : 'Details'}</span>
+                                {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                              </div>
+                            </div>
+
+                            {/* Mobile Collapsible Details */}
+                            {isExpanded && (
+                              <div className="mt-2 pt-2 border-t border-slate-100 space-y-1.5 bg-slate-50 p-2 rounded-lg text-[10.5px]">
+                                <div className="grid grid-cols-3 gap-1 text-center font-mono">
+                                  <div className="p-1 rounded bg-white border border-slate-200">
+                                    <span className="text-[9px] text-slate-400 block font-sans">Home 1</span>
+                                    <span className="font-bold text-slate-800">{safeToFixed(m.prob?.home, 1)}%</span>
+                                  </div>
+                                  <div className="p-1 rounded bg-white border border-slate-200">
+                                    <span className="text-[9px] text-slate-400 block font-sans">Draw X</span>
+                                    <span className="font-bold text-slate-800">{safeToFixed(m.prob?.draw, 1)}%</span>
+                                  </div>
+                                  <div className="p-1 rounded bg-white border border-slate-200">
+                                    <span className="text-[9px] text-slate-400 block font-sans">Away 2</span>
+                                    <span className="font-bold text-slate-800">{safeToFixed(m.prob?.away, 1)}%</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center justify-between text-slate-600 text-[10px]">
+                                  <span>Suggested Stake: <strong>€{stakeEuro.toFixed(0)}</strong></span>
+                                  <span>Conf Score: <strong>{safeToFixed(conf, 1)}%</strong></span>
+                                </div>
+                              </div>
+                            )}
+                          </td>
+
+                          {/* ================= DESKTOP 1-ROW TABLE VIEW ================= */}
+                          {/* Dropdown Chevron */}
+                          <td className="hidden md:table-cell py-1 px-1.5 text-center text-slate-400">
+                            {isExpanded ? <ChevronUp className="w-3 h-3 mx-auto text-indigo-600" /> : <ChevronDown className="w-3 h-3 mx-auto" />}
+                          </td>
+
+                          {/* # */}
+                          <td className="hidden md:table-cell py-1 px-1.5 text-center text-slate-400 font-mono text-[10px]">
+                            {idx + 1}
+                          </td>
+
+                          {/* Kickoff & Clock */}
+                          <td className="hidden md:table-cell py-1 px-2 text-center whitespace-nowrap">
+                            <div className="font-bold text-slate-800 text-[11px] leading-tight">
+                              {kickoffStr}
+                            </div>
+                            <div className="mt-0.5">
+                              {m.isLive ? (
+                                <span className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white border border-rose-700 shadow-xs animate-pulse">
+                                  <span className="w-1 h-1 rounded-full bg-white"></span>
+                                  LIVE {m.liveMinute ? `${m.liveMinute}'` : ''}
+                                </span>
+                              ) : (
+                                <span className={`inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-bold border ${countdown.color}`}>
+                                  {countdown.isWindow && <Lock className="w-2 h-2" />}
+                                  {countdown.label}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Fixture */}
+                          <td className="hidden md:table-cell py-1 px-2">
+                            <div className="flex items-center gap-1 flex-wrap leading-tight text-[11.5px]">
+                              <span className={isHome ? 'font-bold text-slate-900' : 'font-medium text-slate-700'}>
+                                {m.home}
+                              </span>
+                              <span className="text-slate-400 font-normal text-[9.5px]">vs</span>
+                              <span className={!isHome && pick === 'AWAY' ? 'font-bold text-slate-900' : 'font-medium text-slate-700'}>
+                                {m.away}
+                              </span>
+                              {m.isLive && (
+                                <span className="text-[8.5px] bg-rose-600 text-white font-extrabold px-1 py-0.2 rounded shadow-xs animate-pulse">
+                                  LIVE
+                                </span>
+                              )}
+                              {isUnanimous && (
+                                <span className="text-[8.5px] bg-amber-100 text-amber-900 border border-amber-300 px-1 py-0.2 rounded font-bold shrink-0">
+                                  👑 6/6
+                                </span>
+                              )}
+                              {isTrap && (
+                                <span className="text-[8.5px] bg-rose-100 text-rose-800 border border-rose-300 px-1 py-0.2 rounded font-bold shrink-0">
+                                  ⚠️ Risk
+                                </span>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* League */}
+                          <td className="hidden md:table-cell py-1 px-2 text-slate-500 text-[10px] truncate max-w-[120px]">
+                            {m.league}
+                          </td>
+
+                          {/* Top Pick */}
+                          <td className="hidden md:table-cell py-1 px-2 text-center">
+                            <div className="inline-flex flex-col items-center leading-tight">
+                              <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold border ${
+                                isPass ? 'bg-slate-100 text-slate-600 border-slate-300'
+                                : isHome ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                                : pick === 'AWAY' ? 'bg-blue-50 text-blue-800 border-blue-300'
+                                : 'bg-amber-50 text-amber-800 border-amber-300'
+                              }`}>
+                                {isPass ? 'PASS' : pickTeam}
+                              </span>
+                              {smartMarketLabel && (
+                                <span className="text-[9px] text-slate-400 mt-0.5 truncate max-w-[110px]">
+                                  {smartMarketLabel}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Confidence */}
+                          <td className="hidden md:table-cell py-1 px-1.5 text-center">
+                            <ConfidenceGauge confidence={conf} size="sm" />
+                          </td>
+
+                          {/* LiveScore Bet Odds & Potential Return */}
+                          <td className="hidden md:table-cell py-1 px-1.5 text-center">
+                            <KellyTooltip showIcon={false} align="right">
+                              <div className="flex flex-col items-center cursor-help leading-tight">
+                                <div className="inline-flex items-center gap-1">
+                                  <span className="text-[10.5px] font-mono font-bold text-slate-800 bg-slate-100 border border-slate-200 px-1 py-0.2 rounded" title={`${oddsProvider} Odds`}>
+                                    @{safeToFixed(matchOdds, 2)}
+                                  </span>
+                                  <span className="text-[10.5px] font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1 py-0.2 rounded" title="Recommended Wager">
+                                    €{stakeEuro.toFixed(0)}
+                                  </span>
+                                </div>
+                                <div className="text-[9.5px] font-medium text-slate-600 mt-0.5 whitespace-nowrap">
+                                  Returns <strong className="text-emerald-700 font-mono">€{returns.payoutStr}</strong>
+                                </div>
+                              </div>
+                            </KellyTooltip>
+                          </td>
+
+                          {/* Actions (Watch Now + Slip) */}
+                          <td className="hidden md:table-cell py-1 px-2 text-center whitespace-nowrap">
+                            <div className="inline-flex items-center gap-1 justify-center">
                               <button
                                 type="button"
-                                onClick={() => onAddToSlip(m)}
-                                className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer inline-flex items-center gap-0.5 ${
-                                  inSlip
-                                    ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-300'
-                                    : 'bg-slate-900 hover:bg-slate-800 text-white border-slate-900'
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onOpenWatchLive && onOpenWatchLive(m);
+                                }}
+                                className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer inline-flex items-center gap-0.5 ${
+                                  m.isLive
+                                    ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
+                                    : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
                                 }`}
+                                title={m.isLive ? "Watch Match LIVE NOW in Iframe" : "Watch Match Live & In-Play Radar Simulator"}
                               >
-                                {inSlip ? (
-                                  <>
-                                    <Check className="w-2.5 h-2.5" />
-                                    <span>Slip</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Plus className="w-2.5 h-2.5" />
-                                    <span>+ Slip</span>
-                                  </>
-                                )}
+                                <Play className={`w-2.5 h-2.5 ${m.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
+                                <span>{m.isLive ? 'Live' : 'Watch'}</span>
                               </button>
-                            ) : null}
-                          </div>
-                        </td>
-                      </tr>
+
+                              {onAddToSlip && !isPass ? (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onAddToSlip(m);
+                                  }}
+                                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer inline-flex items-center gap-0.5 ${
+                                    inSlip
+                                      ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-300'
+                                      : 'bg-slate-900 hover:bg-slate-800 text-white border-slate-900'
+                                  }`}
+                                >
+                                  {inSlip ? (
+                                    <>
+                                      <Check className="w-2.5 h-2.5" />
+                                      <span>Slip</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Plus className="w-2.5 h-2.5" />
+                                      <span>+ Slip</span>
+                                    </>
+                                  )}
+                                </button>
+                              ) : null}
+                            </div>
+                          </td>
+                        </tr>
+
+                        {/* Desktop Collapsible Details */}
+                        {isExpanded && (
+                          <tr className="hidden md:table-row bg-slate-50/70 border-b border-slate-200">
+                            <td colSpan={9} className="p-3">
+                              <div className="bg-white rounded-lg border border-slate-200 p-3 text-xs space-y-2">
+                                <div className="flex items-center justify-between border-b border-slate-100 pb-1.5">
+                                  <div className="flex items-center gap-2">
+                                    <Target className="w-3.5 h-3.5 text-indigo-600" />
+                                    <span className="font-bold text-slate-800">Match Analytical Profile:</span>
+                                    <span className="font-mono text-slate-500 text-[11px]">{m.home} vs {m.away}</span>
+                                  </div>
+                                  <span className="text-[10px] font-mono text-slate-400">
+                                    ID: {m.id} • {m.league}
+                                  </span>
+                                </div>
+                                <div className="grid grid-cols-4 gap-2 font-mono text-[11px]">
+                                  <div className="bg-slate-50 p-2 rounded border border-slate-200">
+                                    <span className="text-slate-400 block font-sans text-[10px] uppercase">1X2 Probabilities</span>
+                                    <span className="font-bold text-slate-800">
+                                      H: {safeToFixed(m.prob?.home, 1)}% | D: {safeToFixed(m.prob?.draw, 1)}% | A: {safeToFixed(m.prob?.away, 1)}%
+                                    </span>
+                                  </div>
+                                  <div className="bg-slate-50 p-2 rounded border border-slate-200">
+                                    <span className="text-slate-400 block font-sans text-[10px] uppercase">Expected Goals (xG)</span>
+                                    <span className="font-bold text-indigo-700">
+                                      H: {m.xgHome ?? '1.2'} | A: {m.xgAway ?? '1.0'}
+                                    </span>
+                                  </div>
+                                  <div className="bg-slate-50 p-2 rounded border border-slate-200">
+                                    <span className="text-slate-400 block font-sans text-[10px] uppercase">LiveScore Odds</span>
+                                    <span className="font-bold text-emerald-700">@{safeToFixed(matchOdds, 2)} ({oddsProvider})</span>
+                                  </div>
+                                  <div className="bg-slate-50 p-2 rounded border border-slate-200">
+                                    <span className="text-slate-400 block font-sans text-[10px] uppercase">Optimal Wager</span>
+                                    <span className="font-bold text-slate-800">€{stakeEuro.toFixed(0)} ➔ Payout €{returns.payoutStr}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     );
                   })
                 )}
