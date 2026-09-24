@@ -656,9 +656,10 @@ export default function AccumulatorPage({
         const matchProb = resolveMatchProb(targetMatch, rawPick);
         const matchOdds = resolveMatchOdds(targetMatch, rawPick, leg.odds);
         const drawRisk = safeParseFloat(targetMatch.prob?.draw, 22);
+        const legConf = safeParseFloat(targetMatch.confidence ?? targetMatch.binaryModel?.confidence, matchProb);
 
-        // Elite Outright requirement: >=60% probability and <25% draw risk
-        if (matchProb < 60 || drawRisk >= 25) return;
+        // Elite Outright requirement: >=60% probability, >=60% confidence, and <25% draw risk
+        if (matchProb < 60 || legConf < 60 || drawRisk >= 25) return;
 
         const ev = ((matchProb / 100) * matchOdds) - 1;
 
@@ -702,9 +703,10 @@ export default function AccumulatorPage({
       const matchProb = resolveMatchProb(m, rawPick);
       const matchOdds = resolveMatchOdds(m, rawPick);
       const drawRisk = safeParseFloat(m.prob?.draw, 22);
+      const legConf = safeParseFloat(m.confidence ?? m.binaryModel?.confidence, matchProb);
 
-      // Elite Outright requirement: >=60% probability and <25% draw risk
-      if (matchProb < 60 || drawRisk >= 25) return;
+      // Elite Outright requirement: >=60% probability, >=60% confidence, and <25% draw risk
+      if (matchProb < 60 || legConf < 60 || drawRisk >= 25) return;
 
       const ev = ((matchProb / 100) * matchOdds) - 1;
 

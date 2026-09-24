@@ -1004,26 +1004,25 @@ export default function FixturesTablePage({
       }
     }
 
+    // Helper checks for Quality & Special filters: require strict minimum confidence and win probability
+    const isItemHigh = item.conf >= 60.0 && item.topProb >= 60.0;
+    const isItemElite = item.conf >= 68.0 && item.topProb >= 68.0;
+
     // 4. Conviction / Quality filter (skipped when computing qualityOptions)
     if (skipDimension !== 'quality') {
-      if (convictionMode === 'HIGH') {
-        if (item.topProb < 60.0 && item.conf < 60.0 && !item.match.isHighConviction) return false;
-      } else if (convictionMode === 'ELITE') {
-        if (item.topProb < 68.0 && item.conf < 68.0 && !item.isUnanimous && !item.match.isEliteConviction) return false;
-      } else if (convictionMode === 'UNANIMOUS') {
-        if (!item.isUnanimous) return false;
-      }
+      if (convictionMode === 'HIGH' && !isItemHigh) return false;
+      if (convictionMode === 'ELITE' && !isItemElite) return false;
+      if (convictionMode === 'UNANIMOUS' && !item.isUnanimous) return false;
     }
 
     // 5. Special Filter Mode (skipped when computing qualityOptions)
     if (skipDimension !== 'quality') {
       if (filterMode === 'UNANIMOUS' && !item.isUnanimous) return false;
-      if (filterMode === 'HIGH_CONFIDENCE' && item.conf < 60 && item.topProb < 60) return false;
-      if (filterMode === 'ELITE' && item.conf < 68 && item.topProb < 68 && !item.isUnanimous) return false;
+      if (filterMode === 'HIGH_CONFIDENCE' && !isItemHigh) return false;
+      if (filterMode === 'ELITE' && !isItemElite) return false;
       if (filterMode === 'NO_TRAPS' && item.isTrap) return false;
       if (filterMode === 'DERIVATIVE_SAFETY' && !item.isDerivative) return false;
       if (filterMode === 'UPSET_RISK' && !item.isTrap) return false;
-      if (filterMode === 'CAUTION' && item.conf >= 65) return false;
       if (filterMode === 'TIER_1_ONLY' && !item.isTier1) return false;
       if (filterMode === 'DNB_ONLY' && !item.isDnbAdvised) return false;
     }
@@ -1144,8 +1143,8 @@ export default function FixturesTablePage({
     evaluatedItems.forEach(item => {
       if (!checkItemPasses(item, 'quality')) return;
       all++;
-      if (item.topProb >= 60.0 || item.conf >= 60.0 || item.match.isHighConviction) high++;
-      if (item.topProb >= 68.0 || item.conf >= 68.0 || item.isUnanimous || item.match.isEliteConviction) elite++;
+      if (item.conf >= 60.0 && item.topProb >= 60.0) high++;
+      if (item.conf >= 68.0 && item.topProb >= 68.0) elite++;
       if (item.isUnanimous) unanimous++;
     });
 
@@ -1173,8 +1172,8 @@ export default function FixturesTablePage({
       if (!checkItemPasses(item, 'quality')) return;
       all++;
       if (item.isUnanimous) unanimous++;
-      if (item.conf >= 60 || item.topProb >= 60) high++;
-      if (item.conf >= 68 || item.topProb >= 68 || item.isUnanimous) elite++;
+      if (item.conf >= 60.0 && item.topProb >= 60.0) high++;
+      if (item.conf >= 68.0 && item.topProb >= 68.0) elite++;
       if (!item.isTrap) noTraps++;
       if (item.isDnbAdvised) dnb++;
       if (item.isDerivative) safeAlt++;
@@ -1185,8 +1184,8 @@ export default function FixturesTablePage({
     return [
       { value: 'All', label: `All Picks (${all})` },
       { value: 'UNANIMOUS', label: `👑 Council Consensus (${unanimous})` },
-      { value: 'HIGH_CONFIDENCE', label: `💎 High Confidence (${high})` },
-      { value: 'ELITE', label: `⭐ Elite Picks (${elite})` },
+      { value: 'HIGH_CONFIDENCE', label: `💎 High Confidence (≥60%) (${high})` },
+      { value: 'ELITE', label: `⭐ Elite Picks (≥68%) (${elite})` },
       { value: 'NO_TRAPS', label: `🛡️ Low Risk Only (${noTraps})` },
       { value: 'DNB_ONLY', label: `🛡️ Draw Protected (${dnb})` },
       { value: 'DERIVATIVE_SAFETY', label: `🔄 Safe Alternatives (${safeAlt})` },
@@ -2870,12 +2869,12 @@ export default function FixturesTablePage({
                             ? 'No Home Win matches found under current criteria.'
                             : selectedOutcome === 'AWAY'
                             ? 'No Away Win matches found under current criteria.'
-                            : filterMode === 'UNANIMOUS' 
+                            : (filterMode === 'UNANIMOUS' || convictionMode === 'UNANIMOUS')
                             ? 'No matches found matching Consensus Picks under current filters.'
-                            : filterMode === 'HIGH_CONFIDENCE'
-                            ? 'No matches found with High Confidence (≥65%) under current filters.'
-                            : filterMode === 'ELITE'
-                            ? 'No matches found with Elite Edge (≥75%) under current filters.'
+                            : (filterMode === 'HIGH_CONFIDENCE' || convictionMode === 'HIGH')
+                            ? 'No matches found with High Confidence (≥60%) under current filters.'
+                            : (filterMode === 'ELITE' || convictionMode === 'ELITE')
+                            ? 'No matches found with Elite Edge (≥68%) under current filters.'
                             : filterMode === 'NO_TRAPS'
                             ? 'No low-risk matches found under current filters.'
                             : filterMode === 'DERIVATIVE_SAFETY'
