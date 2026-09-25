@@ -42,6 +42,7 @@ import {
 import UniformDropdown from './UniformDropdown';
 import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey, getLocalizedTodayKey, formatFriendlyDateOption } from '../utils/dateUtils';
 import { safeParseFloat, safeToFixed, formatKellyStake, formatSmartMarket, formatScore } from '../utils/numberUtils';
+import { isTrapMatch, getMatchRiskProfile, getSlipPick } from '../utils/riskUtils';
 import { getLeaguePredictabilityTier, isLeagueBlacklisted, isLeagueSolid } from '../utils/leagueUtils';
 import { resolveMatchOdds, resolveMatchProb, getOddsProviderLabel, calculatePotentialReturn } from '../utils/oddsUtils';
 import ConfidenceGauge from './ConfidenceGauge';
@@ -310,7 +311,7 @@ export default function FixturesTablePage({
       if (!isTodayUpcomingOrLive(m)) return; // Strictly today's games!
       if (isLeagueBlacklisted(m.league)) return;
       const sw = m.aiSwarm || m.imperialSwarm;
-      const isTrap = sw?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap || m.disruptionModel?.isPassFlagged;
+      const isTrap = isTrapMatch(m);
       if (isTrap) return;
 
       let pickVal = dLeg.pick || dLeg.masterVerdict || 'HOME';
@@ -342,7 +343,7 @@ export default function FixturesTablePage({
       if (isLeagueBlacklisted(m.league)) return;
 
       const sw = m.aiSwarm || m.imperialSwarm;
-      const isTrap = sw?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap || m.disruptionModel?.isPassFlagged;
+      const isTrap = isTrapMatch(m);
       if (isTrap) return;
 
       const isUnan = Boolean(
@@ -383,7 +384,7 @@ export default function FixturesTablePage({
           if (!isTodayUpcomingOrLive(m)) return false; // Strictly today's games!
           if (isLeagueBlacklisted(m.league)) return false;
           const sw = m.aiSwarm || m.imperialSwarm;
-          if (sw?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap || m.disruptionModel?.isPassFlagged) return false;
+          if (isTrapMatch(m)) return false;
           const hp = safeParseFloat(m.prob?.home, 0);
           const ap = safeParseFloat(m.prob?.away, 0);
           return Math.max(hp, ap) >= 45;
@@ -420,7 +421,7 @@ export default function FixturesTablePage({
       for (const fm of futureMatches) {
         if (candidateLegs.length >= 3) break;
         const sw = fm.aiSwarm || fm.imperialSwarm;
-        if (sw?.isContrarianTrap || fm.isMarketDivergence || fm.isFavoriteTrap) continue;
+        if (isTrapMatch(fm)) continue;
         let pickVal = sw?.masterVerdict || (typeof fm.predictedWinner === 'string' ? fm.predictedWinner : fm.predictedWinner?.pick) || 'HOME';
         if (pickVal !== 'HOME' && pickVal !== 'AWAY') {
           const hp = safeParseFloat(fm.prob?.home, 0);
@@ -855,6 +856,7 @@ export default function FixturesTablePage({
       case 'conf': return 'Confidence Score';
       case 'xg': return 'Total Expected Goals (xG)';
       case 'kelly': return 'Kelly';
+      case 'odds': return 'Odds';
       default: return field;
     }
   };
@@ -868,6 +870,7 @@ export default function FixturesTablePage({
     else if (field === 'away_prob') setSortBy(dir === 'desc' ? 'away_desc' : 'away_asc');
     else if (field === 'xg') setSortBy(dir === 'desc' ? 'xg_desc' : 'xg_asc');
     else if (field === 'kelly') setSortBy(dir === 'desc' ? 'kelly_desc' : 'kelly_asc');
+    else if (field === 'odds') setSortBy(dir === 'desc' ? 'odds_desc' : 'odds_asc');
     else if (field === 'fixture') setSortBy(dir === 'asc' ? 'fixture_asc' : 'fixture_desc');
     else setSortBy('custom');
   };
@@ -938,6 +941,12 @@ export default function FixturesTablePage({
     } else if (newVal === 'kelly_asc') {
       setSortField('kelly');
       setSortDirection('asc');
+    } else if (newVal === 'odds_desc') {
+      setSortField('odds');
+      setSortDirection('desc');
+    } else if (newVal === 'odds_asc') {
+      setSortField('odds');
+      setSortDirection('asc');
     } else if (newVal === 'fixture_asc') {
       setSortField('fixture');
       setSortDirection('asc');
@@ -961,7 +970,11 @@ export default function FixturesTablePage({
     const conf = safeParseFloat(m.confidence ?? m.binaryModel?.confidence, topProb);
 
     const sw = m.aiSwarm || m.imperialSwarm;
-    const isTrap = Boolean(sw?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap || m.disruptionModel?.isPassFlagged);
+    // Universal risk profile, evaluated on the exact pick that onAddToSlip(m) will store,
+    // so filter verdicts and bet slip badges can never diverge.
+    const slipPick = getSlipPick(m);
+    const riskProfile = getMatchRiskProfile(m, slipPick);
+    const isTrap = riskProfile.riskLevel === 'HIGH';
     const isUnanimous = Boolean(
       sw?.is100Unanimous || 
       sw?.isTopValueLeg || 
@@ -997,7 +1010,12 @@ export default function FixturesTablePage({
       isDnbAdvised,
       isDoubleChanceAdvised,
       isTier1,
-      matchPick
+      matchPick,
+      slipPick,
+      riskProfile,
+      isLowRisk: riskProfile.riskLevel === 'LOW',
+      isHigh: riskProfile.isHighConfidence,
+      isElite: riskProfile.isElite
     };
   };
 
@@ -1051,8 +1069,8 @@ export default function FixturesTablePage({
     }
 
     // Helper checks for Quality & Special filters: require strict minimum confidence and win probability
-    const isItemHigh = item.conf >= 60.0 && item.topProb >= 60.0;
-    const isItemElite = item.conf >= 68.0 && item.topProb >= 68.0;
+    const isItemHigh = item.isHigh;
+    const isItemElite = item.isElite;
 
     // 4. Conviction / Quality filter (skipped when computing qualityOptions)
     if (skipDimension !== 'quality') {
@@ -1066,7 +1084,7 @@ export default function FixturesTablePage({
       if (filterMode === 'UNANIMOUS' && !item.isUnanimous) return false;
       if (filterMode === 'HIGH_CONFIDENCE' && !isItemHigh) return false;
       if (filterMode === 'ELITE' && !isItemElite) return false;
-      if (filterMode === 'NO_TRAPS' && item.isTrap) return false;
+      if (filterMode === 'NO_TRAPS' && !item.isLowRisk) return false;
       if (filterMode === 'DERIVATIVE_SAFETY' && !item.isDerivative) return false;
       if (filterMode === 'UPSET_RISK' && !item.isTrap) return false;
       if (filterMode === 'TIER_1_ONLY' && !item.isTier1) return false;
@@ -1189,8 +1207,8 @@ export default function FixturesTablePage({
     evaluatedItems.forEach(item => {
       if (!checkItemPasses(item, 'quality')) return;
       all++;
-      if (item.conf >= 60.0 && item.topProb >= 60.0) high++;
-      if (item.conf >= 68.0 && item.topProb >= 68.0) elite++;
+      if (item.isHigh) high++;
+      if (item.isElite) elite++;
       if (item.isUnanimous) unanimous++;
     });
 
@@ -1218,9 +1236,9 @@ export default function FixturesTablePage({
       if (!checkItemPasses(item, 'quality')) return;
       all++;
       if (item.isUnanimous) unanimous++;
-      if (item.conf >= 60.0 && item.topProb >= 60.0) high++;
-      if (item.conf >= 68.0 && item.topProb >= 68.0) elite++;
-      if (!item.isTrap) noTraps++;
+      if (item.isHigh) high++;
+      if (item.isElite) elite++;
+      if (item.isLowRisk) noTraps++;
       if (item.isDnbAdvised) dnb++;
       if (item.isDerivative) safeAlt++;
       if (item.isTier1) tier1++;
@@ -1388,6 +1406,12 @@ export default function FixturesTablePage({
         const kA = safeParseFloat(a.kellyStake?.units ?? a.binaryModel?.kellyStake?.units ?? a.kellyStake?.fraction, 0);
         const kB = safeParseFloat(b.kellyStake?.units ?? b.binaryModel?.kellyStake?.units ?? b.kellyStake?.fraction, 0);
         return (kA - kB) * multiplier;
+      }
+      if (sortField === 'odds') {
+        // Odds of the pick that would land on the slip, so the sort matches what gets staked
+        const oA = safeParseFloat(resolveMatchOdds(a, getSlipPick(a)), 0);
+        const oB = safeParseFloat(resolveMatchOdds(b, getSlipPick(b)), 0);
+        return (oA - oB) * multiplier;
       }
       return 0;
     });
@@ -2566,7 +2590,9 @@ export default function FixturesTablePage({
                     { value: 'draw_desc', label: 'Draw %' },
                     { value: 'away_desc', label: 'Away Win %' },
                     { value: 'xg_desc', label: 'Total Goals (xG)' },
-                    { value: 'kelly_desc', label: 'Best Value / Stake' }
+                    { value: 'kelly_desc', label: 'Best Value / Stake' },
+                    { value: 'odds_asc', label: 'Shortest Odds' },
+                    { value: 'odds_desc', label: 'Longest Odds' }
                   ]}
                   selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
                 />
@@ -3155,7 +3181,9 @@ export default function FixturesTablePage({
                   const kellyDisplay = formatKellyStake(kelly, '1.5u');
                   const smartMarketDisplay = formatSmartMarket(m.smartMarket ?? m.binaryModel?.smartMarket, `${predictedWinner === 'HOME' ? m.home : predictedWinner === 'AWAY' ? m.away : 'Draw'} ML`);
 
-                  const isTrap = (m.aiSwarm || m.imperialSwarm)?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap;
+                  const slipPick = getSlipPick(m);
+                  const riskProfile = getMatchRiskProfile(m, slipPick);
+                  const isTrap = riskProfile.riskLevel === 'HIGH';
                   const isUnanimous = (m.aiSwarm || m.imperialSwarm)?.isTopValueLeg || (m.aiSwarm || m.imperialSwarm)?.consensusTier === 'UNANIMOUS_DIRECTIVE' || (m.aiSwarm || m.imperialSwarm)?.isUnanimousDirective;
                   const isDerivative = m.smartMarket?.marketType === 'DOUBLE_CHANCE' || m.smartMarket?.marketType === 'DRAW_NO_BET' || m.smartMarket?.marketType === 'OVER_15';
 
@@ -3222,7 +3250,7 @@ export default function FixturesTablePage({
                                     🛡️ DNB
                                   </span>
                                 )}
-                                {isTrap && <span className="text-[8.5px] bg-rose-100 text-rose-700 border border-rose-300 px-1 rounded font-bold">⚠️ Risk</span>}
+                                <span className={`text-[8.5px] border px-1 rounded font-bold ${riskProfile.badgeClass}`} title={riskProfile.reason}>{riskProfile.badge}</span>
                                 {isDerivative && <span className="text-[8.5px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-1 rounded font-bold">🛡️ {m.smartMarket?.pick}</span>}
                               </div>
                               <span className="font-bold text-slate-900 text-xs">{m.away}</span>
@@ -3265,7 +3293,7 @@ export default function FixturesTablePage({
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  if (onAddToSlip) onAddToSlip(m);
+                                  if (onAddToSlip) onAddToSlip(m, slipPick);
                                 }}
                                 className={`p-1 rounded-full transition-all cursor-pointer ${
                                   isSlipAdded
@@ -3338,9 +3366,9 @@ export default function FixturesTablePage({
                               >
                                 👑 Unanimous
                               </span>
-                            ) : isTrap ? (
-                              <span className="inline-flex items-center text-[8.5px] font-bold bg-rose-100 text-rose-800 px-1 py-0.2 rounded border border-rose-300 shrink-0" title="Upset Potential Flagged by Council">
-                                ⚠️ Risk
+                            ) : (isTrap || riskProfile.riskLevel === 'LOW') ? (
+                              <span className={`inline-flex items-center text-[8.5px] font-bold px-1 py-0.2 rounded border shrink-0 ${riskProfile.badgeClass}`} title={riskProfile.reason}>
+                                {riskProfile.badge}
                               </span>
                             ) : isDnbAdvised ? (
                               <span className="inline-flex items-center text-[8.5px] font-bold bg-indigo-50 text-indigo-700 px-1 py-0.2 rounded border border-indigo-200 shrink-0" title="Draw-No-Bet Protection Advised">
@@ -3457,7 +3485,7 @@ export default function FixturesTablePage({
 
                             {/* Add to Slip Slip */}
                             <button
-                              onClick={(e) => { e.stopPropagation(); onAddToSlip && onAddToSlip(m); }}
+                              onClick={(e) => { e.stopPropagation(); onAddToSlip && onAddToSlip(m, slipPick); }}
                               className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors cursor-pointer border ${
                                 isSlipAdded
                                   ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
@@ -3505,7 +3533,7 @@ export default function FixturesTablePage({
                                 Analysis
                               </button>
                               <button
-                                onClick={(e) => { e.stopPropagation(); onAddToSlip && onAddToSlip(m); }}
+                                onClick={(e) => { e.stopPropagation(); onAddToSlip && onAddToSlip(m, slipPick); }}
                                 className={`flex-1 px-2 py-1.5 rounded text-[11px] font-medium border text-center ${
                                   isSlipAdded
                                     ? 'bg-purple-100 text-purple-800 border-purple-300'

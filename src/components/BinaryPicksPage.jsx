@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
 import { safeParseFloat, safeToFixed } from '../utils/numberUtils';
+import { getMatchRiskProfile } from '../utils/riskUtils';
 import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey } from '../utils/dateUtils';
 import ConfidenceGauge from './ConfidenceGauge';
 import KellyTooltip from './KellyTooltip';
@@ -159,6 +160,8 @@ export default function BinaryPicksPage({
         home: m.home,
         away: m.away,
         pickTeam: bestTeam,
+        pick: bestSide,
+        riskProfile: getMatchRiskProfile(m, bestSide),
         market: m.isLive ? `${bestTeam} Live In-Play (${m.liveMinute || 0}')` : `${bestTeam} Moneyline`,
         modelProb: bestProb,
         marketOdds: bestOdds,
@@ -792,6 +795,9 @@ export default function BinaryPicksPage({
                             <span className="text-[9.5px] text-slate-400 bg-slate-100 px-1 rounded border border-slate-200">
                               {p.league || 'Soccer'}
                             </span>
+                            <span className={`text-[9px] font-bold px-1 rounded border ${p.riskProfile.badgeClass}`} title={p.riskProfile.reason}>
+                              {p.riskProfile.badge}
+                            </span>
                           </div>
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                             isElite ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-indigo-50 text-indigo-700 border-indigo-200'
@@ -844,7 +850,7 @@ export default function BinaryPicksPage({
                             </button>
                             <button
                               type="button"
-                              onClick={(e) => { e.stopPropagation(); onAddToSlip && onAddToSlip(p.match); }}
+                              onClick={(e) => { e.stopPropagation(); onAddToSlip && onAddToSlip(p.match, p.pick); }}
                               className={`px-2 py-0.5 rounded text-[10px] font-bold transition-colors border ${
                                 isSlipAdded
                                   ? 'bg-rose-50 text-rose-700 border-rose-200'
@@ -958,6 +964,9 @@ export default function BinaryPicksPage({
                         }`}>
                           {p.market}
                         </span>
+                        <span className={`ml-1 inline-block px-1.5 py-0.5 rounded text-[9.5px] font-bold border ${p.riskProfile.badgeClass}`} title={p.riskProfile.reason}>
+                          {p.riskProfile.badge}
+                        </span>
                       </td>
 
                       {/* Bookmaker Odds */}
@@ -1028,7 +1037,7 @@ export default function BinaryPicksPage({
                           </button>
 
                           <button
-                            onClick={(e) => { e.stopPropagation(); onAddToSlip && onAddToSlip(p.match); }}
+                            onClick={(e) => { e.stopPropagation(); onAddToSlip && onAddToSlip(p.match, p.pick); }}
                             className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-colors cursor-pointer border ${
                               isSlipAdded
                                 ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'

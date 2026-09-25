@@ -432,8 +432,8 @@ class SoccerEngine {
       awayGoalIntensity: 1.10,
       goalOverdispersionR: 4.5,
       dixonColesRho: -0.18,
-      temperature: 0.80,
-      maxScorelineSim: 6,
+      temperature: 1.30, // >1 softens: out-of-sample calibration (scripts/verify-build.mjs) showed T=0.8 overconfident by ~10pp on 60-80% favourites
+      maxScorelineSim: 10, // 6 truncated 3.4% of goal mass at lambda=3.0
       drawEquilibriumDelta: 13,
       h2hWeight: 0.12,
       timeDecayXi: 0.007,
@@ -1349,7 +1349,11 @@ class SoccerEngine {
   getHomeEloBoost(league) {
     const base = this.hyperparameters?.homeEloBoost ?? 75;
     if (!league) return Math.min(base, 50);
+    const driftAdjust = this.hyperparameters?.leagueHomeAdvantageAdjust?.[league] ?? 0;
+    return this.getBaseHomeEloBoost(league, base) + driftAdjust;
+  }
 
+  getBaseHomeEloBoost(league, base) {
     const lLower = String(league).toLowerCase();
 
     // Tier 1: Mega-Stadiums & Elite Tier 1 Tournaments with authentic home fortress advantage (~66-70 Elo)
@@ -1569,7 +1573,7 @@ class SoccerEngine {
     // 6. Optimal Hybrid Ensemble: 50% Elo / 50% Dixon-Coles Probability Blend (Calibrated from 4,303 Match Benchmark)
     const eloWeight = this.hyperparameters.eloRatio ?? 0.50;
     const dcWeight = 1.0 - eloWeight;
-    const T = this.hyperparameters.temperature ?? 0.80;
+    const T = this.hyperparameters.temperature ?? 1.30;
     const preHome = Math.pow(normHome, dcWeight) * Math.pow(eloExpectancyHome, eloWeight);
     const preAway = Math.pow(normAway, dcWeight) * Math.pow(1 - eloExpectancyHome, eloWeight);
     const preDraw = normDraw;
@@ -2620,10 +2624,23 @@ class SoccerEngine {
   loadFixturesFromDisk() {
     try {
       const filePath = path.join(process.cwd(), 'fixtures_cache.json');
-      if (!fs.existsSync(filePath)) {
+      const backupPath = `${filePath}.bak`;
+      if (!fs.existsSync(filePath) && !fs.existsSync(backupPath)) {
         return;
       }
-      const raw = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      // Recover from a truncated/corrupt cache (e.g. crash mid-write) using the last good backup
+      let raw = null;
+      for (const candidate of [filePath, backupPath]) {
+        if (!fs.existsSync(candidate)) continue;
+        try {
+          raw = JSON.parse(fs.readFileSync(candidate, 'utf8'));
+          if (candidate === backupPath) this.log('FixturesCache', 'Primary fixtures cache unreadable — recovered from backup.');
+          break;
+        } catch (parseErr) {
+          console.warn(`[FixturesCache] Corrupt cache file ${path.basename(candidate)}: ${parseErr.message}`);
+        }
+      }
+      if (!raw) return;
       if (Array.isArray(raw?.matches) && raw.matches.length > 0) {
         // ALWAYS dynamically analyze fresh from mathematical model - zero pre-analyzed predictions stored
         const analyzed = raw.matches.map(m => this.analyzeRawFixture(m));
@@ -2739,7 +2756,14 @@ class SoccerEngine {
         todayCompletedMatches: (this.todayCompletedMatches || []).map(stripPredictions),
         cachedAt: new Date().toISOString()
       };
-      fs.writeFileSync(filePath, JSON.stringify(payload, null, 2), 'utf8');
+      // Atomic write: serialize to a temp file, keep the previous good cache as .bak, then rename
+      // into place so a crash mid-write can never leave a truncated fixtures_cache.json.
+      const tmpPath = `${filePath}.tmp`;
+      fs.writeFileSync(tmpPath, JSON.stringify(payload, null, 2), 'utf8');
+      if (fs.existsSync(filePath)) {
+        try { fs.copyFileSync(filePath, `${filePath}.bak`); } catch {}
+      }
+      fs.renameSync(tmpPath, filePath);
       this.log('FixturesCache', `Saved ${this.matches.length} raw unanalyzed fixtures to disk (predictions are always computed fresh dynamically).`);
     } catch (err) {
       console.warn('[FixturesCache] Notice saving fixtures cache:', err.message);
@@ -8222,7 +8246,60 @@ Provide a crisp 3-bullet assessment:
   // COMPATIBILITY HOOK: RUN SELF PROMPTING REFLECTION CYCLE
   // -------------------------------------------------------------
   async runSelfPromptingReflectionCycle() {
+    try {
+      this.calibrateLeagueHomeAdvantage();
+    } catch (err) {
+      this.log('ReflectionCycle_Warning', `Home advantage calibration notice: ${err.message}`);
+    }
     return await this.runAutonomousMissPatching();
+  }
+
+  // BUILD_PLAN §5.1: compare predicted vs empirical home win rate per league over the trailing
+  // 30 days and nudge the league's home Elo boost (gamma_league) when drift exceeds 3.5pp.
+  calibrateLeagueHomeAdvantage({ windowDays = 30, driftThreshold = 3.5, minSamples = 20, eloPerPoint = 6, maxAdjust = 60 } = {}) {
+    const cutoff = Date.now() - windowDays * 24 * 60 * 60 * 1000;
+    const pool = [...(this.trainingSet || []), ...(this.todayCompletedMatches || [])];
+    const seen = new Set();
+    const byLeague = new Map();
+
+    for (const m of pool) {
+      const ts = m.timestamp || (m.dateIso ? new Date(m.dateIso).getTime() : (m.date ? new Date(m.date).getTime() : 0));
+      if (!ts || ts < cutoff || !m.league) continue;
+      const hScore = m.homeScore ?? m.goals?.home;
+      const aScore = m.awayScore ?? m.goals?.away;
+      if (hScore == null || aScore == null) continue;
+      const key = m.id || `${m.home}-${m.away}-${ts}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      if (!byLeague.has(m.league)) byLeague.set(m.league, []);
+      byLeague.get(m.league).push({ m, homeWon: Number(hScore) > Number(aScore) });
+    }
+
+    const adjustments = { ...(this.hyperparameters.leagueHomeAdvantageAdjust || {}) };
+    const report = [];
+    for (const [league, rows] of byLeague) {
+      if (rows.length < minSamples) continue;
+      let predictedHome = 0;
+      for (const { m } of rows) {
+        predictedHome += this.computeDixonColesProbabilities(m.home, m.away, { league, skipPredictabilityBoost: true }).home;
+      }
+      const predictedRate = predictedHome / rows.length;
+      const empiricalRate = (rows.filter(r => r.homeWon).length / rows.length) * 100;
+      const drift = empiricalRate - predictedRate;
+      if (Math.abs(drift) <= driftThreshold) continue;
+
+      const current = adjustments[league] || 0;
+      const next = Math.max(-maxAdjust, Math.min(maxAdjust, Math.round(current + drift * eloPerPoint)));
+      if (next === current) continue;
+      adjustments[league] = next;
+      report.push({ league, samples: rows.length, predictedRate: +predictedRate.toFixed(1), empiricalRate: +empiricalRate.toFixed(1), drift: +drift.toFixed(1), eloAdjust: next });
+    }
+
+    this.hyperparameters.leagueHomeAdvantageAdjust = adjustments;
+    if (report.length > 0) {
+      this.log('ReflectionCycle', `Home advantage recalibrated for ${report.length} league(s): ${report.map(r => `${r.league} drift ${r.drift}pp → ${r.eloAdjust} Elo`).join('; ')}`);
+    }
+    return report;
   }
 
   // -------------------------------------------------------------
@@ -8255,65 +8332,78 @@ Provide a crisp 3-bullet assessment:
     const totalCombinations = homeAdvantageGrid.length * rhoGrid.length * drawEquilibriumGrid.length * h2hWeightGrid.length;
 
     const timeDecayXi = this.hyperparameters.timeDecayXi || 0.008;
+    // Trial parameters live on a separate object; the live object is swapped back in whenever the
+    // search yields, so concurrent scrapes/requests never predict with half-searched parameters.
+    const liveHyperparameters = this.hyperparameters;
+    const makeTrial = (ha, rho, de, hw) => ({ ...liveHyperparameters, homeAdvantage: ha, dixonColesRho: rho, drawEquilibriumDelta: de, h2hWeight: hw });
 
-    for (const ha of homeAdvantageGrid) {
-      for (const rho of rhoGrid) {
-        for (const de of drawEquilibriumGrid) {
-          for (const hw of h2hWeightGrid) {
-            this.hyperparameters.homeAdvantage = ha;
-            this.hyperparameters.dixonColesRho = rho;
-            this.hyperparameters.drawEquilibriumDelta = de;
-            this.hyperparameters.h2hWeight = hw;
+    try {
+      for (const ha of homeAdvantageGrid) {
+        for (const rho of rhoGrid) {
+          for (const de of drawEquilibriumGrid) {
+            for (const hw of h2hWeightGrid) {
+              this.hyperparameters = makeTrial(ha, rho, de, hw);
 
-            let totalWeightedBrier = 0;
-            let totalWeight = 0;
-            let correct = 0;
+              let totalWeightedBrier = 0;
+              let totalWeight = 0;
+              let correct = 0;
+              let processed = 0;
 
-            for (const m of matches) {
-              const hScore = m.homeScore ?? m.goals?.home;
-              const aScore = m.awayScore ?? m.goals?.away;
-              const actualWinner = m.actualWinner || (hScore > aScore ? 'HOME' : aScore > hScore ? 'AWAY' : 'DRAW');
+              for (const m of matches) {
+                // Yield to the event loop so the API stays responsive during the multi-minute grid search
+                if (++processed % 1500 === 0) {
+                  this.hyperparameters = liveHyperparameters;
+                  await new Promise(resolve => setImmediate(resolve));
+                  this.hyperparameters = makeTrial(ha, rho, de, hw);
+                }
+                const hScore = m.homeScore ?? m.goals?.home;
+                const aScore = m.awayScore ?? m.goals?.away;
+                const actualWinner = m.actualWinner || (hScore > aScore ? 'HOME' : aScore > hScore ? 'AWAY' : 'DRAW');
 
-              // Sequence Modeling: Exponential Time Decay Weighting
-              let sequenceWeight = 1.0;
-              if (m.timestamp) {
-                const daysSince = Math.max(0, (Date.now() - m.timestamp) / (1000 * 60 * 60 * 24));
-                sequenceWeight = Math.exp(-timeDecayXi * daysSince);
-              } else if (m.dateIso) {
-                const daysSince = Math.max(0, (Date.now() - new Date(m.dateIso).getTime()) / (1000 * 60 * 60 * 24));
-                sequenceWeight = Math.exp(-timeDecayXi * daysSince);
+                // Sequence Modeling: Exponential Time Decay Weighting
+                let sequenceWeight = 1.0;
+                if (m.timestamp) {
+                  const daysSince = Math.max(0, (Date.now() - m.timestamp) / (1000 * 60 * 60 * 24));
+                  sequenceWeight = Math.exp(-timeDecayXi * daysSince);
+                } else if (m.dateIso) {
+                  const daysSince = Math.max(0, (Date.now() - new Date(m.dateIso).getTime()) / (1000 * 60 * 60 * 24));
+                  sequenceWeight = Math.exp(-timeDecayXi * daysSince);
+                }
+
+                const probs = this.computeDixonColesProbabilities(m.home, m.away);
+                if (probs.predictedWinner === actualWinner) {
+                  correct++;
+                }
+
+                const yH = actualWinner === 'HOME' ? 1 : 0;
+                const yD = actualWinner === 'DRAW' ? 1 : 0;
+                const yA = actualWinner === 'AWAY' ? 1 : 0;
+                const brier = Math.pow((probs.home / 100) - yH, 2) + Math.pow((probs.draw / 100) - yD, 2) + Math.pow((probs.away / 100) - yA, 2);
+                
+                totalWeightedBrier += (brier * sequenceWeight);
+                totalWeight += sequenceWeight;
               }
 
-              const probs = this.computeDixonColesProbabilities(m.home, m.away);
-              if (probs.predictedWinner === actualWinner) {
-                correct++;
+              const avgWeightedBrier = totalWeight > 0 ? totalWeightedBrier / totalWeight : 1.0;
+              const accuracy = (correct / matches.length) * 100;
+
+              if (avgWeightedBrier < bestWeightedBrier) {
+                bestWeightedBrier = avgWeightedBrier;
+                bestAccuracy = accuracy;
+                bestParams = {
+                  homeAdvantage: ha,
+                  dixonColesRho: rho,
+                  drawEquilibriumDelta: de,
+                  h2hWeight: hw
+                };
               }
-
-              const yH = actualWinner === 'HOME' ? 1 : 0;
-              const yD = actualWinner === 'DRAW' ? 1 : 0;
-              const yA = actualWinner === 'AWAY' ? 1 : 0;
-              const brier = Math.pow((probs.home / 100) - yH, 2) + Math.pow((probs.draw / 100) - yD, 2) + Math.pow((probs.away / 100) - yA, 2);
-              
-              totalWeightedBrier += (brier * sequenceWeight);
-              totalWeight += sequenceWeight;
-            }
-
-            const avgWeightedBrier = totalWeight > 0 ? totalWeightedBrier / totalWeight : 1.0;
-            const accuracy = (correct / matches.length) * 100;
-
-            if (avgWeightedBrier < bestWeightedBrier) {
-              bestWeightedBrier = avgWeightedBrier;
-              bestAccuracy = accuracy;
-              bestParams = {
-                homeAdvantage: ha,
-                dixonColesRho: rho,
-                drawEquilibriumDelta: de,
-                h2hWeight: hw
-              };
             }
           }
         }
       }
+
+    } finally {
+      this.hyperparameters = liveHyperparameters;
     }
 
     // 3. Apply optimal weights to in-memory engine

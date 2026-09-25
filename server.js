@@ -370,6 +370,22 @@ app.get('/api/state', (req, res) => {
       return res.status(400).send('Missing target URL');
     }
 
+    // SSRF guard: only public http(s) hosts — never loopback, link-local (cloud metadata) or private ranges
+    let parsedTarget;
+    try {
+      parsedTarget = new URL(targetUrl);
+    } catch {
+      return res.status(400).send('Invalid target URL');
+    }
+    const host = parsedTarget.hostname.toLowerCase().replace(/^[|]$/g, '');
+    const isPrivateHost = host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local') || host.endsWith('.internal') ||
+      /^(127.|10.|0.|169.254.|192.168.|172.(1[6-9]|2d|3[01]).)/.test(host) ||
+      host === '::1' || host === '::' || /^(fc|fd|fe80)/.test(host) || /^::ffff:/.test(host);
+    if (!['http:', 'https:'].includes(parsedTarget.protocol) || isPrivateHost) {
+      return res.status(400).send('Target URL not allowed');
+    }
+    const escapeHtml = (value) => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
     try {
       const fetchRes = await fetch(targetUrl, {
         headers: {
@@ -439,8 +455,8 @@ app.get('/api/state', (req, res) => {
         </head>
         <body>
           <div style="font-size: 28px; margin-bottom: 8px;">📡 Live Stream In-Frame Relay</div>
-          <p style="color: #94a3b8; max-width: 480px; font-size: 14px;">Connecting to ${matchName} stream relay source.</p>
-          <a class="btn" href="${targetUrl}" target="_blank" rel="noopener noreferrer">Open Stream Relay Directly ↗</a>
+          <p style="color: #94a3b8; max-width: 480px; font-size: 14px;">Connecting to ${escapeHtml(matchName)} stream relay source.</p>
+          <a class="btn" href="${escapeHtml(parsedTarget.href)}" target="_blank" rel="noopener noreferrer">Open Stream Relay Directly ↗</a>
         </body>
         </html>
       `);

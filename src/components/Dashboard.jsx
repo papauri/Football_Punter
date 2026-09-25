@@ -27,6 +27,7 @@ import DailyBriefingPanel from './DailyBriefingPanel';
 import LiveMatchPlayerModal from './LiveMatchPlayerModal';
 import { resolveMatchOdds, resolveMatchProb } from '../utils/oddsUtils';
 import { isLeagueBlacklisted } from '../utils/leagueUtils';
+import { getMatchRiskProfile, getSlipPick, normalizePick } from '../utils/riskUtils';
 import { getTimezoneDisplayLabel } from '../utils/dateUtils';
 
 // =========================================================================
@@ -286,17 +287,11 @@ export default function Dashboard() {
       const isPropsTarget = destinationSlipId === 'props-slip' || (customMarket && String(customMarket).startsWith('Props'));
 
       // Resolve pick value (straight outright normalization if DRAW or unspecified)
-      let pickValue = customPick || match.binaryModel?.pick || (typeof match.predictedWinner === 'string' ? match.predictedWinner : match.predictedWinner?.pick) || 'HOME';
+      // Default pick resolution is shared with the fixtures table (riskUtils.getSlipPick) so the
+      // selection stored here is exactly the one the table's risk filters evaluated.
+      let pickValue = customPick || getSlipPick(match);
       if (!customMarket?.startsWith('Props')) {
-        let strPick = String(pickValue).toUpperCase();
-        if (strPick === '1') strPick = 'HOME';
-        if (strPick === '2') strPick = 'AWAY';
-        if (!customPick && strPick !== 'HOME' && strPick !== 'AWAY') {
-          const pHome = Number(match.prob?.home || match.homeProb || 40);
-          const pAway = Number(match.prob?.away || match.awayProb || 30);
-          strPick = pHome >= pAway ? 'HOME' : 'AWAY';
-        }
-        pickValue = strPick;
+        pickValue = normalizePick(pickValue);
       }
 
       const outrightMarket = `${pickValue} Win (Outright)`;
@@ -317,8 +312,15 @@ export default function Dashboard() {
         pick: pickValue,
         market: effectiveMarket,
         confidence: prob,
+        modelConfidence: match.confidence ?? match.binaryModel?.confidence ?? null,
         prob,
-        odds
+        odds,
+        // Full model payload retained so the slip never re-infers risk with different fallbacks
+        smartMarket: match.smartMarket || null,
+        binaryModel: match.binaryModel || null,
+        disruptionModel: match.disruptionModel || null,
+        leagueTier: match.leagueTier || null,
+        riskProfile: getMatchRiskProfile(match, pickValue)
       };
 
       // LiveScore Bet & Bookmaker Acca Rule: Only ONE selection allowed per fixture on match accumulators.

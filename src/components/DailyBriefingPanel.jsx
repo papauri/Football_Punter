@@ -4,6 +4,7 @@ import {
   Target, Award, Shield, Plus, Check, Globe, Play, Tv
 } from 'lucide-react';
 import { safeParseFloat, safeToFixed, formatKellyStake, formatSmartMarket } from '../utils/numberUtils';
+import { isTrapMatch } from '../utils/riskUtils';
 import { isLeagueBlacklisted } from '../utils/leagueUtils';
 import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey, getLocalizedTodayKey } from '../utils/dateUtils';
 import { resolveMatchOdds, getOddsProviderLabel, calculatePotentialReturn } from '../utils/oddsUtils';
@@ -110,7 +111,7 @@ export default function DailyBriefingPanel({
       const conf = safeParseFloat(m.confidence ?? m.binaryModel?.confidence, topProb);
 
       const isPass = m.smartMarket?.pick === 'PASS' || m.disruptionModel?.isPassFlagged;
-      const isTrap = (m.aiSwarm || m.imperialSwarm)?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap;
+      const isTrap = isTrapMatch(m);
       const isUnanimous = (m.aiSwarm || m.imperialSwarm)?.isTopValueLeg || (m.aiSwarm || m.imperialSwarm)?.consensusTier === 'UNANIMOUS_DIRECTIVE';
       const inSnapshotWindow = msToKickoff >= 0 && msToKickoff <= 60 * 60 * 1000;
 

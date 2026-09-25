@@ -57,11 +57,11 @@ A user filters fixtures using **"Low Risk" / "No Traps" / "High Confidence" (≥
    - When a match is added to the slip, custom market parameters (`customPick`, `smartMarket`, `dnbAdvised`) were partially stripped, forcing the slip component to re-infer properties with different fallback formulas.
 
 #### Permanent Solution & Fix Plan:
-- [ ] Create **`src/utils/riskUtils.js`** as the single source of truth for:
+- [x] Create **`src/utils/riskUtils.js`** as the single source of truth for:
   - `getMatchRiskProfile(match)`: Returns `{ riskLevel: 'LOW' | 'MEDIUM' | 'HIGH', riskScore: number, isTrap: boolean, badge: string, color: string, reason: string }`.
   - `isLowRiskPick(match)`: Unified boolean helper.
-- [ ] Refactor `handleToggleAccaPick` in `Dashboard.jsx`, `FixturesTablePage.jsx`, `BetSlip.jsx`, `AccumulatorPage.jsx`, and `BinaryPicksPage.jsx` to consume `getMatchRiskProfile`.
-- [ ] Ensure full pick payload retention (`smartMarket`, `binaryModel`, `disruptionModel`, `odds`, `confidence`, `leagueTier`) across local storage and multi-slip state.
+- [x] Refactor `handleToggleAccaPick` in `Dashboard.jsx`, `FixturesTablePage.jsx`, `BetSlip.jsx`, `AccumulatorPage.jsx`, and `BinaryPicksPage.jsx` to consume `getMatchRiskProfile`.
+- [x] Ensure full pick payload retention (`smartMarket`, `binaryModel`, `disruptionModel`, `odds`, `confidence`, `leagueTier`) across local storage and multi-slip state.
 
 ---
 
@@ -149,21 +149,35 @@ A user filters fixtures using **"Low Risk" / "No Traps" / "High Confidence" (≥
 
 ## 7. Step-by-Step Autonomous Execution Checklist
 
-- [ ] **Phase 1: Risk Logic Unification**
-  - [ ] Implement `src/utils/riskUtils.js`.
-  - [ ] Refactor `Dashboard.jsx`, `FixturesTablePage.jsx`, `BetSlip.jsx`, `AccumulatorPage.jsx`, and `BinaryPicksPage.jsx` to use `riskUtils.js`.
-  - [ ] Verify that filtering by "Low Risk" and adding to slip preserves identical green Low Risk / Elite badges.
+- [x] **Phase 1: Risk Logic Unification**
+  - [x] Implement `src/utils/riskUtils.js`.
+  - [x] Refactor `Dashboard.jsx`, `FixturesTablePage.jsx`, `BetSlip.jsx`, `AccumulatorPage.jsx`, and `BinaryPicksPage.jsx` to use `riskUtils.js`.
+  - [x] Verify that filtering by "Low Risk" and adding to slip preserves identical green Low Risk / Elite badges.
 
-- [ ] **Phase 2: Dixon-Coles Mathematical Audit & Out-of-Sample Testing**
-  - [ ] Audit `computeDixonColesProbabilities` in `engine.js` against sample test fixtures.
-  - [ ] Validate Poisson tail decay and Draw-No-Bet threshold accuracy ($P_{draw} \ge 24.0\%$).
-  - [ ] Verify that matches >130 minutes past kickoff never appear as `LIVE / STARTED`.
+- [x] **Phase 2: Dixon-Coles Mathematical Audit & Out-of-Sample Testing**
+  - [x] Audit `computeDixonColesProbabilities` in `engine.js` against sample test fixtures.
+  - [x] Validate Poisson tail decay and Draw-No-Bet threshold accuracy ($P_{draw} \ge 24.0\%$).
+  - [x] Verify that matches >130 minutes past kickoff never appear as `LIVE / STARTED`.
 
-- [ ] **Phase 3: Autonomous Self-Healing & Patching Routines**
-  - [ ] Verify `/api/deep-retrain-patch` and `/api/retrain` endpoint responsiveness.
-  - [ ] Audit `fixtures_cache.json` disk serialization and recovery mechanisms.
+- [x] **Phase 3: Autonomous Self-Healing & Patching Routines**
+  - [x] Verify `/api/deep-retrain-patch` and `/api/retrain` endpoint responsiveness.
+  - [x] Audit `fixtures_cache.json` disk serialization and recovery mechanisms.
 
 - [ ] **Phase 4: UI/UX & Cross-Device Polish**
-  - [ ] Test table sorting by Conf, Odds, Probability, xG, and Kelly stake.
-  - [ ] Verify Live Match Player Modal in-frame stream playback and Popout fallbacks.
-  - [ ] Run full build verification via `compile_applet`.
+  - [x] Test table sorting by Conf, Odds, Probability, xG, and Kelly stake.
+  - [ ] Verify Live Match Player Modal in-frame stream playback and Popout fallbacks. **(Audited 2026-09-26: no scraped source plays in-frame — see §8.)**
+  - [x] Run full build verification via `compile_applet`.
+
+---
+
+## 8. Execution Status (2026-09-26)
+
+Run `npm run verify` (scripts/verify-build.mjs) to re-check everything below.
+
+* **Risk parity**: `riskUtils.getMatchRiskProfile` drives table filters, table badges, bet slip badges and binary picks; table and slip evaluate the same pick (`getSlipPick`). 0 mismatches across 155 live fixtures; TC-01–TC-04 pass. BetSlip lives in `AccumulatorPage.jsx` (there is no `BetSlip.jsx`), and the slip now prefers live match data over the stored snapshot.
+* **Dixon-Coles τ**: the code in `engine.js` matches Dixon & Coles (1997): τ(0,1)=1+λρ, τ(1,0)=1+μρ. The formula in §3.1 above has those two cases swapped; the code was left as is.
+* **Calibration (temporal split: trained on 14,453 fixtures, tested on the 9,000 that followed)**: temperature 0.8 → 1.3 (chosen on a validation slice, not the test set) and maxScorelineSim 6 → 10 (tail mass 3.4% → 0.03%). Brier (mean per-class) 0.2100 → 0.2076; 60–69% favourites now predicted 64.5% vs actual 63.5% (previously 64.6% vs 53.8%). **The 0.178 target is not met.** Softer probabilities also mean fewer Elite/High picks and more DNB-advised fixtures.
+* **§5.1 home-advantage drift**: `calibrateLeagueHomeAdvantage` runs in the 15-minute reflection cycle.
+* **Phase 3**: fixtures cache writes are atomic (tmp + rename) with `.bak` recovery. Deep retrain (~3.5 min) now yields to the event loop and isolates trial hyperparameters, so the API stays responsive.
+* **Not done**: TC-04 "slip auto-selects DNB" (the DNB badge is shown but the market is not switched automatically) and TC-05 (not re-tested).
+* **Live streams**: browser test showed nothing plays in-frame. The YouTube `listType=search` embed is deprecated, the "scraped" links are how-to-watch articles or subscription/DRM players (DAZN, ESPN), and Totalsportek/Score808 fetches fail. The proxy now blocks SSRF (private/loopback/metadata hosts, non-http schemes) and escapes reflected HTML. Open risk: the proxied third-party pages are served from the app's own origin, and the iframe sandbox includes `allow-scripts allow-same-origin`, so their scripts run with full app-origin privileges.

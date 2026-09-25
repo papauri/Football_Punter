@@ -2,3 +2,5 @@ node_modules/
 dist/
 .env
 ai_config.json
+fixtures_cache.json.tmp
+fixtures_cache.json.bak

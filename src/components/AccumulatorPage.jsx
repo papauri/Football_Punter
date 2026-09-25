@@ -27,28 +27,25 @@ import {
 import UniformDropdown from './UniformDropdown';
 import InfoTooltip from './InfoTooltip';
 import { safeParseFloat, safeToFixed } from '../utils/numberUtils';
+import { isTrapMatch, getMatchRiskProfile, isParityLeague } from '../utils/riskUtils';
 import { formatRelativeDayTime } from '../utils/dateUtils';
 import { resolveMatchOdds, resolveMatchProb } from '../utils/oddsUtils';
 import { isLeagueBlacklisted, isLeagueSolid, isCupCompetition } from '../utils/leagueUtils';
 import Markdown from 'react-markdown';
 
-const PARITY_LEAGUES = [
-  'Championship', 'League One', 'League Two', 'MLS', 'Major League Soccer',
-  'Liga Profesional', 'Liga MX', 'Serie B', 'LaLiga 2', 'Ligue 2',
-  'Swedish Allsvenskan', 'Norwegian Eliteserien', 'Danish Superliga',
-  'Austrian Bundesliga', 'Saudi Pro League', 'Turkish Super Lig'
-];
-
 /**
- * Autonomous Evaluation for an individual leg in a bet slip
+ * Autonomous Evaluation for an individual leg in a bet slip.
+ * Risk verdict and badge come exclusively from getMatchRiskProfile (src/utils/riskUtils.js) —
+ * the same classifier the fixtures table filters use — so a leg added from a "Low Risk" filter
+ * always keeps its Low Risk badge here.
  */
 function evaluateLegAutonomousStatus(leg, match) {
   const m = match || leg.match || {};
   const sw = m.aiSwarm || m.imperialSwarm || {};
-  
-  const isBlacklisted = isLeagueBlacklisted(m.league || leg.league);
-  const isCup = isCupCompetition(m.league || leg.league);
-  const isTrap = Boolean(sw.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap || m.disruptionModel?.isPassFlagged);
+  const profile = getMatchRiskProfile(m, leg.pick);
+
+  const isBlacklisted = profile.tierKey === 'EXCLUDED';
+  const isTrap = profile.riskLevel === 'HIGH';
   const isUnan = Boolean(
     sw.is100Unanimous || 
     sw.isTopValueLeg || 
@@ -56,8 +53,8 @@ function evaluateLegAutonomousStatus(leg, match) {
     sw.consensusTier === 'UNANIMOUS_DIRECTIVE' || 
     sw.agreementPercentage === 100
   );
-  const isParity = Boolean(m.league && PARITY_LEAGUES.some(pl => m.league.toLowerCase().includes(pl.toLowerCase())));
-  const drawProb = safeParseFloat(m.prob?.draw, 24);
+  const isParity = isParityLeague(m.league);
+  const drawProb = profile.drawProb || safeParseFloat(m.prob?.draw, 24);
   const pickVal = String(leg.pick || '').toUpperCase();
   const isStraightPick = pickVal === 'HOME' || pickVal === 'AWAY' || pickVal === '1' || pickVal === '2';
   const isProtectedDC = pickVal === '1X' || pickVal === 'X2' || pickVal === '12';
@@ -66,64 +63,13 @@ function evaluateLegAutonomousStatus(leg, match) {
   const legOdds = safeParseFloat(leg.odds, 1.5);
   const ev = ((legProb / 100) * legOdds) - 1;
 
-  // High draw risk in straight outright selection
-  const isDrawVulnerable = isStraightPick && (drawProb >= 26 || (isParity && legProb < 66));
+  const isDrawVulnerable = profile.isDrawVulnerable;
 
-  let badge = {
-    type: 'neutral',
-    label: 'Standard',
-    title: 'Balanced model probability'
+  const badge = {
+    type: profile.badgeType,
+    label: isUnan && profile.riskLevel === 'LOW' && isStraightPick ? `${profile.badge} · 👑` : profile.badge,
+    title: profile.reason
   };
-
-  if (isBlacklisted || isCup) {
-    badge = {
-      type: 'danger',
-      label: isCup ? '🚫 Knockout Cup (Excluded)' : '⛔ Blacklisted League',
-      title: isCup ? 'Knockout cup ties excluded to eliminate extreme squad rotation and penalty chaos' : 'Competition blacklisted due to extreme parity, random noise, or zero telemetry'
-    };
-  } else if (isTrap) {
-    badge = {
-      type: 'danger',
-      label: '⚠️ High Risk',
-      title: 'Upset risk or odds divergence detected'
-    };
-  } else if (isProtectedDC) {
-    badge = {
-      type: 'positive-ev',
-      label: '🛡️ Double Chance (86.3%)',
-      title: 'Shielded against draw stalemates — verified 86.3% historical win rate'
-    };
-  } else if (isDrawVulnerable) {
-    badge = {
-      type: 'warning',
-      label: '⚡ High Draw Risk (26%+)',
-      title: `Draw probability is ${safeToFixed(drawProb, 0)}% (or outright win rate <58%). Consider Double Chance to avoid a stalemate loss.`
-    };
-  } else if (isStraightPick && isUnan) {
-    badge = {
-      type: 'unanimous',
-      label: '👑 Prime Outright (73%+)',
-      title: '100% Unanimous AI council agreement on this outright straight win with low draw risk'
-    };
-  } else if (isStraightPick && !isUnan) {
-    badge = {
-      type: 'warning',
-      label: '⚠️ Split AI Council',
-      title: 'AI council does not have 100% unanimous agreement on this match'
-    };
-  } else if (ev > 0.05) {
-    badge = {
-      type: 'positive-ev',
-      label: `💎 +EV (+${safeToFixed(ev * 100, 1)}%)`,
-      title: 'Model probability exceeds bookmaker odds'
-    };
-  } else if (ev < -0.05) {
-    badge = {
-      type: 'negative-ev',
-      label: `📉 -EV (${safeToFixed(ev * 100, 1)}%)`,
-      title: 'Odds offer lower return than model projection'
-    };
-  }
 
   return {
     isBlacklisted,
@@ -135,7 +81,8 @@ function evaluateLegAutonomousStatus(leg, match) {
     isProtectedDC,
     isDrawVulnerable,
     ev,
-    badge
+    badge,
+    riskProfile: profile
   };
 }
 
@@ -193,7 +140,10 @@ export default function AccumulatorPage({
   // Resolved active legs - strictly ordered chronologically by kickoff time
   const activeLegs = useMemo(() => {
     const resolved = accaPicks.map((pick, idx) => {
-      const pMatch = pick.match || matches.find(m => String(m.id) === String(pick.id) || (m.home === pick.home && m.away === pick.away)) || pick;
+      // Prefer the live match object (same one the fixtures table evaluates) over the stored snapshot,
+      // falling back to the snapshot when the fixture has left the live slate.
+      const liveMatch = matches.find(m => String(m.id) === String(pick.id) || (m.home === pick.home && m.away === pick.away));
+      const pMatch = liveMatch ? { ...(pick.match || {}), ...liveMatch } : (pick.match || pick);
       const timeVal = pMatch.timestamp || pMatch.utcDate || pMatch.dateIso || pMatch.date;
       const rawTime = pMatch.timestamp || (pMatch.utcDate ? new Date(pMatch.utcDate).getTime() : 0);
       const dateDisplay = timeVal ? formatRelativeDayTime(timeVal, tzSettings) : (pMatch.time || 'Upcoming');
@@ -615,7 +565,7 @@ export default function AccumulatorPage({
       if (seen.has(idStr)) return;
       if (isLeagueBlacklisted(m.league) || isCupCompetition(m.league)) return;
       const sw = m.aiSwarm || m.imperialSwarm;
-      const isTrap = sw?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap || m.disruptionModel?.isPassFlagged;
+      const isTrap = isTrapMatch(m);
       if (isTrap) return;
 
       const isUnan = Boolean(
@@ -702,7 +652,7 @@ export default function AccumulatorPage({
       if (map.has(idStr)) return;
       if (isLeagueBlacklisted(m.league) || isCupCompetition(m.league)) return;
       const sw = m.aiSwarm || m.imperialSwarm;
-      const isTrap = sw?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap || m.disruptionModel?.isPassFlagged;
+      const isTrap = isTrapMatch(m);
       if (isTrap) return;
 
       // Strict requirement: all AI council models agree
@@ -792,7 +742,7 @@ export default function AccumulatorPage({
       if (map.has(idStr)) return;
       if (isLeagueBlacklisted(m.league) || isCupCompetition(m.league)) return;
       const sw = m.aiSwarm || m.imperialSwarm;
-      const isTrap = sw?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap || m.disruptionModel?.isPassFlagged;
+      const isTrap = isTrapMatch(m);
       if (isTrap) return;
 
       const isUnan = Boolean(
@@ -842,7 +792,7 @@ export default function AccumulatorPage({
       .filter(m => {
         if (isLeagueBlacklisted(m.league) || isCupCompetition(m.league)) return false;
         const sw = m.aiSwarm || m.imperialSwarm;
-        const isTrap = sw?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap;
+        const isTrap = isTrapMatch(m);
         if (isTrap) return false;
 
         const isUnan = Boolean(
@@ -893,7 +843,7 @@ export default function AccumulatorPage({
         if (accaMatchIds.has(String(m.id))) return false;
         if (isLeagueBlacklisted(m.league) || isCupCompetition(m.league)) return false;
         const sw = m.aiSwarm || m.imperialSwarm;
-        const isTrap = sw?.isContrarianTrap || m.isMarketDivergence || m.isFavoriteTrap;
+        const isTrap = isTrapMatch(m);
         if (isTrap) return false;
         
         // Strict All AI consensus agrees:
