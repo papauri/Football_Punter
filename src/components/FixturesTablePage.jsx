@@ -42,7 +42,7 @@ import {
 import UniformDropdown from './UniformDropdown';
 import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey, getLocalizedTodayKey, formatFriendlyDateOption } from '../utils/dateUtils';
 import { safeParseFloat, safeToFixed, formatKellyStake, formatSmartMarket, formatScore } from '../utils/numberUtils';
-import { isTrapMatch, getMatchRiskProfile, getSlipPick } from '../utils/riskUtils';
+import { isTrapMatch, getMatchRiskProfile, getMarketPick } from '../utils/riskUtils';
 import { getLeaguePredictabilityTier, isLeagueBlacklisted, isLeagueSolid } from '../utils/leagueUtils';
 import { resolveMatchOdds, resolveMatchProb, getOddsProviderLabel, calculatePotentialReturn } from '../utils/oddsUtils';
 import ConfidenceGauge from './ConfidenceGauge';
@@ -972,7 +972,7 @@ export default function FixturesTablePage({
     const sw = m.aiSwarm || m.imperialSwarm;
     // Universal risk profile, evaluated on the exact pick that onAddToSlip(m) will store,
     // so filter verdicts and bet slip badges can never diverge.
-    const slipPick = getSlipPick(m);
+    const slipPick = getMarketPick(m, marketMode);
     const riskProfile = getMatchRiskProfile(m, slipPick);
     const isTrap = riskProfile.riskLevel === 'HIGH';
     const isUnanimous = Boolean(
@@ -1022,7 +1022,7 @@ export default function FixturesTablePage({
   // Pre-evaluated match items for ultra-fast filtering
   const evaluatedItems = useMemo(() => {
     return matches.map(evaluateMatchItem).filter(Boolean);
-  }, [matches, tzSettings]);
+  }, [matches, tzSettings, marketMode]);
 
   // Universal filter checker: checks if an item passes all filters, optionally skipping one dimension for faceted counts
   const checkItemPasses = (item, skipDimension = null) => {
@@ -1409,13 +1409,13 @@ export default function FixturesTablePage({
       }
       if (sortField === 'odds') {
         // Odds of the pick that would land on the slip, so the sort matches what gets staked
-        const oA = safeParseFloat(resolveMatchOdds(a, getSlipPick(a)), 0);
-        const oB = safeParseFloat(resolveMatchOdds(b, getSlipPick(b)), 0);
+        const oA = safeParseFloat(resolveMatchOdds(a, getMarketPick(a, marketMode)), 0);
+        const oB = safeParseFloat(resolveMatchOdds(b, getMarketPick(b, marketMode)), 0);
         return (oA - oB) * multiplier;
       }
       return 0;
     });
-  }, [baseMatches, sortField, sortDirection]);
+  }, [baseMatches, sortField, sortDirection, marketMode]);
 
   const renderMarketPrediction = (m, predictedWinner, homeProb, drawProb, awayProb, matchOdds = null) => {
     const isFavHome = homeProb >= awayProb;
@@ -3181,7 +3181,7 @@ export default function FixturesTablePage({
                   const kellyDisplay = formatKellyStake(kelly, '1.5u');
                   const smartMarketDisplay = formatSmartMarket(m.smartMarket ?? m.binaryModel?.smartMarket, `${predictedWinner === 'HOME' ? m.home : predictedWinner === 'AWAY' ? m.away : 'Draw'} ML`);
 
-                  const slipPick = getSlipPick(m);
+                  const slipPick = getMarketPick(m, marketMode);
                   const riskProfile = getMatchRiskProfile(m, slipPick);
                   const isTrap = riskProfile.riskLevel === 'HIGH';
                   const isUnanimous = (m.aiSwarm || m.imperialSwarm)?.isTopValueLeg || (m.aiSwarm || m.imperialSwarm)?.consensusTier === 'UNANIMOUS_DIRECTIVE' || (m.aiSwarm || m.imperialSwarm)?.isUnanimousDirective;

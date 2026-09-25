@@ -26,8 +26,9 @@ import StrategyProofModal from './StrategyProofModal';
 import DailyBriefingPanel from './DailyBriefingPanel';
 import LiveMatchPlayerModal from './LiveMatchPlayerModal';
 import { resolveMatchOdds, resolveMatchProb } from '../utils/oddsUtils';
+import { safeToFixed } from '../utils/numberUtils';
 import { isLeagueBlacklisted } from '../utils/leagueUtils';
-import { getMatchRiskProfile, getSlipPick, normalizePick } from '../utils/riskUtils';
+import { getMatchRiskProfile, getSlipPick, normalizePick, getPickMarketLabel } from '../utils/riskUtils';
 import { getTimezoneDisplayLabel } from '../utils/dateUtils';
 
 // =========================================================================
@@ -294,7 +295,7 @@ export default function Dashboard() {
         pickValue = normalizePick(pickValue);
       }
 
-      const outrightMarket = `${pickValue} Win (Outright)`;
+      const outrightMarket = getPickMarketLabel(pickValue);
       const effectiveMarket = customMarket || outrightMarket;
       const odds = resolveMatchOdds(match, pickValue, customOdds);
       const prob = resolveMatchProb(match, pickValue, customProb);

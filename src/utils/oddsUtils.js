@@ -43,6 +43,14 @@ export function resolveMatchOdds(match, pickValue, customOdds = null) {
       return Math.max(1.08, Math.round(dc * 100) / 100);
     }
   }
+  // 2b. Draw-No-Bet (stake refunded on a draw): O_dnb = O_win * (O_draw - 1) / O_draw
+  else if (p === 'HOME_DNB' || p === 'AWAY_DNB') {
+    const winOdds = p === 'HOME_DNB' ? homeOdds : awayOdds;
+    if (winOdds > 1.01 && drawOdds > 1.01) {
+      const dnb = winOdds * (drawOdds - 1) / drawOdds;
+      return Math.max(1.02, Math.round(dnb * 100) / 100);
+    }
+  }
 
   // 3. Realistic Model-Implied Odds based on Dixon-Coles Poisson probabilities
   const probObj = match.prob || {};
@@ -57,6 +65,8 @@ export function resolveMatchOdds(match, pickValue, customOdds = null) {
   else if (p === '1X') targetProb = homeP + drawP;
   else if (p === 'X2') targetProb = awayP + drawP;
   else if (p === '12') targetProb = homeP + awayP;
+  else if (p === 'HOME_DNB' && homeP + awayP > 0) targetProb = (homeP / (homeP + awayP)) * 100;
+  else if (p === 'AWAY_DNB' && homeP + awayP > 0) targetProb = (awayP / (homeP + awayP)) * 100;
   else targetProb = safeParseFloat(match.confidence ?? match.binaryModel?.confidence, 55);
 
   if (targetProb > 5 && targetProb <= 98) {
@@ -102,6 +112,9 @@ export function resolveMatchProb(match, pickValue, customProb = null) {
   if (p === '1X' && (homeP + drawP) > 0) return Math.min(96, Math.round(homeP + drawP));
   if (p === 'X2' && (awayP + drawP) > 0) return Math.min(96, Math.round(awayP + drawP));
   if (p === '12' && (homeP + awayP) > 0) return Math.min(96, Math.round(homeP + awayP));
+  // DNB: probability of winning given the stake is refunded on a draw
+  if (p === 'HOME_DNB' && (homeP + awayP) > 0) return Math.min(96, Math.round((homeP / (homeP + awayP)) * 100));
+  if (p === 'AWAY_DNB' && (homeP + awayP) > 0) return Math.min(96, Math.round((awayP / (homeP + awayP)) * 100));
 
   const baseConf = safeParseFloat(match.confidence ?? match.binaryModel?.confidence, 65);
   if (p === '1X' || p === 'X2') {

@@ -98,6 +98,8 @@ export function getMatchRiskProfile(match, pickOverride = null) {
     : pick === '1X' ? home + draw
     : pick === 'X2' ? away + draw
     : pick === '12' ? home + away
+    : pick === 'HOME_DNB' ? home + draw
+    : pick === 'AWAY_DNB' ? away + draw
     : Math.max(home, away);
 
   const tierObj = m.leagueTier?.tier ? m.leagueTier : getLeaguePredictabilityTier(m.league);
@@ -124,7 +126,9 @@ export function getMatchRiskProfile(match, pickOverride = null) {
       : `Model confidence ${safeToFixed(confidence, 1)}% is below the ${T.TRAP_CONF}% safety floor.`;
   } else if (isProtectedMarket) {
     tierKey = pickProb >= 70 ? 'PROTECTED' : 'DNB';
-    reason = `Draw-protected market covering ${safeToFixed(Math.min(99, pickProb), 1)}% of outcomes.`;
+    reason = pick.includes('DNB')
+      ? `Draw-No-Bet: stake refunded on a draw — loses only in ${safeToFixed(Math.max(0, 100 - pickProb), 1)}% of outcomes.`
+      : `Draw-protected market covering ${safeToFixed(Math.min(99, pickProb), 1)}% of outcomes.`;
   } else if (pickProb >= T.ELITE_PROB && confidence >= T.ELITE_CONF && draw < T.ELITE_MAX_DRAW) {
     tierKey = 'ELITE';
     reason = `Win probability ${safeToFixed(pickProb, 1)}%, confidence ${safeToFixed(confidence, 1)}%, draw risk ${safeToFixed(draw, 1)}%.`;
@@ -193,4 +197,40 @@ export function getSlipPick(m) {
   const home = safeParseFloat(m?.prob?.home ?? m?.homeProb, 0);
   const away = safeParseFloat(m?.prob?.away ?? m?.awayProb, 0);
   return home >= away ? 'HOME' : 'AWAY';
+}
+
+export function isDnbPick(pick) {
+  const p = normalizePick(pick);
+  return p === 'HOME_DNB' || p === 'AWAY_DNB';
+}
+
+// The pick for the market the fixtures table is displaying (Market dropdown), so "+ Slip"
+// adds exactly the selection shown in the row. Mirrors FixturesTablePage.renderMarketPrediction.
+export function getMarketPick(m, marketMode = 'STRAIGHT_1X2') {
+  const home = safeParseFloat(m?.prob?.home, 0);
+  const draw = safeParseFloat(m?.prob?.draw, 0);
+  const away = safeParseFloat(m?.prob?.away, 0);
+  const isFavHome = home >= away;
+  const favProb = isFavHome ? home : away;
+  const dnbPick = isFavHome ? 'HOME_DNB' : 'AWAY_DNB';
+  const dcPick = isFavHome ? '1X' : 'X2';
+
+  if (marketMode === 'DNB') return dnbPick;
+  if (marketMode === 'DOUBLE_CHANCE') return dcPick;
+  if (marketMode === 'SMART_ADAPTIVE') {
+    const isHighDraw = draw >= RISK_THRESHOLDS.DNB_DRAW;
+    if (m?.smartMarket?.marketType === 'DOUBLE_CHANCE' || (isHighDraw && Math.min(99, favProb + draw) >= 72 && favProb < 55)) return dcPick;
+    if (m?.smartMarket?.marketType === 'DRAW_NO_BET' || isHighDraw) return dnbPick;
+  }
+  return getSlipPick(m);
+}
+
+export function getPickMarketLabel(pick) {
+  const p = normalizePick(pick);
+  if (p === 'HOME_DNB') return 'Home Draw No Bet (Refund on Draw)';
+  if (p === 'AWAY_DNB') return 'Away Draw No Bet (Refund on Draw)';
+  if (p === '1X') return 'Double Chance 1X';
+  if (p === 'X2') return 'Double Chance X2';
+  if (p === '12') return 'Double Chance 12';
+  return `${p} Win (Outright)`;
 }

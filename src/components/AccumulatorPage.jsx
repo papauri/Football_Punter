@@ -58,6 +58,7 @@ function evaluateLegAutonomousStatus(leg, match) {
   const pickVal = String(leg.pick || '').toUpperCase();
   const isStraightPick = pickVal === 'HOME' || pickVal === 'AWAY' || pickVal === '1' || pickVal === '2';
   const isProtectedDC = pickVal === '1X' || pickVal === 'X2' || pickVal === '12';
+  const isDnb = pickVal === 'HOME_DNB' || pickVal === 'AWAY_DNB';
   
   const legProb = safeParseFloat(leg.prob, 50);
   const legOdds = safeParseFloat(leg.odds, 1.5);
@@ -79,6 +80,7 @@ function evaluateLegAutonomousStatus(leg, match) {
     drawProb,
     isStraightPick,
     isProtectedDC,
+    isDnb,
     isDrawVulnerable,
     ev,
     badge,
@@ -1095,7 +1097,7 @@ export default function AccumulatorPage({
     const p = String(leg.pick).toUpperCase();
     let newPick = 'HOME';
 
-    if (p === 'X2' || p === 'AWAY' || p === '2') {
+    if (p === 'X2' || p === 'AWAY' || p === '2' || p === 'AWAY_DNB') {
       newPick = 'AWAY';
     } else {
       newPick = 'HOME';
@@ -1690,7 +1692,8 @@ export default function AccumulatorPage({
                   <tbody className="p-2.5 sm:p-0 flex flex-col md:table-row-group md:divide-y md:divide-slate-100 space-y-2.5 md:space-y-0">
                     {displayLegs.map((leg, idx) => {
                       const b = leg.status.badge;
-                      const isDC = leg.status.isProtectedDC;
+                      const isDnb = leg.status.isDnb;
+                      const isDC = leg.status.isProtectedDC || isDnb;
                       const legKey = leg.pickId || leg.id || `${leg.home}-${leg.away}-${idx}`;
                       const isExpanded = expandedLegId === legKey;
 
@@ -1754,9 +1757,14 @@ export default function AccumulatorPage({
 
                           <div className="flex items-center justify-between text-[10px] bg-slate-50 p-1.5 rounded border border-slate-200 mb-1">
                             <div className="flex items-center gap-1">
-                              <span className="font-bold text-slate-800 bg-white px-1.5 py-0.5 rounded border border-slate-200">
+                                <span className="font-bold text-slate-800 bg-white px-1.5 py-0.5 rounded border border-slate-200">
                                 {leg.market}
                               </span>
+                              {isDnb && (
+                                <span className="text-[9px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1 py-0.2 rounded" title="Draw-No-Bet: your stake is refunded if the match ends in a draw">
+                                  🛡️ Refund if Draw
+                                </span>
+                              )}
                               {isDC ? (
                                 <button
                                   type="button"
@@ -1844,6 +1852,11 @@ export default function AccumulatorPage({
                             <span className="font-bold text-slate-800 bg-slate-100 px-1.5 py-0.2 rounded text-[10.5px] border border-slate-200">
                               {leg.market}
                             </span>
+                            {isDnb && (
+                              <span className="text-[9.5px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1 py-0.2 rounded" title="Draw-No-Bet: your stake is refunded if the match ends in a draw">
+                                🛡️ Refund if Draw
+                              </span>
+                            )}
                             {isDC ? (
                               <button
                                 type="button"
@@ -1852,7 +1865,7 @@ export default function AccumulatorPage({
                                   handleConvertToOutright(leg);
                                 }}
                                 className="text-[9.5px] font-bold px-1.5 py-0.2 rounded border border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer flex items-center gap-0.5"
-                                title="Convert non-outright Double Chance pick to straight outright win"
+                                title="Convert protected (Double Chance / Draw-No-Bet) pick to straight outright win"
                               >
                                 <span>Convert to Outright</span>
                               </button>

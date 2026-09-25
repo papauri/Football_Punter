@@ -9,7 +9,8 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { engine } from '../engine.js';
-import { getMatchRiskProfile, getSlipPick, normalizePick, RISK_THRESHOLDS } from '../src/utils/riskUtils.js';
+import { getMatchRiskProfile, getMarketPick, getPickMarketLabel, isDnbPick, normalizePick, RISK_THRESHOLDS } from '../src/utils/riskUtils.js';
+import { resolveMatchOdds, resolveMatchProb } from '../src/utils/oddsUtils.js';
 
 let failures = 0;
 const results = [];
@@ -20,40 +21,57 @@ function check(name, ok, detail = '') {
 
 // ── Phase 1: risk parity between fixtures table filters and bet slip ─────────────────────────
 const live = [...(engine.matches || [])];
+const MARKET_MODES = ['STRAIGHT_1X2', 'SMART_ADAPTIVE', 'DNB', 'DOUBLE_CHANCE'];
 let parityMismatches = 0;
 let elite = 0, high = 0, lowRisk = 0, dnb = 0;
 let eliteViolations = 0, highViolations = 0, lowRiskViolations = 0, dnbViolations = 0;
-for (const m of live) {
-  // Table: evaluates the pick onAddToSlip(m, slipPick) will store
-  const tablePick = getSlipPick(m);
-  const tableProfile = getMatchRiskProfile(m, tablePick);
-  // Slip: Dashboard.handleToggleAccaPick normalises and stores the pick; AccumulatorPage re-profiles
-  const storedPick = normalizePick(tablePick);
-  const slipProfile = getMatchRiskProfile({ ...m }, storedPick);
-  if (tableProfile.tierKey !== slipProfile.tierKey || tableProfile.badge !== slipProfile.badge) parityMismatches++;
+for (const marketMode of MARKET_MODES) {
+  for (const m of live) {
+    // Table: evaluates the pick its "+ Slip" button passes for the active Market dropdown
+    const tablePick = getMarketPick(m, marketMode);
+    const tableProfile = getMatchRiskProfile(m, tablePick);
+    // Slip: Dashboard.handleToggleAccaPick normalises and stores the pick; AccumulatorPage re-profiles
+    const storedPick = normalizePick(tablePick);
+    const slipProfile = getMatchRiskProfile({ ...m }, storedPick);
+    if (tableProfile.tierKey !== slipProfile.tierKey || tableProfile.badge !== slipProfile.badge) parityMismatches++;
+    if (marketMode !== 'STRAIGHT_1X2') continue;
 
-  if (tableProfile.isElite) { // TC-01
-    elite++;
-    if (slipProfile.riskLevel !== 'LOW' || slipProfile.isTrap || slipProfile.pickProb < RISK_THRESHOLDS.ELITE_PROB) eliteViolations++;
-  }
-  if (tableProfile.isHighConfidence) { // TC-02
-    high++;
-    if (slipProfile.riskLevel !== 'LOW' || slipProfile.pickProb < RISK_THRESHOLDS.HIGH_PROB) highViolations++;
-  }
-  if (tableProfile.riskLevel === 'LOW') { // TC-03
-    lowRisk++;
-    if (slipProfile.isTrap || slipProfile.isFlaggedTrap || slipProfile.drawProb >= RISK_THRESHOLDS.HIGH_DRAW_RISK) lowRiskViolations++;
-  }
-  if (safeNum(m.prob?.draw) >= RISK_THRESHOLDS.DNB_DRAW) { // TC-04
-    dnb++;
-    if (!slipProfile.dnbAdvised) dnbViolations++;
+    if (tableProfile.isElite) { // TC-01
+      elite++;
+      if (slipProfile.riskLevel !== 'LOW' || slipProfile.isTrap || slipProfile.pickProb < RISK_THRESHOLDS.ELITE_PROB) eliteViolations++;
+    }
+    if (tableProfile.isHighConfidence) { // TC-02
+      high++;
+      if (slipProfile.riskLevel !== 'LOW' || slipProfile.pickProb < RISK_THRESHOLDS.HIGH_PROB) highViolations++;
+    }
+    if (tableProfile.riskLevel === 'LOW') { // TC-03
+      lowRisk++;
+      if (slipProfile.isTrap || slipProfile.isFlaggedTrap || slipProfile.drawProb >= RISK_THRESHOLDS.HIGH_DRAW_RISK) lowRiskViolations++;
+    }
   }
 }
-check('Phase 1: table vs slip risk profile parity', parityMismatches === 0, `${live.length} live fixtures, ${parityMismatches} mismatches`);
+// TC-04: Market = DNB → every DNB-advised fixture is stored as a DNB pick with refund pricing
+for (const m of live) {
+  if (safeNum(m.prob?.draw) < RISK_THRESHOLDS.DNB_DRAW) continue;
+  dnb++;
+  const pick = normalizePick(getMarketPick(m, 'DNB'));
+  const fav = safeNum(m.prob?.home) >= safeNum(m.prob?.away) ? 'HOME' : 'AWAY';
+  const dnbOdds = resolveMatchOdds(m, pick);
+  const winOdds = resolveMatchOdds(m, fav);
+  const profile = getMatchRiskProfile(m, pick);
+  const ok = isDnbPick(pick) && pick.startsWith(fav) && dnbOdds > 1.0 && dnbOdds <= winOdds &&
+    getPickMarketLabel(pick).includes('Draw No Bet') && profile.dnbAdvised && !profile.isDrawVulnerable &&
+    (profile.tierKey === 'PROTECTED' || profile.tierKey === 'DNB' || profile.riskLevel === 'HIGH');
+  if (!ok) dnbViolations++;
+}
+check('Phase 1: table vs slip risk profile parity (all 4 market modes)', parityMismatches === 0, `${live.length} live fixtures × ${MARKET_MODES.length} modes, ${parityMismatches} mismatches`);
 check('TC-01 Elite filter → Elite/Low Risk on slip', eliteViolations === 0, `${elite} elite, ${eliteViolations} violations`);
 check('TC-02 High Confidence filter → Low Risk on slip', highViolations === 0, `${high} high, ${highViolations} violations`);
 check('TC-03 Low Risk filter → zero trap alerts on slip', lowRiskViolations === 0, `${lowRisk} low risk, ${lowRiskViolations} violations`);
-check('TC-04 Draw ≥24% → DNB advised on slip', dnbViolations === 0, `${dnb} DNB-eligible, ${dnbViolations} violations`);
+check('TC-04 DNB market → slip auto-selects DNB with refund odds', dnbViolations === 0, `${dnb} DNB-eligible, ${dnbViolations} violations`);
+const dnbSynth = { prob: { home: 50, draw: 28, away: 22 }, odds: { home: 2.0, draw: 3.4, away: 4.0 } };
+check('DNB odds = O_win × (O_draw − 1) / O_draw', resolveMatchOdds(dnbSynth, 'HOME_DNB') === 1.41, `got ${resolveMatchOdds(dnbSynth, 'HOME_DNB')}`);
+check('DNB prob = P(win | no draw)', resolveMatchProb(dnbSynth, 'HOME_DNB') === 69, `got ${resolveMatchProb(dnbSynth, 'HOME_DNB')}`);
 
 // Taxonomy spot-checks on synthetic fixtures
 const synth = (home, draw, away, extra = {}) => ({ home: 'A', away: 'B', league: 'Premier League', prob: { home, draw, away }, confidence: extra.confidence ?? Math.max(home, away), ...extra });
