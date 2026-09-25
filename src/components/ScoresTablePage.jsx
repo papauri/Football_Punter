@@ -782,10 +782,15 @@ export default function ScoresTablePage({
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(m); }}
-                              className="px-1.5 py-0.5 rounded text-[10px] font-bold border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors inline-flex items-center gap-0.5"
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors inline-flex items-center gap-0.5 ${
+                                m.isLive
+                                  ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
+                                  : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+                              }`}
+                              title={m.isLive ? "Live Match Tactical AI Intelligence" : "Match Tactical AI Analysis"}
                             >
-                              <Play className="w-2.5 h-2.5 fill-indigo-600 text-indigo-600" />
-                              <span>Live</span>
+                              <Brain className={`w-2.5 h-2.5 ${m.isLive ? 'text-white' : 'text-indigo-600'}`} />
+                              <span>{m.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
                             </button>
                             <button
                               type="button"
@@ -872,11 +877,6 @@ export default function ScoresTablePage({
                           {dt.day && (relativeText.startsWith('Today') || relativeText.startsWith('Tomorrow')) && (
                             <span className="text-[9.5px] text-slate-400 pl-4 font-medium leading-tight">
                               {dt.day}, {dt.date}
-                            </span>
-                          )}
-                          {m.broadcast && (
-                            <span className="text-[8.5px] text-indigo-700 font-semibold pl-4 pt-0.5 truncate max-w-[130px] leading-tight" title={`Broadcast: ${m.broadcast}`}>
-                              📺 {m.broadcast.split(',')[0]}
                             </span>
                           )}
                         </div>
@@ -968,10 +968,10 @@ export default function ScoresTablePage({
                                 ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
                                 : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
                             }`}
-                            title={m.isLive ? "Watch Match LIVE NOW in Iframe" : "Watch Match Live & In-Play Radar Simulator"}
+                            title={m.isLive ? "Live Match Tactical AI Intelligence" : "Match Tactical AI Analysis"}
                           >
-                            <Play className={`w-2.5 h-2.5 ${m.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
-                            <span>{m.isLive ? 'Live' : 'Watch'}</span>
+                            <Brain className={`w-2.5 h-2.5 ${m.isLive ? 'text-white' : 'text-indigo-600'}`} />
+                            <span>{m.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
                           </button>
 
                           <button

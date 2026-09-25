@@ -836,10 +836,15 @@ export default function BinaryPicksPage({
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(p.match); }}
-                              className="px-1.5 py-0.5 rounded text-[10px] font-bold border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors inline-flex items-center gap-0.5"
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors inline-flex items-center gap-0.5 ${
+                                p.isLive
+                                  ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
+                                  : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+                              }`}
+                              title={p.isLive ? "Live Match Tactical AI Intelligence" : "Match Tactical AI Analysis"}
                             >
-                              <Play className="w-2.5 h-2.5 fill-indigo-600 text-indigo-600" />
-                              <span>Live</span>
+                              <Brain className={`w-2.5 h-2.5 ${p.isLive ? 'text-white' : 'text-indigo-600'}`} />
+                              <span>{p.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
                             </button>
                             <button
                               type="button"
@@ -917,11 +922,6 @@ export default function BinaryPicksPage({
                               {p.dt.day}, {p.dt.date}
                             </span>
                           )}
-                          {p.broadcast && (
-                            <span className="text-[8.5px] text-indigo-700 font-semibold pl-4 pt-0.5 truncate max-w-[130px] leading-tight" title={`Broadcast: ${p.broadcast}`}>
-                              📺 {p.broadcast.split(',')[0]}
-                            </span>
-                          )}
                         </div>
                       </td>
 
@@ -946,10 +946,10 @@ export default function BinaryPicksPage({
                               type="button"
                               onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(p.match); }}
                               className="inline-flex items-center gap-0.5 text-[8.5px] font-extrabold bg-rose-600 hover:bg-rose-700 text-white px-1.5 py-0.2 rounded-full shadow-xs animate-pulse cursor-pointer shrink-0"
-                              title="Match is LIVE NOW! Click to Watch Stream"
+                              title="Match is LIVE NOW! Click for Live Tactical AI Analysis"
                             >
-                              <Play className="w-1.5 h-1.5 fill-white text-white" />
-                              <span>Live</span>
+                              <Brain className="w-1.5 h-1.5 text-white" />
+                              <span>Live Intel</span>
                             </button>
                           )}
                         </div>
@@ -1019,13 +1019,13 @@ export default function BinaryPicksPage({
                             onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(p.match); }}
                             className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer inline-flex items-center gap-0.5 ${
                               p.isLive
-                                ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-xs animate-pulse'
+                                ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-xs animate-pulse font-extrabold'
                                 : 'border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700'
                             }`}
-                            title="Watch Match Live & In-Play Radar Simulator"
+                            title={p.isLive ? "Live Match Tactical AI Intelligence" : "Match Tactical AI Analysis"}
                           >
-                            <Play className={`w-2.5 h-2.5 ${p.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
-                            <span>{p.isLive ? 'Live' : 'Watch'}</span>
+                            <Brain className={`w-2.5 h-2.5 ${p.isLive ? 'text-white' : 'text-indigo-600'}`} />
+                            <span>{p.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
                           </button>
 
                           <button

@@ -2027,9 +2027,10 @@ export default function FixturesTablePage({
                                       ? 'bg-rose-600 text-white border-rose-600 animate-pulse font-extrabold'
                                       : 'text-indigo-700 bg-indigo-50 border-indigo-200'
                                   }`}
+                                  title={(leg.match?.isLive || leg.isLive) ? "Live Tactical AI Analysis" : "Tactical AI Match Intelligence"}
                                 >
-                                  <Play className="w-2.5 h-2.5 fill-current" />
-                                  <span>Watch</span>
+                                  <Brain className="w-2.5 h-2.5" />
+                                  <span>{(leg.match?.isLive || leg.isLive) ? 'Live Intel' : 'Tactical Intel'}</span>
                                 </button>
                                 {inSlip ? (
                                   <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
@@ -2077,12 +2078,6 @@ export default function FixturesTablePage({
                           {/* League */}
                           <td className="hidden md:table-cell py-1.5 px-2 text-slate-500 text-[10.5px] truncate max-w-[140px]">
                             <div>{leg.league}</div>
-                            {(leg.broadcast || leg.match?.broadcast) && (
-                              <div className="text-[9.5px] text-indigo-600 font-medium truncate flex items-center gap-1 mt-0.5" title={leg.broadcast || leg.match?.broadcast}>
-                                <Tv className="w-2.5 h-2.5 shrink-0" />
-                                <span>{(leg.broadcast || leg.match?.broadcast).split(',')[0]}</span>
-                              </div>
-                            )}
                           </td>
 
                           {/* Kickoff stating Day and Time */}
@@ -2201,10 +2196,10 @@ export default function FixturesTablePage({
                                     ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 animate-pulse font-extrabold'
                                     : 'text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border-indigo-200'
                                 }`}
-                                title={(leg.match?.isLive || leg.isLive) ? "Watch Match LIVE NOW in Iframe" : "Watch live in iframe player"}
+                                title={(leg.match?.isLive || leg.isLive) ? "Live Match Tactical AI Intelligence" : "Match Tactical AI Analysis"}
                               >
-                                <Play className={`w-2.5 h-2.5 ${(leg.match?.isLive || leg.isLive) ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
-                                <span>{(leg.match?.isLive || leg.isLive) ? 'Watch Now' : 'Watch'}</span>
+                                <Brain className={`w-2.5 h-2.5 ${(leg.match?.isLive || leg.isLive) ? 'text-white' : 'text-indigo-600'}`} />
+                                <span>{(leg.match?.isLive || leg.isLive) ? 'Live Analysis' : 'Tactical Intel'}</span>
                               </button>
 
                               {inSlip ? (
@@ -3236,11 +3231,6 @@ export default function FixturesTablePage({
                               <span className="text-[9.5px] text-slate-400">
                                 {m.league}
                               </span>
-                              {m.broadcast && (
-                                <span className="text-[8.5px] text-indigo-700 font-semibold bg-indigo-50 border border-indigo-200 px-1 rounded flex items-center gap-0.5">
-                                  📺 {m.broadcast.split(',')[0]}
-                                </span>
-                              )}
                             </div>
                             <ConfidenceGauge confidence={conf} size="sm" />
                           </div>
@@ -3301,10 +3291,10 @@ export default function FixturesTablePage({
                                     ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
                                     : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
                                 }`}
-                                title={m.isLive ? "Watch Match LIVE NOW in Iframe" : "Watch Live in Iframe Player"}
+                                title={m.isLive ? "Open Live Match Intelligence & Tactical AI Analysis" : "Open Match Intelligence & Tactical AI Analysis"}
                               >
-                                <Play className={`w-2 h-2 ${m.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
-                                <span>{m.isLive ? 'Watch Now' : 'Watch'}</span>
+                                <Brain className={`w-2 h-2 ${m.isLive ? 'text-white' : 'text-indigo-600'}`} />
+                                <span>{m.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
                               </button>
                               <button
                                 onClick={(e) => {
@@ -3364,9 +3354,6 @@ export default function FixturesTablePage({
                                 <span>{countdown.label}</span>
                               </span>
                             ) : null}
-                            {m.broadcast && (
-                              <Tv className="w-2.5 h-2.5 text-indigo-500 shrink-0" title={`Broadcast: ${m.broadcast}`} />
-                            )}
                           </div>
                         </td>
 
@@ -3381,10 +3368,10 @@ export default function FixturesTablePage({
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(m); }}
                                 className="inline-flex items-center gap-0.5 text-[8.5px] font-extrabold bg-rose-600 hover:bg-rose-700 text-white px-1.5 py-0.2 rounded-full shadow-xs animate-pulse cursor-pointer shrink-0"
-                                title="Match is LIVE NOW! Click to Watch Stream"
+                                title="Match is LIVE NOW! Click for Live Tactical AI Analysis"
                               >
-                                <Play className="w-1.5 h-1.5 fill-white text-white" />
-                                <span>Watch</span>
+                                <Brain className="w-1.5 h-1.5 text-white" />
+                                <span>Live Intel</span>
                               </button>
                             )}
                             {isUnanimous ? (
@@ -3487,7 +3474,7 @@ export default function FixturesTablePage({
                         {/* Actions */}
                         <td className="hidden md:table-cell py-1.5 px-2 text-center whitespace-nowrap">
                           <div className="flex items-center justify-center gap-1">
-                            {/* Watch Live in Iframe Player */}
+                            {/* Tactical AI Analysis Modal */}
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(m); }}
@@ -3496,10 +3483,10 @@ export default function FixturesTablePage({
                                   ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 animate-pulse font-extrabold'
                                   : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
                               }`}
-                              title={m.isLive ? "Watch Match LIVE NOW in Iframe" : "Watch Match Live"}
+                              title={m.isLive ? "Live Match Intelligence & In-Play Momentum" : "Pre-Match Tactical AI Analysis"}
                             >
-                              <Play className={`w-2.5 h-2.5 ${m.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
-                              <span>{m.isLive ? 'Watch Now' : 'Watch'}</span>
+                              <Brain className={`w-2.5 h-2.5 ${m.isLive ? 'text-white' : 'text-indigo-600'}`} />
+                              <span>{m.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
                             </button>
 
                             {/* Deep Analysis Page */}

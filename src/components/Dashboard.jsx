@@ -1063,7 +1063,7 @@ export default function Dashboard() {
           onClose={() => setShowStrategyProof(false)}
         />
 
-        {/* Live Match Streaming & Pitch Simulator Modal */}
+        {/* Live Tactical Intelligence & AI Analysis Modal */}
         <LiveMatchPlayerModal
           match={activePlayerMatch}
           isOpen={Boolean(activePlayerMatch)}

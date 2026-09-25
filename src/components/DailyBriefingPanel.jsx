@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Zap, Clock, Lock, CheckCircle2, ChevronDown, ChevronUp,
-  Target, Award, Shield, Plus, Check, Globe, Play, Tv
+  Target, Award, Shield, Plus, Check, Globe, Play, Brain
 } from 'lucide-react';
 import { safeParseFloat, safeToFixed, formatKellyStake, formatSmartMarket } from '../utils/numberUtils';
 import { isTrapMatch } from '../utils/riskUtils';
@@ -450,9 +450,10 @@ export default function DailyBriefingPanel({
                                       ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
                                       : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
                                   }`}
+                                  title={m.isLive || item.isMatchInPlay ? "Open Live In-Play Tactical AI Analysis" : "Open Match Intelligence & Tactical AI Analysis"}
                                 >
-                                  <Play className={`w-2.5 h-2.5 ${m.isLive || item.isMatchInPlay ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
-                                  <span>{m.isLive || item.isMatchInPlay ? 'Live Stream & In-Play Advisor' : 'Watch'}</span>
+                                  <Brain className={`w-2.5 h-2.5 ${m.isLive || item.isMatchInPlay ? 'text-white' : 'text-indigo-600'}`} />
+                                  <span>{m.isLive || item.isMatchInPlay ? '⚡ Live Analysis' : 'Tactical Intel'}</span>
                                 </button>
 
                                 {onAddToSlip && !isPass ? (
@@ -642,10 +643,10 @@ export default function DailyBriefingPanel({
                                     ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
                                     : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
                                 }`}
-                                title={m.isLive || item.isMatchInPlay ? "Watch Match LIVE NOW in Iframe & View Advisor" : "Watch Match Live & In-Play Radar Simulator"}
+                                title={m.isLive || item.isMatchInPlay ? "Open Live In-Play Tactical AI Analysis" : "Open Match Intelligence & Tactical AI Analysis"}
                               >
-                                <Play className={`w-2.5 h-2.5 ${m.isLive || item.isMatchInPlay ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
-                                <span>{m.isLive || item.isMatchInPlay ? 'Live Stream' : 'Watch'}</span>
+                                <Brain className={`w-2.5 h-2.5 ${m.isLive || item.isMatchInPlay ? 'text-white' : 'text-indigo-600'}`} />
+                                <span>{m.isLive || item.isMatchInPlay ? '⚡ Live Analysis' : 'Tactical Intel'}</span>
                               </button>
 
                               {onAddToSlip && !isPass ? (
@@ -698,10 +699,10 @@ export default function DailyBriefingPanel({
                                     <button
                                       type="button"
                                       onClick={() => onOpenWatchLive && onOpenWatchLive(m)}
-                                      className="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[10.5px] font-bold flex items-center gap-1 cursor-pointer shadow-xs"
+                                      className="px-2 py-0.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-[10.5px] font-bold flex items-center gap-1 cursor-pointer shadow-xs"
                                     >
-                                      <Play className="w-3 h-3 fill-white" />
-                                      <span>Stream Straight from Sportzx ↗</span>
+                                      <Brain className="w-3 h-3 text-white" />
+                                      <span>Open Tactical AI Analysis ↗</span>
                                     </button>
                                     <span className="text-[10px] font-mono text-slate-400">
                                       ID: {m.id}
