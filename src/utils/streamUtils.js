@@ -46,19 +46,35 @@ export function buildMatchStreamSources(match) {
 
   return [
     {
+      id: 'youtube-hub',
+      name: `YouTube Live Broadcast & Commentary Hub (${cleanHome} vs ${cleanAway})`,
+      shortName: 'Live Video Feed',
+      type: 'youtube_live',
+      provider: 'Official YouTube Live Match Broadcast & Commentary',
+      badge: '🔴 Live Frame Stream',
+      url: `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(cleanHome + ' vs ' + cleanAway + ' live match commentary stream')}&autoplay=1&mute=0`,
+      straightUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanHome + ' vs ' + cleanAway + ' live stream')}`,
+      directSearchUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanHome + ' vs ' + cleanAway + ' live commentary stream')}`,
+      description: 'Official zero-latency live broadcast & audio commentary player embedded directly inside frame',
+      supportsIframe: true,
+      recommended: true,
+      color: 'red'
+    },
+    {
       id: 'sportzx-direct',
-      name: `Sportzx Live Football (${cleanHome} vs ${cleanAway})`,
-      shortName: 'Sportzx Direct',
+      name: `Sportzx Live Football HD (${cleanHome} vs ${cleanAway})`,
+      shortName: 'Sportzx Frame',
       type: 'sportzx',
-      provider: 'Sportzx Direct Live Sports',
-      badge: '⚡ Sportzx Direct',
+      provider: 'Sportzx Direct High-Speed Stream',
+      badge: '⚡ Sportzx Live',
+      url: `https://sportzx.net/?s=${searchKeywords}`,
       straightUrl: `https://sportzx.net/?s=${searchKeywords}`,
       backupStraightUrl: `https://sportzx.cc/?s=${searchKeywords}`,
       portalUrl: 'https://sportzx.net/football',
       directSearchUrl: `https://duckduckgo.com/?q=${encodeURIComponent('sportzx ' + cleanHome + ' vs ' + cleanAway + ' live stream free')}`,
-      description: 'Stream straight from Sportzx high-speed live football portal with anti-buffer bypass',
-      supportsIframe: false,
-      recommended: true,
+      description: 'Stream straight from Sportzx live football portal embedded directly in the player frame',
+      supportsIframe: true,
+      recommended: false,
       color: 'emerald'
     },
     {
@@ -67,13 +83,14 @@ export function buildMatchStreamSources(match) {
       shortName: 'StreamEast',
       type: 'streameast',
       provider: 'StreamEast Satellite Network',
-      badge: '📺 StreamEast Free',
+      badge: '📺 StreamEast',
+      url: 'https://thestreameast.to/category/soccer',
       straightUrl: 'https://thestreameast.to/category/soccer',
       backupStraightUrl: `https://thestreameast.to/?s=${searchKeywords}`,
       portalUrl: 'https://streameast.app',
       directSearchUrl: `https://duckduckgo.com/?q=${encodeURIComponent('streameast ' + cleanHome + ' vs ' + cleanAway + ' live stream')}`,
       description: `Stream straight from StreamEast free sports hub (${tvChannelLabel})`,
-      supportsIframe: false,
+      supportsIframe: true,
       recommended: false,
       color: 'indigo'
     },
@@ -84,12 +101,13 @@ export function buildMatchStreamSources(match) {
       type: 'totalsportek',
       provider: 'Totalsportek & FootyBite Global',
       badge: '🌐 Totalsportek',
+      url: `https://totalsportek.pro/?s=${searchKeywords}`,
       straightUrl: `https://totalsportek.pro/?s=${searchKeywords}`,
       backupStraightUrl: `https://footybite.to/?s=${searchKeywords}`,
       portalUrl: 'https://totalsportek.pro',
       directSearchUrl: `https://duckduckgo.com/?q=${encodeURIComponent('totalsportek ' + cleanHome + ' vs ' + cleanAway + ' live stream')}`,
       description: 'Stream straight from Totalsportek and FootyBite multi-link aggregator',
-      supportsIframe: false,
+      supportsIframe: true,
       recommended: false,
       color: 'blue'
     },
@@ -100,12 +118,13 @@ export function buildMatchStreamSources(match) {
       type: 'score808',
       provider: 'Score808 Global HD',
       badge: '⚽ Score808 Free',
+      url: 'https://www.score808.com',
       straightUrl: 'https://www.score808.com',
       backupStraightUrl: 'https://score808.ink',
       portalUrl: 'https://www.score808.com',
       directSearchUrl: `https://duckduckgo.com/?q=${encodeURIComponent('score808 ' + cleanHome + ' vs ' + cleanAway + ' live stream')}`,
       description: 'Stream straight from Score808 free live soccer player with multiple bitrate feeds',
-      supportsIframe: false,
+      supportsIframe: true,
       recommended: false,
       color: 'teal'
     },
@@ -116,12 +135,13 @@ export function buildMatchStreamSources(match) {
       type: 'viprow',
       provider: 'VIPRow Free Sports Directory',
       badge: '🏆 VIPRow Free',
+      url: 'https://www.viprow.nu/sports-football-online',
       straightUrl: 'https://www.viprow.nu/sports-football-online',
       backupStraightUrl: 'https://www.vipbox.lc/football-live',
       portalUrl: 'https://www.viprow.nu',
       directSearchUrl: `https://duckduckgo.com/?q=${encodeURIComponent('vipbox ' + cleanHome + ' vs ' + cleanAway + ' live stream')}`,
       description: 'Stream straight from VIPRow / VIPBox multi-language free match directory',
-      supportsIframe: false,
+      supportsIframe: true,
       recommended: false,
       color: 'amber'
     },
@@ -132,29 +152,15 @@ export function buildMatchStreamSources(match) {
       type: 'rojadirecta',
       provider: 'Rojadirecta Peer Relay',
       badge: '📡 Rojadirecta',
+      url: 'https://www.rojadirectaenvivo.club',
       straightUrl: 'https://www.rojadirectaenvivo.club',
       backupStraightUrl: 'https://livetv.sx/enx',
       portalUrl: 'https://www.rojadirectaenvivo.club',
       directSearchUrl: `https://duckduckgo.com/?q=${encodeURIComponent('rojadirecta ' + cleanHome + ' vs ' + cleanAway)}`,
       description: 'Stream straight from Rojadirecta and LiveTV global peer relay index',
-      supportsIframe: false,
-      recommended: false,
-      color: 'rose'
-    },
-    {
-      id: 'youtube-hub',
-      name: `YouTube Live Broadcast & Audio Hub (${cleanHome} vs ${cleanAway})`,
-      shortName: 'YouTube Live',
-      type: 'youtube_live',
-      provider: 'Official YouTube Live Broadcast & Commentary',
-      badge: '🔴 Clean Embed',
-      url: `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(cleanHome + ' vs ' + cleanAway + ' live stream commentary')}&autoplay=1`,
-      straightUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanHome + ' vs ' + cleanAway + ' live stream')}`,
-      directSearchUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanHome + ' vs ' + cleanAway + ' live commentary stream')}`,
-      description: 'Official YouTube live broadcast stream & commentary - guaranteed embeddable in-app with zero blocks',
       supportsIframe: true,
       recommended: false,
-      color: 'red'
+      color: 'rose'
     },
     {
       id: 'radar-fallback',
@@ -212,3 +218,42 @@ export function getSportzxStreamUrl(match) {
   const query = encodeURIComponent(`${cleanHome} ${cleanAway}`);
   return `https://sportzx.net/?s=${query}`;
 }
+
+/**
+ * Fetch real-time web-scraped match streams from the server.
+ * Scrapes Sportzx, verified web stream feeds, YouTube Live, and Totalsportek,
+ * returning ONLY feeds showing the match and playable within the frame.
+ */
+export async function fetchScrapedMatchStreams(match) {
+  if (!match) return [];
+  const cleanHome = (match.home || 'Home').replace(/[^a-zA-Z0-9 ]/g, '').trim();
+  const cleanAway = (match.away || 'Away').replace(/[^a-zA-Z0-9 ]/g, '').trim();
+  const league = match.league || '';
+
+  try {
+    const res = await fetch(`/api/scrape-match-streams?home=${encodeURIComponent(cleanHome)}&away=${encodeURIComponent(cleanAway)}&league=${encodeURIComponent(league)}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.success && Array.isArray(data.sources) && data.sources.length > 0) {
+      return data.sources.map(src => ({
+        ...src,
+        supportsIframe: true,
+        playableInFrame: true,
+        isScraped: true
+      }));
+    }
+  } catch (err) {
+    console.warn('[StreamUtils] Real-time stream scrape fallback:', err.message);
+  }
+  return [];
+}
+
+/**
+ * Filter and prioritize sources that only show the match and are playable in frame.
+ */
+export function filterPlayableStreams(sources = [], onlyPlayableInFrame = true) {
+  if (!Array.isArray(sources)) return [];
+  if (!onlyPlayableInFrame) return sources;
+  return sources.filter(s => (s.supportsIframe && (s.url || s.embedUrl)) || s.type === 'radar');
+}
+

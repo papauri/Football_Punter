@@ -2478,27 +2478,41 @@ class SoccerEngine {
     const newsImpact = `${homeName}: ${homeNarrative.news} | ${awayName}: ${awayNarrative.news}`;
     const conclusion = `${homeName}: ${homeNarrative.news} (${homeNarrative.motivation}) vs ${awayName}: ${awayNarrative.news} (${awayNarrative.rivalry}). Form-adjusted probability stands at Home Win ${dcProbs.home.toFixed(1)}%, Draw ${dcProbs.draw.toFixed(1)}%, Away Win ${dcProbs.away.toFixed(1)}% (Projected: ${dcProbs.mostLikelyScore}).`;
 
-    const isScheduled = raw.status === 'Scheduled' || 
-                        raw.status === 'STATUS_SCHEDULED' || 
-                        raw.status === 'Pre-Game' || 
-                        raw.status === 'STATUS_POSTPONED' || 
-                        raw.status === 'Postponed' ||
-                        (raw.timestamp && raw.timestamp > Date.now());
+    const nowMs = Date.now();
+    const kickoffMs = raw.timestamp ? Number(raw.timestamp) : (raw.utcDate ? new Date(raw.utcDate).getTime() : null);
+    const msSinceKickoff = (kickoffMs && !isNaN(kickoffMs)) ? (nowMs - kickoffMs) : null;
+    const isPastKickoff = msSinceKickoff !== null && msSinceKickoff > 0;
+    const isBeyondMatchDuration = msSinceKickoff !== null && msSinceKickoff > (130 * 60 * 1000); // > 2 hours 10 mins
 
-    const isExplicitlyCompleted = !isScheduled && (
-      raw.status === 'FT' || 
-      raw.status === 'STATUS_FULL_TIME' || 
-      raw.status === 'STATUS_FINAL' || 
-      raw.status === 'Final' || 
-      raw.status?.includes('FT') || 
-      raw.status?.includes('Full Time') || 
-      raw.status === 'FINISHED' ||
-      (raw.isCompleted === true && raw.actualScore != null)
+    const statusStr = String(raw.status || '').trim();
+    const statusLower = statusStr.toLowerCase();
+
+    const isExplicitlyCompleted = (
+      statusStr === 'FT' || 
+      statusStr === 'STATUS_FULL_TIME' || 
+      statusStr === 'STATUS_FINAL' || 
+      statusStr === 'Final' || 
+      statusStr.includes('FT') || 
+      statusStr.includes('Full Time') || 
+      statusStr === 'FINISHED' ||
+      (raw.isCompleted === true && raw.actualScore != null) ||
+      (isBeyondMatchDuration && !statusLower.includes('pen') && !statusLower.includes('et') && !statusLower.includes('extra'))
+    );
+
+    const isScheduled = !isExplicitlyCompleted && (
+      statusStr === 'Scheduled' || 
+      statusStr === 'STATUS_SCHEDULED' || 
+      statusStr === 'Pre-Game' || 
+      statusStr === 'STATUS_POSTPONED' || 
+      statusStr === 'Postponed' ||
+      (kickoffMs && kickoffMs > nowMs)
     );
 
     const isCompleted = Boolean(isExplicitlyCompleted);
-    const statusLower = String(raw.status || '').toLowerCase();
+
+    // A match can ONLY be Live if within the 0 to 130 minutes window or explicitly verified with a live clock
     const isLive = !isCompleted && !isScheduled && (
+      (isPastKickoff && !isBeyondMatchDuration) ||
       raw.isLive === true ||
       statusLower.includes('live') ||
       statusLower.includes('in progress') ||
@@ -2506,11 +2520,11 @@ class SoccerEngine {
       statusLower === 'ht' ||
       statusLower === '1h' ||
       statusLower === '2h' ||
-      /^\d+['’]/.test(raw.status || '') ||
+      /^\d+['’]/.test(statusStr) ||
       (raw.clock != null && raw.clock !== '')
-    );
+    ) && !isBeyondMatchDuration;
 
-    const liveMinute = isLive ? (raw.liveMinute || raw.clock || (statusLower.includes('ht') ? 'HT' : (raw.status || "45'"))) : null;
+    const liveMinute = isLive ? (raw.liveMinute || raw.clock || (statusLower.includes('ht') ? 'HT' : (statusStr || "45'"))) : null;
     const liveHomeScore = isLive ? (raw.liveHomeScore ?? (raw.goals?.home ?? raw.homeScore ?? 0)) : null;
     const liveAwayScore = isLive ? (raw.liveAwayScore ?? (raw.goals?.away ?? raw.awayScore ?? 0)) : null;
     const inPlayPrediction = isLive
@@ -2612,7 +2626,22 @@ class SoccerEngine {
       const raw = JSON.parse(fs.readFileSync(filePath, 'utf8'));
       if (Array.isArray(raw?.matches) && raw.matches.length > 0) {
         // ALWAYS dynamically analyze fresh from mathematical model - zero pre-analyzed predictions stored
-        this.matches = raw.matches.map(m => this.analyzeRawFixture(m));
+        const analyzed = raw.matches.map(m => this.analyzeRawFixture(m));
+        
+        // Separate upcoming/live vs completed matches
+        const activeMatches = [];
+        const newlyCompleted = [];
+
+        for (const m of analyzed) {
+          if (m.isCompleted) {
+            newlyCompleted.push(m);
+          } else {
+            activeMatches.push(m);
+          }
+        }
+
+        this.matches = activeMatches;
+
         if (Array.isArray(raw.yesterdayMatches)) {
           const yesterdayDate = new Date();
           yesterdayDate.setUTCDate(yesterdayDate.getUTCDate() - 1);
@@ -2624,10 +2653,20 @@ class SoccerEngine {
             })
             .map(m => this.analyzeRawFixture(m));
         }
-        if (Array.isArray(raw.todayCompletedMatches)) {
-          this.todayCompletedMatches = raw.todayCompletedMatches.map(m => this.analyzeRawFixture(m));
-        }
-        this.log('FixturesCache', `Dynamically calculated predictions for ${this.matches.length} fetched fixtures on boot.`);
+
+        const existingCompleted = Array.isArray(raw.todayCompletedMatches)
+          ? raw.todayCompletedMatches.map(m => this.analyzeRawFixture(m))
+          : [];
+        
+        // Merge completed without duplicates
+        const completedMap = new Map();
+        [...existingCompleted, ...newlyCompleted].forEach(m => {
+          const key = m.id || `${m.home}-${m.away}`;
+          completedMap.set(key, m);
+        });
+
+        this.todayCompletedMatches = Array.from(completedMap.values());
+        this.log('FixturesCache', `Dynamically calculated predictions for ${this.matches.length} active fixtures and ${this.todayCompletedMatches.length} completed matches on boot.`);
       }
     } catch (err) {
       console.warn('[FixturesCache] Notice loading fixtures cache:', err.message);
