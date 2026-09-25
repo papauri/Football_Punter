@@ -1506,6 +1506,10 @@ export default function FixturesTablePage({
   };
 
   const formatMatchKickoff = (m) => {
+    const sLower = String(m.status || '').toLowerCase();
+    if (sLower.includes('postpone')) return 'Postponed';
+    if (sLower.includes('cancel')) return 'Canceled';
+    if (sLower.includes('suspend') || sLower.includes('delay')) return 'Delayed';
     if (m.status === 'LIVE' || m.status === 'IN_PLAY') return 'LIVE';
     if (m.status === 'FT' || m.status === 'FINISHED') return 'FT';
     const timeVal = m.timestamp || m.utcDate || m.dateIso || m.date;
@@ -3206,7 +3210,19 @@ export default function FixturesTablePage({
                               <span className="font-semibold text-slate-700 font-mono text-[10px]">
                                 {formatMatchKickoff(m)}
                               </span>
-                              {m.isLive ? (
+                              {String(m.status || '').toLowerCase().includes('postpone') ? (
+                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[8.5px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                  Postponed
+                                </span>
+                              ) : String(m.status || '').toLowerCase().includes('cancel') ? (
+                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[8.5px] font-bold bg-rose-100 text-rose-800 border border-rose-300">
+                                  Canceled
+                                </span>
+                              ) : String(m.status || '').toLowerCase().includes('delay') || String(m.status || '').toLowerCase().includes('suspend') ? (
+                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[8.5px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                  Delayed
+                                </span>
+                              ) : m.isLive ? (
                                 <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse">
                                   <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
                                   LIVE {m.liveMinute ? `${m.liveMinute}'` : ''} {m.liveScore ? `(${m.liveScore.home}-${m.liveScore.away})` : ''}
@@ -3320,7 +3336,19 @@ export default function FixturesTablePage({
                             <span className="font-semibold text-slate-700">
                               {formatMatchKickoff(m)}
                             </span>
-                            {m.isLive ? (
+                            {String(m.status || '').toLowerCase().includes('postpone') ? (
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[8.5px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                Postponed
+                              </span>
+                            ) : String(m.status || '').toLowerCase().includes('cancel') ? (
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[8.5px] font-bold bg-rose-100 text-rose-800 border border-rose-300">
+                                Canceled
+                              </span>
+                            ) : String(m.status || '').toLowerCase().includes('delay') || String(m.status || '').toLowerCase().includes('suspend') ? (
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[8.5px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                Delayed
+                              </span>
+                            ) : m.isLive ? (
                               <span 
                                 className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white animate-pulse"
                                 title={`Match currently live: ${m.liveMinute || 0}' (${m.liveScore?.home ?? 0}-${m.liveScore?.away ?? 0})`}
