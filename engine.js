@@ -415,7 +415,40 @@ class SoccerEngine {
 
     this.teamDb = this.initializeTeamDatabase();
     this.customTeamManagers = {
-      'real madrid': 'José Mourinho'
+      'real madrid': 'Carlo Ancelotti',
+      'spain': 'Luis de la Fuente',
+      'france': 'Didier Deschamps',
+      'germany': 'Julian Nagelsmann',
+      'england': 'Thomas Tuchel',
+      'portugal': 'Roberto Martínez',
+      'netherlands': 'Ronald Koeman',
+      'italy': 'Luciano Spalletti',
+      'belgium': 'Domenico Tedesco',
+      'croatia': 'Zlatko Dalić',
+      'switzerland': 'Murat Yakin',
+      'austria': 'Ralf Rangnick',
+      'turkey': 'Vincenzo Montella',
+      'türkiye': 'Vincenzo Montella',
+      'norway': 'Ståle Solbakken',
+      'sweden': 'Jon Dahl Tomasson',
+      'denmark': 'Brian Riemer',
+      'scotland': 'Steve Clarke',
+      'poland': 'Michał Probierz',
+      'hungary': 'Marco Rossi',
+      'serbia': 'Dragan Stojković',
+      'ukraine': 'Serhiy Rebrov',
+      'czech republic': 'Ivan Hašek',
+      'czechia': 'Ivan Hašek',
+      'georgia': 'Willy Sagnol',
+      'romania': 'Mircea Lucescu',
+      'argentina': 'Lionel Scaloni',
+      'brazil': 'Dorival Júnior',
+      'uruguay': 'Marcelo Bielsa',
+      'colombia': 'Néstor Lorenzo',
+      'united states': 'Mauricio Pochettino',
+      'usa': 'Mauricio Pochettino',
+      'japan': 'Hajime Moriyasu',
+      'morocco': 'Walid Regragui'
     };
 
     // Quantitative Hyperparameters (Calibrated from 4,303 Match Benchmark)
@@ -725,7 +758,88 @@ class SoccerEngine {
       "Rangers": { attack: 1.75, defense: 0.85, elo: 1780, xGForm: 1.80, lineHeight: 6, counterVelocity: 6, starDependency: 6 },
       "Galatasaray": { attack: 2.00, defense: 0.80, elo: 1845, xGForm: 2.05, lineHeight: 6, counterVelocity: 7, starDependency: 7 },
       "Fenerbahce": { attack: 1.95, defense: 0.82, elo: 1840, xGForm: 2.00, lineHeight: 6, counterVelocity: 7, starDependency: 7 },
-      "Besiktas": { attack: 1.65, defense: 0.90, elo: 1765, xGForm: 1.70, lineHeight: 5, counterVelocity: 5, starDependency: 5 }
+      "Besiktas": { attack: 1.65, defense: 0.90, elo: 1765, xGForm: 1.70, lineHeight: 5, counterVelocity: 5, starDependency: 5 },
+
+      // -------------------------------------------------------------
+      // INTERNATIONAL & NATIONAL TEAMS (UEFA Nations League, Euros, World Cup)
+      // Calibrated from World Cup 2022, Euro 2024, and UEFA Nations League Divisions
+      // -------------------------------------------------------------
+      // League A / Global Elites (Tier 1: Elo 1850 - 2140)
+      "Argentina": { attack: 2.38, defense: 0.58, elo: 2140, xGForm: 2.45, lineHeight: 7, counterVelocity: 7, starDependency: 9 },
+      "Spain": { attack: 2.35, defense: 0.60, elo: 2085, xGForm: 2.40, lineHeight: 9, counterVelocity: 8, starDependency: 8 },
+      "Brazil": { attack: 2.25, defense: 0.68, elo: 2070, xGForm: 2.30, lineHeight: 7, counterVelocity: 8, starDependency: 7 },
+      "France": { attack: 2.30, defense: 0.64, elo: 2045, xGForm: 2.35, lineHeight: 7, counterVelocity: 9, starDependency: 9 },
+      "England": { attack: 2.22, defense: 0.66, elo: 2015, xGForm: 2.25, lineHeight: 7, counterVelocity: 7, starDependency: 8 },
+      "Colombia": { attack: 2.18, defense: 0.68, elo: 2010, xGForm: 2.22, lineHeight: 7, counterVelocity: 8, starDependency: 7 },
+      "Portugal": { attack: 2.20, defense: 0.68, elo: 1990, xGForm: 2.25, lineHeight: 7, counterVelocity: 8, starDependency: 7 },
+      "Germany": { attack: 2.22, defense: 0.68, elo: 1985, xGForm: 2.25, lineHeight: 8, counterVelocity: 8, starDependency: 7 },
+      "Uruguay": { attack: 2.12, defense: 0.70, elo: 1980, xGForm: 2.15, lineHeight: 8, counterVelocity: 9, starDependency: 7 },
+      "Netherlands": { attack: 2.10, defense: 0.72, elo: 1970, xGForm: 2.15, lineHeight: 7, counterVelocity: 8, starDependency: 7 },
+      "Italy": { attack: 1.88, defense: 0.72, elo: 1940, xGForm: 1.92, lineHeight: 6, counterVelocity: 7, starDependency: 6 },
+      "Belgium": { attack: 1.95, defense: 0.82, elo: 1920, xGForm: 2.00, lineHeight: 6, counterVelocity: 7, starDependency: 8 },
+      "Japan": { attack: 1.95, defense: 0.78, elo: 1920, xGForm: 2.00, lineHeight: 7, counterVelocity: 8, starDependency: 6 },
+      "Croatia": { attack: 1.85, defense: 0.78, elo: 1910, xGForm: 1.90, lineHeight: 6, counterVelocity: 6, starDependency: 7 },
+      "Morocco": { attack: 1.88, defense: 0.70, elo: 1890, xGForm: 1.92, lineHeight: 6, counterVelocity: 8, starDependency: 7 },
+      "Switzerland": { attack: 1.82, defense: 0.78, elo: 1865, xGForm: 1.85, lineHeight: 6, counterVelocity: 7, starDependency: 6 },
+      "Denmark": { attack: 1.78, defense: 0.80, elo: 1850, xGForm: 1.82, lineHeight: 6, counterVelocity: 6, starDependency: 6 },
+
+      // League B / Strong Competitors (Tier 2: Elo 1740 - 1845)
+      "Austria": { attack: 1.85, defense: 0.82, elo: 1845, xGForm: 1.88, lineHeight: 7, counterVelocity: 8, starDependency: 6 },
+      "United States": { attack: 1.78, defense: 0.86, elo: 1830, xGForm: 1.82, lineHeight: 6, counterVelocity: 7, starDependency: 6 },
+      "USA": { attack: 1.78, defense: 0.86, elo: 1830, xGForm: 1.82, lineHeight: 6, counterVelocity: 7, starDependency: 6 },
+      "Senegal": { attack: 1.78, defense: 0.80, elo: 1830, xGForm: 1.82, lineHeight: 6, counterVelocity: 7, starDependency: 7 },
+      "Turkey": { attack: 1.85, defense: 0.88, elo: 1830, xGForm: 1.90, lineHeight: 6, counterVelocity: 8, starDependency: 7 },
+      "Türkiye": { attack: 1.85, defense: 0.88, elo: 1830, xGForm: 1.90, lineHeight: 6, counterVelocity: 8, starDependency: 7 },
+      "Mexico": { attack: 1.72, defense: 0.88, elo: 1820, xGForm: 1.75, lineHeight: 6, counterVelocity: 6, starDependency: 6 },
+      "South Korea": { attack: 1.82, defense: 0.86, elo: 1820, xGForm: 1.85, lineHeight: 6, counterVelocity: 8, starDependency: 8 },
+      "Norway": { attack: 1.95, defense: 0.92, elo: 1815, xGForm: 2.00, lineHeight: 6, counterVelocity: 8, starDependency: 9 },
+      "Czech Republic": { attack: 1.72, defense: 0.85, elo: 1790, xGForm: 1.75, lineHeight: 6, counterVelocity: 6, starDependency: 6 },
+      "Czechia": { attack: 1.72, defense: 0.85, elo: 1790, xGForm: 1.75, lineHeight: 6, counterVelocity: 6, starDependency: 6 },
+      "Ukraine": { attack: 1.72, defense: 0.86, elo: 1790, xGForm: 1.75, lineHeight: 5, counterVelocity: 7, starDependency: 6 },
+      "Sweden": { attack: 1.78, defense: 0.88, elo: 1785, xGForm: 1.82, lineHeight: 6, counterVelocity: 7, starDependency: 7 },
+      "Serbia": { attack: 1.68, defense: 0.90, elo: 1780, xGForm: 1.72, lineHeight: 5, counterVelocity: 6, starDependency: 7 },
+      "Hungary": { attack: 1.68, defense: 0.88, elo: 1770, xGForm: 1.72, lineHeight: 5, counterVelocity: 7, starDependency: 7 },
+      "Poland": { attack: 1.68, defense: 0.92, elo: 1765, xGForm: 1.70, lineHeight: 5, counterVelocity: 6, starDependency: 8 },
+      "Scotland": { attack: 1.62, defense: 0.92, elo: 1750, xGForm: 1.65, lineHeight: 5, counterVelocity: 6, starDependency: 6 },
+      "Greece": { attack: 1.60, defense: 0.86, elo: 1745, xGForm: 1.62, lineHeight: 5, counterVelocity: 6, starDependency: 5 },
+      "Wales": { attack: 1.58, defense: 0.90, elo: 1740, xGForm: 1.62, lineHeight: 5, counterVelocity: 7, starDependency: 6 },
+
+      // League C / Mid-Tier Nations (Tier 3: Elo 1550 - 1735)
+      "Romania": { attack: 1.58, defense: 0.88, elo: 1735, xGForm: 1.62, lineHeight: 5, counterVelocity: 7, starDependency: 6 },
+      "Slovakia": { attack: 1.55, defense: 0.90, elo: 1725, xGForm: 1.55, lineHeight: 5, counterVelocity: 6, starDependency: 6 },
+      "Slovenia": { attack: 1.50, defense: 0.85, elo: 1720, xGForm: 1.52, lineHeight: 4, counterVelocity: 7, starDependency: 7 },
+      "Georgia": { attack: 1.55, defense: 0.92, elo: 1715, xGForm: 1.58, lineHeight: 4, counterVelocity: 9, starDependency: 8 },
+      "Albania": { attack: 1.48, defense: 0.92, elo: 1685, xGForm: 1.52, lineHeight: 5, counterVelocity: 7, starDependency: 5 },
+      "Republic of Ireland": { attack: 1.42, defense: 0.98, elo: 1670, xGForm: 1.45, lineHeight: 5, counterVelocity: 5, starDependency: 5 },
+      "Ireland": { attack: 1.42, defense: 0.98, elo: 1670, xGForm: 1.45, lineHeight: 5, counterVelocity: 5, starDependency: 5 },
+      "Iceland": { attack: 1.45, defense: 1.00, elo: 1660, xGForm: 1.48, lineHeight: 4, counterVelocity: 7, starDependency: 5 },
+      "Bosnia-Herzegovina": { attack: 1.42, defense: 1.02, elo: 1650, xGForm: 1.45, lineHeight: 5, counterVelocity: 5, starDependency: 6 },
+      "Bosnia and Herzegovina": { attack: 1.42, defense: 1.02, elo: 1650, xGForm: 1.45, lineHeight: 5, counterVelocity: 5, starDependency: 6 },
+      "Finland": { attack: 1.40, defense: 1.02, elo: 1640, xGForm: 1.42, lineHeight: 4, counterVelocity: 6, starDependency: 6 },
+      "North Macedonia": { attack: 1.40, defense: 1.02, elo: 1640, xGForm: 1.42, lineHeight: 5, counterVelocity: 6, starDependency: 5 },
+      "Israel": { attack: 1.45, defense: 1.10, elo: 1630, xGForm: 1.48, lineHeight: 5, counterVelocity: 6, starDependency: 6 },
+      "Montenegro": { attack: 1.38, defense: 1.05, elo: 1625, xGForm: 1.40, lineHeight: 4, counterVelocity: 6, starDependency: 6 },
+      "Kosovo": { attack: 1.40, defense: 1.08, elo: 1620, xGForm: 1.42, lineHeight: 5, counterVelocity: 6, starDependency: 6 },
+      "Northern Ireland": { attack: 1.30, defense: 1.02, elo: 1610, xGForm: 1.32, lineHeight: 4, counterVelocity: 5, starDependency: 5 },
+      "Bulgaria": { attack: 1.28, defense: 1.08, elo: 1590, xGForm: 1.30, lineHeight: 4, counterVelocity: 5, starDependency: 5 },
+      "Luxembourg": { attack: 1.25, defense: 1.10, elo: 1580, xGForm: 1.28, lineHeight: 4, counterVelocity: 6, starDependency: 5 },
+      "Kazakhstan": { attack: 1.25, defense: 1.15, elo: 1570, xGForm: 1.28, lineHeight: 4, counterVelocity: 6, starDependency: 5 },
+      "Armenia": { attack: 1.28, defense: 1.15, elo: 1565, xGForm: 1.30, lineHeight: 4, counterVelocity: 6, starDependency: 5 },
+      "Cyprus": { attack: 1.12, defense: 1.22, elo: 1520, xGForm: 1.15, lineHeight: 4, counterVelocity: 5, starDependency: 4 },
+      "Azerbaijan": { attack: 1.15, defense: 1.25, elo: 1510, xGForm: 1.18, lineHeight: 4, counterVelocity: 5, starDependency: 4 },
+      "Belarus": { attack: 1.12, defense: 1.22, elo: 1510, xGForm: 1.15, lineHeight: 4, counterVelocity: 5, starDependency: 4 },
+
+      // League D / Minnows (Tier 4: Elo 1150 - 1480)
+      "Estonia": { attack: 1.08, defense: 1.28, elo: 1480, xGForm: 1.10, lineHeight: 3, counterVelocity: 5, starDependency: 4 },
+      "Latvia": { attack: 1.08, defense: 1.30, elo: 1470, xGForm: 1.10, lineHeight: 3, counterVelocity: 5, starDependency: 4 },
+      "Lithuania": { attack: 1.05, defense: 1.32, elo: 1460, xGForm: 1.08, lineHeight: 3, counterVelocity: 5, starDependency: 4 },
+      "Moldova": { attack: 1.05, defense: 1.32, elo: 1450, xGForm: 1.08, lineHeight: 3, counterVelocity: 5, starDependency: 4 },
+      "Faroe Islands": { attack: 1.00, defense: 1.35, elo: 1440, xGForm: 1.02, lineHeight: 3, counterVelocity: 5, starDependency: 4 },
+      "Malta": { attack: 0.88, defense: 1.48, elo: 1350, xGForm: 0.90, lineHeight: 2, counterVelocity: 5, starDependency: 4 },
+      "Andorra": { attack: 0.82, defense: 1.52, elo: 1310, xGForm: 0.85, lineHeight: 2, counterVelocity: 4, starDependency: 3 },
+      "Gibraltar": { attack: 0.72, defense: 1.68, elo: 1240, xGForm: 0.75, lineHeight: 2, counterVelocity: 4, starDependency: 3 },
+      "Liechtenstein": { attack: 0.70, defense: 1.72, elo: 1220, xGForm: 0.72, lineHeight: 2, counterVelocity: 4, starDependency: 3 },
+      "San Marino": { attack: 0.62, defense: 1.88, elo: 1150, xGForm: 0.65, lineHeight: 2, counterVelocity: 3, starDependency: 2 }
     };
   }
 
@@ -846,6 +960,71 @@ class SoccerEngine {
         news: "Fast breakaways led by dynamic wingers, but defensive lapses against set-pieces remain an issue.",
         rivalry: "High-stakes battle where away points are critical to stave off relegation anxieties.",
         motivation: "Fighting tooth and nail for every point."
+      },
+      "Spain": {
+        news: "De la Fuente's European champions playing fluid, aggressive 4-3-3 with Yamal and Williams stretching defenses.",
+        rivalry: "Heavyweight European rivalry; asserting their crown as the undisputed world standard.",
+        motivation: "Maintaining their flawless Nations League title defense."
+      },
+      "France": {
+        news: "Mbappé leading the line with rapid transition support; defensive double-pivot providing elite structural cover.",
+        rivalry: "Pride on the line against top European rivals; looking to banish Euro semifinal disappointment.",
+        motivation: "Chasing a third major final appearance in four years."
+      },
+      "Germany": {
+        news: "Nagelsmann's vertical play driven by Musiala and Wirtz, dominating possession with aggressive counter-pressing.",
+        rivalry: "Rebuilding national momentum on home soil following impressive Euro 2024 performances.",
+        motivation: "Proving their generational tactical transition is complete."
+      },
+      "England": {
+        news: "Generational attacking depth with Bellingham, Kane, and Saka creating continuous central and wide overload.",
+        rivalry: "Fierce international test where media pressure demands dominant attacking execution.",
+        motivation: "Securing immediate promotion back to Nations League League A."
+      },
+      "Portugal": {
+        news: "Roberto Martínez deploying dynamic wide wing-backs with Bruno Fernandes pulling the creative strings.",
+        rivalry: "Continental clash with high tactical stakes across midfield transition zones.",
+        motivation: "Adding another Nations League trophy to their 2019 triumph."
+      },
+      "Netherlands": {
+        news: "Koeman's direct, vertical 3-4-3 with Van Dijk marshalling the backline and Gakpo lethal from wide positions.",
+        rivalry: "Classic European clash demanding maximum physical intensity and spatial awareness.",
+        motivation: "Establishing their status among the top European tier."
+      },
+      "Italy": {
+        news: "Spalletti instilling high-energy positional play with dynamic full-backs and aggressive central midfield pressing.",
+        rivalry: "Historic Azzurri prestige on the line against elite continental opponents.",
+        motivation: "Reclaiming European heavyweight status after Euro 2024 transition."
+      },
+      "Belgium": {
+        news: "Tedesco's modern counter-pressing system leaning on explosive young wingers and direct channel running.",
+        rivalry: "Proving their new generation can compete with the world's best.",
+        motivation: "Silencing critics with statement Nations League victories."
+      },
+      "Croatia": {
+        news: "Modrić orchestrating veteran midfield control with legendary tournament game-management and mental resilience.",
+        rivalry: "Never count out the Vatreni in high-pressure international duels.",
+        motivation: "Aiming for another Nations League Final Four appearance."
+      },
+      "Turkey": {
+        news: "Montella's electric, high-tempo squad fueled by passionate pressing and Arda Güler's creative spark.",
+        rivalry: "Euro 2024 quarterfinal momentum carries into intense Nations League clashes.",
+        motivation: "Climbing into League A among Europe's elite."
+      },
+      "Türkiye": {
+        news: "Montella's electric, high-tempo squad fueled by passionate pressing and Arda Güler's creative spark.",
+        rivalry: "Euro 2024 quarterfinal momentum carries into intense Nations League clashes.",
+        motivation: "Climbing into League A among Europe's elite."
+      },
+      "Norway": {
+        news: "Erling Haaland's lethal penalty-box conversion powered by Martin Ødegaard's pinpoint through-balls.",
+        rivalry: "Striving to break their international tournament curse with decisive Nations League results.",
+        motivation: "Pushing for historic qualification to the top division."
+      },
+      "Argentina": {
+        news: "Scaloni's world champions playing seamless collective possession anchored by Lionel Messi's visionary playmaking.",
+        rivalry: "Defending their global crown and World Cup trophy with ruthless winning mentality.",
+        motivation: "Sustaining one of the greatest dynasties in international football history."
       }
     };
 
@@ -1369,6 +1548,13 @@ class SoccerEngine {
       '2. bundesliga', 'belgian pro league', 'japanese j1 league', 'eredivisie'
     ];
 
+    const internationalLeagues = [
+      'uefa nations league', 'nations league', 'uefa european championship', 'euro 202', 'fifa world cup', 'world cup', 'qualifiers'
+    ];
+
+    if (internationalLeagues.some(il => lLower.includes(il))) {
+      return Math.round(base * 0.45); // International fixtures have lower home fortress advantage (~34 Elo)
+    }
     if (tier1Leagues.some(t => lLower.includes(t))) {
       return Math.round(base * 0.90); // e.g. ~68 if base is 75
     }
@@ -1517,8 +1703,18 @@ class SoccerEngine {
     // Scale intensity dynamically by empirical league pace & lineup modulation
     const leagueProfile = this.getLeagueProfile(options.league || options.competition || '');
     const paceFactor = leagueProfile?.paceFactor || 1.0;
+    // Check for international competition (Nations League, World Cup, Euro)
+    const isInternational = Boolean(options.league && (
+      options.league.toLowerCase().includes('nations') ||
+      options.league.toLowerCase().includes('world cup') ||
+      options.league.toLowerCase().includes('euro') ||
+      options.league.toLowerCase().includes('international')
+    ));
+    const effectiveHomeAdvantage = isInternational
+      ? Math.min(this.hyperparameters.homeAdvantage, 1.08)
+      : this.hyperparameters.homeAdvantage;
     const homeIntensity = (this.hyperparameters.homeGoalIntensity ?? 1.30) * paceFactor * lineupHomeIntensityMultiplier;
-    const lambda = Math.max(0.4, (home.attack * away.defense * (this.hyperparameters.homeAdvantage / 1.18) * homeIntensity * homeTacticalBoost * refereeMultiplierHome * h2hHomeIntensityMultiplier) + lineupOpponentHomeBoost);
+    const lambda = Math.max(0.4, (home.attack * away.defense * (effectiveHomeAdvantage / 1.18) * homeIntensity * homeTacticalBoost * refereeMultiplierHome * h2hHomeIntensityMultiplier) + lineupOpponentHomeBoost);
 
     // 2. Calculate Poisson Intensity Parameter mu (Away expected goals)
     // mu = alpha_away * beta_home * awayIntensity * awayTacticalBoost * h2hAwayIntensityMultiplier
@@ -1648,21 +1844,30 @@ class SoccerEngine {
           isMarketDivergence = true;
           marketDivergenceDetail = `Market Divergence Alert: Model leans ${rawModelFav === 'HOME' ? homeTeam : awayTeam}, but sharp market favors ${mktFav === 'HOME' ? homeTeam : awayTeam} (${mktFavOdds?.toFixed(2)} vs ${modelFavMktOdds?.toFixed(2)}). Squad news, rotation, or division strength disparity detected.`;
 
-          // Reconcile model with sharp market consensus: 60% market anchor to prevent false inverted convictions
-          calHomeP = (calHomeP * 0.40) + (marketOdds.homeProb * 0.60);
-          calAwayP = (calAwayP * 0.40) + (marketOdds.awayProb * 0.60);
-          calDrawP = (calDrawP * 0.40) + (marketOdds.drawProb * 0.60);
+          // Reconcile model with sharp market consensus: 80% market anchor to prevent false inverted convictions / traps
+          calHomeP = (calHomeP * 0.20) + (marketOdds.homeProb * 0.80);
+          calAwayP = (calAwayP * 0.20) + (marketOdds.awayProb * 0.80);
+          calDrawP = (calDrawP * 0.20) + (marketOdds.drawProb * 0.80);
 
+          const rSum = calHomeP + calAwayP + calDrawP;
+          calHomeP = (calHomeP / rSum) * 100;
+          calAwayP = (calAwayP / rSum) * 100;
+          calDrawP = (calDrawP / rSum) * 100;
+        } else {
+          // Moderate divergence: 65% market anchor
+          calHomeP = (calHomeP * 0.35) + (marketOdds.homeProb * 0.65);
+          calAwayP = (calAwayP * 0.35) + (marketOdds.awayProb * 0.65);
+          calDrawP = (calDrawP * 0.35) + (marketOdds.drawProb * 0.65);
           const rSum = calHomeP + calAwayP + calDrawP;
           calHomeP = (calHomeP / rSum) * 100;
           calAwayP = (calAwayP / rSum) * 100;
           calDrawP = (calDrawP / rSum) * 100;
         }
       } else {
-        // Model and market agree on the favorite: mild anchor (85% model, 15% market)
-        calHomeP = (calHomeP * 0.85) + (marketOdds.homeProb * 0.15);
-        calAwayP = (calAwayP * 0.85) + (marketOdds.awayProb * 0.15);
-        calDrawP = (calDrawP * 0.85) + (marketOdds.drawProb * 0.15);
+        // Model and market agree on the favorite: Bayesian prior anchor (70% market, 30% model update)
+        calHomeP = (calHomeP * 0.30) + (marketOdds.homeProb * 0.70);
+        calAwayP = (calAwayP * 0.30) + (marketOdds.awayProb * 0.70);
+        calDrawP = (calDrawP * 0.30) + (marketOdds.drawProb * 0.70);
         const rSum = calHomeP + calAwayP + calDrawP;
         calHomeP = (calHomeP / rSum) * 100;
         calAwayP = (calAwayP / rSum) * 100;
