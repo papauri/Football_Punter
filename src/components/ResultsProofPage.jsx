@@ -91,6 +91,7 @@ export default function ResultsProofPage({
   const [showLedger, setShowLedger] = useState(false);
   const [ledgerEntries, setLedgerEntries] = useState([]);
   const [ledgerLoading, setLedgerLoading] = useState(false);
+  const [ledgerSummary, setLedgerSummary] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [serverTeamMatches, setServerTeamMatches] = useState([]);
   const [isSearchingServer, setIsSearchingServer] = useState(false);
@@ -136,6 +137,7 @@ export default function ResultsProofPage({
       const data = await res.json();
       if (data.success && Array.isArray(data.ledger)) {
         setLedgerEntries(data.ledger);
+        setLedgerSummary(data.summary || null);
       }
     } catch (e) {
       // silently ignore fetch errors
@@ -1160,6 +1162,35 @@ export default function ResultsProofPage({
           <p className="px-4 py-2 text-[11px] text-slate-500 border-b border-amber-100 bg-amber-50/40">
             Every prediction below was <strong>frozen before kickoff</strong> — timestamped proof that tips were published before the result was known. Prediction fields are <strong>immutable</strong> and can never be changed once snapshotted.
           </p>
+          {ledgerSummary && ledgerSummary.all.count > 0 && (
+            <div className="px-4 py-2.5 border-b border-amber-100 flex flex-wrap gap-2 text-[11px]">
+              {[
+                { label: 'All resolved', stat: ledgerSummary.all },
+                { label: 'Actionable (excl. PASS)', stat: ledgerSummary.actionable },
+                { label: 'Confident (fav ≥60%)', stat: ledgerSummary.confident60 },
+                { label: 'With bookmaker odds', stat: ledgerSummary.withOdds },
+                { label: 'Without odds', stat: ledgerSummary.withoutOdds },
+                { label: 'Lineup-adjusted', stat: ledgerSummary.withLineup }
+              ].filter(({ stat }) => stat.count > 0).map(({ label, stat }) => (
+                <div key={label} className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white">
+                  <div className="text-slate-500">{label}</div>
+                  <div className="font-mono font-bold text-slate-900">
+                    {stat.hitRate}% <span className="font-normal text-slate-400">({stat.hits}/{stat.count})</span>
+                  </div>
+                </div>
+              ))}
+              {ledgerSummary.pending > 0 && (
+                <div className="px-2.5 py-1.5 rounded-lg border border-amber-200 bg-amber-50 text-amber-800 self-center">
+                  {ledgerSummary.pending} awaiting result
+                </div>
+              )}
+              {ledgerSummary.all.count < 200 && (
+                <div className="w-full text-slate-400">
+                  Small sample — treat hit rates as indicative until at least ~200 predictions have resolved.
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="overflow-x-auto">
             {ledgerLoading ? (

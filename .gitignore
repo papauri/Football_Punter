@@ -4,3 +4,4 @@ dist/
 ai_config.json
 fixtures_cache.json.tmp
 fixtures_cache.json.bak
+data/odds_cache/

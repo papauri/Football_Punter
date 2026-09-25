@@ -2839,6 +2839,16 @@ class SoccerEngine {
         smartMarket: m.smartMarket
           ? { pick: m.smartMarket.pick, label: m.smartMarket.pickLabel || m.smartMarket.pick }
           : null,
+        // Inputs that fed this prediction, so the forward record can show whether odds/lineups help
+        inputs: {
+          odds: m.odds && (m.odds.homeOdds || m.odds.home)
+            ? { provider: m.odds.provider || null, home: Number(m.odds.homeOdds ?? m.odds.home) || null, draw: Number(m.odds.drawOdds ?? m.odds.draw) || null, away: Number(m.odds.awayOdds ?? m.odds.away) || null }
+            : null,
+          lineup: m.lineupImpact
+            ? { status: m.lineupImpact.status, homeSquadStrength: m.lineupImpact.homeSquadStrength, awaySquadStrength: m.lineupImpact.awaySquadStrength, homeMissingStar: Boolean(m.lineupImpact.homeMissingStar), awayMissingStar: Boolean(m.lineupImpact.awayMissingStar), applied: Boolean(m.lineupAdjusted) }
+            : null
+        },
+        modelVersion: { temperature: this.hyperparameters.temperature, maxScorelineSim: this.hyperparameters.maxScorelineSim },
         isHit: null,       // resolved once FT — prediction fields are NEVER changed
         resolvedAt: null
       };
@@ -2848,27 +2858,99 @@ class SoccerEngine {
     }
 
     // Resolve any snapshotted matches that have now gone FT
-    let resolved = 0;
-    for (const [id, entry] of this.preKickoffLedger.entries()) {
-      if (entry.isHit !== null) continue; // already resolved
-      const live = (this.matches || []).find(m => String(m.id) === id) ||
-                   (this.todayCompletedMatches || []).find(m => String(m.id) === id) ||
-                   (this.yesterdayMatches || []).find(m => String(m.id) === id);
-      if (!live) continue;
-      const isFT = live.isCompleted || live.status === 'FT' || live.status?.includes('Full Time');
-      if (!isFT || live.isHit === undefined) continue;
-      entry.isHit = live.isHit ?? null;
-      entry.actualScore = live.actualScore || null;
-      entry.actualWinner = live.actualWinner || null;
-      entry.resolvedAt = new Date().toISOString();
-      resolved++;
-    }
+    const resolved = this.resolveLedgerEntries([
+      ...(this.matches || []), ...(this.todayCompletedMatches || []), ...(this.yesterdayMatches || [])
+    ]);
 
     if (newSnapshots > 0 || resolved > 0) {
       this.saveSnapshotLedger();
       if (newSnapshots > 0) this.log('SnapshotLedger', `Frozen ${newSnapshots} new pre-kickoff snapshot(s). Total ledger: ${this.preKickoffLedger.size}.`);
       if (resolved > 0) this.log('SnapshotLedger', `Resolved ${resolved} snapshot(s) with final FT result.`);
     }
+  }
+
+  // Resolve unresolved ledger entries against completed matches. The hit is computed from the
+  // final score and the frozen predictedWinner — prediction fields are never modified.
+  resolveLedgerEntries(completedPool = []) {
+    if (!this.preKickoffLedger) return 0;
+    const scoreOf = (m) => {
+      const h = m.homeScore ?? m.goals?.home ?? m.actualScore?.home;
+      const a = m.awayScore ?? m.goals?.away ?? m.actualScore?.away;
+      if (h === null || h === undefined || h === '' || a === null || a === undefined || a === '') return null;
+      return { home: Number(h), away: Number(a) };
+    };
+    const byId = new Map();
+    for (const m of completedPool) if (m && m.id != null) byId.set(String(m.id), m);
+    const norm = (s) => stripDiacritics(String(s || '')).toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    let resolved = 0;
+    for (const [id, entry] of this.preKickoffLedger.entries()) {
+      if (entry.isHit !== null) continue;
+      const kickoffDay = String(entry.kickoffUtc || '').slice(0, 10);
+      const m = byId.get(id) || completedPool.find(c => c && norm(c.home) === norm(entry.home) && norm(c.away) === norm(entry.away) &&
+        String(c.dateIso || c.utcDate || c.date || '').slice(0, 10) === kickoffDay);
+      if (!m) continue;
+      const isFT = m.isCompleted || m.status === 'FT' || m.status === 'STATUS_FULL_TIME' || String(m.status || '').includes('Full Time') || m.actualWinner;
+      const score = scoreOf(m);
+      if (!isFT || !score || Number.isNaN(score.home) || Number.isNaN(score.away)) continue;
+      const actualWinner = score.home > score.away ? 'HOME' : score.away > score.home ? 'AWAY' : 'DRAW';
+      const predicted = String(entry.predictedWinner?.pick || entry.predictedWinner || '').toUpperCase()
+        .replace(/^1$/, 'HOME').replace(/^2$/, 'AWAY').replace(/^X$/, 'DRAW');
+      entry.actualScore = `${score.home}-${score.away}`;
+      entry.actualWinner = actualWinner;
+      entry.isHit = predicted === actualWinner;
+      entry.resolvedAt = new Date().toISOString();
+      resolved++;
+    }
+    return resolved;
+  }
+
+  // Entries whose result has left the live lists (older than yesterday) are resolved from the
+  // historical corpus, then from ESPN's scoreboard for their kickoff date (once per date per 30 min).
+  async resolveStaleLedgerEntries() {
+    if (!this.preKickoffLedger) return 0;
+    const isStale = (e) => e.isHit === null && e.kickoffUtc && Date.now() - new Date(e.kickoffUtc).getTime() > 3 * 60 * 60 * 1000;
+    if (!Array.from(this.preKickoffLedger.values()).some(isStale)) return 0;
+
+    let resolved = this.resolveLedgerEntries(this.historicalMatches || []);
+    this.ledgerDateFetchedAt = this.ledgerDateFetchedAt || new Map();
+    const dates = [...new Set(Array.from(this.preKickoffLedger.values()).filter(isStale).map(e => String(e.kickoffUtc).slice(0, 10)))];
+    for (const date of dates) {
+      if (Date.now() - (this.ledgerDateFetchedAt.get(date) || 0) < 30 * 60 * 1000) continue;
+      this.ledgerDateFetchedAt.set(date, Date.now());
+      try {
+        resolved += this.resolveLedgerEntries(await this.fetchMatchesForDate(date));
+      } catch (err) {
+        this.log('SnapshotLedger_Warning', `Could not fetch results for ${date}: ${err.message}`);
+      }
+    }
+    if (resolved > 0) {
+      this.saveSnapshotLedger();
+      this.log('SnapshotLedger', `Resolved ${resolved} older snapshot(s) from historical/scoreboard results.`);
+    }
+    return resolved;
+  }
+
+  // Forward (genuinely out-of-sample) track record of frozen pre-kickoff predictions.
+  getPreKickoffLedgerSummary() {
+    const entries = this.getPreKickoffLedger();
+    const resolved = entries.filter(e => e.isHit === true || e.isHit === false);
+    const isPass = (e) => String(e.smartMarket?.pick || '').toUpperCase() === 'PASS';
+    const favProb = (e) => Math.max(parseFloat(e.prob?.home) || 0, parseFloat(e.prob?.away) || 0);
+    const rate = (list) => {
+      const hits = list.filter(e => e.isHit).length;
+      return { count: list.length, hits, hitRate: list.length ? parseFloat((hits / list.length * 100).toFixed(1)) : null };
+    };
+    return {
+      snapshots: entries.length,
+      pending: entries.length - resolved.length,
+      all: rate(resolved),
+      actionable: rate(resolved.filter(e => !isPass(e))),
+      confident60: rate(resolved.filter(e => !isPass(e) && favProb(e) >= 60)),
+      withOdds: rate(resolved.filter(e => e.inputs?.odds)),
+      withoutOdds: rate(resolved.filter(e => !e.inputs?.odds)),
+      withLineup: rate(resolved.filter(e => e.inputs?.lineup?.applied))
+    };
   }
 
   getPreKickoffLedger() {
@@ -5273,6 +5355,7 @@ class SoccerEngine {
       this.runTrainingCycle();
       this.saveFixturesToDisk();
       this.snapshotDueMatches(); // Freeze predictions for matches ≤60 min from kickoff
+      this.resolveStaleLedgerEntries().catch(() => {});
 
       // Trigger self-reflection cycle on initial load
       setTimeout(() => this.runSelfPromptingReflectionCycle(), 3000);
@@ -9891,6 +9974,7 @@ Output format: {"home": 45.5, "draw": 25.5, "away": 29.0, "reason": "Home team r
 
       // Freeze pre-kickoff snapshots for any match within 60 min of kickoff
       this.snapshotDueMatches();
+      await this.resolveStaleLedgerEntries();
       
       // 2. Concurrently execute AI Multi-Agent Swarm Arbitration Cycle
       if (this.swarmOrchestrator) {

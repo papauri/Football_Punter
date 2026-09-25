@@ -183,3 +183,17 @@ Run `npm run verify` (scripts/verify-build.mjs) to re-check everything below.
 * **TC-05**: the search "×" button only clears the search text, so the Top Leagues filter stays on (checked in code; the browser run was cut short when the tab froze).
 * **Fixed**: `Dashboard.jsx` called `safeToFixed` without importing it, so every add-to-slip click crashed the page (introduced in b4d7ed7).
 * **Live streams**: browser test showed nothing plays in-frame. The YouTube `listType=search` embed is deprecated, the "scraped" links are how-to-watch articles or subscription/DRM players (DAZN, ESPN), and Totalsportek/Score808 fetches fail. The proxy now blocks SSRF (private/loopback/metadata hosts, non-http schemes) and escapes reflected HTML. Open risk: the proxied third-party pages are served from the app's own origin, and the iframe sandbox includes `allow-scripts allow-same-origin`, so their scripts run with full app-origin privileges.
+
+## 9. Forward Record & Market Benchmark (2026-09-26)
+
+* **Pre-kickoff ledger** (existing): snapshots now record the inputs used (bookmaker odds, lineup adjustment) and the model version. Entries resolve from any completed source: live lists, the historical corpus, or ESPN's scoreboard for the kickoff date. Previously only today's and yesterday's lists were checked, so older entries never resolved. `/api/pre-kickoff-ledger` returns a `summary`, shown as a hit-rate strip on the Results page. The ledger only grows while the server is running during each match's 60-minute pre-kickoff window.
+* **Historical closing odds**: `npm run odds:ingest` backfills football-data.co.uk closing 1X2 odds onto 20,556 / 23,453 training fixtures (88%; cups, UEFA competitions and the Saudi league aren't covered) → `data/historical_odds.json`.
+* **Benchmark** (`npm run odds:backtest`, 3,593 held-out fixtures with odds):
+
+| Predictor | Hit rate | Brier | Fav ≥60% picks |
+| :--- | :--- | :--- | :--- |
+| Model only | 46.6% | 0.2108 | 425 @ 64.5% |
+| Closing odds only | 52.2% | 0.1967 | 801 @ 70.2% |
+| Current live blend (15% / 60% market) | 51.4% | 0.2037 | 402 @ 68.4% |
+
+  The best model/market blend, tuned on the other half of the test window, is **100% market**: the model adds no information beyond closing odds. Flat-stake "value" betting where the model sees an edge over closing odds returns **−10% to −13%**, worse than blindly backing every market favourite (−5.4%). The app's +EV badges and Kelly stakes are driven by this model edge, so they should be treated as negative expected value until the model beats the market out of sample.

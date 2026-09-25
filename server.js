@@ -990,7 +990,8 @@ app.get('/api/state', (req, res) => {
   app.get('/api/pre-kickoff-ledger', (req, res) => {
     try {
       const ledger = engine.getPreKickoffLedger ? engine.getPreKickoffLedger() : [];
-      res.json({ success: true, count: ledger.length, ledger });
+      const summary = engine.getPreKickoffLedgerSummary ? engine.getPreKickoffLedgerSummary() : null;
+      res.json({ success: true, count: ledger.length, ledger, summary });
     } catch (err) {
       res.status(500).json({ success: false, error: err.message });
     }

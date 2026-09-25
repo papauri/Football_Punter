@@ -21,8 +21,10 @@
       "pick": "PASS",
       "label": "Pass / Entropy Floor"
     },
-    "isHit": null,
-    "resolvedAt": null
+    "isHit": true,
+    "resolvedAt": "2026-09-25T15:44:17.015Z",
+    "actualScore": "1-1",
+    "actualWinner": "DRAW"
   },
   {
     "id": "401916365",
@@ -46,8 +48,10 @@
       "pick": "PASS",
       "label": "Pass / Entropy Floor"
     },
-    "isHit": null,
-    "resolvedAt": null
+    "isHit": false,
+    "resolvedAt": "2026-09-25T15:44:19.360Z",
+    "actualScore": "1-1",
+    "actualWinner": "DRAW"
   },
   {
     "id": "401916366",
@@ -71,7 +75,9 @@
       "pick": "PASS",
       "label": "Pass / Entropy Floor"
     },
-    "isHit": null,
-    "resolvedAt": null
+    "isHit": false,
+    "resolvedAt": "2026-09-25T15:44:19.360Z",
+    "actualScore": "1-1",
+    "actualWinner": "DRAW"
   }
 ]
