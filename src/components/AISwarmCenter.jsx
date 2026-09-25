@@ -1012,14 +1012,14 @@ export default function AISwarmCenter({
         </div>
       )}
 
-      {/* 6 Specialized Agents Cards (Collapsible to reduce clutter) */}
+      {/* Specialized Agents Cards (Collapsible to reduce clutter) */}
       <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs space-y-3">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <Cpu className="w-4 h-4 text-indigo-600" />
-            <span>The 6 Simultaneous Analytical Agents</span>
-            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 font-mono">
-              6 Active Micro-Models
+            <span>The Simultaneous Analytical Agent Fleet</span>
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 font-mono font-bold">
+              7 Active Micro-Models
             </span>
           </h2>
 
@@ -1035,7 +1035,7 @@ export default function AISwarmCenter({
         </div>
 
         {!collapsedAgents && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 text-xs">
           {/* Agent 1 */}
           <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 flex flex-col justify-between">
             <div>
@@ -1137,7 +1137,27 @@ export default function AISwarmCenter({
           </div>
 
           {/* Agent 6 */}
-          <div className="p-3 rounded-lg bg-indigo-50/50 border border-indigo-200 flex flex-col justify-between">
+          <div className="p-3 rounded-lg bg-rose-50/70 border border-rose-200 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-bold text-rose-950 flex items-center gap-1.5">
+                  <span>⏱️</span> In-Play Tactical Advisor
+                </span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 border border-rose-300 font-bold animate-pulse">
+                  REAL-TIME
+                </span>
+              </div>
+              <p className="text-[11px] text-rose-900 leading-relaxed">
+                Performs in-match divergence forensics when bets fall behind, computes live probability shifts, and suggests strategic hedge diversions.
+              </p>
+            </div>
+            <div className="mt-2 pt-1.5 border-t border-rose-200 text-[10px] text-rose-700 font-mono">
+              Domain: Live Forensics &amp; Bet Diversions
+            </div>
+          </div>
+
+          {/* Agent 7 */}
+          <div className="p-3 rounded-lg bg-indigo-50/50 border border-indigo-200 flex flex-col justify-between sm:col-span-2 lg:col-span-3 xl:col-span-2">
             <div>
               <div className="flex items-center justify-between mb-1">
                 <span className="font-bold text-indigo-950 flex items-center gap-1.5">
@@ -1148,7 +1168,7 @@ export default function AISwarmCenter({
                 </span>
               </div>
               <p className="text-[11px] text-indigo-900 leading-relaxed">
-                Synthesizes cross-agent analysis, calculates consensus ratios, and flags high-risk contrarian traps.
+                Synthesizes cross-agent analysis, calculates consensus ratios, reconciles pre-match convictions with in-play flow, and flags contrarian traps.
               </p>
             </div>
             <div className="mt-2 pt-1.5 border-t border-indigo-200 text-[10px] text-indigo-700 font-mono">

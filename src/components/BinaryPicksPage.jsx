@@ -314,6 +314,35 @@ export default function BinaryPicksPage({
     });
   }, [rawBinaryPicks, searchQuery, selectedLeague, selectedDate, convictionTier, sortField, sortDirection]);
 
+  const binaryStats = useMemo(() => {
+    if (!binaryPicks.length) {
+      return {
+        count: 0,
+        highEdgeCount: 0,
+        avgEdge: '0.0',
+        avgConf: '0.0',
+        combinedOdds: '0.00',
+        totalKellyUnits: '0.0'
+      };
+    }
+    const count = binaryPicks.length;
+    const highEdgeCount = binaryPicks.filter(p => p.edge > 5).length;
+    const sumEdge = binaryPicks.reduce((acc, p) => acc + (p.edge || 0), 0);
+    const sumConf = binaryPicks.reduce((acc, p) => acc + (p.confidence || 0), 0);
+    const sumKelly = binaryPicks.reduce((acc, p) => acc + (p.kellyUnits || 0), 0);
+    const topSlice = binaryPicks.slice(0, 4);
+    const prodOdds = topSlice.reduce((acc, p) => acc * (p.odds || 1.0), 1.0);
+
+    return {
+      count,
+      highEdgeCount,
+      avgEdge: (sumEdge / count).toFixed(1),
+      avgConf: (sumConf / count).toFixed(1),
+      combinedOdds: topSlice.length > 0 ? prodOdds.toFixed(2) : '0.00',
+      totalKellyUnits: sumKelly.toFixed(1)
+    };
+  }, [binaryPicks]);
+
   return (
     <div className="space-y-4">
       
@@ -336,7 +365,50 @@ export default function BinaryPicksPage({
             </span>
           </KellyTooltip>
           <span className="px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold">
-            {binaryPicks.filter(p => p.edge > 5).length} High-Edge Markets Active
+            {binaryStats.highEdgeCount} High-Edge Markets Active
+          </span>
+        </div>
+      </div>
+
+      {/* Dynamic Summary Cards Strictly Based on Active Filter Selection */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div className="bg-white rounded-xl p-3 border border-slate-200 shadow-2xs">
+          <div className="text-[10.5px] font-semibold uppercase tracking-wider text-slate-500">Filtered Value Markets</div>
+          <div className="text-xl font-black text-slate-900 font-mono mt-0.5">
+            {binaryStats.count}
+          </div>
+          <span className="text-[10px] text-slate-500 mt-0.5 block">
+            {binaryStats.count === 0 ? '0 matching filters' : `${binaryStats.highEdgeCount} with >5% edge`}
+          </span>
+        </div>
+
+        <div className="bg-white rounded-xl p-3 border border-slate-200 shadow-2xs">
+          <div className="text-[10.5px] font-semibold uppercase tracking-wider text-slate-500">Average Edge</div>
+          <div className="text-xl font-black text-emerald-600 font-mono mt-0.5">
+            +{binaryStats.avgEdge}%
+          </div>
+          <span className="text-[10px] text-emerald-700 font-medium mt-0.5 block">
+            {binaryStats.count === 0 ? 'No active edge' : 'vs. Bookmaker Price'}
+          </span>
+        </div>
+
+        <div className="bg-white rounded-xl p-3 border border-slate-200 shadow-2xs">
+          <div className="text-[10.5px] font-semibold uppercase tracking-wider text-slate-500">Combined Acca Odds</div>
+          <div className="text-xl font-black text-indigo-700 font-mono mt-0.5">
+            {binaryStats.count === 0 ? '0.00x' : `${binaryStats.combinedOdds}x`}
+          </div>
+          <span className="text-[10px] text-slate-500 mt-0.5 block">
+            {binaryStats.count === 0 ? '0 legs available' : `Top ${Math.min(4, binaryStats.count)} value picks parlay`}
+          </span>
+        </div>
+
+        <div className="bg-white rounded-xl p-3 border border-slate-200 shadow-2xs">
+          <div className="text-[10.5px] font-semibold uppercase tracking-wider text-slate-500">Model Confidence</div>
+          <div className="text-xl font-black text-slate-900 font-mono mt-0.5">
+            {binaryStats.count === 0 ? '0.0%' : `${binaryStats.avgConf}%`}
+          </div>
+          <span className="text-[10px] text-slate-500 mt-0.5 block">
+            Poisson Probability Floor
           </span>
         </div>
       </div>

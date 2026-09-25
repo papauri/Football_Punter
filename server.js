@@ -142,6 +142,69 @@ app.get('/api/state', (req, res) => {
     }
   });
 
+  app.get('/api/stream-sources', (req, res) => {
+    const home = (req.query.home || 'Home').replace(/[^a-zA-Z0-9 ]/g, '').trim();
+    const away = (req.query.away || 'Away').replace(/[^a-zA-Z0-9 ]/g, '').trim();
+    const league = req.query.league || '';
+    const query = encodeURIComponent(`${home} ${away}`);
+
+    const sources = [
+      {
+        id: 'sportzx-direct',
+        name: `Sportzx Live Stream (${home} vs ${away})`,
+        provider: 'Sportzx Direct Live Sports',
+        badge: '⚡ Sportzx Direct',
+        straightUrl: `https://sportzx.net/?s=${query}`,
+        backupStraightUrl: `https://sportzx.cc/?s=${query}`,
+        portalUrl: 'https://sportzx.net/football',
+        searchUrl: `https://duckduckgo.com/?q=${encodeURIComponent('sportzx ' + home + ' vs ' + away + ' live stream free')}`
+      },
+      {
+        id: 'streameast-direct',
+        name: `StreamEast Global (${home} vs ${away})`,
+        provider: 'StreamEast Sports',
+        badge: '📺 StreamEast Free',
+        straightUrl: 'https://thestreameast.to/category/soccer',
+        backupStraightUrl: `https://thestreameast.to/?s=${query}`,
+        portalUrl: 'https://streameast.app'
+      },
+      {
+        id: 'totalsportek-direct',
+        name: `Totalsportek / FootyBite (${home} vs ${away})`,
+        provider: 'Totalsportek & FootyBite',
+        badge: '🌐 Totalsportek',
+        straightUrl: `https://totalsportek.pro/?s=${query}`,
+        backupStraightUrl: `https://footybite.to/?s=${query}`,
+        portalUrl: 'https://totalsportek.pro'
+      },
+      {
+        id: 'score808-direct',
+        name: `Score808 Live HD (${home} vs ${away})`,
+        provider: 'Score808 Global HD',
+        badge: '⚽ Score808 Free',
+        straightUrl: 'https://www.score808.com',
+        backupStraightUrl: 'https://score808.ink',
+        portalUrl: 'https://www.score808.com'
+      },
+      {
+        id: 'viprow-direct',
+        name: `VIPRow / VIPBox Free (${home} vs ${away})`,
+        provider: 'VIPRow Global Free Network',
+        badge: '🏆 VIPRow Free',
+        straightUrl: 'https://www.viprow.nu/sports-football-online',
+        backupStraightUrl: 'https://www.vipbox.lc/football-live',
+        portalUrl: 'https://www.viprow.nu'
+      }
+    ];
+
+    res.json({
+      success: true,
+      match: { home, away, league },
+      sportzxUrl: `https://sportzx.net/?s=${query}`,
+      sources
+    });
+  });
+
   app.post('/api/scrape', async (req, res) => {
     try {
       engine.isFetching = false; // Reset lock to allow on-demand user scrape
@@ -235,7 +298,7 @@ app.get('/api/state', (req, res) => {
 
   app.post('/api/in-play-prediction', async (req, res) => {
     try {
-      const { matchId, liveMinute, liveHomeScore, liveAwayScore, homeRedCards, awayRedCards } = req.body || {};
+      const { matchId, liveMinute, liveHomeScore, liveAwayScore, homeRedCards, awayRedCards, lockedPick } = req.body || {};
       let match = null;
       if (matchId) {
         match = (engine.matches || []).find(m => String(m.id) === String(matchId)) ||
@@ -249,9 +312,33 @@ app.get('/api/state', (req, res) => {
         liveMinute ?? match.liveMinute ?? 45,
         liveHomeScore ?? match.liveHomeScore ?? (match.goals?.home ?? 0),
         liveAwayScore ?? match.liveAwayScore ?? (match.goals?.away ?? 0),
-        { homeRedCards: homeRedCards || 0, awayRedCards: awayRedCards || 0 }
+        { homeRedCards: homeRedCards || 0, awayRedCards: awayRedCards || 0, lockedPick }
       );
-      res.json({ success: true, inPlayPrediction: inPlay });
+      res.json({ success: true, inPlayPrediction: inPlay, advisory: inPlay.advisory });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.post('/api/in-play-advisory', async (req, res) => {
+    try {
+      const { matchId, liveMinute, liveHomeScore, liveAwayScore, homeRedCards, awayRedCards, lockedPick } = req.body || {};
+      let match = null;
+      if (matchId) {
+        match = (engine.matches || []).find(m => String(m.id) === String(matchId)) ||
+                (engine.todayCompletedMatches || []).find(m => String(m.id) === String(matchId));
+      }
+      if (!match) {
+        match = req.body?.match || { home: req.body?.home || 'Home', away: req.body?.away || 'Away' };
+      }
+      const report = engine.getInPlayAdvisoryReport(
+        match,
+        liveMinute ?? match.liveMinute ?? 45,
+        liveHomeScore ?? match.liveHomeScore ?? (match.goals?.home ?? 0),
+        liveAwayScore ?? match.liveAwayScore ?? (match.goals?.away ?? 0),
+        { homeRedCards: homeRedCards || 0, awayRedCards: awayRedCards || 0, lockedPick }
+      );
+      res.json({ success: true, advisory: report });
     } catch (error) {
       res.status(500).json({ success: false, error: error.message });
     }

@@ -8,7 +8,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/88.png",
       "league": "LaLiga",
       "status": "Scheduled",
-      "time": "20:00",
+      "time": "07:00 PM",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T19:00Z",
@@ -30,14 +30,24 @@
         "details": "MCF +160"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401882851",
       "espnLeagueCode": "esp.1",
       "homeTeamId": "99",
-      "awayTeamId": "88"
+      "awayTeamId": "88",
+      "broadcast": "ESPN+",
+      "channels": [
+        "ESPN+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401882849",
@@ -47,7 +57,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/93.png",
       "league": "LaLiga",
       "status": "Scheduled",
-      "time": "13:00",
+      "time": "12:00 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T12:00Z",
@@ -69,14 +79,24 @@
         "details": "ATH +130"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401882849",
       "espnLeagueCode": "esp.1",
       "homeTeamId": "101",
-      "awayTeamId": "93"
+      "awayTeamId": "93",
+      "broadcast": "ESPN+",
+      "channels": [
+        "ESPN+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401882856",
@@ -86,7 +106,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/1068.png",
       "league": "LaLiga",
       "status": "Scheduled",
-      "time": "15:15",
+      "time": "02:15 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T14:15Z",
@@ -108,14 +128,24 @@
         "details": "ATM -110"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401882856",
       "espnLeagueCode": "esp.1",
       "homeTeamId": "96",
-      "awayTeamId": "1068"
+      "awayTeamId": "1068",
+      "broadcast": "ESPN+",
+      "channels": [
+        "ESPN+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401882853",
@@ -125,7 +155,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2922.png",
       "league": "LaLiga",
       "status": "Scheduled",
-      "time": "17:30",
+      "time": "04:30 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T16:30Z",
@@ -147,14 +177,24 @@
         "details": "BAR -2000"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401882853",
       "espnLeagueCode": "esp.1",
       "homeTeamId": "83",
-      "awayTeamId": "2922"
+      "awayTeamId": "2922",
+      "broadcast": "ESPN+",
+      "channels": [
+        "ESPN+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401882848",
@@ -164,7 +204,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/102.png",
       "league": "LaLiga",
       "status": "Scheduled",
-      "time": "20:00",
+      "time": "07:00 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T19:00Z",
@@ -186,14 +226,24 @@
         "details": "RMA -380"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401882848",
       "espnLeagueCode": "esp.1",
       "homeTeamId": "86",
-      "awayTeamId": "102"
+      "awayTeamId": "102",
+      "broadcast": "ESPN+",
+      "channels": [
+        "ESPN+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401882854",
@@ -203,7 +253,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/85.png",
       "league": "LaLiga",
       "status": "Scheduled",
-      "time": "13:00",
+      "time": "12:00 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T12:00Z",
@@ -225,14 +275,24 @@
         "details": "CEL +150"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401882854",
       "espnLeagueCode": "esp.1",
       "homeTeamId": "3751",
-      "awayTeamId": "85"
+      "awayTeamId": "85",
+      "broadcast": "ESPN+",
+      "channels": [
+        "ESPN+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401882847",
@@ -242,7 +302,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/90.png",
       "league": "LaLiga",
       "status": "Scheduled",
-      "time": "15:15",
+      "time": "02:15 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T14:15Z",
@@ -264,14 +324,24 @@
         "details": "RSO -135"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401882847",
       "espnLeagueCode": "esp.1",
       "homeTeamId": "89",
-      "awayTeamId": "90"
+      "awayTeamId": "90",
+      "broadcast": "ESPN+",
+      "channels": [
+        "ESPN+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401882855",
@@ -281,7 +351,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/97.png",
       "league": "LaLiga",
       "status": "Scheduled",
-      "time": "17:30",
+      "time": "04:30 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T16:30Z",
@@ -303,14 +373,24 @@
         "details": "BET -145"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401882855",
       "espnLeagueCode": "esp.1",
       "homeTeamId": "244",
-      "awayTeamId": "97"
+      "awayTeamId": "97",
+      "broadcast": "ESPN+",
+      "channels": [
+        "ESPN+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401882850",
@@ -320,7 +400,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/94.png",
       "league": "LaLiga",
       "status": "Scheduled",
-      "time": "20:00",
+      "time": "07:00 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T19:00Z",
@@ -342,14 +422,24 @@
         "details": "RAC +105"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401882850",
       "espnLeagueCode": "esp.1",
       "homeTeamId": "87",
-      "awayTeamId": "94"
+      "awayTeamId": "94",
+      "broadcast": "ESPN+",
+      "channels": [
+        "ESPN+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401882852",
@@ -359,7 +449,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/243.png",
       "league": "LaLiga",
       "status": "Scheduled",
-      "time": "20:00",
+      "time": "07:00 PM",
       "date": "12/10/2026",
       "dateIso": "2026-10-12",
       "utcDate": "2026-10-12T19:00Z",
@@ -381,14 +471,24 @@
         "details": "LEV +160"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401882852",
       "espnLeagueCode": "esp.1",
       "homeTeamId": "1538",
-      "awayTeamId": "243"
+      "awayTeamId": "243",
+      "broadcast": "ESPN+",
+      "channels": [
+        "ESPN+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401884781",
@@ -398,7 +498,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/137.png",
       "league": "Bundesliga",
       "status": "Scheduled",
-      "time": "19:30",
+      "time": "06:30 PM",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T18:30Z",
@@ -420,14 +520,25 @@
         "details": "DOR -295"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401884781",
       "espnLeagueCode": "ger.1",
       "homeTeamId": "124",
-      "awayTeamId": "137"
+      "awayTeamId": "137",
+      "broadcast": "ESPN+, Sky Sport",
+      "channels": [
+        "ESPN+",
+        "Sky Sport"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401884775",
@@ -437,7 +548,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/10388.png",
       "league": "Bundesliga",
       "status": "Scheduled",
-      "time": "14:30",
+      "time": "01:30 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T13:30Z",
@@ -459,14 +570,25 @@
         "details": "FCU +115"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401884775",
       "espnLeagueCode": "ger.1",
       "homeTeamId": "598",
-      "awayTeamId": "10388"
+      "awayTeamId": "10388",
+      "broadcast": "ESPN+, Sky Sport",
+      "channels": [
+        "ESPN+",
+        "Sky Sport"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401884777",
@@ -476,7 +598,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/132.png",
       "league": "Bundesliga",
       "status": "Scheduled",
-      "time": "14:30",
+      "time": "01:30 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T13:30Z",
@@ -498,14 +620,25 @@
         "details": "MUN -500"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401884777",
       "espnLeagueCode": "ger.1",
       "homeTeamId": "3841",
-      "awayTeamId": "132"
+      "awayTeamId": "132",
+      "broadcast": "ESPN+, Sky Sport",
+      "channels": [
+        "ESPN+",
+        "Sky Sport"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401884776",
@@ -515,7 +648,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/131.png",
       "league": "Bundesliga",
       "status": "Scheduled",
-      "time": "14:30",
+      "time": "01:30 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T13:30Z",
@@ -537,14 +670,25 @@
         "details": "B04 +120"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401884776",
       "espnLeagueCode": "ger.1",
       "homeTeamId": "2950",
-      "awayTeamId": "131"
+      "awayTeamId": "131",
+      "broadcast": "ESPN+, Sky Sport",
+      "channels": [
+        "ESPN+",
+        "Sky Sport"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401884773",
@@ -554,7 +698,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/134.png",
       "league": "Bundesliga",
       "status": "Scheduled",
-      "time": "14:30",
+      "time": "01:30 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T13:30Z",
@@ -576,14 +720,25 @@
         "details": "VFB -180"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401884773",
       "espnLeagueCode": "ger.1",
       "homeTeamId": "3307",
-      "awayTeamId": "134"
+      "awayTeamId": "134",
+      "broadcast": "ESPN+, Sky Sport",
+      "channels": [
+        "ESPN+",
+        "Sky Sport"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401884779",
@@ -593,7 +748,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/127.png",
       "league": "Bundesliga",
       "status": "Scheduled",
-      "time": "14:30",
+      "time": "01:30 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T13:30Z",
@@ -604,14 +759,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401884779",
       "espnLeagueCode": "ger.1",
       "homeTeamId": "7911",
-      "awayTeamId": "127"
+      "awayTeamId": "127",
+      "broadcast": "ESPN+, Sky Sport",
+      "channels": [
+        "ESPN+",
+        "Sky Sport"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401884780",
@@ -621,7 +787,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/125.png",
       "league": "Bundesliga",
       "status": "Scheduled",
-      "time": "17:30",
+      "time": "04:30 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T16:30Z",
@@ -643,14 +809,25 @@
         "details": "RBL -205"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401884780",
       "espnLeagueCode": "ger.1",
       "homeTeamId": "11420",
-      "awayTeamId": "125"
+      "awayTeamId": "125",
+      "broadcast": "ESPN+, Sky Sport",
+      "channels": [
+        "ESPN+",
+        "Sky Sport"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401884774",
@@ -660,7 +837,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/268.png",
       "league": "Bundesliga",
       "status": "Scheduled",
-      "time": "14:30",
+      "time": "01:30 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T13:30Z",
@@ -682,14 +859,25 @@
         "details": "KOE -110"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401884774",
       "espnLeagueCode": "ger.1",
       "homeTeamId": "122",
-      "awayTeamId": "268"
+      "awayTeamId": "268",
+      "broadcast": "ESPN+, Sky Sport",
+      "channels": [
+        "ESPN+",
+        "Sky Sport"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401884778",
@@ -699,7 +887,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/133.png",
       "league": "Bundesliga",
       "status": "Scheduled",
-      "time": "16:30",
+      "time": "03:30 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T15:30Z",
@@ -721,14 +909,25 @@
         "details": "SCF -170"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401884778",
       "espnLeagueCode": "ger.1",
       "homeTeamId": "126",
-      "awayTeamId": "133"
+      "awayTeamId": "133",
+      "broadcast": "ESPN+, Sky Sport",
+      "channels": [
+        "ESPN+",
+        "Sky Sport"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401875592",
@@ -738,7 +937,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/146.png",
       "league": "Eredivisie",
       "status": "Scheduled",
-      "time": "19:00",
+      "time": "06:00 PM",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T18:00Z",
@@ -760,14 +959,24 @@
         "details": "PSV -450"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401875592",
       "espnLeagueCode": "ned.1",
       "homeTeamId": "148",
-      "awayTeamId": "146"
+      "awayTeamId": "146",
+      "broadcast": "ESPN+",
+      "channels": [
+        "ESPN+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401875590",
@@ -777,7 +986,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/151.png",
       "league": "Eredivisie",
       "status": "Scheduled",
-      "time": "15:30",
+      "time": "02:30 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T14:30Z",
@@ -799,14 +1008,25 @@
         "details": "GAE -135"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401875590",
       "espnLeagueCode": "ned.1",
       "homeTeamId": "3706",
-      "awayTeamId": "151"
+      "awayTeamId": "151",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401875591",
@@ -816,7 +1036,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/140.png",
       "league": "Eredivisie",
       "status": "Scheduled",
-      "time": "17:45",
+      "time": "04:45 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T16:45Z",
@@ -838,14 +1058,24 @@
         "details": "FEY -120"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401875591",
       "espnLeagueCode": "ned.1",
       "homeTeamId": "142",
-      "awayTeamId": "140"
+      "awayTeamId": "140",
+      "broadcast": "ESPN+",
+      "channels": [
+        "ESPN+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401875588",
@@ -855,7 +1085,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/152.png",
       "league": "Eredivisie",
       "status": "Scheduled",
-      "time": "19:00",
+      "time": "06:00 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T18:00Z",
@@ -877,14 +1107,25 @@
         "details": "TWE -245"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401875588",
       "espnLeagueCode": "ned.1",
       "homeTeamId": "143",
-      "awayTeamId": "152"
+      "awayTeamId": "152",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401875589",
@@ -894,7 +1135,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/147.png",
       "league": "Eredivisie",
       "status": "Scheduled",
-      "time": "20:00",
+      "time": "07:00 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T19:00Z",
@@ -916,14 +1157,24 @@
         "details": "AJA -330"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401875589",
       "espnLeagueCode": "ned.1",
       "homeTeamId": "139",
-      "awayTeamId": "147"
+      "awayTeamId": "147",
+      "broadcast": "ESPN+",
+      "channels": [
+        "ESPN+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401875587",
@@ -933,7 +1184,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/156.png",
       "league": "Eredivisie",
       "status": "Scheduled",
-      "time": "11:15",
+      "time": "10:15 AM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T10:15Z",
@@ -955,14 +1206,24 @@
         "details": "UTR -220"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401875587",
       "espnLeagueCode": "ned.1",
       "homeTeamId": "153",
-      "awayTeamId": "156"
+      "awayTeamId": "156",
+      "broadcast": "ESPN+",
+      "channels": [
+        "ESPN+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401875586",
@@ -972,7 +1233,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/3736.png",
       "league": "Eredivisie",
       "status": "Scheduled",
-      "time": "13:30",
+      "time": "12:30 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T12:30Z",
@@ -994,14 +1255,25 @@
         "details": "PEC -105"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401875586",
       "espnLeagueCode": "ned.1",
       "homeTeamId": "2565",
-      "awayTeamId": "3736"
+      "awayTeamId": "3736",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401875585",
@@ -1011,7 +1283,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2726.png",
       "league": "Eredivisie",
       "status": "Scheduled",
-      "time": "13:30",
+      "time": "12:30 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T12:30Z",
@@ -1033,14 +1305,25 @@
         "details": "TEL -105"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401875585",
       "espnLeagueCode": "ned.1",
       "homeTeamId": "3735",
-      "awayTeamId": "2726"
+      "awayTeamId": "2726",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401875584",
@@ -1050,7 +1333,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/145.png",
       "league": "Eredivisie",
       "status": "Scheduled",
-      "time": "15:45",
+      "time": "02:45 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T14:45Z",
@@ -1072,14 +1355,25 @@
         "details": "GRO +145"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401875584",
       "espnLeagueCode": "ned.1",
       "homeTeamId": "2566",
-      "awayTeamId": "145"
+      "awayTeamId": "145",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401876447",
@@ -1089,7 +1383,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/167.png",
       "league": "Ligue 1",
       "status": "Scheduled",
-      "time": "19:45",
+      "time": "06:45 PM",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T18:45Z",
@@ -1111,14 +1405,25 @@
         "details": "RCL +115"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401876447",
       "espnLeagueCode": "fra.1",
       "homeTeamId": "175",
-      "awayTeamId": "167"
+      "awayTeamId": "167",
+      "broadcast": "beIN SPORTS, DAZN",
+      "channels": [
+        "beIN SPORTS",
+        "DAZN"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401876446",
@@ -1128,7 +1433,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/3236.png",
       "league": "Ligue 1",
       "status": "Scheduled",
-      "time": "16:15",
+      "time": "03:15 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T15:15Z",
@@ -1150,14 +1455,25 @@
         "details": "LILL -230"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401876446",
       "espnLeagueCode": "fra.1",
       "homeTeamId": "166",
-      "awayTeamId": "3236"
+      "awayTeamId": "3236",
+      "broadcast": "beIN SPORTS, DAZN",
+      "channels": [
+        "beIN SPORTS",
+        "DAZN"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401876444",
@@ -1167,7 +1483,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/179.png",
       "league": "Ligue 1",
       "status": "Scheduled",
-      "time": "19:45",
+      "time": "06:45 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T18:45Z",
@@ -1189,14 +1505,25 @@
         "details": "MON -150"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401876444",
       "espnLeagueCode": "fra.1",
       "homeTeamId": "174",
-      "awayTeamId": "179"
+      "awayTeamId": "179",
+      "broadcast": "beIN SPORTS, DAZN",
+      "channels": [
+        "beIN SPORTS",
+        "DAZN"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401876448",
@@ -1206,7 +1533,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/7868.png",
       "league": "Ligue 1",
       "status": "Scheduled",
-      "time": "19:45",
+      "time": "06:45 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T18:45Z",
@@ -1228,14 +1555,25 @@
         "details": "BRE -110"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401876448",
       "espnLeagueCode": "fra.1",
       "homeTeamId": "6997",
-      "awayTeamId": "7868"
+      "awayTeamId": "7868",
+      "broadcast": "beIN SPORTS, DAZN",
+      "channels": [
+        "beIN SPORTS",
+        "DAZN"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401876445",
@@ -1245,7 +1583,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/6851.png",
       "league": "Ligue 1",
       "status": "Scheduled",
-      "time": "19:45",
+      "time": "06:45 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T18:45Z",
@@ -1267,14 +1605,25 @@
         "details": "PAR +130"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401876445",
       "espnLeagueCode": "fra.1",
       "homeTeamId": "273",
-      "awayTeamId": "6851"
+      "awayTeamId": "6851",
+      "broadcast": "beIN SPORTS, DAZN",
+      "channels": [
+        "beIN SPORTS",
+        "DAZN"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401876442",
@@ -1284,7 +1633,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2697.png",
       "league": "Ligue 1",
       "status": "Scheduled",
-      "time": "19:45",
+      "time": "06:45 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T18:45Z",
@@ -1306,14 +1655,25 @@
         "details": "PSG -1000"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401876442",
       "espnLeagueCode": "fra.1",
       "homeTeamId": "160",
-      "awayTeamId": "2697"
+      "awayTeamId": "2697",
+      "broadcast": "beIN SPORTS, DAZN",
+      "channels": [
+        "beIN SPORTS",
+        "DAZN"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401876443",
@@ -1323,7 +1683,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/180.png",
       "league": "Ligue 1",
       "status": "Scheduled",
-      "time": "14:00",
+      "time": "01:00 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T13:00Z",
@@ -1345,14 +1705,25 @@
         "details": "NICE +120"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401876443",
       "espnLeagueCode": "fra.1",
       "homeTeamId": "2502",
-      "awayTeamId": "180"
+      "awayTeamId": "180",
+      "broadcast": "beIN SPORTS, DAZN",
+      "channels": [
+        "beIN SPORTS",
+        "DAZN"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401876441",
@@ -1362,7 +1733,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/172.png",
       "league": "Ligue 1",
       "status": "Scheduled",
-      "time": "16:15",
+      "time": "03:15 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T15:15Z",
@@ -1384,14 +1755,25 @@
         "details": "REN -245"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401876441",
       "espnLeagueCode": "fra.1",
       "homeTeamId": "169",
-      "awayTeamId": "172"
+      "awayTeamId": "172",
+      "broadcast": "beIN SPORTS, DAZN",
+      "channels": [
+        "beIN SPORTS",
+        "DAZN"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401876440",
@@ -1401,7 +1783,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/176.png",
       "league": "Ligue 1",
       "status": "Scheduled",
-      "time": "19:45",
+      "time": "06:45 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T18:45Z",
@@ -1423,14 +1805,25 @@
         "details": "OLM -110"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401876440",
       "espnLeagueCode": "fra.1",
       "homeTeamId": "170",
-      "awayTeamId": "176"
+      "awayTeamId": "176",
+      "broadcast": "beIN SPORTS, DAZN",
+      "channels": [
+        "beIN SPORTS",
+        "DAZN"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401885423",
@@ -1440,7 +1833,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/3699.png",
       "league": "Primeira Liga",
       "status": "Scheduled",
-      "time": "18:45",
+      "time": "05:45 PM",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T17:45Z",
@@ -1462,14 +1855,25 @@
         "details": "GVFC +105"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401885423",
       "espnLeagueCode": "por.1",
       "homeTeamId": "3696",
-      "awayTeamId": "3699"
+      "awayTeamId": "3699",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401885427",
@@ -1479,7 +1883,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2250.png",
       "league": "Primeira Liga",
       "status": "Scheduled",
-      "time": "20:15",
+      "time": "07:15 PM",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T19:15Z",
@@ -1501,14 +1905,25 @@
         "details": "SCP +115"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401885427",
       "espnLeagueCode": "por.1",
       "homeTeamId": "2994",
-      "awayTeamId": "2250"
+      "awayTeamId": "2250",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401885426",
@@ -1518,7 +1933,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/12215.png",
       "league": "Primeira Liga",
       "status": "Scheduled",
-      "time": "15:30",
+      "time": "02:30 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T14:30Z",
@@ -1540,14 +1955,25 @@
         "details": "CDSC -120"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401885426",
       "espnLeagueCode": "por.1",
       "homeTeamId": "21581",
-      "awayTeamId": "12215"
+      "awayTeamId": "12215",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401885424",
@@ -1557,7 +1983,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/437.png",
       "league": "Primeira Liga",
       "status": "Scheduled",
-      "time": "18:00",
+      "time": "05:00 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T17:00Z",
@@ -1568,14 +1994,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401885424",
       "espnLeagueCode": "por.1",
       "homeTeamId": "552",
-      "awayTeamId": "437"
+      "awayTeamId": "437",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401885429",
@@ -1585,7 +2022,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/12216.png",
       "league": "Primeira Liga",
       "status": "Scheduled",
-      "time": "20:30",
+      "time": "07:30 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T19:30Z",
@@ -1607,14 +2044,25 @@
         "details": "ACV +125"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401885429",
       "espnLeagueCode": "por.1",
       "homeTeamId": "21607",
-      "awayTeamId": "12216"
+      "awayTeamId": "12216",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401885422",
@@ -1624,7 +2072,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/3472.png",
       "league": "Primeira Liga",
       "status": "Scheduled",
-      "time": "15:30",
+      "time": "02:30 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T14:30Z",
@@ -1646,14 +2094,25 @@
         "details": "RAFC +135"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401885422",
       "espnLeagueCode": "por.1",
       "homeTeamId": "3822",
-      "awayTeamId": "3472"
+      "awayTeamId": "3472",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401885421",
@@ -1663,7 +2122,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/5309.png",
       "league": "Primeira Liga",
       "status": "Scheduled",
-      "time": "18:00",
+      "time": "05:00 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T17:00Z",
@@ -1674,14 +2133,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401885421",
       "espnLeagueCode": "por.1",
       "homeTeamId": "1929",
-      "awayTeamId": "5309"
+      "awayTeamId": "5309",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401885428",
@@ -1691,7 +2161,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/21610.png",
       "league": "Primeira Liga",
       "status": "Scheduled",
-      "time": "20:30",
+      "time": "07:30 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T19:30Z",
@@ -1713,14 +2183,25 @@
         "details": "FCA +110"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401885428",
       "espnLeagueCode": "por.1",
       "homeTeamId": "15784",
-      "awayTeamId": "21610"
+      "awayTeamId": "21610",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401885425",
@@ -1730,7 +2211,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/21613.png",
       "league": "Primeira Liga",
       "status": "Scheduled",
-      "time": "20:15",
+      "time": "07:15 PM",
       "date": "12/10/2026",
       "dateIso": "2026-10-12",
       "utcDate": "2026-10-12T19:15Z",
@@ -1741,14 +2222,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401885425",
       "espnLeagueCode": "por.1",
       "homeTeamId": "12698",
-      "awayTeamId": "21613"
+      "awayTeamId": "21613",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401879268",
@@ -1780,14 +2272,26 @@
         "details": "ARS -280"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401879268",
       "espnLeagueCode": "eng.1",
       "homeTeamId": "359",
-      "awayTeamId": "357"
+      "awayTeamId": "357",
+      "broadcast": "Sky Sports, TNT Sports, Peacock",
+      "channels": [
+        "Sky Sports",
+        "TNT Sports",
+        "Peacock"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401878776",
@@ -1819,14 +2323,26 @@
         "details": "BRE +150"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401878776",
       "espnLeagueCode": "eng.1",
       "homeTeamId": "362",
-      "awayTeamId": "337"
+      "awayTeamId": "337",
+      "broadcast": "Sky Sports, TNT Sports, Peacock",
+      "channels": [
+        "Sky Sports",
+        "TNT Sports",
+        "Peacock"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401878775",
@@ -1858,14 +2374,26 @@
         "details": "CHE -120"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401878775",
       "espnLeagueCode": "eng.1",
       "homeTeamId": "363",
-      "awayTeamId": "349"
+      "awayTeamId": "349",
+      "broadcast": "Sky Sports, TNT Sports, Peacock",
+      "channels": [
+        "Sky Sports",
+        "TNT Sports",
+        "Peacock"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401879265",
@@ -1897,14 +2425,26 @@
         "details": "FUL +150"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401879265",
       "espnLeagueCode": "eng.1",
       "homeTeamId": "373",
-      "awayTeamId": "370"
+      "awayTeamId": "370",
+      "broadcast": "Sky Sports, TNT Sports, Peacock",
+      "channels": [
+        "Sky Sports",
+        "TNT Sports",
+        "Peacock"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401878772",
@@ -1936,14 +2476,26 @@
         "details": "BHA +145"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401878772",
       "espnLeagueCode": "eng.1",
       "homeTeamId": "366",
-      "awayTeamId": "331"
+      "awayTeamId": "331",
+      "broadcast": "Sky Sports, TNT Sports, Peacock",
+      "channels": [
+        "Sky Sports",
+        "TNT Sports",
+        "Peacock"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401878773",
@@ -1975,14 +2527,26 @@
         "details": "MAN -145"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401878773",
       "espnLeagueCode": "eng.1",
       "homeTeamId": "360",
-      "awayTeamId": "367"
+      "awayTeamId": "367",
+      "broadcast": "Sky Sports, TNT Sports, Peacock",
+      "channels": [
+        "Sky Sports",
+        "TNT Sports",
+        "Peacock"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401879266",
@@ -2014,14 +2578,26 @@
         "details": "CRY +160"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401879266",
       "espnLeagueCode": "eng.1",
       "homeTeamId": "384",
-      "awayTeamId": "393"
+      "awayTeamId": "393",
+      "broadcast": "Sky Sports, TNT Sports, Peacock",
+      "channels": [
+        "Sky Sports",
+        "TNT Sports",
+        "Peacock"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401878774",
@@ -2053,14 +2629,26 @@
         "details": "EVE +105"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401878774",
       "espnLeagueCode": "eng.1",
       "homeTeamId": "306",
-      "awayTeamId": "368"
+      "awayTeamId": "368",
+      "broadcast": "Sky Sports, TNT Sports, Peacock",
+      "channels": [
+        "Sky Sports",
+        "TNT Sports",
+        "Peacock"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401879264",
@@ -2092,14 +2680,26 @@
         "details": "MNC +135"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401879264",
       "espnLeagueCode": "eng.1",
       "homeTeamId": "364",
-      "awayTeamId": "382"
+      "awayTeamId": "382",
+      "broadcast": "Sky Sports, TNT Sports, Peacock",
+      "channels": [
+        "Sky Sports",
+        "TNT Sports",
+        "Peacock"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401879267",
@@ -2131,14 +2731,26 @@
         "details": "NEW +110"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401879267",
       "espnLeagueCode": "eng.1",
       "homeTeamId": "388",
-      "awayTeamId": "361"
+      "awayTeamId": "361",
+      "broadcast": "Sky Sports, TNT Sports, Peacock",
+      "channels": [
+        "Sky Sports",
+        "TNT Sports",
+        "Peacock"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401878373",
@@ -2148,7 +2760,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/258.png",
       "league": "Scottish Premiership",
       "status": "Scheduled",
-      "time": "15:00",
+      "time": "02:00 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T14:00Z",
@@ -2170,14 +2782,25 @@
         "details": "HIBS +135"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401878373",
       "espnLeagueCode": "sco.1",
       "homeTeamId": "264",
-      "awayTeamId": "258"
+      "awayTeamId": "258",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401878372",
@@ -2187,7 +2810,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/261.png",
       "league": "Scottish Premiership",
       "status": "Scheduled",
-      "time": "15:00",
+      "time": "02:00 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T14:00Z",
@@ -2209,14 +2832,25 @@
         "details": "FALK +100"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401878372",
       "espnLeagueCode": "sco.1",
       "homeTeamId": "254",
-      "awayTeamId": "261"
+      "awayTeamId": "261",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401878371",
@@ -2226,7 +2860,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/250.png",
       "league": "Scottish Premiership",
       "status": "Scheduled",
-      "time": "15:00",
+      "time": "02:00 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T14:00Z",
@@ -2248,14 +2882,25 @@
         "details": "HOM -230"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401878371",
       "espnLeagueCode": "sco.1",
       "homeTeamId": "262",
-      "awayTeamId": "250"
+      "awayTeamId": "250",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401878369",
@@ -2265,7 +2910,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/260.png",
       "league": "Scottish Premiership",
       "status": "Scheduled",
-      "time": "15:00",
+      "time": "02:00 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T14:00Z",
@@ -2287,14 +2932,25 @@
         "details": "RAN -750"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401878369",
       "espnLeagueCode": "sco.1",
       "homeTeamId": "257",
-      "awayTeamId": "260"
+      "awayTeamId": "260",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401878370",
@@ -2304,7 +2960,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/256.png",
       "league": "Scottish Premiership",
       "status": "Scheduled",
-      "time": "12:00",
+      "time": "11:00 AM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T11:00Z",
@@ -2326,14 +2982,25 @@
         "details": "CEL -185"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401878370",
       "espnLeagueCode": "sco.1",
       "homeTeamId": "266",
-      "awayTeamId": "256"
+      "awayTeamId": "256",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401878374",
@@ -2343,7 +3010,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/267.png",
       "league": "Scottish Premiership",
       "status": "Scheduled",
-      "time": "14:00",
+      "time": "01:00 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T13:00Z",
@@ -2365,14 +3032,25 @@
         "details": "ABE +125"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401878374",
       "espnLeagueCode": "sco.1",
       "homeTeamId": "263",
-      "awayTeamId": "267"
+      "awayTeamId": "267",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401874947",
@@ -2382,7 +3060,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/109.png",
       "league": "Serie A",
       "status": "Scheduled",
-      "time": "14:00",
+      "time": "01:00 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T13:00Z",
@@ -2393,14 +3071,24 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401874947",
       "espnLeagueCode": "ita.1",
       "homeTeamId": "3263",
-      "awayTeamId": "109"
+      "awayTeamId": "109",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401875021",
@@ -2410,7 +3098,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/115.png",
       "league": "Serie A",
       "status": "Scheduled",
-      "time": "17:00",
+      "time": "04:00 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T16:00Z",
@@ -2421,14 +3109,24 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401875021",
       "espnLeagueCode": "ita.1",
       "homeTeamId": "110",
-      "awayTeamId": "115"
+      "awayTeamId": "115",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401874754",
@@ -2438,7 +3136,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/4057.png",
       "league": "Serie A",
       "status": "Scheduled",
-      "time": "19:45",
+      "time": "06:45 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T18:45Z",
@@ -2449,14 +3147,24 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401874754",
       "espnLeagueCode": "ita.1",
       "homeTeamId": "114",
-      "awayTeamId": "4057"
+      "awayTeamId": "4057",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401874940",
@@ -2466,7 +3174,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/104.png",
       "league": "Serie A",
       "status": "Scheduled",
-      "time": "11:30",
+      "time": "10:30 AM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T10:30Z",
@@ -2477,14 +3185,24 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401874940",
       "espnLeagueCode": "ita.1",
       "homeTeamId": "2572",
-      "awayTeamId": "104"
+      "awayTeamId": "104",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401874951",
@@ -2494,7 +3212,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/4007.png",
       "league": "Serie A",
       "status": "Scheduled",
-      "time": "14:00",
+      "time": "01:00 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T13:00Z",
@@ -2505,14 +3223,24 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401874951",
       "espnLeagueCode": "ita.1",
       "homeTeamId": "112",
-      "awayTeamId": "4007"
+      "awayTeamId": "4007",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401874776",
@@ -2522,7 +3250,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/107.png",
       "league": "Serie A",
       "status": "Scheduled",
-      "time": "14:00",
+      "time": "01:00 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T13:00Z",
@@ -2533,14 +3261,24 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401874776",
       "espnLeagueCode": "ita.1",
       "homeTeamId": "113",
-      "awayTeamId": "107"
+      "awayTeamId": "107",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401874789",
@@ -2550,7 +3288,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/103.png",
       "league": "Serie A",
       "status": "Scheduled",
-      "time": "17:00",
+      "time": "04:00 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T16:00Z",
@@ -2561,14 +3299,24 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401874789",
       "espnLeagueCode": "ita.1",
       "homeTeamId": "3997",
-      "awayTeamId": "103"
+      "awayTeamId": "103",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401874764",
@@ -2578,7 +3326,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/111.png",
       "league": "Serie A",
       "status": "Scheduled",
-      "time": "19:45",
+      "time": "06:45 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T18:45Z",
@@ -2589,14 +3337,24 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401874764",
       "espnLeagueCode": "ita.1",
       "homeTeamId": "2925",
-      "awayTeamId": "111"
+      "awayTeamId": "111",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401875005",
@@ -2606,7 +3364,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/17530.png",
       "league": "Serie A",
       "status": "Scheduled",
-      "time": "17:30",
+      "time": "04:30 PM",
       "date": "12/10/2026",
       "dateIso": "2026-10-12",
       "utcDate": "2026-10-12T16:30Z",
@@ -2617,14 +3375,24 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401875005",
       "espnLeagueCode": "ita.1",
       "homeTeamId": "105",
-      "awayTeamId": "17530"
+      "awayTeamId": "17530",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401874763",
@@ -2634,7 +3402,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/118.png",
       "league": "Serie A",
       "status": "Scheduled",
-      "time": "19:45",
+      "time": "06:45 PM",
       "date": "12/10/2026",
       "dateIso": "2026-10-12",
       "utcDate": "2026-10-12T18:45Z",
@@ -2645,14 +3413,24 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401874763",
       "espnLeagueCode": "ita.1",
       "homeTeamId": "239",
-      "awayTeamId": "118"
+      "awayTeamId": "118",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401878976",
@@ -2662,7 +3440,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/22269.png",
       "league": "Belgian Pro League",
       "status": "Scheduled",
-      "time": "19:45",
+      "time": "06:45 PM",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T18:45Z",
@@ -2673,14 +3451,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401878976",
       "espnLeagueCode": "bel.1",
       "homeTeamId": "13450",
-      "awayTeamId": "22269"
+      "awayTeamId": "22269",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401878977",
@@ -2690,7 +3479,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/441.png",
       "league": "Belgian Pro League",
       "status": "Scheduled",
-      "time": "15:00",
+      "time": "02:00 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T14:00Z",
@@ -2701,14 +3490,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401878977",
       "espnLeagueCode": "bel.1",
       "homeTeamId": "3610",
-      "awayTeamId": "441"
+      "awayTeamId": "441",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401878978",
@@ -2718,7 +3518,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/570.png",
       "league": "Belgian Pro League",
       "status": "Scheduled",
-      "time": "17:15",
+      "time": "04:15 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T16:15Z",
@@ -2729,14 +3529,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401878978",
       "espnLeagueCode": "bel.1",
       "homeTeamId": "131235",
-      "awayTeamId": "570"
+      "awayTeamId": "570",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401878973",
@@ -2746,7 +3557,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/5786.png",
       "league": "Belgian Pro League",
       "status": "Scheduled",
-      "time": "19:45",
+      "time": "06:45 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T18:45Z",
@@ -2757,14 +3568,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401878973",
       "espnLeagueCode": "bel.1",
       "homeTeamId": "938",
-      "awayTeamId": "5786"
+      "awayTeamId": "5786",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401878974",
@@ -2774,7 +3596,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/3611.png",
       "league": "Belgian Pro League",
       "status": "Scheduled",
-      "time": "19:45",
+      "time": "06:45 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T18:45Z",
@@ -2785,14 +3607,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401878974",
       "espnLeagueCode": "bel.1",
       "homeTeamId": "4691",
-      "awayTeamId": "3611"
+      "awayTeamId": "3611",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401878971",
@@ -2802,7 +3635,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/3616.png",
       "league": "Belgian Pro League",
       "status": "Scheduled",
-      "time": "12:30",
+      "time": "11:30 AM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T11:30Z",
@@ -2813,14 +3646,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401878971",
       "espnLeagueCode": "bel.1",
       "homeTeamId": "559",
-      "awayTeamId": "3616"
+      "awayTeamId": "3616",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401878975",
@@ -2830,7 +3674,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/5579.png",
       "league": "Belgian Pro League",
       "status": "Scheduled",
-      "time": "15:00",
+      "time": "02:00 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T14:00Z",
@@ -2841,14 +3685,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401878975",
       "espnLeagueCode": "bel.1",
       "homeTeamId": "5807",
-      "awayTeamId": "5579"
+      "awayTeamId": "5579",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401878970",
@@ -2858,7 +3713,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/17544.png",
       "league": "Belgian Pro League",
       "status": "Scheduled",
-      "time": "17:30",
+      "time": "04:30 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T16:30Z",
@@ -2869,14 +3724,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401878970",
       "espnLeagueCode": "bel.1",
       "homeTeamId": "606",
-      "awayTeamId": "17544"
+      "awayTeamId": "17544",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401878972",
@@ -2886,7 +3752,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/936.png",
       "league": "Belgian Pro League",
       "status": "Scheduled",
-      "time": "18:15",
+      "time": "05:15 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T17:15Z",
@@ -2897,14 +3763,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401878972",
       "espnLeagueCode": "bel.1",
       "homeTeamId": "7879",
-      "awayTeamId": "936"
+      "awayTeamId": "936",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401900908",
@@ -2914,7 +3791,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/22022.png",
       "league": "Saudi Pro League",
       "status": "Scheduled",
-      "time": "14:50",
+      "time": "01:50 PM",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T13:50Z",
@@ -2925,14 +3802,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401900908",
       "espnLeagueCode": "ksa.1",
       "homeTeamId": "22028",
-      "awayTeamId": "22022"
+      "awayTeamId": "22022",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401900912",
@@ -2942,7 +3830,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/8346.png",
       "league": "Saudi Pro League",
       "status": "Scheduled",
-      "time": "15:55",
+      "time": "02:55 PM",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T14:55Z",
@@ -2953,14 +3841,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401900912",
       "espnLeagueCode": "ksa.1",
       "homeTeamId": "13033",
-      "awayTeamId": "8346"
+      "awayTeamId": "8346",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401900907",
@@ -2970,7 +3869,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/131746.png",
       "league": "Saudi Pro League",
       "status": "Scheduled",
-      "time": "19:00",
+      "time": "06:00 PM",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T18:00Z",
@@ -2981,14 +3880,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401900907",
       "espnLeagueCode": "ksa.1",
       "homeTeamId": "817",
-      "awayTeamId": "131746"
+      "awayTeamId": "131746",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401900910",
@@ -2998,7 +3908,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/130899.png",
       "league": "Saudi Pro League",
       "status": "Scheduled",
-      "time": "14:50",
+      "time": "01:50 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T13:50Z",
@@ -3009,14 +3919,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401900910",
       "espnLeagueCode": "ksa.1",
       "homeTeamId": "21964",
-      "awayTeamId": "130899"
+      "awayTeamId": "130899",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401900913",
@@ -3026,7 +3947,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/21829.png",
       "league": "Saudi Pro League",
       "status": "Scheduled",
-      "time": "15:55",
+      "time": "02:55 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T14:55Z",
@@ -3037,14 +3958,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401900913",
       "espnLeagueCode": "ksa.1",
       "homeTeamId": "8363",
-      "awayTeamId": "21829"
+      "awayTeamId": "21829",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401900909",
@@ -3054,7 +3986,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2276.png",
       "league": "Saudi Pro League",
       "status": "Scheduled",
-      "time": "19:00",
+      "time": "06:00 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T18:00Z",
@@ -3065,14 +3997,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401900909",
       "espnLeagueCode": "ksa.1",
       "homeTeamId": "929",
-      "awayTeamId": "2276"
+      "awayTeamId": "2276",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401900911",
@@ -3082,7 +4025,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/21965.png",
       "league": "Saudi Pro League",
       "status": "Scheduled",
-      "time": "14:40",
+      "time": "01:40 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T13:40Z",
@@ -3093,14 +4036,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401900911",
       "espnLeagueCode": "ksa.1",
       "homeTeamId": "21827",
-      "awayTeamId": "21965"
+      "awayTeamId": "21965",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401900914",
@@ -3110,7 +4064,7 @@
       "awayLogo": "https://ui-avatars.com/api/?name=Al%20Faisaly&background=334155&color=f8fafc",
       "league": "Saudi Pro League",
       "status": "Scheduled",
-      "time": "16:25",
+      "time": "03:25 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T15:25Z",
@@ -3121,14 +4075,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401900914",
       "espnLeagueCode": "ksa.1",
       "homeTeamId": "21833",
-      "awayTeamId": "21446"
+      "awayTeamId": "21446",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401900906",
@@ -3138,7 +4103,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/18459.png",
       "league": "Saudi Pro League",
       "status": "Scheduled",
-      "time": "19:00",
+      "time": "06:00 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T18:00Z",
@@ -3149,14 +4114,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401900906",
       "espnLeagueCode": "ksa.1",
       "homeTeamId": "793",
-      "awayTeamId": "18459"
+      "awayTeamId": "18459",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401896754",
@@ -3166,7 +4142,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/1010.png",
       "league": "Greek Super League",
       "status": "Scheduled",
-      "time": "17:30",
+      "time": "04:30 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T16:30Z",
@@ -3188,14 +4164,25 @@
         "details": "AEK -525"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401896754",
       "espnLeagueCode": "gre.1",
       "homeTeamId": "887",
-      "awayTeamId": "1010"
+      "awayTeamId": "1010",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401896753",
@@ -3205,7 +4192,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/6790.png",
       "league": "Greek Super League",
       "status": "Scheduled",
-      "time": "17:30",
+      "time": "04:30 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T16:30Z",
@@ -3227,14 +4214,25 @@
         "details": "AST +135"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401896753",
       "espnLeagueCode": "gre.1",
       "homeTeamId": "8354",
-      "awayTeamId": "6790"
+      "awayTeamId": "6790",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401896818",
@@ -3244,7 +4242,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/5276.png",
       "league": "Greek Super League",
       "status": "Scheduled",
-      "time": "15:00",
+      "time": "02:00 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T14:00Z",
@@ -3266,14 +4264,25 @@
         "details": "IRAK +125"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401896818",
       "espnLeagueCode": "gre.1",
       "homeTeamId": "2575",
-      "awayTeamId": "5276"
+      "awayTeamId": "5276",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401896751",
@@ -3283,7 +4292,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/11431.png",
       "league": "Greek Super League",
       "status": "Scheduled",
-      "time": "15:00",
+      "time": "02:00 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T14:00Z",
@@ -3305,14 +4314,25 @@
         "details": "KIF -110"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401896751",
       "espnLeagueCode": "gre.1",
       "homeTeamId": "21969",
-      "awayTeamId": "11431"
+      "awayTeamId": "11431",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401896752",
@@ -3322,7 +4342,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/20043.png",
       "league": "Greek Super League",
       "status": "Scheduled",
-      "time": "17:00",
+      "time": "04:00 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T16:00Z",
@@ -3344,14 +4364,25 @@
         "details": "ARI -225"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401896752",
       "espnLeagueCode": "gre.1",
       "homeTeamId": "11553",
-      "awayTeamId": "20043"
+      "awayTeamId": "20043",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401896750",
@@ -3361,7 +4392,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/443.png",
       "league": "Greek Super League",
       "status": "Scheduled",
-      "time": "19:00",
+      "time": "06:00 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T18:00Z",
@@ -3383,14 +4414,25 @@
         "details": "OLY +115"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401896750",
       "espnLeagueCode": "gre.1",
       "homeTeamId": "435",
-      "awayTeamId": "443"
+      "awayTeamId": "443",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401896819",
@@ -3400,7 +4442,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/132429.png",
       "league": "Greek Super League",
       "status": "Scheduled",
-      "time": "16:00",
+      "time": "03:00 PM",
       "date": "12/10/2026",
       "dateIso": "2026-10-12",
       "utcDate": "2026-10-12T15:00Z",
@@ -3422,14 +4464,25 @@
         "details": "PAOK -550"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401896819",
       "espnLeagueCode": "gre.1",
       "homeTeamId": "605",
-      "awayTeamId": "132429"
+      "awayTeamId": "132429",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401888280",
@@ -3439,7 +4492,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/6870.png",
       "league": "Turkish Super Lig",
       "status": "Scheduled",
-      "time": "18:00",
+      "time": "05:00 PM",
       "date": "09/10/2026",
       "dateIso": "2026-10-09",
       "utcDate": "2026-10-09T17:00Z",
@@ -3461,14 +4514,25 @@
         "details": "GAL -425"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401888280",
       "espnLeagueCode": "tur.1",
       "homeTeamId": "432",
-      "awayTeamId": "6870"
+      "awayTeamId": "6870",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401888379",
@@ -3478,7 +4542,7 @@
       "awayLogo": "https://ui-avatars.com/api/?name=Amed%20SFK&background=334155&color=f8fafc",
       "league": "Turkish Super Lig",
       "status": "Scheduled",
-      "time": "11:30",
+      "time": "10:30 AM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T10:30Z",
@@ -3500,14 +4564,25 @@
         "details": "AMED +145"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401888379",
       "espnLeagueCode": "tur.1",
       "homeTeamId": "996",
-      "awayTeamId": "132335"
+      "awayTeamId": "132335",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401888283",
@@ -3517,7 +4592,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/19267.png",
       "league": "Turkish Super Lig",
       "status": "Scheduled",
-      "time": "14:00",
+      "time": "01:00 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T13:00Z",
@@ -3528,14 +4603,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401888283",
       "espnLeagueCode": "tur.1",
       "homeTeamId": "9078",
-      "awayTeamId": "19267"
+      "awayTeamId": "19267",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401888278",
@@ -3545,7 +4631,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/997.png",
       "league": "Turkish Super Lig",
       "status": "Scheduled",
-      "time": "14:00",
+      "time": "01:00 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T13:00Z",
@@ -3556,14 +4642,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401888278",
       "espnLeagueCode": "tur.1",
       "homeTeamId": "11429",
-      "awayTeamId": "997"
+      "awayTeamId": "997",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401888282",
@@ -3573,7 +4670,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/436.png",
       "league": "Turkish Super Lig",
       "status": "Scheduled",
-      "time": "17:00",
+      "time": "04:00 PM",
       "date": "10/10/2026",
       "dateIso": "2026-10-10",
       "utcDate": "2026-10-10T16:00Z",
@@ -3595,14 +4692,25 @@
         "details": "FEN -135"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401888282",
       "espnLeagueCode": "tur.1",
       "homeTeamId": "7656",
-      "awayTeamId": "436"
+      "awayTeamId": "436",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401888281",
@@ -3612,7 +4720,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/7914.png",
       "league": "Turkish Super Lig",
       "status": "Scheduled",
-      "time": "11:30",
+      "time": "10:30 AM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T10:30Z",
@@ -3623,14 +4731,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401888281",
       "espnLeagueCode": "tur.1",
       "homeTeamId": "7648",
-      "awayTeamId": "7914"
+      "awayTeamId": "7914",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401888380",
@@ -3640,7 +4759,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/132334.png",
       "league": "Turkish Super Lig",
       "status": "Scheduled",
-      "time": "14:00",
+      "time": "01:00 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T13:00Z",
@@ -3662,14 +4781,25 @@
         "details": "GAZ +155"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401888380",
       "espnLeagueCode": "tur.1",
       "homeTeamId": "20070",
-      "awayTeamId": "132334"
+      "awayTeamId": "132334",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401888279",
@@ -3679,7 +4809,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/995.png",
       "league": "Turkish Super Lig",
       "status": "Scheduled",
-      "time": "17:00",
+      "time": "04:00 PM",
       "date": "11/10/2026",
       "dateIso": "2026-10-11",
       "utcDate": "2026-10-11T16:00Z",
@@ -3690,14 +4820,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401888279",
       "espnLeagueCode": "tur.1",
       "homeTeamId": "1895",
-      "awayTeamId": "995"
+      "awayTeamId": "995",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401888284",
@@ -3707,7 +4848,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/789.png",
       "league": "Turkish Super Lig",
       "status": "Scheduled",
-      "time": "18:00",
+      "time": "05:00 PM",
       "date": "12/10/2026",
       "dateIso": "2026-10-12",
       "utcDate": "2026-10-12T17:00Z",
@@ -3718,14 +4859,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401888284",
       "espnLeagueCode": "tur.1",
       "homeTeamId": "20729",
-      "awayTeamId": "789"
+      "awayTeamId": "789",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401915855",
@@ -3735,7 +4887,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/174.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "17:45",
+      "time": "04:45 PM",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T16:45Z",
@@ -3757,14 +4909,24 @@
         "details": "MON -220"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401915855",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "10834",
-      "awayTeamId": "174"
+      "awayTeamId": "174",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401915854",
@@ -3774,7 +4936,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2922.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "17:45",
+      "time": "04:45 PM",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T16:45Z",
@@ -3796,14 +4958,24 @@
         "details": "GET +130"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401915854",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "8089",
-      "awayTeamId": "2922"
+      "awayTeamId": "2922",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401915859",
@@ -3813,7 +4985,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/572.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "17:45",
+      "time": "04:45 PM",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T16:45Z",
@@ -3824,14 +4996,24 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401915859",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "21943",
-      "awayTeamId": "572"
+      "awayTeamId": "572",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401915748",
@@ -3841,7 +5023,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2290.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "17:45",
+      "time": "04:45 PM",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T16:45Z",
@@ -3863,14 +5045,24 @@
         "details": "RSB +140"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401915748",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "7672",
-      "awayTeamId": "2290"
+      "awayTeamId": "2290",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401915861",
@@ -3880,7 +5072,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/139.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "17:45",
+      "time": "04:45 PM",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T16:45Z",
@@ -3902,14 +5094,24 @@
         "details": "AJA -190"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401915861",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "489",
-      "awayTeamId": "139"
+      "awayTeamId": "139",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401915860",
@@ -3919,7 +5121,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/7853.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "17:45",
+      "time": "04:45 PM",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T16:45Z",
@@ -3941,14 +5143,24 @@
         "details": "GENT -165"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401915860",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "3611",
-      "awayTeamId": "7853"
+      "awayTeamId": "7853",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401915858",
@@ -3958,7 +5170,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/997.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "17:45",
+      "time": "04:45 PM",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T16:45Z",
@@ -3980,14 +5192,24 @@
         "details": "TRAB -210"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401915858",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "8169",
-      "awayTeamId": "997"
+      "awayTeamId": "997",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401915857",
@@ -3997,7 +5219,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/20703.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "17:45",
+      "time": "04:45 PM",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T16:45Z",
@@ -4019,14 +5241,24 @@
         "details": "MJA -450"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401915857",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "20301",
-      "awayTeamId": "20703"
+      "awayTeamId": "20703",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401915856",
@@ -4036,7 +5268,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/20710.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "17:45",
+      "time": "04:45 PM",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T16:45Z",
@@ -4058,14 +5290,24 @@
         "details": "PAO -450"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401915856",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "443",
-      "awayTeamId": "20710"
+      "awayTeamId": "20710",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401915747",
@@ -4075,7 +5317,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2528.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "17:45",
+      "time": "04:45 PM",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T16:45Z",
@@ -4097,14 +5339,24 @@
         "details": "RIG -115"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401915747",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "19246",
-      "awayTeamId": "2528"
+      "awayTeamId": "2528",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401915746",
@@ -4114,7 +5366,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/22281.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "20:00",
+      "time": "07:00 PM",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T19:00Z",
@@ -4136,14 +5388,24 @@
         "details": "ATA -280"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401915746",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "105",
-      "awayTeamId": "22281"
+      "awayTeamId": "22281",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401915853",
@@ -4153,7 +5415,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/20028.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "20:00",
+      "time": "07:00 PM",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T19:00Z",
@@ -4175,14 +5437,24 @@
         "details": "BHA -5000"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401915853",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "331",
-      "awayTeamId": "20028"
+      "awayTeamId": "20028",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401915852",
@@ -4192,7 +5464,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2994.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "20:00",
+      "time": "07:00 PM",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T19:00Z",
@@ -4214,14 +5486,24 @@
         "details": "KBH +145"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401915852",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "909",
-      "awayTeamId": "2994"
+      "awayTeamId": "2994",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401915851",
@@ -4231,7 +5513,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/3024.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "20:00",
+      "time": "07:00 PM",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T19:00Z",
@@ -4253,14 +5535,24 @@
         "details": "TWE -525"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401915851",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "152",
-      "awayTeamId": "3024"
+      "awayTeamId": "3024",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401915850",
@@ -4270,7 +5562,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/3101.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "20:00",
+      "time": "07:00 PM",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T19:00Z",
@@ -4292,14 +5584,24 @@
         "details": "FCN +150"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401915850",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "262",
-      "awayTeamId": "3101"
+      "awayTeamId": "3101",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401915848",
@@ -4309,7 +5611,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/7922.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "20:00",
+      "time": "07:00 PM",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T19:00Z",
@@ -4331,14 +5633,24 @@
         "details": "SCF -360"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401915848",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "126",
-      "awayTeamId": "7922"
+      "awayTeamId": "7922",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401915849",
@@ -4348,7 +5660,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/20025.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "20:00",
+      "time": "07:00 PM",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T19:00Z",
@@ -4370,14 +5682,24 @@
         "details": "STVV -250"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401915849",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "936",
-      "awayTeamId": "20025"
+      "awayTeamId": "20025",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401915847",
@@ -4387,7 +5709,7 @@
       "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/17856.png",
       "league": "UEFA Conference League",
       "status": "Scheduled",
-      "time": "20:00",
+      "time": "07:00 PM",
       "date": "15/10/2026",
       "dateIso": "2026-10-15",
       "utcDate": "2026-10-15T19:00Z",
@@ -4409,14 +5731,24 @@
         "details": "SKBR -700"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401915847",
       "espnLeagueCode": "uefa.europa.conf",
       "homeTeamId": "620",
-      "awayTeamId": "17856"
+      "awayTeamId": "17856",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401861047",
@@ -4448,14 +5780,26 @@
         "details": "MLT +135"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401861047",
       "espnLeagueCode": "uefa.nations",
       "homeTeamId": "587",
-      "awayTeamId": "453"
+      "awayTeamId": "453",
+      "broadcast": "UEFA.tv, FOX Sports, ITV",
+      "channels": [
+        "UEFA.tv",
+        "FOX Sports",
+        "ITV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401861048",
@@ -4487,14 +5831,26 @@
         "details": "AUT -250"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401861048",
       "espnLeagueCode": "uefa.nations",
       "homeTeamId": "474",
-      "awayTeamId": "461"
+      "awayTeamId": "461",
+      "broadcast": "UEFA.tv, FOX Sports, ITV",
+      "channels": [
+        "UEFA.tv",
+        "FOX Sports",
+        "ITV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401861045",
@@ -4526,14 +5882,26 @@
         "details": "KOS +140"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401861045",
       "espnLeagueCode": "uefa.nations",
       "homeTeamId": "18272",
-      "awayTeamId": "476"
+      "awayTeamId": "476",
+      "broadcast": "UEFA.tv, FOX Sports, ITV",
+      "channels": [
+        "UEFA.tv",
+        "FOX Sports",
+        "ITV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401861043",
@@ -4565,14 +5933,26 @@
         "details": "LTU -340"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401861043",
       "espnLeagueCode": "uefa.nations",
       "homeTeamId": "589",
-      "awayTeamId": "460"
+      "awayTeamId": "460",
+      "broadcast": "UEFA.tv, FOX Sports, ITV",
+      "channels": [
+        "UEFA.tv",
+        "FOX Sports",
+        "ITV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401861041",
@@ -4604,14 +5984,26 @@
         "details": "NED +130"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401861041",
       "espnLeagueCode": "uefa.nations",
       "homeTeamId": "449",
-      "awayTeamId": "481"
+      "awayTeamId": "481",
+      "broadcast": "UEFA.tv, FOX Sports, ITV",
+      "channels": [
+        "UEFA.tv",
+        "FOX Sports",
+        "ITV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401861046",
@@ -4643,14 +6035,26 @@
         "details": "NOR -140"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401861046",
       "espnLeagueCode": "uefa.nations",
       "homeTeamId": "464",
-      "awayTeamId": "479"
+      "awayTeamId": "479",
+      "broadcast": "UEFA.tv, FOX Sports, ITV",
+      "channels": [
+        "UEFA.tv",
+        "FOX Sports",
+        "ITV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401861044",
@@ -4682,14 +6086,26 @@
         "details": "POR -500"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401861044",
       "espnLeagueCode": "uefa.nations",
       "homeTeamId": "482",
-      "awayTeamId": "578"
+      "awayTeamId": "578",
+      "broadcast": "UEFA.tv, FOX Sports, ITV",
+      "channels": [
+        "UEFA.tv",
+        "FOX Sports",
+        "ITV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401861042",
@@ -4721,14 +6137,26 @@
         "details": "SRB +150"
       },
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401861042",
       "espnLeagueCode": "uefa.nations",
       "homeTeamId": "6757",
-      "awayTeamId": "455"
+      "awayTeamId": "455",
+      "broadcast": "UEFA.tv, FOX Sports, ITV",
+      "channels": [
+        "UEFA.tv",
+        "FOX Sports",
+        "ITV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401918750",
@@ -4738,7 +6166,7 @@
       "awayLogo": "https://ui-avatars.com/api/?name=CD%20Tede%C3%B3n&background=334155&color=f8fafc",
       "league": "Copa del Rey",
       "status": "Scheduled",
-      "time": "17:00",
+      "time": "04:00 PM",
       "date": "26/09/2026",
       "dateIso": "2026-09-26",
       "utcDate": "2026-09-26T16:00Z",
@@ -4749,14 +6177,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401918750",
       "espnLeagueCode": "esp.copa_del_rey",
       "homeTeamId": "20776",
-      "awayTeamId": "133838"
+      "awayTeamId": "133838",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401918755",
@@ -4766,7 +6205,7 @@
       "awayLogo": "https://ui-avatars.com/api/?name=CD%20Bazt%C3%A1n&background=334155&color=f8fafc",
       "league": "Copa del Rey",
       "status": "Scheduled",
-      "time": "17:00",
+      "time": "04:00 PM",
       "date": "26/09/2026",
       "dateIso": "2026-09-26",
       "utcDate": "2026-09-26T16:00Z",
@@ -4777,14 +6216,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401918755",
       "espnLeagueCode": "esp.copa_del_rey",
       "homeTeamId": "131403",
-      "awayTeamId": "22372"
+      "awayTeamId": "22372",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401918765",
@@ -4794,7 +6244,7 @@
       "awayLogo": "https://ui-avatars.com/api/?name=Ceuta%206%20de%20Junio&background=334155&color=f8fafc",
       "league": "Copa del Rey",
       "status": "Scheduled",
-      "time": "17:00",
+      "time": "04:00 PM",
       "date": "26/09/2026",
       "dateIso": "2026-09-26",
       "utcDate": "2026-09-26T16:00Z",
@@ -4805,14 +6255,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401918765",
       "espnLeagueCode": "esp.copa_del_rey",
       "homeTeamId": "133844",
-      "awayTeamId": "133851"
+      "awayTeamId": "133851",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401918756",
@@ -4822,7 +6283,7 @@
       "awayLogo": "https://ui-avatars.com/api/?name=SD%20Noja&background=334155&color=f8fafc",
       "league": "Copa del Rey",
       "status": "Scheduled",
-      "time": "18:00",
+      "time": "05:00 PM",
       "date": "26/09/2026",
       "dateIso": "2026-09-26",
       "utcDate": "2026-09-26T17:00Z",
@@ -4833,14 +6294,25 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401918756",
       "espnLeagueCode": "esp.copa_del_rey",
       "homeTeamId": "133842",
-      "awayTeamId": "133850"
+      "awayTeamId": "133850",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     },
     {
       "id": "401918764",
@@ -4850,7 +6322,7 @@
       "awayLogo": "https://ui-avatars.com/api/?name=Atl%C3%A9tico%20Melilla&background=334155&color=f8fafc",
       "league": "Copa del Rey",
       "status": "Scheduled",
-      "time": "19:00",
+      "time": "06:00 PM",
       "date": "26/09/2026",
       "dateIso": "2026-09-26",
       "utcDate": "2026-09-26T18:00Z",
@@ -4861,17 +6333,1288 @@
       },
       "odds": null,
       "isCompleted": false,
+      "isLive": false,
       "homeScore": null,
       "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
       "actualScore": null,
       "actualWinner": null,
       "espnEventId": "401918764",
       "espnLeagueCode": "esp.copa_del_rey",
       "homeTeamId": "133832",
-      "awayTeamId": "131419"
+      "awayTeamId": "131419",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401884770",
+      "home": "Eintracht Frankfurt",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/125.png",
+      "away": "FC Cologne",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/122.png",
+      "league": "Bundesliga",
+      "status": "Scheduled",
+      "time": "06:30 PM",
+      "date": "10/16/2026",
+      "dateIso": "2026-10-16",
+      "utcDate": "2026-10-16T18:30Z",
+      "timestamp": 1792175400000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": {
+        "provider": "DraftKings",
+        "homeOdds": 1.91,
+        "awayOdds": 3.15,
+        "drawOdds": 3.85,
+        "homeProb": 47.6,
+        "awayProb": 28.8,
+        "drawProb": 23.6,
+        "marketFav": "HOME",
+        "overUnder": 3.5,
+        "details": "SGE -110"
+      },
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401884770",
+      "espnLeagueCode": "ger.1",
+      "homeTeamId": "125",
+      "awayTeamId": "122",
+      "broadcast": "ESPN+, Sky Sport",
+      "channels": [
+        "ESPN+",
+        "Sky Sport"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401875583",
+      "home": "Heerenveen",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/146.png",
+      "away": "Excelsior",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2566.png",
+      "league": "Eredivisie",
+      "status": "Scheduled",
+      "time": "06:00 PM",
+      "date": "10/16/2026",
+      "dateIso": "2026-10-16",
+      "utcDate": "2026-10-16T18:00Z",
+      "timestamp": 1792173600000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": null,
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401875583",
+      "espnLeagueCode": "ned.1",
+      "homeTeamId": "146",
+      "awayTeamId": "2566",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401876437",
+      "home": "Le Mans",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2697.png",
+      "away": "Toulouse",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/179.png",
+      "league": "Ligue 1",
+      "status": "Scheduled",
+      "time": "06:45 PM",
+      "date": "10/16/2026",
+      "dateIso": "2026-10-16",
+      "utcDate": "2026-10-16T18:45Z",
+      "timestamp": 1792176300000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": {
+        "provider": "DraftKings",
+        "homeOdds": 3.05,
+        "awayOdds": 2.25,
+        "drawOdds": 3.35,
+        "homeProb": 30.6,
+        "awayProb": 41.5,
+        "drawProb": 27.9,
+        "marketFav": "AWAY",
+        "overUnder": 2.5,
+        "details": "TOU +125"
+      },
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401876437",
+      "espnLeagueCode": "fra.1",
+      "homeTeamId": "2697",
+      "awayTeamId": "179",
+      "broadcast": "beIN SPORTS, DAZN",
+      "channels": [
+        "beIN SPORTS",
+        "DAZN"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401874959",
+      "home": "Frosinone",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/4057.png",
+      "away": "Sassuolo",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/3997.png",
+      "league": "Serie A",
+      "status": "Scheduled",
+      "time": "06:45 PM",
+      "date": "10/16/2026",
+      "dateIso": "2026-10-16",
+      "utcDate": "2026-10-16T18:45Z",
+      "timestamp": 1792176300000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": {
+        "provider": "DraftKings",
+        "homeOdds": 2.35,
+        "awayOdds": 2.75,
+        "drawOdds": 3.2,
+        "homeProb": 38.6,
+        "awayProb": 33,
+        "drawProb": 28.4,
+        "marketFav": "HOME",
+        "overUnder": 2.5,
+        "details": "FRO +135"
+      },
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401874959",
+      "espnLeagueCode": "ita.1",
+      "homeTeamId": "4057",
+      "awayTeamId": "3997",
+      "broadcast": "Paramount+",
+      "channels": [
+        "Paramount+"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401900450",
+      "home": "Al Faisaly",
+      "homeLogo": "https://ui-avatars.com/api/?name=Al%20Faisaly&background=334155&color=f8fafc",
+      "away": "Al Kholood",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/22028.png",
+      "league": "Saudi Pro League",
+      "status": "Scheduled",
+      "time": "01:40 PM",
+      "date": "10/15/2026",
+      "dateIso": "2026-10-15",
+      "utcDate": "2026-10-15T13:40Z",
+      "timestamp": 1792071600000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": null,
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401900450",
+      "espnLeagueCode": "ksa.1",
+      "homeTeamId": "21446",
+      "awayTeamId": "22028",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401900902",
+      "home": "Al Khaleej",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/21829.png",
+      "away": "Al Fayha",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/21827.png",
+      "league": "Saudi Pro League",
+      "status": "Scheduled",
+      "time": "02:50 PM",
+      "date": "10/15/2026",
+      "dateIso": "2026-10-15",
+      "utcDate": "2026-10-15T14:50Z",
+      "timestamp": 1792075800000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": null,
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401900902",
+      "espnLeagueCode": "ksa.1",
+      "homeTeamId": "21829",
+      "awayTeamId": "21827",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401900904",
+      "home": "Al Hazem",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/21964.png",
+      "away": "Al Fateh",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/13033.png",
+      "league": "Saudi Pro League",
+      "status": "Scheduled",
+      "time": "03:15 PM",
+      "date": "10/15/2026",
+      "dateIso": "2026-10-15",
+      "utcDate": "2026-10-15T15:15Z",
+      "timestamp": 1792077300000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": null,
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401900904",
+      "espnLeagueCode": "ksa.1",
+      "homeTeamId": "21964",
+      "awayTeamId": "13033",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401900905",
+      "home": "Al Ahli",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/8346.png",
+      "away": "Al Nassr",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/817.png",
+      "league": "Saudi Pro League",
+      "status": "Scheduled",
+      "time": "06:00 PM",
+      "date": "10/15/2026",
+      "dateIso": "2026-10-15",
+      "utcDate": "2026-10-15T18:00Z",
+      "timestamp": 1792087200000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": null,
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401900905",
+      "espnLeagueCode": "ksa.1",
+      "homeTeamId": "8346",
+      "awayTeamId": "817",
+      "broadcast": "Free Live Stream, Club TV",
+      "channels": [
+        "Free Live Stream",
+        "Club TV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401861050",
+      "home": "Armenia",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/fifa.armenia.png",
+      "away": "Latvia",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/lva.png",
+      "league": "UEFA Nations League",
+      "status": "Scheduled",
+      "time": "04:00 PM",
+      "date": "9/25/2026",
+      "dateIso": "2026-09-25",
+      "utcDate": "2026-09-25T16:00Z",
+      "timestamp": 1790352000000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": {
+        "provider": "DraftKings",
+        "homeOdds": 1.8,
+        "awayOdds": 4.2,
+        "drawOdds": 3.45,
+        "homeProb": 51.3,
+        "awayProb": 22,
+        "drawProb": 26.8,
+        "marketFav": "HOME",
+        "overUnder": 2.5,
+        "details": "ARM -125"
+      },
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401861050",
+      "espnLeagueCode": "uefa.nations",
+      "homeTeamId": "579",
+      "awayTeamId": "456",
+      "broadcast": "UEFA.tv, FOX Sports, ITV",
+      "channels": [
+        "UEFA.tv",
+        "FOX Sports",
+        "ITV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401861049",
+      "home": "Georgia",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/geo.png",
+      "away": "Northern Ireland",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/nir.png",
+      "league": "UEFA Nations League",
+      "status": "Scheduled",
+      "time": "04:00 PM",
+      "date": "9/25/2026",
+      "dateIso": "2026-09-25",
+      "utcDate": "2026-09-25T16:00Z",
+      "timestamp": 1790352000000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": {
+        "provider": "DraftKings",
+        "homeOdds": 1.83,
+        "awayOdds": 4.2,
+        "drawOdds": 3.35,
+        "homeProb": 50.5,
+        "awayProb": 22,
+        "drawProb": 27.6,
+        "marketFav": "HOME",
+        "overUnder": 2.5,
+        "details": "GEO -120"
+      },
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401861049",
+      "espnLeagueCode": "uefa.nations",
+      "homeTeamId": "584",
+      "awayTeamId": "586",
+      "broadcast": "UEFA.tv, FOX Sports, ITV",
+      "channels": [
+        "UEFA.tv",
+        "FOX Sports",
+        "ITV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401861054",
+      "home": "Hungary",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/hun.png",
+      "away": "Ukraine",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/ukr.png",
+      "league": "UEFA Nations League",
+      "status": "Scheduled",
+      "time": "06:45 PM",
+      "date": "9/25/2026",
+      "dateIso": "2026-09-25",
+      "utcDate": "2026-09-25T18:45Z",
+      "timestamp": 1790361900000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": {
+        "provider": "DraftKings",
+        "homeOdds": 2.25,
+        "awayOdds": 3.15,
+        "drawOdds": 3.2,
+        "homeProb": 41.4,
+        "awayProb": 29.5,
+        "drawProb": 29.1,
+        "marketFav": "HOME",
+        "overUnder": 2.5,
+        "details": "HUN +125"
+      },
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401861054",
+      "espnLeagueCode": "uefa.nations",
+      "homeTeamId": "480",
+      "awayTeamId": "457",
+      "broadcast": "UEFA.tv, FOX Sports, ITV",
+      "channels": [
+        "UEFA.tv",
+        "FOX Sports",
+        "ITV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401861052",
+      "home": "Italy",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/ita.png",
+      "away": "Belgium",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/bel.png",
+      "league": "UEFA Nations League",
+      "status": "Scheduled",
+      "time": "06:45 PM",
+      "date": "9/25/2026",
+      "dateIso": "2026-09-25",
+      "utcDate": "2026-09-25T18:45Z",
+      "timestamp": 1790361900000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": {
+        "provider": "DraftKings",
+        "homeOdds": 2.2,
+        "awayOdds": 3,
+        "drawOdds": 3.45,
+        "homeProb": 42.2,
+        "awayProb": 30.9,
+        "drawProb": 26.9,
+        "marketFav": "HOME",
+        "overUnder": 2.5,
+        "details": "ITA +120"
+      },
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401861052",
+      "espnLeagueCode": "uefa.nations",
+      "homeTeamId": "162",
+      "awayTeamId": "459",
+      "broadcast": "FS2",
+      "channels": [
+        "FS2"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401861056",
+      "home": "Montenegro",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/mtg.png",
+      "away": "Cyprus",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/cyp.png",
+      "league": "UEFA Nations League",
+      "status": "Scheduled",
+      "time": "06:45 PM",
+      "date": "9/25/2026",
+      "dateIso": "2026-09-25",
+      "utcDate": "2026-09-25T18:45Z",
+      "timestamp": 1790361900000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": {
+        "provider": "DraftKings",
+        "homeOdds": 1.8,
+        "awayOdds": 4.2,
+        "drawOdds": 3.5,
+        "homeProb": 51.5,
+        "awayProb": 22.1,
+        "drawProb": 26.5,
+        "marketFav": "HOME",
+        "overUnder": 2.5,
+        "details": "MNE -125"
+      },
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401861056",
+      "espnLeagueCode": "uefa.nations",
+      "homeTeamId": "6775",
+      "awayTeamId": "445",
+      "broadcast": "UEFA.tv, FOX Sports, ITV",
+      "channels": [
+        "UEFA.tv",
+        "FOX Sports",
+        "ITV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401861055",
+      "home": "Poland",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/pol.png",
+      "away": "Bosnia-Herzegovina",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/bih.png",
+      "league": "UEFA Nations League",
+      "status": "Scheduled",
+      "time": "06:45 PM",
+      "date": "9/25/2026",
+      "dateIso": "2026-09-25",
+      "utcDate": "2026-09-25T18:45Z",
+      "timestamp": 1790361900000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": {
+        "provider": "DraftKings",
+        "homeOdds": 1.61,
+        "awayOdds": 5,
+        "drawOdds": 3.8,
+        "homeProb": 57.3,
+        "awayProb": 18.4,
+        "drawProb": 24.3,
+        "marketFav": "HOME",
+        "overUnder": 2.5,
+        "details": "POL -165"
+      },
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401861055",
+      "espnLeagueCode": "uefa.nations",
+      "homeTeamId": "471",
+      "awayTeamId": "452",
+      "broadcast": "UEFA.tv, FOX Sports, ITV",
+      "channels": [
+        "UEFA.tv",
+        "FOX Sports",
+        "ITV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401861051",
+      "home": "Sweden",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/swe.png",
+      "away": "Romania",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/rom.png",
+      "league": "UEFA Nations League",
+      "status": "Scheduled",
+      "time": "06:45 PM",
+      "date": "9/25/2026",
+      "dateIso": "2026-09-25",
+      "utcDate": "2026-09-25T18:45Z",
+      "timestamp": 1790361900000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": {
+        "provider": "DraftKings",
+        "homeOdds": 1.42,
+        "awayOdds": 6.5,
+        "drawOdds": 4.6,
+        "homeProb": 65.5,
+        "awayProb": 14.3,
+        "drawProb": 20.2,
+        "marketFav": "HOME",
+        "overUnder": 2.5,
+        "details": "SWE -240"
+      },
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401861051",
+      "espnLeagueCode": "uefa.nations",
+      "homeTeamId": "466",
+      "awayTeamId": "473",
+      "broadcast": "UEFA.tv, FOX Sports, ITV",
+      "channels": [
+        "UEFA.tv",
+        "FOX Sports",
+        "ITV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401861053",
+      "home": "Türkiye",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/tur.png",
+      "away": "France",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/fra.png",
+      "league": "UEFA Nations League",
+      "status": "Scheduled",
+      "time": "06:45 PM",
+      "date": "9/25/2026",
+      "dateIso": "2026-09-25",
+      "utcDate": "2026-09-25T18:45Z",
+      "timestamp": 1790361900000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": {
+        "provider": "DraftKings",
+        "homeOdds": 8,
+        "awayOdds": 1.31,
+        "drawOdds": 5.25,
+        "homeProb": 11.6,
+        "awayProb": 70.8,
+        "drawProb": 17.7,
+        "marketFav": "AWAY",
+        "overUnder": 3.5,
+        "details": "FRA -320"
+      },
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401861053",
+      "espnLeagueCode": "uefa.nations",
+      "homeTeamId": "465",
+      "awayTeamId": "478",
+      "broadcast": "UEFA.tv, FOX Sports, ITV",
+      "channels": [
+        "UEFA.tv",
+        "FOX Sports",
+        "ITV"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401916345",
+      "home": "Colo Colo",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2688.png",
+      "away": "Audax Italiano",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/4138.png",
+      "league": "Copa Chile",
+      "status": "Scheduled",
+      "time": "11:00 PM",
+      "date": "9/25/2026",
+      "dateIso": "2026-09-25",
+      "utcDate": "2026-09-25T23:00Z",
+      "timestamp": 1790377200000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": {
+        "provider": "DraftKings",
+        "homeOdds": 1.57,
+        "awayOdds": 6.5,
+        "drawOdds": 3.7,
+        "homeProb": 60,
+        "awayProb": 14.5,
+        "drawProb": 25.5,
+        "marketFav": "HOME",
+        "overUnder": 2.5,
+        "details": "COL -175"
+      },
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401916345",
+      "espnLeagueCode": "chi.copa_chi",
+      "homeTeamId": "2688",
+      "awayTeamId": "4138",
+      "broadcast": "TNT Sports Chile, TNT Sports HD, Estadio TNT Sports",
+      "channels": [
+        "TNT Sports Chile",
+        "TNT Sports HD",
+        "Estadio TNT Sports"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401850654",
+      "home": "Universidad de Concepción",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/5362.png",
+      "away": "Huachipato",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/4134.png",
+      "league": "Chilean Primera División",
+      "status": "Scheduled",
+      "time": "11:00 PM",
+      "date": "10/2/2026",
+      "dateIso": "2026-10-02",
+      "utcDate": "2026-10-02T23:00Z",
+      "timestamp": 1790982000000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": {
+        "provider": "DraftKings",
+        "homeOdds": 2.05,
+        "awayOdds": 3.45,
+        "drawOdds": 3.6,
+        "homeProb": 46.2,
+        "awayProb": 27.5,
+        "drawProb": 26.3,
+        "marketFav": "HOME",
+        "overUnder": 2.5,
+        "details": "UdeC +105"
+      },
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401850654",
+      "espnLeagueCode": "chi.1",
+      "homeTeamId": "5362",
+      "awayTeamId": "4134",
+      "broadcast": "ESPN+, ITV4, Premier Sports",
+      "channels": [
+        "ESPN+",
+        "ITV4",
+        "Premier Sports"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401850660",
+      "home": "Cobresal",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/4133.png",
+      "away": "Universidad de Concepción",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/5362.png",
+      "league": "Chilean Primera División",
+      "status": "Scheduled",
+      "time": "06:00 PM",
+      "date": "10/10/2026",
+      "dateIso": "2026-10-10",
+      "utcDate": "2026-10-10T18:00Z",
+      "timestamp": 1791655200000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": {
+        "provider": "DraftKings",
+        "homeOdds": 2.1,
+        "awayOdds": 3.15,
+        "drawOdds": 3.45,
+        "homeProb": 43.9,
+        "awayProb": 29.3,
+        "drawProb": 26.8,
+        "marketFav": "HOME",
+        "overUnder": 2.5,
+        "details": "COB +110"
+      },
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401850660",
+      "espnLeagueCode": "chi.1",
+      "homeTeamId": "4133",
+      "awayTeamId": "5362",
+      "broadcast": "ESPN+, ITV4, Premier Sports",
+      "channels": [
+        "ESPN+",
+        "ITV4",
+        "Premier Sports"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401850664",
+      "home": "Huachipato",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/4134.png",
+      "away": "O'Higgins",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/6072.png",
+      "league": "Chilean Primera División",
+      "status": "Scheduled",
+      "time": "08:30 PM",
+      "date": "10/10/2026",
+      "dateIso": "2026-10-10",
+      "utcDate": "2026-10-10T20:30Z",
+      "timestamp": 1791664200000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": {
+        "provider": "DraftKings",
+        "homeOdds": 2.75,
+        "awayOdds": 2.35,
+        "drawOdds": 3.35,
+        "homeProb": 33.4,
+        "awayProb": 39.1,
+        "drawProb": 27.4,
+        "marketFav": "AWAY",
+        "overUnder": 2.5,
+        "details": "OHI +135"
+      },
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401850664",
+      "espnLeagueCode": "chi.1",
+      "homeTeamId": "4134",
+      "awayTeamId": "6072",
+      "broadcast": "ESPN+, ITV4, Premier Sports",
+      "channels": [
+        "ESPN+",
+        "ITV4",
+        "Premier Sports"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401850663",
+      "home": "Universidad Católica",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/885.png",
+      "away": "Audax Italiano",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/4138.png",
+      "league": "Chilean Primera División",
+      "status": "Scheduled",
+      "time": "11:00 PM",
+      "date": "10/10/2026",
+      "dateIso": "2026-10-10",
+      "utcDate": "2026-10-10T23:00Z",
+      "timestamp": 1791673200000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": {
+        "provider": "DraftKings",
+        "homeOdds": 1.54,
+        "awayOdds": 5.25,
+        "drawOdds": 4.1,
+        "homeProb": 59.9,
+        "awayProb": 17.6,
+        "drawProb": 22.5,
+        "marketFav": "HOME",
+        "overUnder": 2.5,
+        "details": "CDUC -185"
+      },
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401850663",
+      "espnLeagueCode": "chi.1",
+      "homeTeamId": "885",
+      "awayTeamId": "4138",
+      "broadcast": "ESPN+, ITV4, Premier Sports",
+      "channels": [
+        "ESPN+",
+        "ITV4",
+        "Premier Sports"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401850665",
+      "home": "Everton CD",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/4129.png",
+      "away": "La Serena",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/4137.png",
+      "league": "Chilean Primera División",
+      "status": "Scheduled",
+      "time": "03:30 PM",
+      "date": "10/11/2026",
+      "dateIso": "2026-10-11",
+      "utcDate": "2026-10-11T15:30Z",
+      "timestamp": 1791732600000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": {
+        "provider": "DraftKings",
+        "homeOdds": 1.74,
+        "awayOdds": 4.1,
+        "drawOdds": 3.85,
+        "homeProb": 53.3,
+        "awayProb": 22.6,
+        "drawProb": 24.1,
+        "marketFav": "HOME",
+        "overUnder": 2.5,
+        "details": "EVE -135"
+      },
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401850665",
+      "espnLeagueCode": "chi.1",
+      "homeTeamId": "4129",
+      "awayTeamId": "4137",
+      "broadcast": "ESPN+, ITV4, Premier Sports",
+      "channels": [
+        "ESPN+",
+        "ITV4",
+        "Premier Sports"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401850661",
+      "home": "Coquimbo Unido",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/8186.png",
+      "away": "Colo Colo",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/2688.png",
+      "league": "Chilean Primera División",
+      "status": "Scheduled",
+      "time": "06:00 PM",
+      "date": "10/11/2026",
+      "dateIso": "2026-10-11",
+      "utcDate": "2026-10-11T18:00Z",
+      "timestamp": 1791741600000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": {
+        "provider": "DraftKings",
+        "homeOdds": 3.05,
+        "awayOdds": 2.25,
+        "drawOdds": 3.25,
+        "homeProb": 30.4,
+        "awayProb": 41.2,
+        "drawProb": 28.5,
+        "marketFav": "AWAY",
+        "overUnder": 2.5,
+        "details": "COL +125"
+      },
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401850661",
+      "espnLeagueCode": "chi.1",
+      "homeTeamId": "8186",
+      "awayTeamId": "2688",
+      "broadcast": "ESPN+, ITV4, Premier Sports",
+      "channels": [
+        "ESPN+",
+        "ITV4",
+        "Premier Sports"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401850667",
+      "home": "Deportes Concepcion",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/8110.png",
+      "away": "Unión La Calera",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/10144.png",
+      "league": "Chilean Primera División",
+      "status": "Scheduled",
+      "time": "08:30 PM",
+      "date": "10/11/2026",
+      "dateIso": "2026-10-11",
+      "utcDate": "2026-10-11T20:30Z",
+      "timestamp": 1791750600000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": {
+        "provider": "DraftKings",
+        "homeOdds": 2,
+        "awayOdds": 3.7,
+        "drawOdds": 3.15,
+        "homeProb": 46,
+        "awayProb": 24.8,
+        "drawProb": 29.2,
+        "marketFav": "HOME",
+        "overUnder": 2.5,
+        "details": "CON +100"
+      },
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401850667",
+      "espnLeagueCode": "chi.1",
+      "homeTeamId": "8110",
+      "awayTeamId": "10144",
+      "broadcast": "ESPN+, ITV4, Premier Sports",
+      "channels": [
+        "ESPN+",
+        "ITV4",
+        "Premier Sports"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401850666",
+      "home": "Deportes Limache",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/19195.png",
+      "away": "Palestino",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/4422.png",
+      "league": "Chilean Primera División",
+      "status": "Scheduled",
+      "time": "11:00 PM",
+      "date": "10/11/2026",
+      "dateIso": "2026-10-11",
+      "utcDate": "2026-10-11T23:00Z",
+      "timestamp": 1791759600000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": {
+        "provider": "DraftKings",
+        "homeOdds": 2.15,
+        "awayOdds": 2.9,
+        "drawOdds": 3.6,
+        "homeProb": 42.8,
+        "awayProb": 31.7,
+        "drawProb": 25.5,
+        "marketFav": "HOME",
+        "overUnder": 2.5,
+        "details": "LIM +115"
+      },
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401850666",
+      "espnLeagueCode": "chi.1",
+      "homeTeamId": "19195",
+      "awayTeamId": "4422",
+      "broadcast": "ESPN+, ITV4, Premier Sports",
+      "channels": [
+        "ESPN+",
+        "ITV4",
+        "Premier Sports"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
+    },
+    {
+      "id": "401850662",
+      "home": "Universidad de Chile",
+      "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/4139.png",
+      "away": "Ñublense",
+      "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/7427.png",
+      "league": "Chilean Primera División",
+      "status": "Scheduled",
+      "time": "09:00 PM",
+      "date": "10/12/2026",
+      "dateIso": "2026-10-12",
+      "utcDate": "2026-10-12T21:00Z",
+      "timestamp": 1791838800000,
+      "goals": {
+        "home": null,
+        "away": null
+      },
+      "odds": {
+        "provider": "DraftKings",
+        "homeOdds": 1.49,
+        "awayOdds": 6,
+        "drawOdds": 4.2,
+        "homeProb": 62.4,
+        "awayProb": 15.5,
+        "drawProb": 22.1,
+        "marketFav": "HOME",
+        "overUnder": 2.5,
+        "details": "U. de Chile -205"
+      },
+      "isCompleted": false,
+      "isLive": false,
+      "homeScore": null,
+      "awayScore": null,
+      "liveHomeScore": null,
+      "liveAwayScore": null,
+      "actualScore": null,
+      "actualWinner": null,
+      "espnEventId": "401850662",
+      "espnLeagueCode": "chi.1",
+      "homeTeamId": "4139",
+      "awayTeamId": "7427",
+      "broadcast": "ESPN+, ITV4, Premier Sports",
+      "channels": [
+        "ESPN+",
+        "ITV4",
+        "Premier Sports"
+      ],
+      "liveMinute": null,
+      "liveScore": null,
+      "inPlayPrediction": null
     }
   ],
   "yesterdayMatches": [],
   "todayCompletedMatches": [],
-  "cachedAt": "2026-09-23T22:19:40.365Z"
+  "cachedAt": "2026-09-25T07:39:31.028Z"
 }

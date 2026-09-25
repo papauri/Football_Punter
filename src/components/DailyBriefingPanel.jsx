@@ -129,6 +129,22 @@ export default function DailyBriefingPanel({
       // WATCH: within 4h of kickoff
       const isWatch = !isReadyToBet && msToKickoff <= 4 * 60 * 60 * 1000 && msToKickoff > 0 && !isPass;
 
+      const isMatchInPlay = Boolean(
+        m.isLive === true ||
+        m.status === 'LIVE' ||
+        m.status === 'HT' ||
+        m.status === 'STATUS_IN_PROGRESS' ||
+        m.status === 'STATUS_HALFTIME' ||
+        (typeof m.liveMinute === 'string' && (m.liveMinute.includes("'") || m.liveMinute.toLowerCase() === 'ht')) ||
+        (typeof m.status === 'string' && (m.status.includes("'") || m.status.toLowerCase() === 'ht')) ||
+        (typeof m.liveMinute === 'number' && m.liveMinute > 0)
+      );
+
+      const liveHomeScore = m.liveHomeScore ?? m.goals?.home ?? (m.homeScore != null ? m.homeScore : 0);
+      const liveAwayScore = m.liveAwayScore ?? m.goals?.away ?? (m.awayScore != null ? m.awayScore : 0);
+      const liveScoreStr = isMatchInPlay ? `${liveHomeScore} - ${liveAwayScore}` : null;
+      const liveMinStr = m.inPlayPrediction?.minuteDisplay || m.liveMinute || m.status || 'Live';
+
       return {
         m,
         pick,
@@ -139,6 +155,9 @@ export default function DailyBriefingPanel({
         inSnapshotWindow,
         isReadyToBet,
         isWatch,
+        isMatchInPlay,
+        liveScoreStr,
+        liveMinStr,
         msToKickoff,
         kelly,
         kellyUnits,
@@ -148,12 +167,18 @@ export default function DailyBriefingPanel({
         oddsProvider,
         timeVal
       };
-    }).sort((a, b) => (a.timeVal || 0) - (b.timeVal || 0));
+    }).sort((a, b) => {
+      // Prioritize live matches at top of slate
+      if (a.isMatchInPlay && !b.isMatchInPlay) return -1;
+      if (!a.isMatchInPlay && b.isMatchInPlay) return 1;
+      return (a.timeVal || 0) - (b.timeVal || 0);
+    });
   }, [matches, targetDateKey, tzSettings, now, bankrollEuro]);
 
+  const liveMatches = slateMatches.filter(c => c.isMatchInPlay);
   const readyToBet = slateMatches.filter(c => c.isReadyToBet);
   const watchList = slateMatches.filter(c => c.isWatch);
-  const displayList = activeTab === 'bet' ? readyToBet : activeTab === 'watch' ? watchList : slateMatches;
+  const displayList = activeTab === 'inplay' ? liveMatches : activeTab === 'bet' ? readyToBet : activeTab === 'watch' ? watchList : slateMatches;
 
   if (slateMatches.length === 0) return null;
 
@@ -237,6 +262,20 @@ export default function DailyBriefingPanel({
               >
                 All Matches ({slateMatches.length})
               </button>
+              {liveMatches.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('inplay')}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    activeTab === 'inplay'
+                      ? 'bg-rose-600 text-white shadow-2xs animate-pulse'
+                      : 'bg-rose-50 text-rose-800 hover:bg-rose-100 border border-rose-300'
+                  }`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
+                  <span>In-Play Live ({liveMatches.length})</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setActiveTab('bet')}
@@ -332,11 +371,18 @@ export default function DailyBriefingPanel({
                                 </span>
                               </div>
                               <div>
-                                {m.isLive ? (
-                                  <span className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white border border-rose-700 shadow-xs animate-pulse">
-                                    <span className="w-1 h-1 rounded-full bg-white"></span>
-                                    LIVE {m.liveMinute ? `${m.liveMinute}'` : ''}
-                                  </span>
+                                {m.isLive || item.isMatchInPlay ? (
+                                  <div className="flex flex-col items-end gap-0.5">
+                                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-black bg-rose-600 text-white border border-rose-700 shadow-xs animate-pulse">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+                                      LIVE {item.liveMinStr ? (item.liveMinStr.includes("'") || item.liveMinStr === 'HT' ? item.liveMinStr : `${item.liveMinStr}'`) : ''}
+                                    </span>
+                                    {item.liveScoreStr && (
+                                      <span className="text-[10px] font-mono font-bold text-slate-900 bg-emerald-50 border border-emerald-300 px-1 rounded">
+                                        Score: {item.liveScoreStr}
+                                      </span>
+                                    )}
+                                  </div>
                                 ) : (
                                   <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold border ${countdown.color}`}>
                                     {countdown.isWindow && <Lock className="w-2.5 h-2.5" />}
@@ -399,13 +445,13 @@ export default function DailyBriefingPanel({
                                     onOpenWatchLive && onOpenWatchLive(m);
                                   }}
                                   className={`px-2 py-1 rounded text-[10px] font-bold border transition-all cursor-pointer inline-flex items-center gap-1 ${
-                                    m.isLive
+                                    m.isLive || item.isMatchInPlay
                                       ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
                                       : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
                                   }`}
                                 >
-                                  <Play className={`w-2.5 h-2.5 ${m.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
-                                  <span>{m.isLive ? 'Live' : 'Watch'}</span>
+                                  <Play className={`w-2.5 h-2.5 ${m.isLive || item.isMatchInPlay ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
+                                  <span>{m.isLive || item.isMatchInPlay ? 'Live Stream & In-Play Advisor' : 'Watch'}</span>
                                 </button>
 
                                 {onAddToSlip && !isPass ? (
@@ -484,14 +530,21 @@ export default function DailyBriefingPanel({
                               {kickoffStr}
                             </div>
                             <div className="mt-0.5">
-                              {m.isLive ? (
-                                <span className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white border border-rose-700 shadow-xs animate-pulse">
-                                  <span className="w-1 h-1 rounded-full bg-white"></span>
-                                  LIVE {m.liveMinute ? `${m.liveMinute}'` : ''}
-                                </span>
+                              {m.isLive || item.isMatchInPlay ? (
+                                <div className="flex flex-col items-center gap-0.5">
+                                  <span className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-black bg-rose-600 text-white border border-rose-700 shadow-xs animate-pulse">
+                                    <span className="w-1 h-1 rounded-full bg-white"></span>
+                                    LIVE {item.liveMinStr ? (item.liveMinStr.includes("'") || item.liveMinStr === 'HT' ? item.liveMinStr : `${item.liveMinStr}'`) : ''}
+                                  </span>
+                                  {item.liveScoreStr && (
+                                    <span className="text-[9.5px] font-mono font-bold text-slate-900 bg-emerald-50 border border-emerald-300 px-1 rounded">
+                                      {item.liveScoreStr}
+                                    </span>
+                                  )}
+                                </div>
                               ) : (
                                 <span className={`inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-bold border ${countdown.color}`}>
-                                  {countdown.isWindow && <Lock className="w-2 h-2" />}
+                                  {countdown.isWindow && <Lock className="w-2.5 h-2.5" />}
                                   {countdown.label}
                                 </span>
                               )}
@@ -508,9 +561,9 @@ export default function DailyBriefingPanel({
                               <span className={!isHome && pick === 'AWAY' ? 'font-bold text-slate-900' : 'font-medium text-slate-700'}>
                                 {m.away}
                               </span>
-                              {m.isLive && (
+                              {(m.isLive || item.isMatchInPlay) && (
                                 <span className="text-[8.5px] bg-rose-600 text-white font-extrabold px-1 py-0.2 rounded shadow-xs animate-pulse">
-                                  LIVE
+                                  IN-PLAY
                                 </span>
                               )}
                               {isUnanimous && (
@@ -583,15 +636,15 @@ export default function DailyBriefingPanel({
                                   e.stopPropagation();
                                   onOpenWatchLive && onOpenWatchLive(m);
                                 }}
-                                className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer inline-flex items-center gap-0.5 ${
-                                  m.isLive
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer inline-flex items-center gap-0.5 ${
+                                  m.isLive || item.isMatchInPlay
                                     ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
                                     : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
                                 }`}
-                                title={m.isLive ? "Watch Match LIVE NOW in Iframe" : "Watch Match Live & In-Play Radar Simulator"}
+                                title={m.isLive || item.isMatchInPlay ? "Watch Match LIVE NOW in Iframe & View Advisor" : "Watch Match Live & In-Play Radar Simulator"}
                               >
-                                <Play className={`w-2.5 h-2.5 ${m.isLive ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
-                                <span>{m.isLive ? 'Live' : 'Watch'}</span>
+                                <Play className={`w-2.5 h-2.5 ${m.isLive || item.isMatchInPlay ? 'fill-white text-white' : 'fill-indigo-600 text-indigo-600'}`} />
+                                <span>{m.isLive || item.isMatchInPlay ? 'Live Stream' : 'Watch'}</span>
                               </button>
 
                               {onAddToSlip && !isPass ? (
@@ -634,27 +687,49 @@ export default function DailyBriefingPanel({
                                     <Target className="w-3.5 h-3.5 text-indigo-600" />
                                     <span className="font-bold text-slate-800">Match Analytical Profile:</span>
                                     <span className="font-mono text-slate-500 text-[11px]">{m.home} vs {m.away}</span>
+                                    {(m.isLive || item.isMatchInPlay) && (
+                                      <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 animate-pulse">
+                                        🔴 In-Play Score: {item.liveScoreStr || '0 - 0'} ({item.liveMinStr})
+                                      </span>
+                                    )}
                                   </div>
-                                  <span className="text-[10px] font-mono text-slate-400">
-                                    ID: {m.id} • {m.league}
-                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => onOpenWatchLive && onOpenWatchLive(m)}
+                                      className="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[10.5px] font-bold flex items-center gap-1 cursor-pointer shadow-xs"
+                                    >
+                                      <Play className="w-3 h-3 fill-white" />
+                                      <span>Stream Straight from Sportzx ↗</span>
+                                    </button>
+                                    <span className="text-[10px] font-mono text-slate-400">
+                                      ID: {m.id}
+                                    </span>
+                                  </div>
                                 </div>
                                 <div className="grid grid-cols-4 gap-2 font-mono text-[11px]">
                                   <div className="bg-slate-50 p-2 rounded border border-slate-200">
-                                    <span className="text-slate-400 block font-sans text-[10px] uppercase">1X2 Probabilities</span>
+                                    <span className="text-slate-400 block font-sans text-[10px] uppercase">
+                                      {(m.isLive || item.isMatchInPlay) ? 'In-Play Live Probabilities' : '1X2 Probabilities'}
+                                    </span>
                                     <span className="font-bold text-slate-800">
-                                      H: {safeToFixed(m.prob?.home, 1)}% | D: {safeToFixed(m.prob?.draw, 1)}% | A: {safeToFixed(m.prob?.away, 1)}%
+                                      H: {safeToFixed(m.inPlayPrediction?.liveProb?.home ?? m.prob?.home, 1)}% | D: {safeToFixed(m.inPlayPrediction?.liveProb?.draw ?? m.prob?.draw, 1)}% | A: {safeToFixed(m.inPlayPrediction?.liveProb?.away ?? m.prob?.away, 1)}%
                                     </span>
                                   </div>
                                   <div className="bg-slate-50 p-2 rounded border border-slate-200">
-                                    <span className="text-slate-400 block font-sans text-[10px] uppercase">Expected Goals (xG)</span>
+                                    <span className="text-slate-400 block font-sans text-[10px] uppercase">
+                                      {(m.isLive || item.isMatchInPlay) ? 'Projected Final Score' : 'Expected Goals (xG)'}
+                                    </span>
                                     <span className="font-bold text-indigo-700">
-                                      H: {m.xgHome ?? '1.2'} | A: {m.xgAway ?? '1.0'}
+                                      {(m.isLive || item.isMatchInPlay) ? (m.inPlayPrediction?.projectedFinalScore || m.mostLikelyScore || '1 - 0') : `H: ${m.xgHome ?? '1.2'} | A: ${m.xgAway ?? '1.0'}`}
                                     </span>
                                   </div>
                                   <div className="bg-slate-50 p-2 rounded border border-slate-200">
-                                    <span className="text-slate-400 block font-sans text-[10px] uppercase">LiveScore Odds</span>
-                                    <span className="font-bold text-emerald-700">@{safeToFixed(matchOdds, 2)} ({oddsProvider})</span>
+                                    <span className="text-slate-400 block font-sans text-[10px] uppercase">Pre-Match Locked Status</span>
+                                    <span className="font-bold text-slate-700 flex items-center gap-1">
+                                      <Lock className="w-3 h-3 text-slate-400" />
+                                      <span>Pick: {pickTeam} ({conf}%)</span>
+                                    </span>
                                   </div>
                                   <div className="bg-slate-50 p-2 rounded border border-slate-200">
                                     <span className="text-slate-400 block font-sans text-[10px] uppercase">Optimal Wager</span>

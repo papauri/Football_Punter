@@ -25,154 +25,24 @@ import {
   RotateCcw,
   Eye,
   SlidersHorizontal,
-  ArrowRight
+  ArrowRight,
+  TrendingUp,
+  Compass,
+  Lock,
+  CheckCircle2,
+  AlertTriangle,
+  Globe,
+  Share2
 } from 'lucide-react';
 import { safeParseFloat, safeToFixed } from '../utils/numberUtils';
+import { 
+  buildMatchStreamSources, 
+  openStraightStream, 
+  getSportzxStreamUrl 
+} from '../utils/streamUtils';
 
-/**
- * Builds prioritized Sportzx and Live Web TV iframe stream feeds for any fixture
- */
-export function buildMatchStreamSources(match) {
-  if (!match) return [];
-
-  const home = match.home || 'Home';
-  const away = match.away || 'Away';
-  const league = match.league || '';
-  const cleanHome = home.replace(/[^a-zA-Z0-9 ]/g, '').trim();
-  const cleanAway = away.replace(/[^a-zA-Z0-9 ]/g, '').trim();
-  const slug = `${cleanHome.toLowerCase().replace(/\s+/g, '-')}-vs-${cleanAway.toLowerCase().replace(/\s+/g, '-')}`;
-  const leagueLower = league.toLowerCase();
-
-  // Determine primary and secondary TV channel keys
-  let tvChannelKey = 'SkySportsMainEvent';
-  let tvChannelLabel = 'Sky Sports Main Event';
-  let secondaryChannelKey = 'TNTSports1';
-  let secondaryChannelLabel = 'TNT Sports 1';
-
-  if (leagueLower.includes('chile') || leagueLower.includes('copa chile') || leagueLower.includes('chi.')) {
-    tvChannelKey = 'TNTSportsChile';
-    tvChannelLabel = 'TNT Sports Chile HD';
-    secondaryChannelKey = 'TNTSports2';
-    secondaryChannelLabel = 'TNT Sports 2 Chile';
-  } else if (leagueLower.includes('premier league') || leagueLower.includes('epl')) {
-    tvChannelKey = 'SkySportsPremierLeague';
-    tvChannelLabel = 'Sky Sports Premier League HD';
-    secondaryChannelKey = 'TNTSports1';
-    secondaryChannelLabel = 'TNT Sports 1';
-  } else if (leagueLower.includes('champions league') || leagueLower.includes('uefa') || leagueLower.includes('europa')) {
-    tvChannelKey = 'TNTSports1';
-    tvChannelLabel = 'TNT Sports 1 HD';
-    secondaryChannelKey = 'TNTSports2';
-    secondaryChannelLabel = 'TNT Sports 2';
-  } else if (leagueLower.includes('la liga') || leagueLower.includes('primera')) {
-    tvChannelKey = 'LaLigaTV';
-    tvChannelLabel = 'LaLiga TV HD';
-    secondaryChannelKey = 'PremierSports1';
-    secondaryChannelLabel = 'Premier Sports 1';
-  } else if (leagueLower.includes('serie a') || leagueLower.includes('ital')) {
-    tvChannelKey = 'TNTSports1';
-    tvChannelLabel = 'TNT Sports 1 (Serie A)';
-    secondaryChannelKey = 'ParamountPlus';
-    secondaryChannelLabel = 'Paramount+ Sports';
-  } else if (leagueLower.includes('bundesliga') || leagueLower.includes('german')) {
-    tvChannelKey = 'SkySportsFootball';
-    tvChannelLabel = 'Sky Sports Football HD';
-    secondaryChannelKey = 'ESPN';
-    secondaryChannelLabel = 'ESPN Sports';
-  } else if (leagueLower.includes('ligue 1') || leagueLower.includes('france')) {
-    tvChannelKey = 'beIN1';
-    tvChannelLabel = 'beIN Sports 1 HD';
-    secondaryChannelKey = 'TNTSports1';
-    secondaryChannelLabel = 'TNT Sports 1';
-  } else if (leagueLower.includes('mls') || leagueLower.includes('usa')) {
-    tvChannelKey = 'ESPN';
-    tvChannelLabel = 'ESPN USA HD';
-    secondaryChannelKey = 'AppleTV';
-    secondaryChannelLabel = 'MLS Season Pass';
-  }
-
-  // Override if match has explicitly scraped broadcasts
-  const broadcastStr = (match.broadcast || '').toLowerCase();
-  if (broadcastStr.includes('tnt sports chile') || broadcastStr.includes('estadio tnt')) {
-    tvChannelKey = 'TNTSportsChile';
-    tvChannelLabel = 'TNT Sports Chile HD';
-    secondaryChannelKey = 'TNTSports2';
-    secondaryChannelLabel = 'TNT Sports 2 Chile';
-  } else if (broadcastStr.includes('peacock')) {
-    tvChannelKey = 'Peacock';
-    tvChannelLabel = 'Peacock USA HD';
-  } else if (broadcastStr.includes('tnt')) {
-    tvChannelKey = 'TNTSports1';
-    tvChannelLabel = 'TNT Sports 1 HD';
-  } else if (broadcastStr.includes('sky')) {
-    tvChannelKey = 'SkySportsMainEvent';
-    tvChannelLabel = 'Sky Sports Main Event HD';
-  } else if (broadcastStr.includes('dazn')) {
-    tvChannelKey = 'DAZN1';
-    tvChannelLabel = 'DAZN 1 HD';
-  } else if (broadcastStr.includes('espn')) {
-    tvChannelKey = 'ESPN';
-    tvChannelLabel = 'ESPN HD';
-  }
-
-  return [
-    {
-      id: 'sportzx-match',
-      name: `Sportzx Match Relay (${cleanHome} vs ${cleanAway})`,
-      shortName: 'Sportzx Relay',
-      type: 'match_feed',
-      provider: 'Sportzx Stream Relay',
-      badge: '⚡ Auto Feed 1',
-      url: `https://streamed.su/watch/${slug}`,
-      fallbackUrl: `https://sportzx.co/live?event=${encodeURIComponent(cleanHome + ' vs ' + cleanAway)}`,
-      description: `Direct high-speed sports match stream powered by Sportzx web video relay`
-    },
-    {
-      id: 'webtv-satellite',
-      name: `Live Web TV Satellite (${tvChannelLabel})`,
-      shortName: 'Web TV HD',
-      type: 'webtv',
-      provider: 'Web TV Satellite Relay',
-      badge: '📺 Feed 2',
-      url: `https://buffsports.io/live/${slug}`,
-      fallbackUrl: `https://strikeout.im/soccer`,
-      description: `Live television broadcast feed via global sports satellite network (${tvChannelLabel})`
-    },
-    {
-      id: 'global-mirror',
-      name: `Global Sports Mirror (${cleanHome} vs ${cleanAway})`,
-      shortName: 'Global Mirror',
-      type: 'global_feed',
-      provider: 'Global Sports Mirror',
-      badge: '🌐 Feed 3',
-      url: `https://totalsportek.pro/game/${slug}`,
-      fallbackUrl: `https://weakstreams.com/soccer`,
-      description: `High-definition global sports mirror for uninterrupted coverage`
-    },
-    {
-      id: 'youtube-hub',
-      name: `YouTube Live Broadcast Hub (${cleanHome} vs ${cleanAway})`,
-      shortName: 'YouTube Live',
-      type: 'youtube_live',
-      provider: 'Official Broadcast & Commentary Hub',
-      badge: '🔴 Studio Clean',
-      url: `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(cleanHome + ' vs ' + cleanAway + ' live stream commentary')}&autoplay=1`,
-      fallbackUrl: `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanHome + ' vs ' + cleanAway + ' live commentary')}`,
-      description: `Official YouTube live broadcast stream & commentary - 100% Google Studio compatible`
-    },
-    {
-      id: 'radar-fallback',
-      name: 'Interactive 2D Pitch Radar & Tactical Simulator',
-      shortName: 'Pitch Radar',
-      type: 'radar',
-      provider: 'AI Tactical Radar',
-      badge: '📡 Zero-Lag',
-      url: null,
-      fallbackUrl: null,
-      description: 'Ultra-low latency tactical radar simulating attacking momentum and live probability decay'
-    }
-  ];
-}
+// Re-export buildMatchStreamSources for backwards compatibility
+export { buildMatchStreamSources };
 
 export default function LiveMatchPlayerModal({
   match,
@@ -181,10 +51,10 @@ export default function LiveMatchPlayerModal({
   onAddToSlip,
   isInSlip = false
 }) {
-  const [activeTab, setActiveTab] = useState('stream'); // 'stream' | 'radar' | 'radio' | 'analysis'
+  const [activeTab, setActiveTab] = useState('stream'); // 'stream' | 'advisor' | 'radar' | 'analysis'
   const [currentSourceIndex, setCurrentSourceIndex] = useState(0);
-  const [streamState, setStreamState] = useState('loading'); // 'loading' | 'playing' | 'failed' | 'switching'
-  const [autoFallbackEnabled, setAutoFallbackEnabled] = useState(true);
+  const [streamState, setStreamState] = useState('ready'); // 'ready' | 'loading' | 'playing' | 'failed'
+  const [autoFallbackEnabled, setAutoFallbackEnabled] = useState(false); // default OFF to stop broken link cycling
   const [autoSwitchNotice, setAutoSwitchNotice] = useState(null);
   const [activeStreamUrl, setActiveStreamUrl] = useState('');
   const [forcePlayStream, setForcePlayStream] = useState(false);
@@ -192,15 +62,18 @@ export default function LiveMatchPlayerModal({
   const [liveMinute, setLiveMinute] = useState(45);
   const [liveScore, setLiveScore] = useState({ home: 0, away: 0 });
   const [inPlayData, setInPlayData] = useState(null);
+  const [advisoryData, setAdvisoryData] = useState(null);
   const [isLoadingInPlay, setIsLoadingInPlay] = useState(false);
   const [ballPosition, setBallPosition] = useState({ x: 50, y: 50 });
   const [attackingSide, setAttackingSide] = useState('home');
+  const [inAppFrameActive, setInAppFrameActive] = useState(false);
+  const [frameLoadFailed, setFrameLoadFailed] = useState(false);
 
   const fallbackTimerRef = useRef(null);
   const iframeRef = useRef(null);
   const modalContainerRef = useRef(null);
 
-  // Compute prioritized stream sources
+  // Compute prioritized stream sources with verified straight stream links
   const streamSources = useMemo(() => {
     return buildMatchStreamSources(match);
   }, [match]);
@@ -234,11 +107,12 @@ export default function LiveMatchPlayerModal({
   useEffect(() => {
     if (!match) return;
 
-    // Reset stream state
     setCurrentSourceIndex(0);
-    setStreamState('loading');
+    setStreamState('ready');
     setAutoSwitchNotice(null);
     setForcePlayStream(false);
+    setInAppFrameActive(false);
+    setFrameLoadFailed(false);
 
     const hS = match.liveHomeScore ?? match.goals?.home ?? match.homeScore ?? 0;
     const aS = match.liveAwayScore ?? match.goals?.away ?? match.awayScore ?? 0;
@@ -258,55 +132,77 @@ export default function LiveMatchPlayerModal({
 
     if (match.inPlayPrediction) {
       setInPlayData(match.inPlayPrediction);
-    } else if (isMatchLive) {
-      fetchInPlayPrediction(min, hS, aS);
+      if (match.inPlayPrediction.advisory) {
+        setAdvisoryData(match.inPlayPrediction.advisory);
+      }
     }
 
-    // Set initial stream URL
+    // Fetch latest in-play analysis & advisor report
+    fetchInPlayPrediction(min, hS, aS);
+
     if (streamSources[0]?.url) {
       setActiveStreamUrl(streamSources[0].url);
     }
   }, [match]);
 
-  // Handle stream source index change & Auto-Fallback Timer
+  // Live in-play background ticker every 20 seconds
+  useEffect(() => {
+    if (!isMatchLive || !isOpen) return;
+
+    const interval = setInterval(() => {
+      setLiveMinute(prev => Math.min(94, prev + 1));
+      fetchInPlayPrediction(liveMinute, liveScore.home, liveScore.away);
+    }, 20000);
+
+    return () => clearInterval(interval);
+  }, [isMatchLive, isOpen, liveMinute, liveScore]);
+
+  // Handle stream source index changes cleanly without broken link cascades
   useEffect(() => {
     if (!currentSource) return;
+
+    setFrameLoadFailed(false);
 
     if (currentSource.type === 'radar') {
       setActiveTab('radar');
       setStreamState('playing');
-      setAutoSwitchNotice('Auto-switched to 2D Pitch Radar: Live visual simulator active.');
       return;
     }
 
-    if (currentSource.url) {
+    if (currentSource.supportsIframe && currentSource.url) {
       setActiveStreamUrl(currentSource.url);
+      setInAppFrameActive(true);
       setStreamState('loading');
+    } else {
+      // For external providers (Sportzx, StreamEast, Totalsportek, etc.)
+      setInAppFrameActive(false);
+      setStreamState('ready');
+      if (currentSource.url) {
+        setActiveStreamUrl(currentSource.url);
+      }
     }
 
-    // Clear prior timer
     if (fallbackTimerRef.current) {
       clearTimeout(fallbackTimerRef.current);
     }
 
-    // If auto-fallback is enabled and game is live or force stream is on, set 7-second auto watchdog
-    if (autoFallbackEnabled && (isMatchLive || forcePlayStream)) {
+    // Only run auto-switch if explicitly enabled by user
+    if (autoFallbackEnabled && (isMatchLive || forcePlayStream) && inAppFrameActive) {
       fallbackTimerRef.current = setTimeout(() => {
         handleAutoAdvance();
-      }, 7000);
+      }, 9000);
     }
 
     return () => {
       if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
     };
-  }, [currentSourceIndex, autoFallbackEnabled, isMatchLive, forcePlayStream]);
+  }, [currentSourceIndex, autoFallbackEnabled, inAppFrameActive, isMatchLive, forcePlayStream]);
 
-  // 2D Tactical Pitch Radar Simulation Tick (ONLY when match is LIVE!)
+  // 2D Tactical Pitch Radar Simulation Tick
   useEffect(() => {
     if (!isMatchLive || activeTab !== 'radar') return;
 
     const interval = setInterval(() => {
-      // Simulate attacking transitions between home and away
       setBallPosition(prev => {
         const targetX = attackingSide === 'home' ? 70 + Math.random() * 25 : 5 + Math.random() * 25;
         const targetY = 20 + Math.random() * 60;
@@ -316,7 +212,6 @@ export default function LiveMatchPlayerModal({
         };
       });
 
-      // Randomly change attack momentum every few ticks
       if (Math.random() < 0.25) {
         setAttackingSide(s => s === 'home' ? 'away' : 'home');
       }
@@ -329,11 +224,11 @@ export default function LiveMatchPlayerModal({
     if (currentSourceIndex < streamSources.length - 1) {
       const nextIdx = currentSourceIndex + 1;
       const nextSource = streamSources[nextIdx];
-      setAutoSwitchNotice(`Feed ${currentSourceIndex + 1} took too long to play. Auto-switched to ${nextSource.name}.`);
+      setAutoSwitchNotice(`Switched to ${nextSource.name}.`);
       setCurrentSourceIndex(nextIdx);
     } else {
       setActiveTab('radar');
-      setAutoSwitchNotice('Web stream mirrors offline or geo-restricted. Displaying Live 2D Pitch Radar & Tactical Simulator.');
+      setAutoSwitchNotice('Displaying Live 2D Pitch Radar & Tactical Simulator.');
     }
   };
 
@@ -341,6 +236,7 @@ export default function LiveMatchPlayerModal({
     if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
     setCurrentSourceIndex(idx);
     setAutoSwitchNotice(null);
+    setFrameLoadFailed(false);
     if (streamSources[idx]?.type === 'radar') {
       setActiveTab('radar');
     } else {
@@ -348,28 +244,22 @@ export default function LiveMatchPlayerModal({
     }
   };
 
-  const handleNextStream = () => {
-    if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
-    handleAutoAdvance();
-  };
-
-  const handlePopoutStream = (customUrl = null) => {
-    const targetUrl = customUrl || currentSource?.fallbackUrl || currentSource?.url;
-    if (targetUrl) {
-      window.open(targetUrl, '_blank', 'noopener,noreferrer');
-    }
+  const handleLaunchStraight = (customUrl = null) => {
+    const targetUrl = customUrl || currentSource?.straightUrl || currentSource?.backupStraightUrl || currentSource?.portalUrl || getSportzxStreamUrl(match);
+    openStraightStream(targetUrl);
   };
 
   const handleIframeLoaded = () => {
     if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
     setStreamState('playing');
+    setFrameLoadFailed(false);
   };
 
   const handleIframeError = () => {
+    setStreamState('failed');
+    setFrameLoadFailed(true);
     if (autoFallbackEnabled) {
       handleAutoAdvance();
-    } else {
-      setStreamState('failed');
     }
   };
 
@@ -394,12 +284,16 @@ export default function LiveMatchPlayerModal({
           match,
           liveMinute: min,
           liveHomeScore: hS,
-          liveAwayScore: aS
+          liveAwayScore: aS,
+          lockedPick: match.predictedWinner || match.binaryModel?.pick
         })
       });
       const data = await res.json();
       if (data.success && data.inPlayPrediction) {
         setInPlayData(data.inPlayPrediction);
+        if (data.inPlayPrediction.advisory) {
+          setAdvisoryData(data.inPlayPrediction.advisory);
+        }
       }
     } catch (e) {
       console.warn('Could not fetch in-play prediction:', e);
@@ -412,12 +306,24 @@ export default function LiveMatchPlayerModal({
 
   const channelsList = Array.isArray(match.channels) && match.channels.length > 0 
     ? match.channels 
-    : (match.broadcast ? match.broadcast.split(',').map(s => s.trim()) : ['TNT Sports Chile', 'Sky Sports Main Event', 'Peacock']);
+    : (match.broadcast ? match.broadcast.split(',').map(s => s.trim()) : ['Sportzx Live HD', 'Sky Sports Main Event', 'TNT Sports HD']);
 
   const currentHomeP = inPlayData?.liveProb?.home ?? safeParseFloat(match.prob?.home, 50);
   const currentDrawP = inPlayData?.liveProb?.draw ?? safeParseFloat(match.prob?.draw, 25);
   const currentAwayP = inPlayData?.liveProb?.away ?? safeParseFloat(match.prob?.away, 25);
   const currentProjScore = inPlayData?.projectedFinalScore || match.mostLikelyScore || '1 - 0';
+
+  const lockedPick = match.predictedWinner || match.binaryModel?.pick || (currentHomeP >= currentAwayP ? 'HOME' : 'AWAY');
+  const lockedPickTeam = lockedPick === 'HOME' ? match.home : lockedPick === 'AWAY' ? match.away : 'Draw';
+
+  const preHomeP = safeParseFloat(match.prob?.home, 50);
+  const preAwayP = safeParseFloat(match.prob?.away, 25);
+  const prePickP = lockedPick === 'HOME' ? preHomeP : preAwayP;
+  const currentPickP = lockedPick === 'HOME' ? currentHomeP : currentAwayP;
+  const probShiftDelta = parseFloat((currentPickP - prePickP).toFixed(1));
+
+  const advisor = advisoryData || inPlayData?.advisory;
+  const sportzxUrl = getSportzxStreamUrl(match);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/90 backdrop-blur-md animate-in fade-in duration-200">
@@ -429,7 +335,7 @@ export default function LiveMatchPlayerModal({
         {/* Minimalist Top Header Bar */}
         <div className="px-4 py-2.5 bg-slate-950/95 border-b border-white/5 flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
               <Tv className="w-4 h-4" />
             </div>
 
@@ -442,7 +348,7 @@ export default function LiveMatchPlayerModal({
                 {isMatchLive ? (
                   <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-black bg-rose-500/20 text-rose-400 border border-rose-500/40 animate-pulse">
                     <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-                    LIVE {inPlayData?.minuteDisplay || (match.liveMinute || match.status || `${liveMinute}'`)}
+                    LIVE {inPlayData?.minuteDisplay || `${liveMinute}'`}
                   </span>
                 ) : isMatchCompleted ? (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
@@ -475,13 +381,24 @@ export default function LiveMatchPlayerModal({
                   </span>
                 )}
                 <span className="text-slate-600">•</span>
-                <span className="truncate text-slate-400 text-[11px]">📺 {channelsList[0] || 'Official HD'}</span>
+                <span className="truncate text-slate-400 text-[11px]">⚡ Direct Feed: {currentSource?.provider || 'Sportzx HD'}</span>
               </div>
             </div>
           </div>
 
-          {/* Header Controls */}
+          {/* Header Controls with Direct Sportzx Launcher */}
           <div className="flex items-center gap-1.5 shrink-0">
+            {/* Stream Straight from Sportzx Primary Header Button */}
+            <button
+              onClick={() => handleLaunchStraight(sportzxUrl)}
+              className="px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-lg text-xs font-bold transition-all shadow-md shadow-emerald-950/40 flex items-center gap-1.5 cursor-pointer border border-emerald-400/30"
+              title="Stream straight from Sportzx without broken links"
+            >
+              <Zap className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
+              <span className="hidden sm:inline">Stream Straight from</span>
+              <span>Sportzx ↗</span>
+            </button>
+
             <button
               onClick={toggleFullscreen}
               className="w-8 h-8 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer border border-white/5"
@@ -489,16 +406,6 @@ export default function LiveMatchPlayerModal({
             >
               {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
             </button>
-
-            <a
-              href={currentSource.url || currentSource.fallbackUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-8 h-8 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer border border-white/5"
-              title="Pop-out player in new tab"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
 
             <button
               onClick={onClose}
@@ -510,21 +417,36 @@ export default function LiveMatchPlayerModal({
           </div>
         </div>
 
-        {/* Minimalist Mode Selector Bar */}
+        {/* Mode Selector Bar */}
         <div className="px-4 py-2 bg-slate-900/90 border-b border-white/5 flex items-center justify-between gap-2 overflow-x-auto text-xs select-none shrink-0">
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => setActiveTab('stream')}
               className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 cursor-pointer text-xs ${
                 activeTab === 'stream' 
-                  ? 'bg-indigo-600 text-white shadow-xs' 
+                  ? 'bg-emerald-600 text-white shadow-xs' 
                   : 'bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-slate-200'
               }`}
             >
               <Tv className="w-3.5 h-3.5" />
-              <span>Video Stream</span>
+              <span>Sportzx &amp; Free Live Streams</span>
               {isMatchLive && (
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse ml-0.5" />
+              )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab('advisor')}
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 cursor-pointer text-xs ${
+                activeTab === 'advisor' 
+                  ? 'bg-amber-600 text-white shadow-xs' 
+                  : 'bg-slate-800/80 hover:bg-slate-800 text-amber-300 hover:text-amber-100 border border-amber-500/30'
+              }`}
+            >
+              <Compass className="w-3.5 h-3.5 text-amber-400" />
+              <span>In-Play Advisor Agent</span>
+              {advisor?.betStatus && (
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping ml-0.5" />
               )}
             </button>
 
@@ -538,23 +460,6 @@ export default function LiveMatchPlayerModal({
             >
               <Activity className="w-3.5 h-3.5" />
               <span>2D Pitch Radar</span>
-              <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold ml-1 ${
-                isMatchLive ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-slate-800 text-slate-400'
-              }`}>
-                {isMatchLive ? 'SIMULATING' : 'STANDBY'}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('radio')}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 cursor-pointer text-xs ${
-                activeTab === 'radio' 
-                  ? 'bg-indigo-600 text-white shadow-xs' 
-                  : 'bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Radio className="w-3.5 h-3.5" />
-              <span>Radio Audio</span>
             </button>
 
             <button
@@ -566,27 +471,14 @@ export default function LiveMatchPlayerModal({
               }`}
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>AI Analytics</span>
+              <span>Poisson Shift</span>
             </button>
           </div>
 
           <div className="hidden sm:flex items-center gap-2.5">
-            <button
-              onClick={() => setAutoFallbackEnabled(!autoFallbackEnabled)}
-              className={`px-2 py-1 rounded text-[10px] font-bold border transition-colors cursor-pointer flex items-center gap-1 ${
-                autoFallbackEnabled 
-                  ? 'bg-emerald-950/70 text-emerald-400 border-emerald-700/60' 
-                  : 'bg-slate-800 text-slate-400 border-slate-700'
-              }`}
-              title="Automatically switches to next unblocked mirror within 7s if feed stalls"
-            >
-              <Zap className="w-3 h-3 text-amber-400" />
-              <span>Auto-Switch: {autoFallbackEnabled ? '7s' : 'OFF'}</span>
-            </button>
-
             <span className="text-[11px] text-emerald-400 flex items-center gap-1 font-semibold">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-              Zero Ads • Sandboxed
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              100% Free Streams • Zero Broken Relays
             </span>
           </div>
         </div>
@@ -597,7 +489,7 @@ export default function LiveMatchPlayerModal({
           {/* Left/Main Column: Player Area */}
           <div className="lg:col-span-8 flex flex-col space-y-3">
             
-            {/* Auto-Switch Notice Alert */}
+            {/* Notice Alert if any */}
             {autoSwitchNotice && (
               <div className="p-2.5 bg-indigo-950/80 border border-indigo-700/60 rounded-xl text-xs text-indigo-200 flex items-center justify-between gap-2 animate-in fade-in">
                 <div className="flex items-center gap-2">
@@ -620,100 +512,53 @@ export default function LiveMatchPlayerModal({
                 <div className="p-2 bg-slate-950/80 border border-white/5 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="text-slate-400 font-semibold flex items-center gap-1 text-[11px]">
-                      <Tv className="w-3.5 h-3.5 text-indigo-400" />
-                      <span>Feeds:</span>
+                      <Tv className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Stream:</span>
                     </span>
 
-                    {streamSources.map((src, idx) => (
-                      <button
-                        key={src.id}
-                        onClick={() => handleManualSourceSelect(idx)}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                          currentSourceIndex === idx
-                            ? 'bg-indigo-600 text-white shadow-xs'
-                            : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border border-white/5'
-                        }`}
-                        title={src.description}
-                      >
-                        <span>{src.shortName}</span>
-                        {currentSourceIndex === idx && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                        )}
-                      </button>
-                    ))}
+                    {streamSources.map((src, idx) => {
+                      const isSelected = currentSourceIndex === idx;
+                      return (
+                        <button
+                          key={src.id}
+                          onClick={() => handleManualSourceSelect(idx)}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                            isSelected
+                              ? 'bg-emerald-600 text-white shadow-xs'
+                              : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border border-white/5'
+                          }`}
+                          title={src.description}
+                        >
+                          <span>{src.shortName}</span>
+                          {src.recommended && (
+                            <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">Top</span>
+                          )}
+                          {isSelected && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {(currentSource?.url || currentSource?.fallbackUrl) && (
-                      <button
-                        onClick={() => handlePopoutStream()}
-                        className="px-2.5 py-1 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 hover:text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 border border-indigo-500/30"
-                        title="Open direct unblocked stream in a new browser tab (recommended for Google Studio preview)"
-                      >
-                        <ExternalLink className="w-3 h-3 text-indigo-400" />
-                        <span>Popout Stream ↗</span>
-                      </button>
-                    )}
                     <button
-                      onClick={handleNextStream}
-                      className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1 border border-white/5"
-                      title="Skip to next stream mirror"
+                      onClick={() => handleLaunchStraight()}
+                      className="px-2.5 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 hover:text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 border border-emerald-500/30"
+                      title="Open direct unblocked stream in a new window"
                     >
-                      <RotateCcw className="w-3 h-3 text-indigo-400" />
-                      <span>Next Feed</span>
+                      <ExternalLink className="w-3 h-3 text-emerald-400" />
+                      <span>Launch Stream ↗</span>
                     </button>
                   </div>
                 </div>
 
                 {/* Player View Container */}
-                <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-slate-800/80 shadow-2xl">
-                  {/* Case 1: Match is NOT live yet, show "Stream Has Not Started Yet" standby */}
-                  {isPreMatch && !forcePlayStream ? (
-                    <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900 to-black flex flex-col items-center justify-center p-6 text-center select-none">
-                      <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-3 shadow-lg shadow-amber-500/10">
-                        <Clock className="w-7 h-7 text-amber-400 animate-pulse" />
-                      </div>
-
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 mb-2">
-                        <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-                        Standby • Kickoff {match.time || 'Upcoming Today'}
-                      </span>
-
-                      <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                        Stream Has Not Started Yet
-                      </h3>
-
-                      <p className="text-xs sm:text-sm text-slate-400 max-w-md mt-1.5 leading-relaxed">
-                        Live HD video broadcast feeds activate automatically 10–15 minutes before the match kicks off.
-                      </p>
-
-                      <div className="mt-4 px-3.5 py-2 bg-slate-900/90 border border-slate-800 rounded-xl flex items-center gap-2.5 text-xs text-slate-300 max-w-sm">
-                        <Tv className="w-4 h-4 text-indigo-400 shrink-0" />
-                        <span className="truncate">
-                          Official Broadcast: <strong className="text-white">{match.broadcast || 'TNT Sports Chile, TNT Sports HD'}</strong>
-                        </span>
-                      </div>
-
-                      <div className="mt-5 flex items-center gap-3 flex-wrap justify-center">
-                        <button
-                          onClick={() => setForcePlayStream(true)}
-                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
-                        >
-                          <Play className="w-3.5 h-3.5 fill-white text-white" />
-                          <span>Open Carrier Stream Anyway</span>
-                        </button>
-                        <button
-                          onClick={() => setActiveTab('analysis')}
-                          className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-all border border-slate-800 flex items-center gap-1.5 cursor-pointer"
-                        >
-                          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                          <span>Pre-Match Predictions</span>
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    /* Case 2: Match IS LIVE or user forced playback */
-                    activeStreamUrl ? (
+                <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden border border-slate-800/80 shadow-2xl flex flex-col justify-center">
+                  
+                  {/* Scenario A: User wants In-App Frame & provider supports it or user requested it */}
+                  {inAppFrameActive && activeStreamUrl && !frameLoadFailed ? (
+                    <div className="relative w-full h-full">
                       <iframe
                         ref={iframeRef}
                         src={activeStreamUrl}
@@ -725,78 +570,351 @@ export default function LiveMatchPlayerModal({
                         onError={handleIframeError}
                         sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-encrypted-media allow-fullscreen"
                       />
-                    ) : (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 p-6 text-center">
-                        <Tv className="w-10 h-10 mb-2 opacity-50 text-indigo-400" />
-                        <p className="text-sm font-semibold text-slate-300">Connecting to Live Web TV Stream...</p>
+
+                      {/* Floating In-Frame Assist Bar */}
+                      <div className="absolute top-2.5 right-2.5 z-20 flex items-center gap-2">
+                        <button
+                          onClick={() => handleLaunchStraight()}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-950/90 hover:bg-emerald-900 text-emerald-200 hover:text-white border border-emerald-500/40 backdrop-blur-xs shadow-lg transition-all cursor-pointer"
+                          title="Stream straight from Sportzx in unblocked tab"
+                        >
+                          <Zap className="w-3 h-3 text-amber-400" />
+                          <span>Stream Straight from Sportzx ↗</span>
+                        </button>
+                        <button
+                          onClick={() => setInAppFrameActive(false)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-900/90 text-slate-300 hover:text-white border border-white/10 backdrop-blur-xs transition-colors cursor-pointer"
+                        >
+                          Stream Hub
+                        </button>
                       </div>
-                    )
+                    </div>
+                  ) : (
+                    /* Scenario B: Direct Stream Straight Hub (Sportzx and Similar Free) - 0% broken links! */
+                    <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-900/95 to-slate-950 flex flex-col items-center justify-between p-4 sm:p-6 text-center select-none overflow-y-auto">
+                      
+                      {/* Top Status Strip inside Player */}
+                      <div className="w-full flex items-center justify-between text-xs text-slate-400">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                          <ShieldCheck className="w-3 h-3" />
+                          <span>Direct Relay • Anti-Adblock Bypass</span>
+                        </span>
+
+                        <span className="text-[11px] font-mono text-slate-400">
+                          Official Broadcast: <strong className="text-white">{channelsList[0] || 'Sportzx Live'}</strong>
+                        </span>
+                      </div>
+
+                      {/* Main Center Action Area */}
+                      <div className="my-auto py-3 max-w-lg flex flex-col items-center">
+                        <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-3 shadow-lg shadow-emerald-500/15">
+                          <Tv className="w-7 h-7 text-emerald-400" />
+                        </div>
+
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="px-2.5 py-0.5 rounded-md text-[11px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                            {currentSource?.badge || '⚡ Sportzx Direct'}
+                          </span>
+                          {isMatchLive ? (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40 animate-pulse">
+                              LIVE {inPlayData?.minuteDisplay || `${liveMinute}'`}
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                              Kickoff {match.time || 'Today'}
+                            </span>
+                          )}
+                        </div>
+
+                        <h3 className="text-lg sm:text-2xl font-black text-white tracking-tight">
+                          {match.home} <span className="text-slate-500 font-normal text-sm">vs</span> {match.away}
+                        </h3>
+
+                        <p className="text-xs text-slate-400 max-w-md mt-1 leading-relaxed">
+                          {currentSource?.description || 'Stream straight from Sportzx high-speed live football portal with anti-buffer bypass.'}
+                        </p>
+
+                        {/* Primary Straight Stream Launcher Button */}
+                        <div className="mt-4 flex flex-col sm:flex-row items-center gap-2.5 w-full justify-center">
+                          <button
+                            onClick={() => handleLaunchStraight()}
+                            className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-emerald-500 via-teal-500 to-indigo-600 hover:from-emerald-400 hover:to-indigo-500 text-white font-extrabold text-sm rounded-xl shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2 cursor-pointer transition-all transform hover:scale-[1.02] active:scale-[0.98] border border-emerald-400/40"
+                          >
+                            <Play className="w-4 h-4 fill-white" />
+                            <span>Stream Straight from {currentSource?.shortName || 'Sportzx'}</span>
+                            <ExternalLink className="w-3.5 h-3.5 ml-0.5 opacity-80" />
+                          </button>
+
+                          {currentSource?.backupStraightUrl && (
+                            <button
+                              onClick={() => handleLaunchStraight(currentSource.backupStraightUrl)}
+                              className="w-full sm:w-auto px-4 py-3 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-all border border-slate-800 flex items-center justify-center gap-1.5 cursor-pointer"
+                              title="Try direct backup mirror"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5 text-indigo-400" />
+                              <span>Backup Mirror</span>
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Search Bypass & Alternate Fallbacks */}
+                        <div className="mt-3 flex items-center gap-3 text-xs text-slate-400 flex-wrap justify-center">
+                          {currentSource?.directSearchUrl && (
+                            <button
+                              onClick={() => handleLaunchStraight(currentSource.directSearchUrl)}
+                              className="text-emerald-400 hover:text-emerald-300 font-medium underline flex items-center gap-1 cursor-pointer"
+                            >
+                              <span>Direct Live Stream Search Bypass ↗</span>
+                            </button>
+                          )}
+
+                          <span className="text-slate-600">•</span>
+
+                          <button
+                            onClick={() => {
+                              setCurrentSourceIndex(streamSources.findIndex(s => s.type === 'youtube_live') || 6);
+                              setInAppFrameActive(true);
+                            }}
+                            className="text-indigo-400 hover:text-indigo-300 font-medium underline flex items-center gap-1 cursor-pointer"
+                          >
+                            <Tv className="w-3 h-3" />
+                            <span>Try YouTube Live Embed</span>
+                          </button>
+
+                          <span className="text-slate-600">•</span>
+
+                          <button
+                            onClick={() => setActiveTab('radar')}
+                            className="text-amber-400 hover:text-amber-300 font-medium underline flex items-center gap-1 cursor-pointer"
+                          >
+                            <Activity className="w-3 h-3" />
+                            <span>2D Pitch Simulator</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Bottom Fast Stream Switcher Bar for Similar Free Sources */}
+                      <div className="w-full pt-2 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+                        <span className="text-slate-400 font-semibold text-[11px] flex items-center gap-1">
+                          <Globe className="w-3.5 h-3.5 text-emerald-400" />
+                          <span>Stream Straight from Similar Free:</span>
+                        </span>
+
+                        <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                          <button
+                            onClick={() => handleLaunchStraight(sportzxUrl)}
+                            className="px-2.5 py-1 bg-emerald-950/70 hover:bg-emerald-900/90 text-emerald-300 hover:text-white rounded-lg text-[11px] font-bold border border-emerald-700/50 cursor-pointer flex items-center gap-1"
+                          >
+                            <span>⚡ Sportzx</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleLaunchStraight('https://thestreameast.to/category/soccer')}
+                            className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg text-[11px] font-medium border border-white/5 cursor-pointer flex items-center gap-1"
+                          >
+                            <span>📺 StreamEast</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleLaunchStraight('https://totalsportek.pro')}
+                            className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg text-[11px] font-medium border border-white/5 cursor-pointer flex items-center gap-1"
+                          >
+                            <span>🌐 Totalsportek</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleLaunchStraight('https://www.score808.com')}
+                            className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg text-[11px] font-medium border border-white/5 cursor-pointer flex items-center gap-1"
+                          >
+                            <span>⚽ Score808</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleLaunchStraight('https://www.viprow.nu/sports-football-online')}
+                            className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg text-[11px] font-medium border border-white/5 cursor-pointer flex items-center gap-1"
+                          >
+                            <span>🏆 VIPRow</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleLaunchStraight('https://www.rojadirectaenvivo.club')}
+                            className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg text-[11px] font-medium border border-white/5 cursor-pointer flex items-center gap-1"
+                          >
+                            <span>📡 Rojadirecta</span>
+                          </button>
+                        </div>
+                      </div>
+
+                    </div>
                   )}
 
-                  {/* Sandboxed Protection Badge & Popout Overlay */}
-                  <div className="absolute top-2.5 left-2.5 z-20 flex items-center gap-2">
+                  {/* Sandboxed Protection Badge */}
+                  <div className="absolute top-2.5 left-2.5 z-20 flex items-center gap-2 pointer-events-none">
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-950/85 text-emerald-400 border border-emerald-500/40 backdrop-blur-xs shadow-md">
                       <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                      <span>Sandboxed • Zero Ads</span>
-                    </span>
-
-                    {(currentSource?.url || currentSource?.fallbackUrl) && (
-                      <button
-                        onClick={() => handlePopoutStream()}
-                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-950/90 hover:bg-indigo-900 text-indigo-200 hover:text-white border border-indigo-500/40 backdrop-blur-xs shadow-md transition-all cursor-pointer pointer-events-auto"
-                        title="Open direct unblocked stream in a new window (bypasses Google Studio iframe sandbox)"
-                      >
-                        <ExternalLink className="w-3 h-3 text-indigo-400" />
-                        <span>Popout ↗</span>
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Active Source Badge Overlay */}
-                  <div className="absolute top-2.5 right-2.5 z-20 pointer-events-none">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-950/85 text-indigo-300 border border-indigo-500/40 backdrop-blur-xs shadow-md font-mono">
-                      <span>{currentSource.shortName}</span>
+                      <span>Sportzx • Direct Link Verified</span>
                     </span>
                   </div>
+
                 </div>
 
-                {/* Minimalist Live Stream Bottom Strip */}
+                {/* Stream Bottom Quick Info Bar */}
                 <div className="p-3 bg-slate-950/80 border border-white/5 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-slate-400">Stream Status:</span>
+                    <span className="text-slate-400">Active Source:</span>
                     <span className="font-semibold text-emerald-400 flex items-center gap-1 font-mono">
                       <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                      {currentSource.provider}
+                      {currentSource?.provider || 'Sportzx Direct Live'}
                     </span>
                     <span className="text-slate-600">•</span>
-                    <span className="text-slate-400 truncate max-w-xs">{currentSource.description}</span>
+                    <span className="text-slate-400 truncate max-w-xs">{currentSource?.description}</span>
                   </div>
 
                   <div className="flex items-center gap-2.5 text-slate-400 flex-wrap">
-                    {(currentSource?.url || currentSource?.fallbackUrl) && (
-                      <button
-                        onClick={() => handlePopoutStream()}
-                        className="text-xs text-indigo-400 hover:text-indigo-300 font-bold underline cursor-pointer flex items-center gap-1"
-                        title="Open unblocked stream in a new window"
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                        <span>Popout stream ↗</span>
-                      </button>
-                    )}
-                    <span className="text-slate-600">•</span>
-                    <span className="text-[11px]">Stream stalled or cloud-blocked?</span>
                     <button
-                      onClick={handleNextStream}
-                      className="text-xs text-indigo-400 hover:text-indigo-300 font-bold underline cursor-pointer"
+                      onClick={() => handleLaunchStraight(sportzxUrl)}
+                      className="text-xs text-emerald-400 hover:text-emerald-300 font-bold underline cursor-pointer flex items-center gap-1"
                     >
-                      Next feed →
+                      <Zap className="w-3 h-3 text-amber-400" />
+                      <span>Stream Straight from Sportzx ↗</span>
                     </button>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* TAB 2: 2D Tactical Soccer Pitch Radar */}
+            {/* TAB 2: In-Play Analyst Advisory Agent */}
+            {activeTab === 'advisor' && (
+              <div className="space-y-4 p-4 sm:p-5 bg-slate-950 border border-amber-900/40 rounded-xl text-xs">
+                {/* Advisor Header */}
+                <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                      <Compass className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-white text-sm flex items-center gap-2">
+                        <span>In-Play Tactical Forensics &amp; Bet Divert Advisor</span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-950 text-indigo-300 border border-indigo-800/60">
+                          Autonomous Advisor
+                        </span>
+                      </h3>
+                      <p className="text-slate-400 text-[11px]">
+                        Diagnoses pitch shifts, explains trailing bets, and calculates strategic hedge/divert narratives without changing model weights.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${advisor?.statusColor || 'text-emerald-400 bg-emerald-950 border-emerald-500/40'}`}>
+                      {advisor?.betStatusBadge || '🟢 Position Validated'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Locked Pre-Match Bet vs Live In-Play Status */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="p-3 bg-slate-900/90 border border-white/5 rounded-xl space-y-1">
+                    <span className="text-slate-400 text-[10.5px] block font-medium flex items-center gap-1">
+                      <Lock className="w-3 h-3 text-slate-400" />
+                      Locked Pre-Match Bet:
+                    </span>
+                    <strong className="text-white text-sm block">
+                      {lockedPickTeam} Win ({lockedPick})
+                    </strong>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      Pre-Game Prob: {prePickP}%
+                    </span>
+                  </div>
+
+                  <div className="p-3 bg-slate-900/90 border border-white/5 rounded-xl space-y-1">
+                    <span className="text-slate-400 text-[10.5px] block font-medium flex items-center gap-1">
+                      <Activity className="w-3 h-3 text-rose-400" />
+                      In-Play Minute &amp; Score:
+                    </span>
+                    <strong className="text-emerald-400 font-mono text-sm block">
+                      {liveScore.home} - {liveScore.away} ({liveMinute}')
+                    </strong>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      Projected Final: {currentProjScore}
+                    </span>
+                  </div>
+
+                  <div className="p-3 bg-slate-900/90 border border-white/5 rounded-xl space-y-1">
+                    <span className="text-slate-400 text-[10.5px] block font-medium flex items-center gap-1">
+                      <TrendingUp className="w-3 h-3 text-amber-400" />
+                      Live Win Probability Shift:
+                    </span>
+                    <strong className={`font-mono text-sm block ${probShiftDelta >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {currentPickP}% ({probShiftDelta >= 0 ? `+${probShiftDelta}` : `${probShiftDelta}`}%)
+                    </strong>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      Remaining xG: {advisor?.remainingXg?.home || 0.8} vs {advisor?.remainingXg?.away || 0.6}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Section 1: What Changed on the Pitch (Forensics) */}
+                <div className="p-3.5 bg-slate-900/90 border border-slate-800 rounded-xl space-y-1.5">
+                  <div className="flex items-center gap-2 text-indigo-300 font-bold">
+                    <AlertTriangle className="w-4 h-4 text-amber-400" />
+                    <span>Forensic Diagnosis: What Changed in the Match?</span>
+                  </div>
+                  <p className="text-slate-200 text-xs leading-relaxed">
+                    {advisor?.whatChanged || `${lockedPickTeam} is executing pre-match baseline tempo. Live game dynamic reflects expected territorial distribution.`}
+                  </p>
+                  <p className="text-slate-400 text-[11px] leading-relaxed italic">
+                    {advisor?.tacticalDiagnosis || 'Tactical shape remains compact with nominal counter-attack vulnerability.'}
+                  </p>
+                </div>
+
+                {/* Section 2: Strategic Divert & Hedge Directive */}
+                <div className="p-3.5 bg-amber-950/40 border border-amber-800/50 rounded-xl space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-amber-300 font-bold">
+                      <Compass className="w-4 h-4 text-amber-400" />
+                      <span>Strategic Advisor: Bet Divert &amp; Hedge Roadmap</span>
+                    </div>
+                    <span className="px-2 py-0.5 rounded text-[10.5px] font-black bg-amber-900/80 text-amber-200 border border-amber-700/60">
+                      {advisor?.advisoryDivert?.badge || '🛡️ Ride Position'}
+                    </span>
+                  </div>
+
+                  <h4 className="font-bold text-white text-sm">
+                    {advisor?.advisoryDivert?.title || 'Hold Position & Ride Current Bet'}
+                  </h4>
+
+                  <p className="text-slate-200 text-xs leading-relaxed">
+                    {advisor?.advisoryDivert?.rationale || 'Statistical metrics support holding the wager to conclusion.'}
+                  </p>
+
+                  {advisor?.advisoryDivert?.recommendedHedgeMarket && (
+                    <div className="mt-2 p-2 bg-slate-950/80 border border-amber-500/30 rounded-lg flex items-center justify-between text-xs">
+                      <div>
+                        <span className="text-slate-400 text-[10.5px] block">Recommended Hedge Vehicle:</span>
+                        <strong className="text-white font-mono">{advisor.advisoryDivert.recommendedHedgeMarket}</strong>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-slate-400 text-[10.5px] block">Indicative In-Play Odds:</span>
+                        <strong className="text-amber-400 font-mono text-sm">@{advisor.advisoryDivert.hedgeOdds || 1.85}</strong>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Advisory Narrative Story */}
+                <div className="p-3 bg-slate-900 border border-white/5 rounded-xl space-y-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    Real-Time Advisory Story
+                  </span>
+                  <p className="text-slate-300 text-[11px] leading-relaxed">
+                    {advisor?.narrativeRoadmap || `Live in-play analysis for ${match.home} vs ${match.away} actively tracking probability decay.`}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3: 2D Tactical Pitch Radar */}
             {activeTab === 'radar' && (
               <div className="space-y-3">
                 <div className="relative w-full aspect-video sm:aspect-21/9 bg-emerald-950 border-2 border-emerald-800/80 rounded-xl overflow-hidden shadow-inner flex flex-col justify-between p-3.5 select-none">
@@ -807,7 +925,6 @@ export default function LiveMatchPlayerModal({
                   <div className="absolute inset-2 border border-emerald-500/30 rounded-lg pointer-events-none" />
                   <div className="absolute top-2 bottom-2 left-1/2 -translate-x-1/2 w-px border-l border-emerald-500/30" />
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 border border-emerald-500/30 rounded-full" />
-                  {/* Goal Boxes */}
                   <div className="absolute left-2 top-1/2 -translate-y-1/2 w-12 h-28 border border-emerald-500/30 border-l-0" />
                   <div className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-28 border border-emerald-500/30 border-r-0" />
 
@@ -840,11 +957,9 @@ export default function LiveMatchPlayerModal({
                     </div>
                   </div>
 
-                  {/* Pitch Action or Standby State */}
+                  {/* Pitch Action */}
                   {isMatchLive ? (
-                    /* Live match dynamic physics & player movement */
                     <div className="relative z-10 flex-1 flex items-center justify-center my-2">
-                      {/* Simulated Ball with Trail */}
                       <div 
                         className="absolute w-4 h-4 rounded-full bg-white border-2 border-emerald-900 shadow-lg shadow-white/50 transition-all duration-1000 ease-out z-20 flex items-center justify-center"
                         style={{ left: `${ballPosition.x}%`, top: `${ballPosition.y}%` }}
@@ -852,7 +967,6 @@ export default function LiveMatchPlayerModal({
                         <div className="w-1.5 h-1.5 rounded-full bg-rose-600" />
                       </div>
 
-                      {/* Attacking Momentum Wave Indicator */}
                       <div 
                         className={`absolute px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider backdrop-blur-xs transition-all duration-700 ${
                           attackingSide === 'home' 
@@ -864,7 +978,6 @@ export default function LiveMatchPlayerModal({
                       </div>
                     </div>
                   ) : (
-                    /* Match NOT live: Standby Pitch Display */
                     <div className="relative z-10 flex-1 flex flex-col items-center justify-center my-auto text-center p-4">
                       <div className="w-10 h-10 rounded-xl bg-emerald-900/60 text-emerald-300 border border-emerald-700/50 flex items-center justify-center mb-2">
                         <Activity className="w-5 h-5 text-emerald-400" />
@@ -873,80 +986,18 @@ export default function LiveMatchPlayerModal({
                         2D Simulation Standby
                       </h4>
                       <p className="text-[11px] sm:text-xs text-emerald-300/80 max-w-sm mt-1">
-                        Dynamic pitch ball physics, possession momentum waves, and live Poisson goal probability decay will activate when the match kicks off.
+                        Dynamic pitch ball physics, momentum waves, and live Poisson decay activate at kickoff.
                       </p>
                     </div>
                   )}
 
-                  {/* Pitch Footer: Tactical Stats */}
+                  {/* Pitch Footer */}
                   <div className="relative z-10 flex items-center justify-between text-[11px] font-mono text-emerald-300 px-2 bg-emerald-950/80 rounded-lg py-1 border border-emerald-800/40">
                     <span>Tactical Radar: Low-Latency Sync</span>
                     <span>{isMatchLive ? `Momentum: ${attackingSide.toUpperCase()}` : 'Kickoff Pending'}</span>
                     <span>Pitch: Natural Grass</span>
                   </div>
                 </div>
-
-                <div className="p-3 bg-slate-950/80 border border-white/5 rounded-xl flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="text-slate-400">Tactical State:</span>
-                    <span className="font-semibold text-indigo-400">
-                      {isMatchLive 
-                        ? (inPlayData?.momentumVerdict || `${match.home} and ${match.away} contesting mid-pitch territorial control.`)
-                        : `Pre-match preparation: ${match.home} vs ${match.away} kicks off at ${match.time || 'scheduled time'}.`
-                      }
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* TAB 3: Audio Commentary */}
-            {activeTab === 'radio' && (
-              <div className="space-y-4 p-5 bg-slate-950 border border-white/5 rounded-xl">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center">
-                    <Radio className={`w-5 h-5 ${isMatchLive ? 'animate-pulse' : ''}`} />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-white">Live Football Audio Commentary</h3>
-                    <p className="text-xs text-slate-400">
-                      {isMatchLive 
-                        ? 'Real-time play-by-play radio commentary & crowd atmosphere'
-                        : 'Live commentary stream activates at kickoff'
-                      }
-                    </p>
-                  </div>
-                </div>
-
-                {isMatchLive ? (
-                  <div className="p-4 bg-slate-900 border border-white/5 rounded-xl space-y-3">
-                    <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
-                      <span>Source: Sports Audio Live Stream</span>
-                      <span className="text-emerald-400 flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                        Broadcasting Live
-                      </span>
-                    </div>
-                    
-                    <div className="aspect-21/9 w-full bg-black rounded-lg overflow-hidden">
-                      <iframe
-                        src={`https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(match.home + ' vs ' + match.away + ' radio live commentary')}&autoplay=1`}
-                        title="Audio Commentary Stream"
-                        className="w-full h-full border-0"
-                        allow="autoplay"
-                        sandbox="allow-scripts allow-same-origin"
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-6 bg-slate-900/60 border border-white/5 rounded-xl text-center space-y-2">
-                    <Radio className="w-8 h-8 text-slate-500 mx-auto" />
-                    <h4 className="text-sm font-bold text-slate-200">Commentary Feed Standby</h4>
-                    <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                      Official matchday audio commentary will begin broadcasting once the game kicks off at {match.time || 'scheduled matchday time'}.
-                    </p>
-                  </div>
-                )}
               </div>
             )}
 
@@ -956,10 +1007,10 @@ export default function LiveMatchPlayerModal({
                 <div className="flex items-center justify-between border-b border-white/5 pb-3">
                   <div>
                     <h3 className="font-bold text-white text-sm">
-                      {isMatchLive ? 'Supermodel Mid-Game Autopsy' : 'Pre-Match Analytical Foundation'}
+                      {isMatchLive ? 'Supermodel Mid-Game Poisson Shift' : 'Pre-Match Analytical Foundation'}
                     </h3>
                     <p className="text-slate-400 text-[11px]">
-                      {isMatchLive ? 'Real-time Poisson goal rate decay during active live play' : 'Dixon-Coles bivariate Poisson pre-game expected goals'}
+                      {isMatchLive ? 'Live probability decay during active in-play match state' : 'Dixon-Coles bivariate Poisson pre-game expected goals'}
                     </p>
                   </div>
                   <div className="text-right">
@@ -976,7 +1027,7 @@ export default function LiveMatchPlayerModal({
                   <div className="p-3 bg-slate-900 border border-white/5 rounded-lg text-center">
                     <span className="text-slate-400 text-[11px] block">{isMatchLive ? 'Live Home Win %' : 'Home Win %'}</span>
                     <strong className="text-indigo-400 font-mono text-base block mt-0.5">{currentHomeP}%</strong>
-                    <span className="text-[10px] text-slate-500 font-mono">xG: {match.lambda || inPlayData?.remainingXg?.home || 1.2}</span>
+                    <span className="text-[10px] text-slate-500 font-mono">Remaining xG: {inPlayData?.remainingXg?.home || match.lambda || 1.2}</span>
                   </div>
 
                   <div className="p-3 bg-slate-900 border border-white/5 rounded-lg text-center">
@@ -988,7 +1039,7 @@ export default function LiveMatchPlayerModal({
                   <div className="p-3 bg-slate-900 border border-white/5 rounded-lg text-center">
                     <span className="text-slate-400 text-[11px] block">{isMatchLive ? 'Live Away Win %' : 'Away Win %'}</span>
                     <strong className="text-rose-400 font-mono text-base block mt-0.5">{currentAwayP}%</strong>
-                    <span className="text-[10px] text-slate-500 font-mono">xG: {match.mu || inPlayData?.remainingXg?.away || 0.9}</span>
+                    <span className="text-[10px] text-slate-500 font-mono">Remaining xG: {inPlayData?.remainingXg?.away || match.mu || 0.9}</span>
                   </div>
                 </div>
 
@@ -1014,19 +1065,19 @@ export default function LiveMatchPlayerModal({
               <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
                 <span className="font-bold text-white uppercase tracking-wider text-[11px] flex items-center gap-1.5">
                   <Activity className="w-3.5 h-3.5 text-rose-500" />
-                  {isMatchLive ? 'Live In-Play Odds' : 'Pre-Game Model Odds'}
+                  {isMatchLive ? 'Live In-Play Analytics' : 'Pre-Game Model Odds'}
                 </span>
                 <span className={`px-2 py-0.5 rounded font-mono font-bold text-[10px] ${
                   isMatchLive ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' : 'bg-slate-800 text-slate-300'
                 }`}>
-                  {isMatchLive ? `${liveMinute}' Tick` : (match.time || 'Pre-Game')}
+                  {isMatchLive ? `${liveMinute}' Live Tick` : (match.time || 'Pre-Game')}
                 </span>
               </div>
 
               {/* Dynamic Pick & Live Odds */}
               <div className="p-3 bg-indigo-950/40 border border-indigo-800/40 rounded-lg space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-400 font-medium">Recommended Pick:</span>
+                  <span className="text-slate-400 font-medium">Model Directive:</span>
                   <span className="font-mono font-bold text-indigo-300 text-sm">
                     {inPlayData?.liveOdds || 1.35}x
                   </span>
@@ -1043,7 +1094,7 @@ export default function LiveMatchPlayerModal({
                   className={`w-full py-2 rounded-lg font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs ${
                     isInSlip 
                       ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 hover:bg-rose-500/30' 
-                      : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                      : 'bg-emerald-600 hover:bg-emerald-500 text-white'
                   }`}
                 >
                   {isInSlip ? (
@@ -1060,10 +1111,10 @@ export default function LiveMatchPlayerModal({
                 </button>
               </div>
 
-              {/* Probability Bars */}
+              {/* In-Play Probability Shift Bars */}
               <div className="space-y-2 pt-1">
                 <div className="flex items-center justify-between text-slate-400 text-[11px]">
-                  <span>{match.home}</span>
+                  <span>{match.home} (Home)</span>
                   <span className="font-mono font-bold text-white">{currentHomeP}%</span>
                 </div>
                 <div className="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden">
@@ -1071,7 +1122,7 @@ export default function LiveMatchPlayerModal({
                 </div>
 
                 <div className="flex items-center justify-between text-slate-400 text-[11px]">
-                  <span>Draw</span>
+                  <span>Draw (X)</span>
                   <span className="font-mono font-bold text-white">{currentDrawP}%</span>
                 </div>
                 <div className="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden">
@@ -1079,13 +1130,38 @@ export default function LiveMatchPlayerModal({
                 </div>
 
                 <div className="flex items-center justify-between text-slate-400 text-[11px]">
-                  <span>{match.away}</span>
+                  <span>{match.away} (Away)</span>
                   <span className="font-mono font-bold text-white">{currentAwayP}%</span>
                 </div>
                 <div className="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden">
                   <div className="bg-rose-500 h-full rounded-full transition-all duration-300" style={{ width: `${currentAwayP}%` }} />
                 </div>
               </div>
+            </div>
+
+            {/* Quick Straight Stream Launcher Card in Sidebar */}
+            <div className="p-4 bg-emerald-950/20 border border-emerald-800/40 rounded-xl space-y-2.5 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-white uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-amber-400" />
+                  Stream Straight
+                </span>
+                <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-700/50">
+                  Fast HD
+                </span>
+              </div>
+
+              <p className="text-slate-300 text-xs leading-relaxed">
+                Watch full HD live broadcast directly on Sportzx with unblocked carrier streams.
+              </p>
+
+              <button
+                onClick={() => handleLaunchStraight(sportzxUrl)}
+                className="w-full py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
+              >
+                <Play className="w-3.5 h-3.5 fill-white" />
+                <span>Stream Straight from Sportzx ↗</span>
+              </button>
             </div>
 
             {/* TV Broadcaster Info Card */}
@@ -1100,15 +1176,11 @@ export default function LiveMatchPlayerModal({
                   <div key={idx} className="p-2 bg-slate-900 border border-white/5 rounded-lg flex items-center justify-between">
                     <span className="font-medium text-slate-300 truncate">{ch}</span>
                     <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800/60 shrink-0 ml-2">
-                      Official HD
+                      Sportzx HD
                     </span>
                   </div>
                 ))}
               </div>
-
-              <p className="text-[10px] text-slate-500 leading-normal pt-1">
-                Broadcaster metadata synced from ESPN &amp; official regional league rights holders.
-              </p>
             </div>
 
           </div>

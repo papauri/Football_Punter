@@ -175,6 +175,12 @@ export default function AccumulatorPage({
   const [presetStrategy, setPresetStrategy] = useState('max_win_rate'); // 'max_win_rate' | 'unanimous' | 'antifragile' | 'value'
   const [presetLegCount, setPresetLegCount] = useState('ALL');
 
+  // Active Bet Slip Filters
+  const [slipSearch, setSlipSearch] = useState('');
+  const [slipStatusFilter, setSlipStatusFilter] = useState('ALL'); // ALL, UPCOMING, LIVE, FINISHED
+  const [slipOutcomeFilter, setSlipOutcomeFilter] = useState('ALL'); // ALL, HOME, AWAY
+  const [slipLegCount, setSlipLegCount] = useState(8);
+
   const strategyWinRate = presetStrategy === 'max_win_rate'
     ? '86.3% (Double Chance & DNB)'
     : presetStrategy === 'antifragile'
@@ -225,52 +231,161 @@ export default function AccumulatorPage({
     }));
   }, [accaPicks, matches, tzSettings]);
 
-  // Combined metrics
+  // Faceted counts for active slip
+  const slipStatusCounts = useMemo(() => {
+    let all = 0, upcoming = 0, live = 0, finished = 0;
+    activeLegs.forEach(leg => {
+      all++;
+      const m = leg.match || {};
+      const isFinished = m.isCompleted || m.status === 'FT' || m.status === 'FINISHED' || leg.status?.isFinished;
+      const isLive = m.isLive || m.status === 'LIVE' || m.status === 'IN_PLAY';
+      if (isFinished) finished++;
+      else if (isLive) live++;
+      else upcoming++;
+    });
+    return { all, upcoming, live, finished };
+  }, [activeLegs]);
+
+  // Filtered active legs strictly matching filters
+  const matchingLegs = useMemo(() => {
+    return activeLegs.filter(leg => {
+      if (slipSearch.trim()) {
+        const q = slipSearch.toLowerCase().trim();
+        const home = (leg.home || '').toLowerCase();
+        const away = (leg.away || '').toLowerCase();
+        const league = (leg.league || '').toLowerCase();
+        if (!home.includes(q) && !away.includes(q) && !league.includes(q)) return false;
+      }
+      const m = leg.match || {};
+      const isFinished = m.isCompleted || m.status === 'FT' || m.status === 'FINISHED' || leg.status?.isFinished;
+      const isLive = m.isLive || m.status === 'LIVE' || m.status === 'IN_PLAY';
+      if (slipStatusFilter === 'UPCOMING' && (isFinished || isLive)) return false;
+      if (slipStatusFilter === 'LIVE' && !isLive) return false;
+      if (slipStatusFilter === 'FINISHED' && !isFinished) return false;
+
+      const pickVal = String(leg.pick || '').toUpperCase();
+      if (slipOutcomeFilter === 'HOME' && pickVal !== 'HOME' && pickVal !== '1') return false;
+      if (slipOutcomeFilter === 'AWAY' && pickVal !== 'AWAY' && pickVal !== '2') return false;
+
+      return true;
+    });
+  }, [activeLegs, slipSearch, slipStatusFilter, slipOutcomeFilter]);
+
+  const matchingSlipCount = matchingLegs.length;
+
+  // Dynamic Leg Count options for the slip
+  const slipLegCountOptions = useMemo(() => {
+    if (matchingSlipCount === 0) {
+      return [{ value: 0, label: '0 Legs (No Matches)' }];
+    }
+    if (matchingSlipCount < 8) {
+      const opts = [];
+      if (matchingSlipCount >= 4) {
+        opts.push({ value: 2, label: '2 Legs' });
+        opts.push({ value: 4, label: '4 Legs' });
+      } else if (matchingSlipCount >= 2) {
+        opts.push({ value: 1, label: '1 Leg' });
+        opts.push({ value: 2, label: '2 Legs' });
+      }
+      if (!opts.some(o => o.value === matchingSlipCount)) {
+        opts.push({ value: matchingSlipCount, label: `${matchingSlipCount} Legs (All Available)` });
+      } else {
+        const existing = opts.find(o => o.value === matchingSlipCount);
+        if (existing) existing.label = `${matchingSlipCount} Legs (All Available)`;
+      }
+      return opts;
+    }
+    const base = [
+      { value: 2, label: '2 Legs' },
+      { value: 4, label: '4 Legs' },
+      { value: 6, label: '6 Legs' },
+      { value: 8, label: '8 Legs (Default)' }
+    ];
+    if (matchingSlipCount >= 10) base.push({ value: 10, label: '10 Legs' });
+    if (matchingSlipCount > 10) base.push({ value: matchingSlipCount, label: `All ${matchingSlipCount} Legs` });
+    return base;
+  }, [matchingSlipCount]);
+
+  // Effective leg count clamped to matching count (no phantom legs)
+  const effectiveSlipLegCount = useMemo(() => {
+    if (matchingSlipCount === 0) return 0;
+    if (matchingSlipCount < 8) {
+      if (slipLegCount >= matchingSlipCount || slipLegCount === 8) return matchingSlipCount;
+      return Math.min(slipLegCount, matchingSlipCount);
+    }
+    return Math.min(slipLegCount, matchingSlipCount);
+  }, [slipLegCount, matchingSlipCount]);
+
+  // Final sliced displayed legs
+  const displayLegs = useMemo(() => {
+    if (effectiveSlipLegCount === 0) return [];
+    return matchingLegs.slice(0, effectiveSlipLegCount);
+  }, [matchingLegs, effectiveSlipLegCount]);
+
+  const isSlipFiltered = slipStatusFilter !== 'ALL' || slipOutcomeFilter !== 'ALL' || slipSearch.trim().length > 0;
+
+  // Combined metrics strictly computed from filtered displayLegs
   const totalOdds = useMemo(() => {
-    if (activeLegs.length === 0) return 1.0;
-    return activeLegs.reduce((acc, leg) => {
+    if (displayLegs.length === 0) return 0.0;
+    const prod = displayLegs.reduce((acc, leg) => {
       const o = safeParseFloat(leg.odds, 1.0);
       return acc * (o > 0 ? o : 1.0);
     }, 1.0);
-  }, [activeLegs]);
+    return Math.round(prod * 100) / 100;
+  }, [displayLegs]);
 
   const combinedProb = useMemo(() => {
-    if (activeLegs.length === 0) return 0;
-    return activeLegs.reduce((acc, leg) => {
+    if (displayLegs.length === 0) return 0.0;
+    const prod = displayLegs.reduce((acc, leg) => {
       const p = safeParseFloat(leg.prob, 50);
       return acc * ((p > 0 ? p : 50) / 100);
-    }, 1.0) * 100;
-  }, [activeLegs]);
+    }, 1.0);
+    return Math.max(0.1, Math.round(prod * 1000) / 10);
+  }, [displayLegs]);
 
   const expectedValue = useMemo(() => {
-    if (activeLegs.length === 0 || totalOdds <= 1) return 0;
+    if (displayLegs.length === 0 || totalOdds <= 1) return 0;
     const p = combinedProb / 100;
     return (p * totalOdds) - 1;
-  }, [totalOdds, combinedProb, activeLegs]);
+  }, [totalOdds, combinedProb, displayLegs]);
 
   const kellyRecommendation = useMemo(() => {
-    if (activeLegs.length === 0 || totalOdds <= 1) return 0;
+    if (displayLegs.length === 0 || totalOdds <= 1) return 0;
     const b = totalOdds - 1;
     const p = combinedProb / 100;
     const q = 1 - p;
     const f = p - (q / b);
     if (f <= 0) return 0;
     return bankroll * f * kellyMultiplier;
-  }, [activeLegs, totalOdds, combinedProb, bankroll, kellyMultiplier]);
+  }, [displayLegs, totalOdds, combinedProb, bankroll, kellyMultiplier]);
 
   const effectiveWager = useMemo(() => {
+    if (displayLegs.length === 0) return 0;
     const cw = parseFloat(customWager);
     if (!isNaN(cw) && cw > 0) return cw;
     return kellyRecommendation;
-  }, [customWager, kellyRecommendation]);
+  }, [customWager, kellyRecommendation, displayLegs]);
 
   // Comprehensive Autonomous Judgment Engine for the Active Slip
   const autonomousJudgement = useMemo(() => {
-    if (activeLegs.length === 0) {
+    if (displayLegs.length === 0) {
+      if (activeLegs.length > 0) {
+        return {
+          grade: 'EMPTY',
+          gradeColor: 'bg-slate-100 text-slate-500 border-slate-200',
+          score: 0,
+          verdictTitle: 'No Matching Legs in Filter',
+          verdictText: 'No selections match your current filter settings. Reset or change filter to evaluate odds.',
+          recommendations: ['Clear or adjust active slip filters to display selections.'],
+          canAutoOptimize: false,
+          straightCount: 0,
+          dcCount: 0
+        };
+      }
       return null;
     }
 
-    const nLegs = activeLegs.length;
+    const nLegs = displayLegs.length;
     let score = 75; // baseline
     const recommendations = [];
     let blacklistedCount = 0;
@@ -280,7 +395,7 @@ export default function AccumulatorPage({
     let unanimousCount = 0;
     let dcCount = 0;
 
-    activeLegs.forEach((l) => {
+    displayLegs.forEach((l) => {
       if (l.status.isBlacklisted) blacklistedCount++;
       if (l.status.isTrap) trapCount++;
       if (l.status.isDrawVulnerable) drawRiskCount++;
@@ -424,7 +539,7 @@ export default function AccumulatorPage({
       unanimousCount,
       dcCount
     };
-  }, [activeLegs, expectedValue]);
+  }, [displayLegs, expectedValue]);
 
   // Helper to find match
   const findMatchForLeg = (leg) => {
@@ -807,25 +922,72 @@ export default function AccumulatorPage({
       .slice(0, 4);
   }, [matches, accaMatchIds]);
 
+  const currentStrategyPool = useMemo(() => {
+    let pool = allMaxWinRatePool;
+    if (presetStrategy === 'unanimous') pool = allUnanimousPool;
+    else if (presetStrategy === 'antifragile') pool = allEliteStraightPool;
+    else if (presetStrategy === 'value') pool = allValuePool;
+    return pool;
+  }, [presetStrategy, allMaxWinRatePool, allUnanimousPool, allEliteStraightPool, allValuePool]);
+
+  const presetLegCountOptions = useMemo(() => {
+    const total = currentStrategyPool.length;
+    if (total === 0) {
+      return [{ value: '0', label: '0 Qualifying Legs' }];
+    }
+    if (total < 8) {
+      const opts = [];
+      if (total >= 4) {
+        opts.push({ value: '2', label: '2 Legs' });
+        opts.push({ value: '4', label: '4 Legs' });
+      } else if (total >= 2) {
+        opts.push({ value: '1', label: '1 Leg' });
+        opts.push({ value: '2', label: '2 Legs' });
+      } else {
+        opts.push({ value: '1', label: '1 Leg' });
+      }
+      if (!opts.some(o => o.value === String(total))) {
+        opts.push({ value: String(total), label: `${total} Legs (All Available)` });
+      } else {
+        const item = opts.find(o => o.value === String(total));
+        if (item) item.label = `${total} Legs (All Available)`;
+      }
+      return opts;
+    }
+    return [
+      { value: '2', label: '2 Legs' },
+      { value: '3', label: '3 Legs (Optimal)' },
+      { value: '4', label: '4 Legs' },
+      { value: '5', label: '5 Legs' },
+      { value: '8', label: '8 Legs' },
+      { value: 'ALL', label: `All Qualifying Legs (${total})` }
+    ];
+  }, [currentStrategyPool]);
+
   // Preset Generation Handler (Max Win Rate DC/DNB or Hardened Outrights)
   const handleLoadAutonomousPreset = () => {
-    let pool = allMaxWinRatePool;
+    let pool = currentStrategyPool;
     let label = '🛡️ Max Win Rate Ticket (Double Chance: 86.3% Hit Rate)';
     if (presetStrategy === 'unanimous') {
-      pool = allUnanimousPool;
       label = '👑 100% AI Consensus Outright Ticket (71%+ Win Rate)';
     } else if (presetStrategy === 'antifragile') {
-      pool = allEliteStraightPool;
       label = '⭐ Prime Stable Outright Ticket (73%+ Win Rate)';
     } else if (presetStrategy === 'value') {
-      pool = allValuePool;
       label = '💎 +EV Outright Alpha Ticket';
+    }
+
+    if (!pool || pool.length === 0) {
+      setLoadedNotice('No matches meet the criteria for this strategy (0 qualifying legs).');
+      setTimeout(() => setLoadedNotice(null), 3500);
+      return;
     }
 
     // Prioritize candidates with positive or neutral expected value
     const positiveEvPool = pool.filter(p => (p.ev !== undefined ? p.ev >= -0.01 : true));
     const candidatePool = positiveEvPool.length >= (typeof presetLegCount === 'number' ? presetLegCount : 3) ? positiveEvPool : pool;
-    const count = presetLegCount === 'ALL' ? candidatePool.length : (parseInt(presetLegCount, 10) || 3);
+    const count = presetLegCount === 'ALL' 
+      ? candidatePool.length 
+      : Math.min(candidatePool.length, parseInt(presetLegCount, 10) || 3);
     const selected = candidatePool.slice(0, count);
 
     // Sort selected legs chronologically by kickoff time
@@ -844,35 +1006,8 @@ export default function AccumulatorPage({
     if (picksToLoad.length > 0) {
       loadPicksIntoSlip(picksToLoad, `${label} (${picksToLoad.length} Legs)`);
     } else {
-      // If pool is empty, fall back to any available high-confidence matches with outrights
-      const fallbackMatches = (matches || [])
-        .filter(m => !m.disruptionModel?.isPassFlagged && !m.isMarketDivergence && !m.isFavoriteTrap && !(m.aiSwarm || m.imperialSwarm)?.isContrarianTrap)
-        .slice(0, typeof presetLegCount === 'number' ? presetLegCount : 3);
-      
-      // Sort fallback matches chronologically by kickoff time
-      fallbackMatches.sort((a, b) => {
-        const tA = a.timestamp || (a.utcDate ? new Date(a.utcDate).getTime() : 0);
-        const tB = b.timestamp || (b.utcDate ? new Date(b.utcDate).getTime() : 0);
-        return tA - tB;
-      });
-
-      if (fallbackMatches.length > 0) {
-        const fallbackPicks = fallbackMatches.map(m => {
-          let pickVal = (typeof m.predictedWinner === 'string' ? m.predictedWinner : m.predictedWinner?.pick) || 'HOME';
-          if (pickVal !== 'HOME' && pickVal !== 'AWAY') {
-            const hp = safeParseFloat(m.prob?.home, 0);
-            const ap = safeParseFloat(m.prob?.away, 0);
-            pickVal = hp >= ap ? 'HOME' : 'AWAY';
-          }
-          const p = resolveMatchProb(m, pickVal);
-          const o = resolveMatchOdds(m, pickVal);
-          return buildPickObject(m, pickVal, `${pickVal} Win (Outright)`, o, p);
-        });
-        loadPicksIntoSlip(fallbackPicks, `High-Confidence Outrights (${fallbackPicks.length} Legs)`);
-      } else {
-        setLoadedNotice('No active matches available in slate to build ticket.');
-        setTimeout(() => setLoadedNotice(null), 3000);
-      }
+      setLoadedNotice('No matches currently qualify for this strategy filter.');
+      setTimeout(() => setLoadedNotice(null), 3500);
     }
   };
 
@@ -1121,7 +1256,13 @@ export default function AccumulatorPage({
                   </span>
                 </h2>
                 <span className="text-[10px] sm:text-[10.5px] px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold">
-                  {activeLegs.length} {activeLegs.length === 1 ? 'Leg' : 'Legs'}
+                  {displayLegs.length === 0 && activeLegs.length > 0 ? (
+                    '0 / ' + activeLegs.length + ' Legs Filtered'
+                  ) : isSlipFiltered ? (
+                    `${displayLegs.length}/${activeLegs.length} Legs Filtered`
+                  ) : (
+                    `${activeLegs.length} ${activeLegs.length === 1 ? 'Leg' : 'Legs'}`
+                  )}
                 </span>
               </div>
               <p className="text-xs text-slate-500">
@@ -1339,16 +1480,10 @@ export default function AccumulatorPage({
                 />
 
                 <UniformDropdown
-                  label="Acca Size"
+                  label={currentStrategyPool.length < 8 ? `Acca Size (${currentStrategyPool.length} avail)` : 'Acca Size'}
                   value={String(presetLegCount)}
                   onChange={(val) => setPresetLegCount(val === 'ALL' ? 'ALL' : Number(val))}
-                  options={[
-                    { value: '2', label: '2 Legs' },
-                    { value: '3', label: '3 Legs (Optimal)' },
-                    { value: '4', label: '4 Legs' },
-                    { value: '5', label: '5 Legs' },
-                    { value: 'ALL', label: 'All Qualifying Legs' }
-                  ]}
+                  options={presetLegCountOptions}
                 />
               </div>
 
@@ -1409,7 +1544,7 @@ export default function AccumulatorPage({
               </span>
             </h2>
             <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold">
-              {activeLegs.length === 0 ? 'No selections' : `${activeLegs.length} ready`}
+              {displayLegs.length === 0 ? '0 ready' : isSlipFiltered ? `${displayLegs.length}/${activeLegs.length} ready` : `${activeLegs.length} ready`}
             </span>
           </div>
 
@@ -1475,6 +1610,61 @@ export default function AccumulatorPage({
               </div>
             )}
 
+            {/* Active Slip Filtering Toolbar */}
+            {activeLegs.length > 0 && (
+              <div className="p-2.5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="relative flex-1 min-w-[130px] max-w-xs">
+                  <input
+                    type="text"
+                    placeholder="Search slip..."
+                    value={slipSearch}
+                    onChange={(e) => setSlipSearch(e.target.value)}
+                    className="w-full pl-3 pr-6 py-1 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  />
+                  {slipSearch && (
+                    <button 
+                      onClick={() => setSlipSearch('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <UniformDropdown
+                    label="Status"
+                    value={slipStatusFilter}
+                    onChange={setSlipStatusFilter}
+                    options={[
+                      { value: 'ALL', label: `All (${slipStatusCounts.all})` },
+                      { value: 'UPCOMING', label: `Upcoming (${slipStatusCounts.upcoming})` },
+                      { value: 'LIVE', label: `Live In-Play (${slipStatusCounts.live})` },
+                      { value: 'FINISHED', label: `Finished (${slipStatusCounts.finished})` }
+                    ]}
+                  />
+
+                  <UniformDropdown
+                    label={matchingSlipCount < 8 ? `Leg Count (${matchingSlipCount} avail)` : 'Leg Count'}
+                    value={effectiveSlipLegCount}
+                    onChange={(val) => setSlipLegCount(Number(val))}
+                    options={slipLegCountOptions}
+                  />
+
+                  <UniformDropdown
+                    label="Selection"
+                    value={slipOutcomeFilter}
+                    onChange={setSlipOutcomeFilter}
+                    options={[
+                      { value: 'ALL', label: 'All Picks' },
+                      { value: 'HOME', label: 'Home Win' },
+                      { value: 'AWAY', label: 'Away Win' }
+                    ]}
+                  />
+                </div>
+              </div>
+            )}
+
             {activeLegs.length === 0 ? (
               <div className="py-12 px-4 text-center">
                 <ListChecks className="w-10 h-10 mx-auto text-slate-300 mb-2" />
@@ -1489,6 +1679,26 @@ export default function AccumulatorPage({
                 >
                   <Zap className="w-3.5 h-3.5" />
                   <span>Generate Autonomous Slip</span>
+                </button>
+              </div>
+            ) : displayLegs.length === 0 ? (
+              <div className="py-12 px-4 text-center">
+                <ListChecks className="w-10 h-10 mx-auto text-slate-300 mb-2" />
+                <h4 className="text-sm font-bold text-slate-700">No Selections Match Filter</h4>
+                <p className="text-xs text-slate-500 max-w-md mx-auto mt-1 mb-3">
+                  None of your {activeLegs.length} slip legs match this filter selection. Don't force legs if none qualify.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSlipSearch('');
+                    setSlipStatusFilter('ALL');
+                    setSlipOutcomeFilter('ALL');
+                    setSlipLegCount(8);
+                  }}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold cursor-pointer"
+                >
+                  Reset Slip Filters
                 </button>
               </div>
             ) : (
@@ -1508,7 +1718,7 @@ export default function AccumulatorPage({
                     </tr>
                   </thead>
                   <tbody className="p-2.5 sm:p-0 flex flex-col md:table-row-group md:divide-y md:divide-slate-100 space-y-2.5 md:space-y-0">
-                    {activeLegs.map((leg, idx) => {
+                    {displayLegs.map((leg, idx) => {
                       const b = leg.status.badge;
                       const isDC = leg.status.isProtectedDC;
                       const legKey = leg.pickId || leg.id || `${leg.home}-${leg.away}-${idx}`;

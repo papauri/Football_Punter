@@ -334,9 +334,9 @@ export default function ResultsProofPage({
     return filteredResults.slice(start, start + pageSize);
   }, [filteredResults, currentPage, pageSize]);
 
-  // Compute stats
+  // Compute stats strictly based on filtered results
   const stats = useMemo(() => {
-    const validMatches = activeResults.filter(m => {
+    const validMatches = filteredResults.filter(m => {
       return m.isCompleted || m.status === 'FT' || m.status?.includes('FT') || m.status?.includes('Final') || m.actualScore || (m.homeScore != null && m.awayScore != null);
     });
     if (validMatches.length === 0) return { total: 0, hits: 0, misses: 0, pushes: 0, passes: 0, activeTotal: 0, hitRate: '0.0' };
@@ -368,7 +368,7 @@ export default function ResultsProofPage({
     const activeTotal = hits + misses;
     const hitRate = activeTotal > 0 ? safeToFixed((hits / activeTotal) * 100, 1) : (total > 0 ? safeToFixed((hits / total) * 100, 1) : '0.0');
     return { total, hits, misses, pushes, passes, activeTotal, hitRate };
-  }, [activeResults]);
+  }, [filteredResults]);
 
   return (
     <div className="space-y-4">

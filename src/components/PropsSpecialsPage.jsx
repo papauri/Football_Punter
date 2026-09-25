@@ -271,9 +271,9 @@ export default function PropsSpecialsPage({
 
   // Extract all high-conviction props across filtered matches for the quick-add action
   const allEliteAnchors = useMemo(() => {
-    if (!data?.insights) return [];
+    if (!filteredInsights) return [];
     const list = [];
-    data.insights.forEach(insight => {
+    filteredInsights.forEach(insight => {
       const originalMatch = matches.find(m => m.id === insight.matchId) || {
         id: insight.matchId,
         home: insight.home,
@@ -297,7 +297,21 @@ export default function PropsSpecialsPage({
       });
     });
     return list.sort((a, b) => b.prop.hitProbability - a.prop.hitProbability);
-  }, [data, matches, accaPicks, accaMatchIds, propsSlipPicks]);
+  }, [filteredInsights, matches, accaPicks, accaMatchIds, propsSlipPicks]);
+
+  const showcaseStats = useMemo(() => {
+    if (!allEliteAnchors.length) {
+      return { combinedOdds: 0.0, avgHitRate: 0, count: 0 };
+    }
+    const top = allEliteAnchors.slice(0, 3);
+    const prod = top.reduce((acc, item) => acc * (item.prop.livescoreBet?.odds || item.prop.estOdds || 1.25), 1.0);
+    const avg = top.reduce((acc, item) => acc + (item.prop.hitProbability || 80), 0) / top.length;
+    return {
+      combinedOdds: Math.round(prod * 100) / 100,
+      avgHitRate: Math.round(avg * 10) / 10,
+      count: top.length
+    };
+  }, [allEliteAnchors]);
 
   const handleAddTopAnchors = () => {
     if (!onAddToSlip || allEliteAnchors.length === 0) return;
@@ -358,10 +372,12 @@ export default function PropsSpecialsPage({
               <button
                 onClick={handleAddTopAnchors}
                 className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold transition-colors shadow-xs"
-                title="Add top 3 highest hit rate anchors to your bet slip"
+                title={`Add top ${Math.min(3, allEliteAnchors.length)} highest hit rate anchors to your bet slip`}
               >
                 <Zap className="w-4 h-4 text-emerald-200" />
-                Add Top 3 Anchors to Slip
+                {allEliteAnchors.length < 3 
+                  ? `Add ${allEliteAnchors.length} Anchor${allEliteAnchors.length === 1 ? '' : 's'} to Slip` 
+                  : 'Add Top 3 Anchors to Slip'}
               </button>
             )}
             <button
@@ -390,7 +406,7 @@ export default function PropsSpecialsPage({
             <div className="text-xs text-slate-500 font-medium">Active Elite Anchors</div>
             <div className="text-lg font-bold text-emerald-700 flex items-center gap-1.5 mt-0.5">
               <Award className="w-4 h-4 text-emerald-600" />
-              <span>{data?.totalAnchorsFound ?? allEliteAnchors.length}</span>
+              <span>{allEliteAnchors.length}</span>
               <span className="text-[11px] font-normal text-slate-500">(&ge;80% Hit Rate)</span>
             </div>
           </div>
@@ -442,13 +458,15 @@ export default function PropsSpecialsPage({
           <div className="space-y-1.5 max-w-xl">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="bg-amber-600 text-white text-xs font-black px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-2xs">
-                <Zap className="w-3.5 h-3.5" /> ⚡ 3-Leg Props Acca
+                <Zap className="w-3.5 h-3.5" /> ⚡ {showcaseStats.count > 0 ? `${showcaseStats.count}-Leg` : '0-Leg'} Props Acca
               </span>
               <span className="bg-white/90 text-amber-900 border border-amber-300 text-xs font-bold px-2.5 py-0.5 rounded-full shadow-2xs flex items-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> LiveScore Bet Ireland Benchmark
               </span>
               <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold px-2.5 py-0.5 rounded-full">
-                ~2.20x Combined Odds &bull; &ge;80% Avg Hit Rate
+                {showcaseStats.count === 0 
+                  ? '0 Anchors in Current Filter' 
+                  : `~${showcaseStats.combinedOdds.toFixed(2)}x Combined Odds • ≥${showcaseStats.avgHitRate}% Avg Hit Rate`}
               </span>
             </div>
             <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
@@ -458,7 +476,7 @@ export default function PropsSpecialsPage({
               </span>
             </h2>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Poisson quantitative distribution model automatically compiles 2 to 4 independent anchor legs across distinct fixtures, prices them directly against <strong>LiveScore Bet Ireland</strong>, and formats a 1-click bet slip with Kelly staking.
+              Poisson quantitative distribution model automatically compiles independent anchor legs across distinct fixtures, prices them directly against <strong>LiveScore Bet Ireland</strong>, and formats a 1-click bet slip with Kelly staking.
             </p>
           </div>
 
@@ -489,7 +507,13 @@ export default function PropsSpecialsPage({
                 className="h-8 px-3 bg-slate-900 hover:bg-black text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Quick-Add Top 3 to Slip</span>
+                <span>
+                  {allEliteAnchors.length === 0 
+                    ? '0 Anchors Available' 
+                    : allEliteAnchors.length < 3 
+                    ? `Quick-Add ${allEliteAnchors.length} Anchor${allEliteAnchors.length === 1 ? '' : 's'}` 
+                    : 'Quick-Add Top 3 to Slip'}
+                </span>
               </button>
             )}
 

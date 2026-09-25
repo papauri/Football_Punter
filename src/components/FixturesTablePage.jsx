@@ -194,6 +194,7 @@ export default function FixturesTablePage({
   const [councilPick, setCouncilPick] = useState('ALL');
   const [councilMinRate, setCouncilMinRate] = useState('0');
   const [councilSearch, setCouncilSearch] = useState('');
+  const [councilLegCount, setCouncilLegCount] = useState(8);
   const [councilSortField, setCouncilSortField] = useState('prob');
   const [councilSortDirection, setCouncilSortDirection] = useState('desc');
 
@@ -632,16 +633,69 @@ export default function FixturesTablePage({
     return list;
   }, [dailySwarmAcca, councilDate, councilLeague, councilPick, councilMinRate, councilSearch, councilSortField, councilSortDirection, accaMatchIds, tzSettings]);
 
-  // Dynamically computed stats for filtered council selections
+  const matchingCouncilCount = filteredCouncilLegs.length;
+
+  // Dynamic Council Leg Count options based on matching count
+  const councilLegCountOptions = useMemo(() => {
+    if (matchingCouncilCount === 0) {
+      return [{ value: 0, label: '0 Legs (No Matches)' }];
+    }
+    if (matchingCouncilCount < 8) {
+      const opts = [];
+      if (matchingCouncilCount >= 4) {
+        opts.push({ value: 2, label: '2 Legs' });
+        opts.push({ value: 4, label: '4 Legs' });
+      } else if (matchingCouncilCount >= 2) {
+        opts.push({ value: 1, label: '1 Leg' });
+        opts.push({ value: 2, label: '2 Legs' });
+      }
+      if (!opts.some(o => o.value === matchingCouncilCount)) {
+        opts.push({ value: matchingCouncilCount, label: `${matchingCouncilCount} Legs (All Available)` });
+      } else {
+        const existing = opts.find(o => o.value === matchingCouncilCount);
+        if (existing) existing.label = `${matchingCouncilCount} Legs (All Available)`;
+      }
+      return opts;
+    }
+    const base = [
+      { value: 4, label: '4 Legs' },
+      { value: 6, label: '6 Legs' },
+      { value: 8, label: '8 Legs (Default)' }
+    ];
+    if (matchingCouncilCount >= 10) base.push({ value: 10, label: '10 Legs' });
+    if (matchingCouncilCount > 10) base.push({ value: matchingCouncilCount, label: `All ${matchingCouncilCount} Legs` });
+    return base;
+  }, [matchingCouncilCount]);
+
+  // Effective council leg count clamped to matching count (no phantom legs)
+  const effectiveCouncilLegCount = useMemo(() => {
+    if (matchingCouncilCount === 0) return 0;
+    if (matchingCouncilCount < 8) {
+      if (councilLegCount >= matchingCouncilCount || councilLegCount === 8) return matchingCouncilCount;
+      return Math.min(councilLegCount, matchingCouncilCount);
+    }
+    return Math.min(councilLegCount, matchingCouncilCount);
+  }, [councilLegCount, matchingCouncilCount]);
+
+  // Final sliced council display legs
+  const displayCouncilLegs = useMemo(() => {
+    if (effectiveCouncilLegCount === 0) return [];
+    return filteredCouncilLegs.slice(0, effectiveCouncilLegCount);
+  }, [filteredCouncilLegs, effectiveCouncilLegCount]);
+
+  // Dynamically computed stats for filtered council selections strictly based on displayCouncilLegs
   const filteredCouncilStats = useMemo(() => {
-    const legs = filteredCouncilLegs;
+    const legs = displayCouncilLegs;
     if (!legs || legs.length === 0) {
       return {
         count: 0,
-        combinedOdds: 1.0,
+        combinedOdds: 0.0,
         avgWinRate: 0,
         jointProb: 0,
-        overallEv: 0
+        overallEv: 0,
+        allUnanimous: false,
+        hasDnb: false,
+        isParitySlate: false
       };
     }
 
@@ -660,7 +714,7 @@ export default function FixturesTablePage({
       hasDnb: legs.some(l => l.isDnb),
       isParitySlate: legs.some(l => l.prob < 60 || l.isDnb)
     };
-  }, [filteredCouncilLegs]);
+  }, [displayCouncilLegs]);
 
   const isAnyCouncilFilterActive = councilDate !== 'All' || councilLeague !== 'All' || councilPick !== 'ALL' || councilMinRate !== '0' || councilSearch.trim() !== '';
 
@@ -726,7 +780,7 @@ export default function FixturesTablePage({
   };
 
   const handleLoadDailyAccaToSlip = () => {
-    const legsToLoad = filteredCouncilLegs;
+    const legsToLoad = displayCouncilLegs;
     if (!legsToLoad || legsToLoad.length === 0) return;
     const picksToLoad = legsToLoad.map(leg => ({
       pickId: `${leg.match.id}-${leg.market}`,
@@ -760,7 +814,7 @@ export default function FixturesTablePage({
   };
 
   const handleCopyDailyAcca = () => {
-    const legsToCopy = filteredCouncilLegs;
+    const legsToCopy = displayCouncilLegs;
     if (!legsToCopy || legsToCopy.length === 0) return;
     const lines = [
       `👑 DAILY AI COUNCIL ACCUMULATOR (${legsToCopy.length} LEGS)`,
@@ -1660,6 +1714,15 @@ export default function FixturesTablePage({
                 ]}
                 selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
               />
+
+              {/* Council Leg Count Filter */}
+              <UniformDropdown
+                label={matchingCouncilCount < 8 ? `Leg Count (${matchingCouncilCount} avail)` : 'Leg Count'}
+                value={effectiveCouncilLegCount}
+                onChange={(val) => setCouncilLegCount(Number(val))}
+                options={councilLegCountOptions}
+                selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
+              />
             </div>
 
             {/* Filter status & clear */}
@@ -1831,13 +1894,13 @@ export default function FixturesTablePage({
                 </tr>
               </thead>
               <tbody className="p-2.5 sm:p-0 flex flex-col md:table-row-group md:divide-y md:divide-slate-100 space-y-2.5 md:space-y-0">
-                {filteredCouncilLegs.length === 0 ? (
+                {displayCouncilLegs.length === 0 ? (
                   <tr className="flex flex-col md:table-row">
                     <td colSpan={10} className="py-6 text-center text-slate-500 block md:table-cell">
                       <div className="max-w-md mx-auto space-y-1.5">
                         <p className="font-semibold text-xs text-slate-700">No council selections match the selected filters</p>
                         <p className="text-[11px] text-slate-400">
-                          Try adjusting your Date, League, or Win Rate filters to view all {dailySwarmAcca.legs.length} council selections.
+                          Try adjusting your Date, League, Pick, or Leg Count filters to view available council selections.
                         </p>
                         <button
                           type="button"
@@ -1850,7 +1913,7 @@ export default function FixturesTablePage({
                     </td>
                   </tr>
                 ) : (
-                  filteredCouncilLegs.map((leg, idx) => {
+                  displayCouncilLegs.map((leg, idx) => {
                     const legKey = leg.id || `council-${idx}`;
                     const isExpanded = expandedCouncilId === legKey;
                     const inSlip = accaMatchIds.has(String(leg.id));
@@ -2303,7 +2366,9 @@ export default function FixturesTablePage({
                   <Target className="w-3 h-3 text-slate-300" /> Match Predictions
                 </span>
                 <span className="bg-slate-100 text-slate-700 border border-slate-200 text-[10.5px] font-semibold px-2 py-0.5 rounded-md">
-                  {matches.length} Matches
+                  {baseMatches.length === matches.length 
+                    ? `${matches.length} Matches` 
+                    : `${baseMatches.length} / ${matches.length} Matches`}
                 </span>
                 <span className="bg-slate-100 text-slate-800 border border-slate-200 text-[10.5px] font-mono font-bold px-2 py-0.5 rounded-md">
                   Dixon-Coles &amp; Elo
