@@ -2663,6 +2663,47 @@ export default function FixturesTablePage({
               </div>
             </div>
 
+      {/* Active Bet Slip Quick Status & Navigation Bar */}
+      {accaMatchIds && accaMatchIds.size > 0 && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 px-3.5 py-2.5 bg-gradient-to-r from-indigo-50 via-purple-50/40 to-slate-50 border border-indigo-200 rounded-xl text-xs text-indigo-950 shadow-xs mb-3">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-indigo-600 text-white shrink-0 font-bold text-xs">
+              {accaMatchIds.size}
+            </span>
+            <div>
+              <span className="font-bold text-slate-900">
+                {betSlips.find(s => s.id === activeSlipId)?.name || 'Slip 1'}:
+              </span>
+              <span className="text-slate-600 ml-1">
+                {accaMatchIds.size} {accaMatchIds.size === 1 ? 'match' : 'matches'} currently loaded in active bet slip.
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {betSlips && betSlips.length > 1 && onSetActiveSlipId && (
+              <UniformDropdown
+                label="Target Slip"
+                value={activeSlipId}
+                onChange={onSetActiveSlipId}
+                options={betSlips.map(s => ({ value: s.id, label: `${s.name} (${s.picks?.length || 0})` }))}
+                selectClassName="bg-white border-indigo-200 py-0.5 text-xs shadow-none"
+              />
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof onNavigate === 'function') onNavigate('acca');
+                else if (typeof onSelectMarketMode === 'function') onSelectMarketMode('acca');
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs transition-colors cursor-pointer"
+            >
+              <span>View Bet Slip &amp; Accumulators ({accaMatchIds.size})</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Midweek Off-Day Notice Banner if Today has 0 matches */}
       {todayMatchCount === 0 && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 px-3.5 py-2.5 bg-gradient-to-r from-slate-50 to-indigo-50/30 border border-slate-200 rounded-xl text-xs text-slate-600 shadow-xs">
@@ -3082,7 +3123,7 @@ export default function FixturesTablePage({
               ) : (
                 filteredMatches.map((m, idx) => {
                   const isExpanded = expandedMatchId === (m.id || idx);
-                  const isSlipAdded = accaMatchIds.has(m.id);
+                  const isSlipAdded = accaMatchIds.has(m.id) || accaMatchIds.has(String(m.id)) || (m.home && m.away && Array.from(accaMatchIds).some(id => String(id).includes(`${m.home}-${m.away}`)));
                   const homeProb = safeParseFloat(m.prob?.home, 0);
                   const drawProb = safeParseFloat(m.prob?.draw, 0);
                   const awayProb = safeParseFloat(m.prob?.away, 0);

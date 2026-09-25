@@ -270,15 +270,19 @@ export default function Dashboard() {
   }, [historical30d, state, auditedDateResults]);
 
   const handleToggleAccaPick = (match, customPick = null, customMarket = null, customOdds = null, customProb = null, targetSlipId = null) => {
-    const destinationSlipId = targetSlipId || activeSlipId;
+    const destinationSlipId = targetSlipId || activeSlipId || 'slip-1';
+    let actionFeedback = null;
+
     handleUpdateBetSlips(prevSlips => {
       let slipIndex = prevSlips.findIndex(s => s.id === destinationSlipId);
       if (slipIndex === -1) {
         slipIndex = prevSlips.findIndex(s => s.id === activeSlipId);
-        if (slipIndex === -1) return prevSlips;
+        if (slipIndex === -1) {
+          slipIndex = 0;
+        }
       }
       
-      const currentSlip = prevSlips[slipIndex];
+      const currentSlip = prevSlips[slipIndex] || { id: 'slip-1', name: 'Slip 1', picks: [] };
       const isPropsTarget = destinationSlipId === 'props-slip' || (customMarket && String(customMarket).startsWith('Props'));
 
       // Resolve pick value (straight outright normalization if DRAW or unspecified)
@@ -318,7 +322,6 @@ export default function Dashboard() {
       };
 
       // LiveScore Bet & Bookmaker Acca Rule: Only ONE selection allowed per fixture on match accumulators.
-      // For props slips, allow distinct prop markets for the same match, toggling off if the identical prop is clicked.
       const existingPickIndex = currentSlip.picks.findIndex(p => {
         const isSameFixture = String(p.id) === String(match.id) || 
           (p.home && match.home && p.away && match.away && 
@@ -340,19 +343,39 @@ export default function Dashboard() {
         // If clicking the identical pick/market, toggle off
         if (existing.pickId === pickId || (existing.pick === pickValue && existing.market === newPick.market)) {
           updatedPicks = currentSlip.picks.filter((_, idx) => idx !== existingPickIndex);
+          actionFeedback = {
+            type: 'neutral',
+            title: 'Removed from Bet Slip',
+            message: `Removed ${match.home} vs ${match.away} from ${currentSlip.name} (${updatedPicks.length} picks remaining).`
+          };
         } else {
           // Replace with the new single selection for this fixture
           updatedPicks = [...currentSlip.picks];
           updatedPicks[existingPickIndex] = newPick;
+          actionFeedback = {
+            type: 'success',
+            title: 'Updated Bet Slip Selection',
+            message: `Updated to ${newPick.market} @${safeToFixed(odds, 2)} in ${currentSlip.name} (${updatedPicks.length} picks).`
+          };
         }
       } else {
         updatedPicks = [...currentSlip.picks, newPick];
+        actionFeedback = {
+          type: 'success',
+          title: 'Added to Bet Slip',
+          message: `Added ${match.home} vs ${match.away} (${pickValue} @${safeToFixed(odds, 2)}) to ${currentSlip.name} (${updatedPicks.length} picks).`
+        };
       }
       
       const newSlips = [...prevSlips];
       newSlips[slipIndex] = { ...currentSlip, picks: updatedPicks };
       return newSlips;
     });
+
+    if (actionFeedback) {
+      setToastNotification(actionFeedback);
+      setTimeout(() => setToastNotification(null), 3500);
+    }
 
     if (targetSlipId && targetSlipId !== activeSlipId) {
       setActiveSlipId(targetSlipId);
@@ -366,12 +389,19 @@ export default function Dashboard() {
       if (slipIndex === -1) return prevSlips;
       
       const currentSlip = prevSlips[slipIndex];
-      const updatedPicks = currentSlip.picks.filter(p => p.pickId !== idToRemove && p.id !== idToRemove);
+      const updatedPicks = currentSlip.picks.filter(p => String(p.pickId) !== String(idToRemove) && String(p.id) !== String(idToRemove));
       
       const newSlips = [...prevSlips];
       newSlips[slipIndex] = { ...currentSlip, picks: updatedPicks };
       return newSlips;
     });
+
+    setToastNotification({
+      type: 'neutral',
+      title: 'Selection Removed',
+      message: 'Removed game from active bet slip.'
+    });
+    setTimeout(() => setToastNotification(null), 2500);
   };
 
   const handleClearAcca = () => {

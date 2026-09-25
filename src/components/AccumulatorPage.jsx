@@ -179,7 +179,7 @@ export default function AccumulatorPage({
   const [slipSearch, setSlipSearch] = useState('');
   const [slipStatusFilter, setSlipStatusFilter] = useState('ALL'); // ALL, UPCOMING, LIVE, FINISHED
   const [slipOutcomeFilter, setSlipOutcomeFilter] = useState('ALL'); // ALL, HOME, AWAY
-  const [slipLegCount, setSlipLegCount] = useState(8);
+  const [slipLegCount, setSlipLegCount] = useState(999); // Show all picks by default
 
   const strategyWinRate = presetStrategy === 'max_win_rate'
     ? '86.3% (Double Chance & DNB)'
@@ -309,10 +309,7 @@ export default function AccumulatorPage({
   // Effective leg count clamped to matching count (no phantom legs)
   const effectiveSlipLegCount = useMemo(() => {
     if (matchingSlipCount === 0) return 0;
-    if (matchingSlipCount < 8) {
-      if (slipLegCount >= matchingSlipCount || slipLegCount === 8) return matchingSlipCount;
-      return Math.min(slipLegCount, matchingSlipCount);
-    }
+    if (slipLegCount >= matchingSlipCount || slipLegCount === 999 || slipLegCount === 'ALL') return matchingSlipCount;
     return Math.min(slipLegCount, matchingSlipCount);
   }, [slipLegCount, matchingSlipCount]);
 
@@ -1273,23 +1270,46 @@ export default function AccumulatorPage({
 
           {/* Slip selector & quick actions */}
           <div className="flex items-center gap-2 flex-wrap">
-            <UniformDropdown
-              label="Slip"
-              value={activeSlipId}
-              onChange={(val) => {
-                if (val === 'create_new') {
+            {/* Quick 1-Click Bet Slips Switcher Bar */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {betSlips.map(s => {
+                const isCurrent = s.id === activeSlipId;
+                const count = (s.picks || []).length;
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => onSetActiveSlipId && onSetActiveSlipId(s.id)}
+                    className={`h-8 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      isCurrent
+                        ? 'bg-indigo-600 text-white shadow-xs'
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
+                    }`}
+                  >
+                    <span>{s.name}</span>
+                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                      isCurrent ? 'bg-indigo-800 text-white' : 'bg-slate-200 text-slate-700'
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+
+              <button
+                type="button"
+                onClick={() => {
                   const newId = `slip-${Date.now()}`;
-                  onUpdateBetSlips([...betSlips, { id: newId, name: `Slip ${betSlips.length + 1}`, picks: [] }]);
-                  onSetActiveSlipId(newId);
-                } else {
-                  onSetActiveSlipId(val);
-                }
-              }}
-              options={[
-                ...betSlips.map(s => ({ value: s.id, label: s.name })),
-                { value: 'create_new', label: '+ New Slip' }
-              ]}
-            />
+                  onUpdateBetSlips && onUpdateBetSlips([...betSlips, { id: newId, name: `Slip ${betSlips.length + 1}`, picks: [] }]);
+                  onSetActiveSlipId && onSetActiveSlipId(newId);
+                }}
+                className="h-8 px-2.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-600 border border-dashed border-slate-300 flex items-center gap-1 cursor-pointer transition-colors"
+                title="Create a new clean bet slip"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>New Slip</span>
+              </button>
+            </div>
 
             {activeLegs.length > 0 && (
               <>
