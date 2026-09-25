@@ -3285,16 +3285,22 @@ class SoccerEngine {
     }
     if (!this.teamCoachCache) this.teamCoachCache = new Map();
 
-    // Check manual override first
-    if (this.customTeamManagers && this.customTeamManagers[cleanName]) {
-      return this.customTeamManagers[cleanName];
-    }
-
     try {
-      // Resolve league code
+      // Resolve league code dynamically from SOLID_LEAGUES / ESPN_LEAGUES
       let espnLeague = 'eng.1';
       const rawLeague = String(leagueCode || '').toLowerCase();
-      if (rawLeague.includes('esp') || rawLeague.includes('laliga') || rawLeague.includes('spain') || cleanName.includes('madrid') || cleanName.includes('barcelona')) {
+      const foundLeague = ESPN_LEAGUES.find(l => 
+        (l.aliases && l.aliases.some(a => rawLeague.includes(a))) || 
+        l.code === rawLeague || 
+        l.name.toLowerCase() === rawLeague || 
+        rawLeague.includes(l.name.toLowerCase())
+      );
+
+      if (foundLeague) {
+        espnLeague = foundLeague.code;
+      } else if (rawLeague.includes('nation') || cleanName.includes('france') || cleanName.includes('spain') || cleanName.includes('germany') || cleanName.includes('england') || cleanName.includes('italy') || cleanName.includes('portugal') || cleanName.includes('netherlands') || cleanName.includes('belgium') || cleanName.includes('türkiye') || cleanName.includes('turkey')) {
+        espnLeague = 'uefa.nations';
+      } else if (rawLeague.includes('esp') || rawLeague.includes('laliga') || cleanName.includes('madrid') || cleanName.includes('barcelona')) {
         espnLeague = 'esp.1';
       } else if (rawLeague.includes('ita') || rawLeague.includes('serie') || cleanName.includes('inter') || cleanName.includes('milan') || cleanName.includes('juve')) {
         espnLeague = 'ita.1';
@@ -3304,9 +3310,11 @@ class SoccerEngine {
         espnLeague = 'fra.1';
       } else if (rawLeague.includes('uefa') || rawLeague.includes('champion')) {
         espnLeague = 'uefa.champions';
+      } else if (rawLeague.includes('europa')) {
+        espnLeague = 'uefa.europa';
       }
 
-      // Fetch league teams directory to get precise team ID
+      // 1. Fetch league teams directory dynamically to get real-time team ID
       const teamsRes = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${espnLeague}/teams`);
       if (teamsRes.ok) {
         const teamsData = await teamsRes.json();
@@ -3319,6 +3327,7 @@ class SoccerEngine {
         });
 
         if (matched?.team?.id) {
+          // 2. Fetch live team roster directly from ESPN to resolve active head coach dynamically
           const rosterRes = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${espnLeague}/teams/${matched.team.id}/roster`);
           if (rosterRes.ok) {
             const rosterData = await rosterRes.json();
@@ -3326,14 +3335,19 @@ class SoccerEngine {
             const coachName = coachObj?.fullName || coachObj?.name || coachObj?.displayName;
             if (coachName) {
               this.teamCoachCache.set(cleanName, coachName);
-              this.log('DynamicCoach', `Live manager confirmed for ${teamName}: ${coachName}`);
+              this.log('DynamicCoach', `Live manager confirmed dynamically for ${teamName}: ${coachName}`);
               return coachName;
             }
           }
         }
       }
     } catch (err) {
-      // Non-blocking fallback
+      // Non-blocking: will fall back gracefully if network is unreachable
+    }
+
+    // Graceful fallback if dynamic live API is offline or rate-limited
+    if (this.customTeamManagers && this.customTeamManagers[cleanName]) {
+      return this.customTeamManagers[cleanName];
     }
 
     return null;
@@ -5136,26 +5150,45 @@ class SoccerEngine {
                 } else if (entry && typeof entry === 'object' && Array.isArray(entry.entries)) {
                   for (const sub of entry.entries) {
                     if (sub && sub.startDate) {
-                      const ymd = String(sub.startDate).substring(0, 10).replace(/-/g, '');
-                      if (ymd >= todayStr && ymd <= nextWindowStr) {
-                        upcomingCalDates.push(ymd);
-                      } else if (ymd > nextWindowStr) {
-                        futureDates.push(ymd);
+                      const ymdStart = String(sub.startDate).substring(0, 10).replace(/-/g, '');
+                      const ymdEnd = sub.endDate ? String(sub.endDate).substring(0, 10).replace(/-/g, '') : ymdStart;
+                      if (ymdStart >= todayStr && ymdStart <= nextWindowStr) {
+                        upcomingCalDates.push(ymdStart);
+                      } else if (ymdEnd >= todayStr && ymdStart <= nextWindowStr) {
+                        // Active tournament phase in progress right now (e.g. Nations League Group Stage Sep-Nov)!
+                        for (let dOff = 0; dOff <= 6; dOff++) {
+                          const dObj = new Date(now.getTime() + dOff * 86400000);
+                          upcomingCalDates.push(formatYMD(dObj));
+                        }
+                      } else if (ymdStart > nextWindowStr) {
+                        futureDates.push(ymdStart);
                       }
                     }
                   }
                 }
               }
             }
-            upcomingCalDates = [...new Set(upcomingCalDates)].sort();
+
+            // For international tournaments, cup competitions, or active leagues, ensure the next 6 days are always probed
+            const isTournamentOrCup = league.code.startsWith('uefa.') || 
+                                      league.code.startsWith('fifa.') || 
+                                      league.code.includes('cup') || 
+                                      league.code.includes('pokal');
+            if (isTournamentOrCup || upcomingCalDates.length === 0) {
+              for (let dOff = 0; dOff <= 5; dOff++) {
+                const dObj = new Date(now.getTime() + dOff * 86400000);
+                upcomingCalDates.push(formatYMD(dObj));
+              }
+            }
+
+            upcomingCalDates = [...new Set(upcomingCalDates)].filter(d => d >= todayStr).sort();
             futureDates = [...new Set(futureDates)].sort();
 
-            // If a solid league has no matches in the upcoming 3-week window (e.g. paused for tournament or international break),
-            // automatically fall back to its next scheduled active matchday dates (up to 3 dates, max 4 dates per league)
+            // If a solid league has no matches in the upcoming window, fallback to next scheduled matchdays
             if (upcomingCalDates.length === 0 && futureDates.length > 0) {
-              upcomingCalDates = futureDates.slice(0, 3);
-            } else if (upcomingCalDates.length > 4) {
-              upcomingCalDates = upcomingCalDates.slice(0, 4);
+              upcomingCalDates = futureDates.slice(0, 5);
+            } else if (upcomingCalDates.length > 8) {
+              upcomingCalDates = upcomingCalDates.slice(0, 8);
             }
 
             if (upcomingCalDates.length > 0) {
@@ -9370,17 +9403,27 @@ Provide a crisp 3-bullet assessment:
 
     let leagueCode = leagueCodeInput || match?.espnLeagueCode;
     if (!leagueCode && match?.league) {
-      const foundLeague = ESPN_LEAGUES.find(l => l.name === match.league || l.name.toLowerCase().includes(match.league.toLowerCase()) || match.league.toLowerCase().includes(l.name.toLowerCase()));
+      const foundLeague = ESPN_LEAGUES.find(l => 
+        (l.aliases && l.aliases.some(a => match.league.toLowerCase().includes(a))) || 
+        l.code === match.league || 
+        l.name.toLowerCase() === match.league.toLowerCase() || 
+        match.league.toLowerCase().includes(l.name.toLowerCase()) || 
+        l.name.toLowerCase().includes(match.league.toLowerCase())
+      );
       if (foundLeague) leagueCode = foundLeague.code;
     }
     if (!leagueCode && match?.league) {
       const lName = match.league.toLowerCase();
-      if (lName.includes('premier') || lName.includes('epl')) leagueCode = 'eng.1';
+      if (lName.includes('nations') || lName.includes('uefa nations')) leagueCode = 'uefa.nations';
+      else if (lName.includes('world cup') || lName.includes('fifa')) leagueCode = 'fifa.world';
+      else if (lName.includes('euro') && !lName.includes('europa')) leagueCode = 'uefa.euro';
+      else if (lName.includes('premier') || lName.includes('epl')) leagueCode = 'eng.1';
       else if (lName.includes('laliga') || lName.includes('la liga') || lName.includes('spain')) leagueCode = 'esp.1';
       else if (lName.includes('serie a') || lName.includes('italy')) leagueCode = 'ita.1';
       else if (lName.includes('bundesliga') || lName.includes('germany')) leagueCode = 'ger.1';
       else if (lName.includes('ligue 1') || lName.includes('france')) leagueCode = 'fra.1';
       else if (lName.includes('champions')) leagueCode = 'uefa.champions';
+      else if (lName.includes('conference')) leagueCode = 'uefa.europa.conf';
       else if (lName.includes('europa')) leagueCode = 'uefa.europa';
     }
     if (!leagueCode) leagueCode = 'eng.1';
