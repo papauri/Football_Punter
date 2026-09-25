@@ -9,7 +9,8 @@
     "start": "node server.js",
     "verify": "node scripts/verify-build.mjs",
     "odds:ingest": "node scripts/ingest-historical-odds.mjs",
-    "odds:backtest": "node scripts/odds-backtest.mjs"
+    "odds:backtest": "node scripts/odds-backtest.mjs",
+    "value:backtest": "node scripts/value-filter-backtest.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",

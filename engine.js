@@ -2444,6 +2444,39 @@ class SoccerEngine {
       smartRationale = `Entropy Floor Triggered: ${favTeam} (${favProb.toFixed(1)}%) lacks decisive edge. Skipping straight moneyline to protect bankroll.`;
     }
 
+    // 11.1 Value Filter: price the smart pick at the market's odds and compute its expected value from the
+    // model's probabilities. With valueEdgeThreshold set (e.g. 0.02 = +2% EV), picks below it are passed.
+    // Off by default: scripts/value-filter-backtest.mjs showed it lowers holdout ROI (see commit history).
+    let valueCheck = null;
+    if (marketOdds?.homeOdds && marketOdds?.drawOdds && marketOdds?.awayOdds) {
+      const { homeOdds: oH, drawOdds: oD, awayOdds: oA } = marketOdds;
+      const pH = finalHomeP / 100, pD = finalDrawP / 100, pA = finalAwayP / 100;
+      const priced = {
+        HOME: { odds: oH, ev: pH * oH - 1 },
+        AWAY: { odds: oA, ev: pA * oA - 1 },
+        '1X': { odds: 1 / (1 / oH + 1 / oD), ev: (pH + pD) / (1 / oH + 1 / oD) - 1 },
+        X2: { odds: 1 / (1 / oA + 1 / oD), ev: (pA + pD) / (1 / oA + 1 / oD) - 1 },
+        HOME_DNB: { odds: oH * (oD - 1) / oD, ev: pH * oH * (oD - 1) / oD + pD - 1 },
+        AWAY_DNB: { odds: oA * (oD - 1) / oD, ev: pA * oA * (oD - 1) / oD + pD - 1 }
+      }[smartPick];
+      if (priced) {
+        const threshold = this.hyperparameters.valueEdgeThreshold;
+        const passes = typeof threshold !== 'number' || priced.ev > threshold;
+        valueCheck = {
+          odds: parseFloat(priced.odds.toFixed(2)),
+          expectedValue: parseFloat((priced.ev * 100).toFixed(2)),
+          threshold: typeof threshold === 'number' ? threshold * 100 : null,
+          passes
+        };
+        if (!passes) {
+          smartRationale = `No Value: ${smartBadge} at ${valueCheck.odds} has ${valueCheck.expectedValue}% expected value, below the ${valueCheck.threshold}% value threshold.`;
+          smartPick = 'PASS';
+          smartMarketType = 'PASS_NO_VALUE';
+          smartBadge = 'Pass / No Value';
+        }
+      }
+    }
+
     // 12. Elite Conviction Filter: Strict high-separation criteria for 70%+ hit rate tier
     let isEliteConviction = false;
     let eliteDisqualificationReason = '';
@@ -2553,6 +2586,7 @@ class SoccerEngine {
         eliteDisqualificationReason,
         isMarketDivergence,
         marketDivergenceDetail,
+        valueCheck,
         kellyStake,
         expectedValue: kellyStake?.expectedValue ?? 0,
         isPositiveEV: Boolean(kellyStake?.isPositiveEV),
