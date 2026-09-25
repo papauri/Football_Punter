@@ -12,6 +12,7 @@ import { fileURLToPath } from 'url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 process.chdir(ROOT);
 const { engine } = await import('../engine.js');
+const { getLeaguePredictabilityTier, isLeagueSolid } = await import('../src/utils/leagueUtils.js');
 
 const corpus = JSON.parse(fs.readFileSync('training_data.json', 'utf8'))
   .filter(m => m.home && m.away && typeof m.homeScore === 'number' && typeof m.awayScore === 'number')
@@ -43,6 +44,9 @@ for (const m of test) {
   };
   const live = engine.computeDixonColesProbabilities(m.home, m.away, { league: m.league, odds: marketOpt });
   rows.push({
+    league: m.league,
+    tier1: getLeaguePredictabilityTier(m.league)?.tier === 1,
+    solid: isLeagueSolid(m.league),
     actual,
     model: [p.home, p.draw, p.away].map(x => x / 100),
     liveBlend: [live.home, live.draw, live.away].map(x => x / 100),
@@ -101,4 +105,20 @@ for (const edge of [0.0, 0.05, 0.10]) {
   console.log(`  edge >${(edge * 100).toFixed(0)}%  model: ${fmtRoi(roi(holdout, r => r.model, edge))}  |  live blend: ${fmtRoi(roi(holdout, r => r.liveBlend, edge))}  |  tuned blend: ${fmtRoi(roi(holdout, r => blend(r, bestW), edge))}`);
 }
 console.log(`  Backing the market favourite every game: ${fmtRoi({ bets: holdout.length, roi: holdout.reduce((s, r) => { const k = argmax(r.market); return s + (OUTCOMES[k] === r.actual ? r.odds[k] : 0); }, 0) / holdout.length * 100 - 100 })}`);
+
+// Trusted-league segments (league lists in src/utils/leagueUtils.js), holdout only
+console.log(`\nBY LEAGUE GROUP (holdout):`);
+const segments = [
+  ['Tier 1 (High Edge)', r => r.tier1],
+  ['Solid leagues', r => r.solid],
+  ['Everything else', r => !r.solid && !r.tier1]
+];
+for (const [label, keep] of segments) {
+  const seg = holdout.filter(keep);
+  if (seg.length < 50) continue;
+  const mo = score(seg, r => r.model), mk = score(seg, r => r.market);
+  console.log(`  ${label} (n=${seg.length})`);
+  console.log(`    model  ${fmt(mo)}  |  value bets: ${fmtRoi(roi(seg, r => r.model, 0.05))}`);
+  console.log(`    market ${fmt(mk)}`);
+}
 process.exit(0);
