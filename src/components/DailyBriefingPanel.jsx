@@ -321,7 +321,7 @@ export default function DailyBriefingPanel({
                   <th className="py-1 px-2 w-28 text-center">Model Pick</th>
                   <th className="py-1 px-1.5 w-24 text-center">Confidence</th>
                   <th className="py-1 px-1.5 w-36 text-center">Odds &amp; Return</th>
-                  <th className="py-1 px-2 w-28 text-center">Actions</th>
+                  <th className="py-1 px-2 w-44 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="p-2.5 sm:p-0 flex flex-col md:table-row-group md:divide-y md:divide-slate-100 space-y-2.5 md:space-y-0">
@@ -438,22 +438,22 @@ export default function DailyBriefingPanel({
 
                             {/* Mobile action bar & collapse trigger */}
                             <div className="flex items-center justify-between pt-1 border-t border-slate-100">
-                              <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-1.5 shrink-0">
                                 <button
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     onOpenWatchLive && onOpenWatchLive(m);
                                   }}
-                                  className={`px-2 py-1 rounded text-[10px] font-bold border transition-all cursor-pointer inline-flex items-center gap-1 ${
+                                  className={`w-[98px] h-6 px-1.5 rounded text-[10px] font-bold border transition-all cursor-pointer inline-flex items-center justify-center gap-0.5 shrink-0 shadow-2xs ${
                                     m.isLive || item.isMatchInPlay
                                       ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
                                       : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
                                   }`}
                                   title={m.isLive || item.isMatchInPlay ? "Open Live In-Play Tactical AI Analysis" : "Open Match Intelligence & Tactical AI Analysis"}
                                 >
-                                  <Brain className={`w-2.5 h-2.5 ${m.isLive || item.isMatchInPlay ? 'text-white' : 'text-indigo-600'}`} />
-                                  <span>{m.isLive || item.isMatchInPlay ? '⚡ Live Analysis' : 'Tactical Intel'}</span>
+                                  <Brain className={`w-2.5 h-2.5 shrink-0 ${m.isLive || item.isMatchInPlay ? 'text-white' : 'text-indigo-600'}`} />
+                                  <span className="truncate">{m.isLive || item.isMatchInPlay ? 'Live Analysis' : 'Tactical Intel'}</span>
                                 </button>
 
                                 {onAddToSlip && !isPass ? (
@@ -463,7 +463,7 @@ export default function DailyBriefingPanel({
                                       e.stopPropagation();
                                       onAddToSlip(m);
                                     }}
-                                    className={`px-2 py-1 rounded text-[10px] font-bold border transition-colors cursor-pointer inline-flex items-center gap-1 ${
+                                    className={`w-[58px] h-6 px-1 rounded text-[10px] font-bold border transition-colors cursor-pointer inline-flex items-center justify-center gap-0.5 shrink-0 ${
                                       inSlip
                                         ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-300'
                                         : 'bg-slate-900 hover:bg-slate-800 text-white border-slate-900'
@@ -481,7 +481,11 @@ export default function DailyBriefingPanel({
                                       </>
                                     )}
                                   </button>
-                                ) : null}
+                                ) : (
+                                  <div className="w-[58px] h-6 flex items-center justify-center text-[9px] font-semibold text-slate-400 bg-slate-100/70 border border-slate-200 rounded">
+                                    Pass
+                                  </div>
+                                )}
                               </div>
 
                               <div className="flex items-center gap-1 text-[10px] text-slate-500 font-medium select-none">
@@ -630,23 +634,23 @@ export default function DailyBriefingPanel({
                           </td>
 
                           {/* Actions (Watch Now + Slip) */}
-                          <td className="hidden md:table-cell py-1 px-2 text-center whitespace-nowrap">
-                            <div className="inline-flex items-center gap-1 justify-center">
+                          <td className="hidden md:table-cell py-1 px-2 text-center whitespace-nowrap w-44">
+                            <div className="grid grid-cols-[98px_58px] gap-1.5 items-center justify-center">
                               <button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   onOpenWatchLive && onOpenWatchLive(m);
                                 }}
-                                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer inline-flex items-center gap-0.5 ${
+                                className={`w-[98px] h-6 px-1.5 rounded text-[10px] font-bold border transition-all cursor-pointer inline-flex items-center justify-center gap-0.5 shrink-0 shadow-2xs ${
                                   m.isLive || item.isMatchInPlay
                                     ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
                                     : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
                                 }`}
                                 title={m.isLive || item.isMatchInPlay ? "Open Live In-Play Tactical AI Analysis" : "Open Match Intelligence & Tactical AI Analysis"}
                               >
-                                <Brain className={`w-2.5 h-2.5 ${m.isLive || item.isMatchInPlay ? 'text-white' : 'text-indigo-600'}`} />
-                                <span>{m.isLive || item.isMatchInPlay ? '⚡ Live Analysis' : 'Tactical Intel'}</span>
+                                <Brain className={`w-2.5 h-2.5 shrink-0 ${m.isLive || item.isMatchInPlay ? 'text-white' : 'text-indigo-600'}`} />
+                                <span className="truncate">{m.isLive || item.isMatchInPlay ? 'Live Analysis' : 'Tactical Intel'}</span>
                               </button>
 
                               {onAddToSlip && !isPass ? (
@@ -656,7 +660,7 @@ export default function DailyBriefingPanel({
                                     e.stopPropagation();
                                     onAddToSlip(m);
                                   }}
-                                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer inline-flex items-center gap-0.5 ${
+                                  className={`w-[58px] h-6 px-1 rounded text-[10px] font-bold border transition-colors cursor-pointer inline-flex items-center justify-center gap-0.5 shrink-0 ${
                                     inSlip
                                       ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-300'
                                       : 'bg-slate-900 hover:bg-slate-800 text-white border-slate-900'
@@ -665,7 +669,7 @@ export default function DailyBriefingPanel({
                                   {inSlip ? (
                                     <>
                                       <Check className="w-2.5 h-2.5" />
-                                      <span>Slip</span>
+                                      <span>In Slip</span>
                                     </>
                                   ) : (
                                     <>
@@ -674,7 +678,11 @@ export default function DailyBriefingPanel({
                                     </>
                                   )}
                                 </button>
-                              ) : null}
+                              ) : (
+                                <div className="w-[58px] h-6 flex items-center justify-center text-[9px] font-semibold text-slate-400 bg-slate-50 border border-slate-200/80 rounded">
+                                  Pass
+                                </div>
+                              )}
                             </div>
                           </td>
                         </tr>

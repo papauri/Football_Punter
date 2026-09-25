@@ -752,7 +752,7 @@ export default function BinaryPicksPage({
               </th>
 
               {/* Actions */}
-              <th className="py-1 px-2 w-28 text-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+              <th className="py-1 px-2 w-56 text-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -832,31 +832,32 @@ export default function BinaryPicksPage({
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(p.match); }}
-                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors inline-flex items-center gap-0.5 ${
+                              className={`w-[98px] h-6 px-1.5 rounded text-[10px] font-bold border transition-colors inline-flex items-center justify-center gap-0.5 shrink-0 shadow-2xs ${
                                 p.isLive
                                   ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
                                   : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
                               }`}
                               title={p.isLive ? "Live Match Tactical AI Intelligence" : "Match Tactical AI Analysis"}
                             >
-                              <Brain className={`w-2.5 h-2.5 ${p.isLive ? 'text-white' : 'text-indigo-600'}`} />
-                              <span>{p.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
+                              <Brain className={`w-2.5 h-2.5 shrink-0 ${p.isLive ? 'text-white' : 'text-indigo-600'}`} />
+                              <span className="truncate">{p.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
                             </button>
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(p.match); }}
-                              className="px-1.5 py-0.5 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 text-teal-800 hover:bg-teal-100 transition-colors"
+                              className="w-[44px] h-6 px-1 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 text-teal-800 hover:bg-teal-100 transition-colors inline-flex items-center justify-center shrink-0 cursor-pointer"
+                              title="Open Deep Analysis"
                             >
                               Intel
                             </button>
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); onAddToSlip && onAddToSlip(p.match, p.pick); }}
-                              className={`px-2 py-0.5 rounded text-[10px] font-bold transition-colors border ${
+                              className={`w-[58px] h-6 px-1 rounded text-[10px] font-bold transition-colors border inline-flex items-center justify-center gap-0.5 shrink-0 cursor-pointer ${
                                 isSlipAdded
                                   ? 'bg-rose-50 text-rose-700 border-rose-200'
                                   : 'bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700'
@@ -1012,33 +1013,35 @@ export default function BinaryPicksPage({
                       </td>
 
                       {/* Actions */}
-                      <td className="hidden md:table-cell py-1 px-2 text-center whitespace-nowrap">
-                        <div className="flex items-center justify-center gap-1">
+                      <td className="hidden md:table-cell py-1 px-2 text-center whitespace-nowrap w-56">
+                        <div className="grid grid-cols-[98px_44px_58px] gap-1.5 items-center justify-center">
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(p.match); }}
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer inline-flex items-center gap-0.5 ${
+                            className={`w-[98px] h-6 px-1.5 rounded text-[10px] font-bold transition-all cursor-pointer inline-flex items-center justify-center gap-0.5 shrink-0 shadow-2xs ${
                               p.isLive
                                 ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-xs animate-pulse font-extrabold'
                                 : 'border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700'
                             }`}
                             title={p.isLive ? "Live Match Tactical AI Intelligence" : "Match Tactical AI Analysis"}
                           >
-                            <Brain className={`w-2.5 h-2.5 ${p.isLive ? 'text-white' : 'text-indigo-600'}`} />
-                            <span>{p.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
+                            <Brain className={`w-2.5 h-2.5 shrink-0 ${p.isLive ? 'text-white' : 'text-indigo-600'}`} />
+                            <span className="truncate">{p.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
                           </button>
 
                           <button
+                            type="button"
                             onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(p.match); }}
-                            className="px-1.5 py-0.5 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
-                            title="Open Analysis"
+                            className="w-[44px] h-6 px-1 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors inline-flex items-center justify-center shrink-0 cursor-pointer"
+                            title="Open Deep Analysis"
                           >
                             Intel
                           </button>
 
                           <button
+                            type="button"
                             onClick={(e) => { e.stopPropagation(); onAddToSlip && onAddToSlip(p.match, p.pick); }}
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-colors cursor-pointer border ${
+                            className={`w-[58px] h-6 px-1 rounded text-[10px] font-bold transition-colors cursor-pointer border inline-flex items-center justify-center gap-0.5 shrink-0 ${
                               isSlipAdded
                                 ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
                                 : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'

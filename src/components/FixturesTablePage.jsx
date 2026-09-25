@@ -1907,7 +1907,7 @@ export default function FixturesTablePage({
                   {/* Slip (Sortable) */}
                   <th 
                     onClick={() => handleCouncilSort('slip')}
-                    className="py-1 px-2 w-28 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
+                    className="py-1 px-2 w-44 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
                     title="Click to sort by Slip Inclusion"
                   >
                     <div className="inline-flex items-center justify-center gap-1">
@@ -2022,20 +2022,20 @@ export default function FixturesTablePage({
                                 <button
                                   type="button"
                                   onClick={() => onOpenWatchLive && onOpenWatchLive(matchObj)}
-                                  className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded border shadow-2xs transition-colors cursor-pointer ${
+                                  className={`w-[98px] h-6 flex items-center justify-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded border shadow-2xs transition-colors cursor-pointer shrink-0 ${
                                     (leg.match?.isLive || leg.isLive)
                                       ? 'bg-rose-600 text-white border-rose-600 animate-pulse font-extrabold'
                                       : 'text-indigo-700 bg-indigo-50 border-indigo-200'
                                   }`}
                                   title={(leg.match?.isLive || leg.isLive) ? "Live Tactical AI Analysis" : "Tactical AI Match Intelligence"}
                                 >
-                                  <Brain className="w-2.5 h-2.5" />
-                                  <span>{(leg.match?.isLive || leg.isLive) ? 'Live Intel' : 'Tactical Intel'}</span>
+                                  <Brain className="w-2.5 h-2.5 shrink-0" />
+                                  <span className="truncate">{(leg.match?.isLive || leg.isLive) ? 'Live Intel' : 'Tactical Intel'}</span>
                                 </button>
                                 {inSlip ? (
-                                  <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                                    <Check className="w-2.5 h-2.5 text-slate-400" />
-                                    In Slip
+                                  <span className="w-[58px] h-6 flex items-center justify-center gap-0.5 text-[10px] font-medium text-slate-600 bg-slate-100 px-1 py-0.5 rounded border border-slate-200 shrink-0">
+                                    <Check className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                                    <span>In Slip</span>
                                   </span>
                                 ) : (
                                   <button
@@ -2045,10 +2045,10 @@ export default function FixturesTablePage({
                                         onAddToSlip(leg.match, leg.pick, leg.market, leg.odds, leg.prob);
                                       }
                                     }}
-                                    className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-300 shadow-2xs hover:bg-slate-50 cursor-pointer"
+                                    className="w-[58px] h-6 flex items-center justify-center gap-0.5 text-[10px] font-semibold text-slate-800 bg-white px-1 py-0.5 rounded border border-slate-300 shadow-2xs hover:bg-slate-50 cursor-pointer shrink-0"
                                   >
-                                    <Plus className="w-2.5 h-2.5 text-slate-400" />
-                                    Add
+                                    <Plus className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                                    <span>Add</span>
                                   </button>
                                 )}
                               </div>
@@ -2187,25 +2187,25 @@ export default function FixturesTablePage({
 
                           {/* Actions (Watch + Slip) */}
                           <td className="hidden md:table-cell py-1.5 px-2 text-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                            <div className="inline-flex items-center gap-1">
+                            <div className="grid grid-cols-[98px_58px] gap-1.5 items-center justify-center">
                               <button
                                 type="button"
                                 onClick={() => onOpenWatchLive && onOpenWatchLive(leg.match || leg)}
-                                className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded border shadow-2xs transition-colors cursor-pointer ${
+                                className={`w-[98px] h-6 flex items-center justify-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded border shadow-2xs transition-colors cursor-pointer shrink-0 ${
                                   (leg.match?.isLive || leg.isLive)
                                     ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 animate-pulse font-extrabold'
                                     : 'text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border-indigo-200'
                                 }`}
                                 title={(leg.match?.isLive || leg.isLive) ? "Live Match Tactical AI Intelligence" : "Match Tactical AI Analysis"}
                               >
-                                <Brain className={`w-2.5 h-2.5 ${(leg.match?.isLive || leg.isLive) ? 'text-white' : 'text-indigo-600'}`} />
-                                <span>{(leg.match?.isLive || leg.isLive) ? 'Live Analysis' : 'Tactical Intel'}</span>
+                                <Brain className={`w-2.5 h-2.5 shrink-0 ${(leg.match?.isLive || leg.isLive) ? 'text-white' : 'text-indigo-600'}`} />
+                                <span className="truncate">{(leg.match?.isLive || leg.isLive) ? 'Live Analysis' : 'Tactical Intel'}</span>
                               </button>
 
                               {inSlip ? (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-                                  <Check className="w-2.5 h-2.5 text-slate-400" />
-                                  In Slip
+                                <span className="w-[58px] h-6 flex items-center justify-center gap-1 text-[10px] font-medium text-slate-600 bg-slate-100 px-1 py-0.5 rounded border border-slate-200 shrink-0">
+                                  <Check className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                                  <span>In Slip</span>
                                 </span>
                               ) : (
                                 <button
@@ -2215,10 +2215,10 @@ export default function FixturesTablePage({
                                       onAddToSlip(leg.match, leg.pick, leg.market, leg.odds, leg.prob);
                                     }
                                   }}
-                                  className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 px-1.5 py-0.5 rounded border border-slate-300 shadow-2xs transition-colors cursor-pointer"
+                                  className="w-[58px] h-6 flex items-center justify-center gap-1 text-[10px] font-medium text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 px-1 py-0.5 rounded border border-slate-300 shadow-2xs transition-colors cursor-pointer shrink-0"
                                 >
-                                  <Plus className="w-2.5 h-2.5 text-slate-400" />
-                                  Add
+                                  <Plus className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                                  <span>Add</span>
                                 </button>
                               )}
                             </div>
@@ -3075,7 +3075,7 @@ export default function FixturesTablePage({
                 </th>
 
                 {/* Actions */}
-                <th className="py-1 px-2 w-44 text-center">Actions</th>
+                <th className="py-1 px-2 w-72 min-w-[285px] text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="p-2.5 sm:p-0 flex flex-col md:table-row-group md:divide-y md:divide-slate-100 space-y-2.5 md:space-y-0">
@@ -3279,29 +3279,29 @@ export default function FixturesTablePage({
                                 💰 €{safeToFixed(rowStake, 0)} → €{returns.payoutStr} ({returns.profitStr})
                               </span>
                             </div>
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-1 shrink-0">
                               <button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   if (onOpenWatchLive) onOpenWatchLive(m);
                                 }}
-                                className={`px-2 py-0.5 rounded text-[9.5px] font-bold border transition-all cursor-pointer inline-flex items-center gap-1 ${
+                                className={`w-[98px] h-6 flex items-center justify-center gap-1 text-[9.5px] font-bold px-1.5 py-0.5 rounded border transition-all cursor-pointer shrink-0 ${
                                   m.isLive
                                     ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
                                     : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
                                 }`}
                                 title={m.isLive ? "Open Live Match Intelligence & Tactical AI Analysis" : "Open Match Intelligence & Tactical AI Analysis"}
                               >
-                                <Brain className={`w-2 h-2 ${m.isLive ? 'text-white' : 'text-indigo-600'}`} />
-                                <span>{m.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
+                                <Brain className={`w-2 h-2 shrink-0 ${m.isLive ? 'text-white' : 'text-indigo-600'}`} />
+                                <span className="truncate">{m.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
                               </button>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   if (onAddToSlip) onAddToSlip(m, slipPick);
                                 }}
-                                className={`p-1 rounded-full transition-all cursor-pointer ${
+                                className={`w-7 h-7 flex items-center justify-center rounded-full transition-all cursor-pointer shrink-0 ${
                                   isSlipAdded
                                     ? 'bg-rose-100 text-rose-600 hover:bg-rose-200'
                                     : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
@@ -3473,26 +3473,26 @@ export default function FixturesTablePage({
 
                         {/* Actions */}
                         <td className="hidden md:table-cell py-1.5 px-2 text-center whitespace-nowrap">
-                          <div className="flex items-center justify-center gap-1">
+                          <div className="grid grid-cols-[98px_56px_58px_52px] gap-1 items-center justify-center">
                             {/* Tactical AI Analysis Modal */}
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(m); }}
-                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer inline-flex items-center gap-0.5 shadow-2xs ${
+                              className={`w-[98px] h-6 rounded text-[10px] font-bold border transition-all cursor-pointer flex items-center justify-center gap-1 shadow-2xs shrink-0 ${
                                 m.isLive
                                   ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 animate-pulse font-extrabold'
                                   : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
                               }`}
                               title={m.isLive ? "Live Match Intelligence & In-Play Momentum" : "Pre-Match Tactical AI Analysis"}
                             >
-                              <Brain className={`w-2.5 h-2.5 ${m.isLive ? 'text-white' : 'text-indigo-600'}`} />
-                              <span>{m.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
+                              <Brain className={`w-2.5 h-2.5 shrink-0 ${m.isLive ? 'text-white' : 'text-indigo-600'}`} />
+                              <span className="truncate">{m.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
                             </button>
 
                             {/* Deep Analysis Page */}
                             <button
                               onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(m); }}
-                              className="px-1.5 py-0.5 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
+                              className="w-[56px] h-6 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer flex items-center justify-center shrink-0"
                               title="Open Analysis"
                             >
                               Analysis
@@ -3501,7 +3501,7 @@ export default function FixturesTablePage({
                             {/* Add to Slip Slip */}
                             <button
                               onClick={(e) => { e.stopPropagation(); onAddToSlip && onAddToSlip(m, slipPick); }}
-                              className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors cursor-pointer border ${
+                              className={`w-[58px] h-6 rounded text-[10px] font-medium transition-colors cursor-pointer border flex items-center justify-center shrink-0 ${
                                 isSlipAdded
                                   ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
                                   : 'bg-white text-slate-700 hover:bg-purple-50 hover:text-purple-700 border-slate-200 hover:border-purple-200'
@@ -3514,11 +3514,11 @@ export default function FixturesTablePage({
                             {/* Expand Row Details */}
                             <button
                               onClick={(e) => { e.stopPropagation(); toggleExpand(m.id || idx); }}
-                              className="px-1 py-0.5 rounded text-[10px] font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer inline-flex items-center gap-0.5"
+                              className="w-[52px] h-6 rounded text-[10px] font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center gap-0.5 shrink-0"
                               title="Toggle tactical analysis details"
                             >
                               <span>{isExpanded ? 'Hide' : 'Tactics'}</span>
-                              {isExpanded ? <ChevronUp className="w-2.5 h-2.5" /> : <ChevronDown className="w-2.5 h-2.5" />}
+                              {isExpanded ? <ChevronUp className="w-2.5 h-2.5 shrink-0" /> : <ChevronDown className="w-2.5 h-2.5 shrink-0" />}
                             </button>
                           </div>
                         </td>

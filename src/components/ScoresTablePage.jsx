@@ -15,7 +15,8 @@ import {
   CheckCircle2,
   Calendar,
   Play,
-  Tv,
+  Check,
+  Plus,
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
@@ -31,6 +32,7 @@ export default function ScoresTablePage({
   onOpenDeepResearch,
   onOpenWatchLive,
   onAddToSlip,
+  accaMatchIds = new Set(),
   tzSettings = {},
   onSelectMarketMode
 }) {
@@ -679,7 +681,7 @@ export default function ScoresTablePage({
               </th>
 
               {/* Actions */}
-              <th className="py-1 px-2 w-28 text-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+              <th className="py-1 px-2 w-56 text-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -696,6 +698,7 @@ export default function ScoresTablePage({
               filteredMatches.map((m, idx) => {
                 const matchKey = m.id || idx;
                 const isExpanded = expandedMatchId === matchKey;
+                const inSlip = accaMatchIds.has(m.id) || accaMatchIds.has(String(m.id)) || (m.home && m.away && Array.from(accaMatchIds).some(id => String(id).includes(`${m.home}-${m.away}`)));
                 const over15 = safeParseFloat(m.scoreModel?.overUnder?.over15, 75);
                 const over25 = safeParseFloat(m.scoreModel?.overUnder?.over25 ?? m.over25Prob, 52);
                 const under25 = 100 - over25;
@@ -778,35 +781,44 @@ export default function ScoresTablePage({
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(m); }}
-                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors inline-flex items-center gap-0.5 ${
+                              className={`w-[98px] h-6 px-1.5 rounded text-[10px] font-bold border transition-colors inline-flex items-center justify-center gap-0.5 shrink-0 shadow-2xs ${
                                 m.isLive
                                   ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
                                   : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
                               }`}
                               title={m.isLive ? "Live Match Tactical AI Intelligence" : "Match Tactical AI Analysis"}
                             >
-                              <Brain className={`w-2.5 h-2.5 ${m.isLive ? 'text-white' : 'text-indigo-600'}`} />
-                              <span>{m.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
+                              <Brain className={`w-2.5 h-2.5 shrink-0 ${m.isLive ? 'text-white' : 'text-indigo-600'}`} />
+                              <span className="truncate">{m.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
                             </button>
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(m); }}
-                              className="px-1.5 py-0.5 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 text-teal-800 hover:bg-teal-100 transition-colors"
+                              className="w-[44px] h-6 px-1 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 text-teal-800 hover:bg-teal-100 transition-colors inline-flex items-center justify-center shrink-0 cursor-pointer"
+                              title="Open Deep Analysis"
                             >
                               Intel
                             </button>
-                            {onAddToSlip && (
+                            {onAddToSlip ? (
                               <button
                                 type="button"
                                 onClick={handleSlipAdd}
-                                className="px-2 py-0.5 rounded text-[10px] font-bold border border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+                                className={`w-[58px] h-6 px-1 rounded text-[10px] font-bold border transition-colors inline-flex items-center justify-center gap-0.5 shrink-0 cursor-pointer ${
+                                  inSlip
+                                    ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-300'
+                                    : 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700'
+                                }`}
+                                title={inSlip ? 'In Slip (Click to toggle)' : `Add ${bestValuePick} to Slip`}
                               >
-                                + Slip
+                                {inSlip ? <Check className="w-2.5 h-2.5" /> : <Plus className="w-2.5 h-2.5" />}
+                                <span>{inSlip ? 'In Slip' : '+ Slip'}</span>
                               </button>
+                            ) : (
+                              <div className="w-[58px]" />
                             )}
                           </div>
                         </div>
@@ -958,39 +970,47 @@ export default function ScoresTablePage({
                       </td>
 
                       {/* Analysis & Slip Action */}
-                      <td className="hidden md:table-cell py-1 px-2 text-center whitespace-nowrap">
-                        <div className="flex items-center justify-center gap-1">
+                      <td className="hidden md:table-cell py-1 px-2 text-center whitespace-nowrap w-56">
+                        <div className="grid grid-cols-[98px_44px_58px] gap-1.5 items-center justify-center">
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(m); }}
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-all cursor-pointer inline-flex items-center gap-0.5 ${
+                            className={`w-[98px] h-6 px-1.5 rounded text-[10px] font-bold border transition-colors inline-flex items-center justify-center gap-0.5 shrink-0 shadow-2xs cursor-pointer ${
                               m.isLive
                                 ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
                                 : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
                             }`}
                             title={m.isLive ? "Live Match Tactical AI Intelligence" : "Match Tactical AI Analysis"}
                           >
-                            <Brain className={`w-2.5 h-2.5 ${m.isLive ? 'text-white' : 'text-indigo-600'}`} />
-                            <span>{m.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
+                            <Brain className={`w-2.5 h-2.5 shrink-0 ${m.isLive ? 'text-white' : 'text-indigo-600'}`} />
+                            <span className="truncate">{m.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
                           </button>
 
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(m); }}
-                            className="px-1.5 py-0.5 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
-                            title="Open Analysis"
+                            className="w-[44px] h-6 px-1 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors inline-flex items-center justify-center shrink-0 cursor-pointer"
+                            title="Open Deep Analysis"
                           >
                             Intel
                           </button>
-                          {onAddToSlip && (
+
+                          {onAddToSlip ? (
                             <button
                               type="button"
                               onClick={handleSlipAdd}
-                              className="px-1.5 py-0.5 rounded text-[10px] font-bold border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors cursor-pointer"
-                              title={`Add ${bestValuePick} to Slip`}
+                              className={`w-[58px] h-6 px-1 rounded text-[10px] font-bold border transition-colors cursor-pointer inline-flex items-center justify-center gap-0.5 shrink-0 ${
+                                inSlip
+                                  ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-300'
+                                  : 'border-indigo-600 bg-indigo-600 hover:bg-indigo-700 text-white'
+                              }`}
+                              title={inSlip ? 'In Slip (Click to toggle)' : `Add ${bestValuePick} to Slip`}
                             >
-                              + Slip
+                              {inSlip ? <Check className="w-2.5 h-2.5" /> : <Plus className="w-2.5 h-2.5" />}
+                              <span>{inSlip ? 'In Slip' : '+ Slip'}</span>
                             </button>
+                          ) : (
+                            <div className="w-[58px]" />
                           )}
                         </div>
                       </td>
