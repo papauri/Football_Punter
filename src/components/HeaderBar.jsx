@@ -12,6 +12,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
+import { safeToFixed } from '../utils/numberUtils';
 
 export default function HeaderBar({
   onOpenMenu,
@@ -183,7 +184,7 @@ export default function HeaderBar({
             <span className="hidden sm:inline font-sans font-semibold text-slate-700 text-[11px]">Win Rate:</span>
             <span className="font-extrabold text-amber-700 text-xs">
               {typeof state?.unanimousHitRate === 'number' 
-                ? `${state.unanimousHitRate.toFixed(1)}%` 
+                ? `${safeToFixed(state.unanimousHitRate, 1)}%` 
                 : state?.aiSwarm?.directives?.telemetry?.unanimousHitRate || '76.2%'}
             </span>
           </button>

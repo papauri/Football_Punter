@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { formatRelativeDayTime } from '../utils/dateUtils';
+import { safeToFixed, safeParseFloat } from '../utils/numberUtils';
 
 export default function PropsAccumulatorModal({
   isOpen,
@@ -93,9 +94,9 @@ export default function PropsAccumulatorModal({
 
   if (!isOpen) return null;
 
-  const combinedOdds = slip?.combinedOdds || 2.0;
-  const potentialPayout = (stake * combinedOdds).toFixed(2);
-  const netProfit = (stake * combinedOdds - stake).toFixed(2);
+  const combinedOdds = safeParseFloat(slip?.combinedOdds, 2.0);
+  const potentialPayout = safeToFixed(stake * combinedOdds, 2);
+  const netProfit = safeToFixed(stake * combinedOdds - stake, 2);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">

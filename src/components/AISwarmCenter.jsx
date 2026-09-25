@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
 import { formatRelativeDayTime, formatSafeDateTime, getLocalizedDateKey } from '../utils/dateUtils';
+import { safeToFixed, safeParseFloat } from '../utils/numberUtils';
 import { useTimezone } from './Dashboard';
 
 export default function AISwarmCenter({ 
@@ -341,7 +342,7 @@ export default function AISwarmCenter({
     setAddedLegIds(newAdded);
   };
 
-  const unanimousHitRate = telemetry?.unanimousHitRate || (typeof state?.unanimousHitRate === 'number' ? `${state.unanimousHitRate.toFixed(1)}%` : '76.2%');
+  const unanimousHitRate = telemetry?.unanimousHitRate || (typeof state?.unanimousHitRate === 'number' ? `${safeToFixed(state.unanimousHitRate, 1)}%` : '76.2%');
   const liveUnanimousPercentage = matches.length > 0 ? Math.round((unanimousMatches.length / matches.length) * 100) : 0;
   const liveUnanimousRate = telemetry?.liveUnanimousRate || telemetry?.unanimousRate || `${liveUnanimousPercentage}%`;
   const hasActiveAi = Boolean(state?.hasActiveAiKey);

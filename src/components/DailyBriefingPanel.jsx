@@ -506,7 +506,7 @@ export default function DailyBriefingPanel({
                                   </div>
                                 </div>
                                 <div className="flex items-center justify-between text-slate-600 text-[10px]">
-                                  <span>Suggested Stake: <strong>€{stakeEuro.toFixed(0)}</strong></span>
+                                  <span>Suggested Stake: <strong>€{safeToFixed(stakeEuro, 0)}</strong></span>
                                   <span>Conf Score: <strong>{safeToFixed(conf, 1)}%</strong></span>
                                 </div>
                               </div>
@@ -617,7 +617,7 @@ export default function DailyBriefingPanel({
                                     @{safeToFixed(matchOdds, 2)}
                                   </span>
                                   <span className="text-[10.5px] font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1 py-0.2 rounded" title="Recommended Wager">
-                                    €{stakeEuro.toFixed(0)}
+                                    €{safeToFixed(stakeEuro, 0)}
                                   </span>
                                 </div>
                                 <div className="text-[9.5px] font-medium text-slate-600 mt-0.5 whitespace-nowrap">
@@ -733,7 +733,7 @@ export default function DailyBriefingPanel({
                                   </div>
                                   <div className="bg-slate-50 p-2 rounded border border-slate-200">
                                     <span className="text-slate-400 block font-sans text-[10px] uppercase">Optimal Wager</span>
-                                    <span className="font-bold text-slate-800">€{stakeEuro.toFixed(0)} ➔ Payout €{returns.payoutStr}</span>
+                                    <span className="font-bold text-slate-800">€{safeToFixed(stakeEuro, 0)} ➔ Payout €{returns.payoutStr}</span>
                                   </div>
                                 </div>
                               </div>

@@ -839,7 +839,7 @@ export default function FixturesTablePage({
   };
 
   const unanimousRateDisplay = typeof unanimousHitRate === 'number'
-    ? `${unanimousHitRate.toFixed(1)}%`
+    ? `${safeToFixed(unanimousHitRate, 1)}%`
     : (unanimousHitRate || '84.8%');
 
   const getSortFieldLabel = (field) => {
@@ -3200,8 +3200,8 @@ export default function FixturesTablePage({
                               <span className="text-[9.5px] font-mono font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.2 rounded border border-indigo-100">
                                 {smartMarketDisplay} @{safeToFixed(matchOdds, 2)}
                               </span>
-                              <span className="text-[9.5px] font-mono font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200" title={`Wager €${rowStake.toFixed(0)} based on €${bankrollEuro} bankroll`}>
-                                💰 €{rowStake.toFixed(0)} → €{returns.payoutStr} ({returns.profitStr})
+                              <span className="text-[9.5px] font-mono font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200" title={`Wager €${safeToFixed(rowStake, 0)} based on €${bankrollEuro} bankroll`}>
+                                💰 €{safeToFixed(rowStake, 0)} → €{returns.payoutStr} ({returns.profitStr})
                               </span>
                             </div>
                             <div className="flex items-center gap-1">
@@ -3376,8 +3376,8 @@ export default function FixturesTablePage({
                               @{safeToFixed(matchOdds, 2)}
                             </span>
                             <KellyTooltip showIcon={false} align="right">
-                              <span className="text-emerald-800 font-bold bg-emerald-50/90 border border-emerald-200 px-1 py-0.2 rounded cursor-help" title={`Stake €${rowStake.toFixed(0)} (${kellyDisplay})`}>
-                                €{rowStake.toFixed(0)}
+                              <span className="text-emerald-800 font-bold bg-emerald-50/90 border border-emerald-200 px-1 py-0.2 rounded cursor-help" title={`Stake €${safeToFixed(rowStake, 0)} (${kellyDisplay})`}>
+                                €{safeToFixed(rowStake, 0)}
                               </span>
                             </KellyTooltip>
                             <span className="text-slate-400">→</span>
@@ -3492,7 +3492,7 @@ export default function FixturesTablePage({
                                     </span>
                                   </div>
                                   <div className="text-[11px] text-slate-300 mt-0.5">
-                                    Recommended Stake: <strong className="text-white font-mono">€{rowStake.toFixed(2)}</strong> ({safeToFixed(kellyUnits, 1)}u · {m.kellyStake?.fractionLabel || '1/4 Kelly'} · €{bankrollEuro} Bankroll)
+                                    Recommended Stake: <strong className="text-white font-mono">€{safeToFixed(rowStake, 2)}</strong> ({safeToFixed(kellyUnits, 1)}u · {m.kellyStake?.fractionLabel || '1/4 Kelly'} · €{bankrollEuro} Bankroll)
                                   </div>
                                 </div>
                               </div>

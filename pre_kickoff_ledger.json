@@ -1,5 +1,30 @@
 [
   {
+    "id": "401861047",
+    "home": "Andorra",
+    "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/and.png",
+    "away": "Malta",
+    "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/mlt.png",
+    "league": "UEFA Nations League",
+    "kickoffUtc": "2026-09-24T16:00Z",
+    "snapshotAt": "2026-09-24T15:50:45.961Z",
+    "minutesBeforeKickoff": 9,
+    "predictedWinner": "DRAW",
+    "predictedScore": "1-1",
+    "prob": {
+      "home": "33.1",
+      "draw": "34.8",
+      "away": "32.1"
+    },
+    "confidence": "34.8",
+    "smartMarket": {
+      "pick": "PASS",
+      "label": "Pass / Entropy Floor"
+    },
+    "isHit": null,
+    "resolvedAt": null
+  },
+  {
     "id": "401916365",
     "home": "Deportes Iquique",
     "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/10142.png",

@@ -871,7 +871,7 @@ export default function BinaryPicksPage({
                                 <div className="font-mono text-slate-800 space-y-0.5">
                                   <div>Engine Prob: <strong className="text-indigo-700">{safeToFixed(p.modelProb, 1)}%</strong></div>
                                   <div>Implied Odds: <span>{safeToFixed(p.impliedProb, 1)}%</span></div>
-                                  <div>True Odds: <span>{(100 / Math.max(1, p.modelProb)).toFixed(2)}</span></div>
+                                  <div>True Odds: <span>{safeToFixed(100 / Math.max(1, p.modelProb), 2)}</span></div>
                                 </div>
                               </div>
                               <div className="bg-white p-2 rounded border border-slate-200 space-y-1">
@@ -1079,7 +1079,7 @@ export default function BinaryPicksPage({
                                   </div>
                                   <div className="flex justify-between">
                                     <span className="text-slate-600">Model Fair Odds:</span>
-                                    <span className="font-bold text-slate-800">{(100 / Math.max(1, p.modelProb)).toFixed(2)}</span>
+                                    <span className="font-bold text-slate-800">{safeToFixed(100 / Math.max(1, p.modelProb), 2)}</span>
                                   </div>
                                 </div>
                               </div>
