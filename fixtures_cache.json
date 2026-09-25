@@ -6567,14 +6567,14 @@
       "away": "Latvia",
       "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/lva.png",
       "league": "UEFA Nations League",
-      "status": "75'",
+      "status": "77'",
       "time": "17:00",
       "date": "25/09/2026",
       "dateIso": "2026-09-25",
       "utcDate": "2026-09-25T16:00Z",
       "timestamp": 1790352000000,
       "goals": {
-        "home": 1,
+        "home": 2,
         "away": 0
       },
       "odds": {
@@ -6607,67 +6607,67 @@
         "FOX Sports",
         "ITV"
       ],
-      "liveMinute": "75'",
-      "liveScore": "1-0",
+      "liveMinute": "77'",
+      "liveScore": "2-0",
       "inPlayPrediction": {
-        "minute": 75,
-        "minuteDisplay": "75'",
-        "currentScore": "1 - 0",
-        "homeScore": 1,
+        "minute": 77,
+        "minuteDisplay": "77'",
+        "currentScore": "2 - 0",
+        "homeScore": 2,
         "awayScore": 0,
-        "projectedScore": "1 - 0",
-        "projectedFinalScore": "1 - 0",
+        "projectedScore": "2 - 0",
+        "projectedFinalScore": "2 - 0",
         "prob": {
-          "home": 84.7,
-          "draw": 13.6,
-          "away": 1.7
+          "home": 98.7,
+          "draw": 1.2,
+          "away": 0.1
         },
         "liveProb": {
-          "home": 84.7,
-          "draw": 13.6,
-          "away": 1.7
+          "home": 98.7,
+          "draw": 1.2,
+          "away": 0.1
         },
         "fairOdds": {
-          "home": 1.22,
+          "home": 1.04,
           "draw": 8.33,
           "away": 8.33
         },
         "livePick": "HOME",
         "livePickLabel": "Armenia Win",
-        "liveOdds": 1.22,
+        "liveOdds": 1.04,
         "remainingXg": {
-          "home": 0.33,
-          "away": 0.23
+          "home": 0.28,
+          "away": 0.2
         },
         "momentumVerdict": "Tactical Dominance as Projected: Armenia executing pre-match game plan with high pressing line and sustained territorial suppression.",
-        "tacticalAdvice": "Armenia commands the game state (1-0) with 77.2% live win probability. Let the pre-match bet run to full settlement.",
+        "tacticalAdvice": "Armenia commands the game state (2-0) with 96.7% live win probability. Let the pre-match bet run to full settlement.",
         "advisory": {
           "agentId": "AGENT_IN_PLAY_ADVISORY",
           "agentName": "In-Play Tactical Forensics & Bet Divert Advisor",
           "avatar": "🧭",
           "isAdvisorOnly": true,
-          "minute": 75,
-          "minuteDisplay": "75'",
-          "scoreDisplay": "1 - 0",
-          "liveHomeScore": 1,
+          "minute": 77,
+          "minuteDisplay": "77'",
+          "scoreDisplay": "2 - 0",
+          "liveHomeScore": 2,
           "liveAwayScore": 0,
           "lockedPick": "HOME",
           "lockedPickTeam": "Armenia",
           "opponentTeam": "Latvia",
-          "betStatus": "MARGINAL_LEAD",
-          "betStatusBadge": "🟢 Narrow Lead (Game Management)",
+          "betStatus": "WINNING_SOLID",
+          "betStatusBadge": "🟢 Position Winning",
           "statusColor": "text-emerald-400 bg-emerald-950/80 border-emerald-500/40",
           "liveProbabilities": {
-            "home": 77.2,
-            "draw": 18.9,
-            "away": 3.9,
-            "lockedPickProb": 77.2
+            "home": 96.7,
+            "draw": 3,
+            "away": 0.4,
+            "lockedPickProb": 96.7
           },
-          "projectedFinalScore": "1 - 0",
-          "remainingMinutes": 20,
+          "projectedFinalScore": "2 - 0",
+          "remainingMinutes": 18,
           "remainingXg": {
-            "home": 0.37,
-            "away": 0.37
+            "home": 0.33,
+            "away": 0.33
           },
           "whatChanged": "Tactical Dominance as Projected: Armenia executing pre-match game plan with high pressing line and sustained territorial suppression.",
           "tacticalDiagnosis": "Armenia managing tempo intelligently with rest-defense positioning, denying Latvia clean counter opportunities.",
@@ -6675,15 +6675,15 @@
             "action": "HOLD_AND_RIDE",
             "title": "Position in Strong Command",
             "badge": "✅ Bet Secure (Ride Out)",
-            "rationale": "Armenia commands the game state (1-0) with 77.2% live win probability. Let the pre-match bet run to full settlement.",
+            "rationale": "Armenia commands the game state (2-0) with 96.7% live win probability. Let the pre-match bet run to full settlement.",
             "recommendedHedgeMarket": "",
             "hedgeOdds": 1,
             "salvageEdge": "Optimal"
           },
-          "narrativeRoadmap": "In-Play Tactical Advisory Report (75'): Match stands 1-0. Tactical Dominance as Projected: Armenia executing pre-match game plan with high pressing line and sustained territorial suppression. Armenia managing tempo intelligently with rest-defense positioning, denying Latvia clean counter opportunities. Strategic Directive: Position in Strong Command. Armenia commands the game state (1-0) with 77.2% live win probability. Let the pre-match bet run to full settlement.",
-          "timestamp": 1790357532438
+          "narrativeRoadmap": "In-Play Tactical Advisory Report (77'): Match stands 2-0. Tactical Dominance as Projected: Armenia executing pre-match game plan with high pressing line and sustained territorial suppression. Armenia managing tempo intelligently with rest-defense positioning, denying Latvia clean counter opportunities. Strategic Directive: Position in Strong Command. Armenia commands the game state (2-0) with 96.7% live win probability. Let the pre-match bet run to full settlement.",
+          "timestamp": 1790357663083
         },
-        "timestamp": 1790357532438
+        "timestamp": 1790357663083
       }
     },
     {
@@ -6693,7 +6693,7 @@
       "away": "Northern Ireland",
       "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/nir.png",
       "league": "UEFA Nations League",
-      "status": "71'",
+      "status": "74'",
       "time": "17:00",
       "date": "25/09/2026",
       "dateIso": "2026-09-25",
@@ -6733,47 +6733,47 @@
         "FOX Sports",
         "ITV"
       ],
-      "liveMinute": "71'",
+      "liveMinute": "74'",
       "liveScore": "0-0",
       "inPlayPrediction": {
-        "minute": 71,
-        "minuteDisplay": "71'",
+        "minute": 74,
+        "minuteDisplay": "74'",
         "currentScore": "0 - 0",
         "homeScore": 0,
         "awayScore": 0,
         "projectedScore": "0 - 0",
         "projectedFinalScore": "0 - 0",
         "prob": {
-          "home": 25.6,
-          "draw": 57,
-          "away": 17.4
+          "home": 22.9,
+          "draw": 61.5,
+          "away": 15.6
         },
         "liveProb": {
-          "home": 25.6,
-          "draw": 57,
-          "away": 17.4
+          "home": 22.9,
+          "draw": 61.5,
+          "away": 15.6
         },
         "fairOdds": {
-          "home": 4.42,
-          "draw": 1.85,
-          "away": 6.94
+          "home": 5.03,
+          "draw": 1.71,
+          "away": 7.94
         },
         "livePick": "DRAW",
         "livePickLabel": "Draw",
-        "liveOdds": 1.85,
+        "liveOdds": 1.71,
         "remainingXg": {
-          "home": 0.39,
-          "away": 0.28
+          "home": 0.33,
+          "away": 0.23
         },
         "momentumVerdict": "Stalemate Friction & Mutual Risk-Aversion: Both managers deploying cautious double pivots, limiting open-play transition speed.",
-        "tacticalAdvice": "Draw probability has expanded to 45.6%. Since 59% of historical misses occur in 1-goal stalemates, placing an in-play insurance stake on the Draw protects your locked pre-game wager.",
+        "tacticalAdvice": "Draw probability has expanded to 49.1%. Since 59% of historical misses occur in 1-goal stalemates, placing an in-play insurance stake on the Draw protects your locked pre-game wager.",
         "advisory": {
           "agentId": "AGENT_IN_PLAY_ADVISORY",
           "agentName": "In-Play Tactical Forensics & Bet Divert Advisor",
           "avatar": "🧭",
           "isAdvisorOnly": true,
-          "minute": 71,
-          "minuteDisplay": "71'",
+          "minute": 74,
+          "minuteDisplay": "74'",
           "scoreDisplay": "0 - 0",
           "liveHomeScore": 0,
           "liveAwayScore": 0,
@@ -6784,32 +6784,32 @@
           "betStatusBadge": "🟡 Deadlocked / Draw Risk",
           "statusColor": "text-amber-300 bg-amber-950/60 border-amber-500/30",
           "liveProbabilities": {
-            "home": 32.9,
-            "draw": 45.6,
-            "away": 21.6,
-            "lockedPickProb": 32.9
+            "home": 30.6,
+            "draw": 49.1,
+            "away": 20.3,
+            "lockedPickProb": 30.6
           },
           "projectedFinalScore": "0 - 0",
-          "remainingMinutes": 24,
+          "remainingMinutes": 21,
           "remainingXg": {
-            "home": 0.6,
-            "away": 0.43
+            "home": 0.52,
+            "away": 0.38
           },
           "whatChanged": "Stalemate Friction & Mutual Risk-Aversion: Both managers deploying cautious double pivots, limiting open-play transition speed.",
-          "tacticalDiagnosis": "Mid-block congestion. Neither team taking expansive tactical risks; draw probability elevated to 45.6%.",
+          "tacticalDiagnosis": "Mid-block congestion. Neither team taking expansive tactical risks; draw probability elevated to 49.1%.",
           "advisoryDivert": {
             "action": "DIVERT_HEDGE_DRAW",
             "title": "Cover the Draw: Lock Stalemate Insurance",
             "badge": "🔒 Draw Insurance Hedge",
-            "rationale": "Draw probability has expanded to 45.6%. Since 59% of historical misses occur in 1-goal stalemates, placing an in-play insurance stake on the Draw protects your locked pre-game wager.",
-            "recommendedHedgeMarket": "Live Draw @ 2.08",
-            "hedgeOdds": 2.08,
+            "rationale": "Draw probability has expanded to 49.1%. Since 59% of historical misses occur in 1-goal stalemates, placing an in-play insurance stake on the Draw protects your locked pre-game wager.",
+            "recommendedHedgeMarket": "Live Draw @ 1.93",
+            "hedgeOdds": 1.93,
             "salvageEdge": "High (Draw Salvage)"
           },
-          "narrativeRoadmap": "In-Play Tactical Advisory Report (71'): Match stands 0-0. Stalemate Friction & Mutual Risk-Aversion: Both managers deploying cautious double pivots, limiting open-play transition speed. Mid-block congestion. Neither team taking expansive tactical risks; draw probability elevated to 45.6%. Strategic Directive: Cover the Draw: Lock Stalemate Insurance. Draw probability has expanded to 45.6%. Since 59% of historical misses occur in 1-goal stalemates, placing an in-play insurance stake on the Draw protects your locked pre-game wager.",
-          "timestamp": 1790357532440
+          "narrativeRoadmap": "In-Play Tactical Advisory Report (74'): Match stands 0-0. Stalemate Friction & Mutual Risk-Aversion: Both managers deploying cautious double pivots, limiting open-play transition speed. Mid-block congestion. Neither team taking expansive tactical risks; draw probability elevated to 49.1%. Strategic Directive: Cover the Draw: Lock Stalemate Insurance. Draw probability has expanded to 49.1%. Since 59% of historical misses occur in 1-goal stalemates, placing an in-play insurance stake on the Draw protects your locked pre-game wager.",
+          "timestamp": 1790357663087
         },
-        "timestamp": 1790357532440
+        "timestamp": 1790357663087
       }
     },
     {
@@ -10564,5 +10564,5 @@
       "inPlayPrediction": null
     }
   ],
-  "cachedAt": "2026-09-25T17:32:24.231Z"
+  "cachedAt": "2026-09-25T17:34:34.484Z"
 }
