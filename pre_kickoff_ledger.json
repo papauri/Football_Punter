@@ -1,5 +1,233 @@
 [
   {
+    "id": "401861052",
+    "home": "Italy",
+    "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/ita.png",
+    "away": "Belgium",
+    "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/bel.png",
+    "league": "UEFA Nations League",
+    "kickoffUtc": "2026-09-25T18:45Z",
+    "snapshotAt": "2026-09-25T18:42:23.835Z",
+    "minutesBeforeKickoff": 3,
+    "predictedWinner": "HOME",
+    "predictedScore": "2-1",
+    "prob": {
+      "home": "42.7",
+      "draw": "27.3",
+      "away": "30.0"
+    },
+    "confidence": "42.7",
+    "smartMarket": {
+      "pick": "1X",
+      "label": "1X (Italy or Draw)"
+    },
+    "inputs": {
+      "odds": {
+        "provider": "DraftKings",
+        "home": 2.2,
+        "draw": 3.45,
+        "away": 3
+      },
+      "lineup": null
+    },
+    "modelVersion": {
+      "temperature": 1.3,
+      "maxScorelineSim": 10
+    },
+    "isHit": null,
+    "resolvedAt": null
+  },
+  {
+    "id": "401861056",
+    "home": "Montenegro",
+    "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/mtg.png",
+    "away": "Cyprus",
+    "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/cyp.png",
+    "league": "UEFA Nations League",
+    "kickoffUtc": "2026-09-25T18:45Z",
+    "snapshotAt": "2026-09-25T18:42:23.835Z",
+    "minutesBeforeKickoff": 3,
+    "predictedWinner": "HOME",
+    "predictedScore": "1-0",
+    "prob": {
+      "home": "54.8",
+      "draw": "24.7",
+      "away": "20.5"
+    },
+    "confidence": "54.8",
+    "smartMarket": {
+      "pick": "HOME_DNB",
+      "label": "Montenegro DNB (Draw-No-Bet)"
+    },
+    "inputs": {
+      "odds": {
+        "provider": "DraftKings",
+        "home": 1.77,
+        "draw": 3.5,
+        "away": 4.3
+      },
+      "lineup": null
+    },
+    "modelVersion": {
+      "temperature": 1.3,
+      "maxScorelineSim": 10
+    },
+    "isHit": null,
+    "resolvedAt": null
+  },
+  {
+    "id": "401861055",
+    "home": "Poland",
+    "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/pol.png",
+    "away": "Bosnia-Herzegovina",
+    "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/bih.png",
+    "league": "UEFA Nations League",
+    "kickoffUtc": "2026-09-25T18:45Z",
+    "snapshotAt": "2026-09-25T18:42:23.835Z",
+    "minutesBeforeKickoff": 3,
+    "predictedWinner": "HOME",
+    "predictedScore": "2-1",
+    "prob": {
+      "home": "55.3",
+      "draw": "23.4",
+      "away": "21.3"
+    },
+    "confidence": "55.3",
+    "smartMarket": {
+      "pick": "1X",
+      "label": "1X (Poland/Draw)"
+    },
+    "inputs": {
+      "odds": {
+        "provider": "DraftKings",
+        "home": 1.57,
+        "draw": 3.85,
+        "away": 5.25
+      },
+      "lineup": null
+    },
+    "modelVersion": {
+      "temperature": 1.3,
+      "maxScorelineSim": 10
+    },
+    "isHit": null,
+    "resolvedAt": null
+  },
+  {
+    "id": "401861051",
+    "home": "Sweden",
+    "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/swe.png",
+    "away": "Romania",
+    "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/rom.png",
+    "league": "UEFA Nations League",
+    "kickoffUtc": "2026-09-25T18:45Z",
+    "snapshotAt": "2026-09-25T18:42:23.835Z",
+    "minutesBeforeKickoff": 3,
+    "predictedWinner": "HOME",
+    "predictedScore": "2-1",
+    "prob": {
+      "home": "57.9",
+      "draw": "22.1",
+      "away": "20.0"
+    },
+    "confidence": "57.9",
+    "smartMarket": {
+      "pick": "1X",
+      "label": "1X (Sweden/Draw)"
+    },
+    "inputs": {
+      "odds": {
+        "provider": "DraftKings",
+        "home": 1.44,
+        "draw": 4.4,
+        "away": 6
+      },
+      "lineup": null
+    },
+    "modelVersion": {
+      "temperature": 1.3,
+      "maxScorelineSim": 10
+    },
+    "isHit": null,
+    "resolvedAt": null
+  },
+  {
+    "id": "401861053",
+    "home": "Türkiye",
+    "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/tur.png",
+    "away": "France",
+    "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/fra.png",
+    "league": "UEFA Nations League",
+    "kickoffUtc": "2026-09-25T18:45Z",
+    "snapshotAt": "2026-09-25T18:42:23.835Z",
+    "minutesBeforeKickoff": 3,
+    "predictedWinner": "AWAY",
+    "predictedScore": "0-2",
+    "prob": {
+      "home": "16.1",
+      "draw": "19.4",
+      "away": "64.5"
+    },
+    "confidence": "64.5",
+    "smartMarket": {
+      "pick": "AWAY",
+      "label": "France Win"
+    },
+    "inputs": {
+      "odds": {
+        "provider": "DraftKings",
+        "home": 7.5,
+        "draw": 5.25,
+        "away": 1.31
+      },
+      "lineup": null
+    },
+    "modelVersion": {
+      "temperature": 1.3,
+      "maxScorelineSim": 10
+    },
+    "isHit": null,
+    "resolvedAt": null
+  },
+  {
+    "id": "401861054",
+    "home": "Hungary",
+    "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/hun.png",
+    "away": "Ukraine",
+    "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/ukr.png",
+    "league": "UEFA Nations League",
+    "kickoffUtc": "2026-09-25T18:45Z",
+    "snapshotAt": "2026-09-25T18:42:23.834Z",
+    "minutesBeforeKickoff": 3,
+    "predictedWinner": "HOME",
+    "predictedScore": "2-1",
+    "prob": {
+      "home": "35.8",
+      "draw": "31.9",
+      "away": "32.2"
+    },
+    "confidence": "35.8",
+    "smartMarket": {
+      "pick": "PASS",
+      "label": "Pass / Entropy Floor"
+    },
+    "inputs": {
+      "odds": {
+        "provider": "DraftKings",
+        "home": 2.4,
+        "draw": 3.05,
+        "away": 2.95
+      },
+      "lineup": null
+    },
+    "modelVersion": {
+      "temperature": 1.3,
+      "maxScorelineSim": 10
+    },
+    "isHit": null,
+    "resolvedAt": null
+  },
+  {
     "id": "401861047",
     "home": "Andorra",
     "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/and.png",
@@ -23,60 +251,6 @@
     },
     "isHit": true,
     "resolvedAt": "2026-09-25T15:44:17.015Z",
-    "actualScore": "1-1",
-    "actualWinner": "DRAW"
-  },
-  {
-    "id": "401916365",
-    "home": "Deportes Iquique",
-    "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/10142.png",
-    "away": "Antofagasta",
-    "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/6071.png",
-    "league": "Copa Chile",
-    "kickoffUtc": "2026-09-23T23:30Z",
-    "snapshotAt": "2026-09-23T22:30:48.454Z",
-    "minutesBeforeKickoff": 59,
-    "predictedWinner": "AWAY",
-    "predictedScore": "1-2",
-    "prob": {
-      "home": "33.7",
-      "draw": "29.0",
-      "away": "37.3"
-    },
-    "confidence": "37.3",
-    "smartMarket": {
-      "pick": "PASS",
-      "label": "Pass / Entropy Floor"
-    },
-    "isHit": false,
-    "resolvedAt": "2026-09-25T15:44:19.360Z",
-    "actualScore": "1-1",
-    "actualWinner": "DRAW"
-  },
-  {
-    "id": "401916366",
-    "home": "Unión La Calera",
-    "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/10144.png",
-    "away": "Universidad Católica",
-    "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/885.png",
-    "league": "Copa Chile",
-    "kickoffUtc": "2026-09-23T23:30Z",
-    "snapshotAt": "2026-09-23T22:30:48.454Z",
-    "minutesBeforeKickoff": 59,
-    "predictedWinner": "AWAY",
-    "predictedScore": "1-2",
-    "prob": {
-      "home": "33.0",
-      "draw": "26.2",
-      "away": "40.8"
-    },
-    "confidence": "40.8",
-    "smartMarket": {
-      "pick": "PASS",
-      "label": "Pass / Entropy Floor"
-    },
-    "isHit": false,
-    "resolvedAt": "2026-09-25T15:44:19.360Z",
     "actualScore": "1-1",
     "actualWinner": "DRAW"
   }

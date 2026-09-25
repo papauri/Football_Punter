@@ -204,7 +204,6 @@ export const LEAGUE_PREDICTABILITY_TIERS = {
       'NWSL', 'usa.nwsl',
       'Argentine Liga Profesional', 'arg.1',
       'Categoría Primera A', 'col.1',
-      'Chilean Primera División', 'chi.1',
       'Uruguayan Primera División', 'uru.1',
       'LigaPro Ecuador', 'ecu.1'
     ]
@@ -1864,10 +1863,10 @@ class SoccerEngine {
           calDrawP = (calDrawP / rSum) * 100;
         }
       } else {
-        // Model and market agree on the favorite: Bayesian prior anchor (70% market, 30% model update)
-        calHomeP = (calHomeP * 0.30) + (marketOdds.homeProb * 0.70);
-        calAwayP = (calAwayP * 0.30) + (marketOdds.awayProb * 0.70);
-        calDrawP = (calDrawP * 0.30) + (marketOdds.drawProb * 0.70);
+        // Model and market agree on the favorite: balanced Bayesian prior anchor (50% market, 50% model update)
+        calHomeP = (calHomeP * 0.50) + (marketOdds.homeProb * 0.50);
+        calAwayP = (calAwayP * 0.50) + (marketOdds.awayProb * 0.50);
+        calDrawP = (calDrawP * 0.50) + (marketOdds.drawProb * 0.50);
         const rSum = calHomeP + calAwayP + calDrawP;
         calHomeP = (calHomeP / rSum) * 100;
         calAwayP = (calAwayP / rSum) * 100;
@@ -4235,7 +4234,6 @@ class SoccerEngine {
     if (l.includes('championship') || l.includes('eng.2')) return 'Sky Sports Football';
     if (l.includes('fa cup') || l.includes('efl') || l.includes('carabao')) return 'BBC One, ITVX, ESPN+';
     if (l.includes('nations') || l.includes('world cup')) return 'UEFA.tv, FOX Sports, ITV';
-    if (l.includes('chile') || l.includes('copa chile') || l.includes('chi.')) return 'TNT Sports Chile, TNT Sports HD, Estadio TNT Sports';
     return 'Free Live Stream, Club TV';
   }
 

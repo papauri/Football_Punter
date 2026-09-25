@@ -194428,7 +194428,12 @@
     "awayScore": 2,
     "league": "Welsh Premier League",
     "date": "2024-09-20",
-    "timestamp": 1726790400000
+    "timestamp": 1726790400000,
+    "goals": {
+      "home": 2,
+      "away": 2
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "706337",
@@ -194438,7 +194443,12 @@
     "awayScore": 1,
     "league": "Welsh Premier League",
     "date": "2024-09-20",
-    "timestamp": 1726790400000
+    "timestamp": 1726790400000,
+    "goals": {
+      "home": 2,
+      "away": 1
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "706338",
@@ -194448,7 +194458,12 @@
     "awayScore": 3,
     "league": "Welsh Premier League",
     "date": "2024-09-20",
-    "timestamp": 1726790400000
+    "timestamp": 1726790400000,
+    "goals": {
+      "home": 0,
+      "away": 3
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "espn_715952",
@@ -259024,7 +259039,12 @@
     "awayScore": 0,
     "league": "Israeli Premier League",
     "date": "2025-05-24",
-    "timestamp": 1748044800000
+    "timestamp": 1748044800000,
+    "goals": {
+      "home": 5,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "734352",
@@ -259034,7 +259054,12 @@
     "awayScore": 3,
     "league": "Israeli Premier League",
     "date": "2025-05-24",
-    "timestamp": 1748044800000
+    "timestamp": 1748044800000,
+    "goals": {
+      "home": 2,
+      "away": 3
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "734354",
@@ -259044,7 +259069,12 @@
     "awayScore": 0,
     "league": "Israeli Premier League",
     "date": "2025-05-24",
-    "timestamp": 1748044800000
+    "timestamp": 1748044800000,
+    "goals": {
+      "home": 5,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "714227",
@@ -278764,7 +278794,12 @@
     "awayScore": 0,
     "league": "Romanian Liga 1",
     "date": "2025-09-21",
-    "timestamp": 1758412800000
+    "timestamp": 1758412800000,
+    "goals": {
+      "home": 1,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "744433",
@@ -278774,7 +278809,12 @@
     "awayScore": 1,
     "league": "Romanian Liga 1",
     "date": "2025-09-21",
-    "timestamp": 1758412800000
+    "timestamp": 1758412800000,
+    "goals": {
+      "home": 1,
+      "away": 1
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "744438",
@@ -278784,7 +278824,12 @@
     "awayScore": 2,
     "league": "Romanian Liga 1",
     "date": "2025-09-21",
-    "timestamp": 1758412800000
+    "timestamp": 1758412800000,
+    "goals": {
+      "home": 1,
+      "away": 2
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "759502",
@@ -278794,7 +278839,12 @@
     "awayScore": 0,
     "league": "Cypriot First Division",
     "date": "2025-09-21",
-    "timestamp": 1758412800000
+    "timestamp": 1758412800000,
+    "goals": {
+      "home": 3,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "759501",
@@ -278804,7 +278854,12 @@
     "awayScore": 2,
     "league": "Cypriot First Division",
     "date": "2025-09-21",
-    "timestamp": 1758412800000
+    "timestamp": 1758412800000,
+    "goals": {
+      "home": 0,
+      "away": 2
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "757356",
@@ -278814,7 +278869,12 @@
     "awayScore": 0,
     "league": "Thai League 1",
     "date": "2025-09-21",
-    "timestamp": 1758412800000
+    "timestamp": 1758412800000,
+    "goals": {
+      "home": 1,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "757357",
@@ -278824,7 +278884,12 @@
     "awayScore": 3,
     "league": "Thai League 1",
     "date": "2025-09-21",
-    "timestamp": 1758412800000
+    "timestamp": 1758412800000,
+    "goals": {
+      "home": 1,
+      "away": 3
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "757358",
@@ -278834,7 +278899,12 @@
     "awayScore": 2,
     "league": "Thai League 1",
     "date": "2025-09-21",
-    "timestamp": 1758412800000
+    "timestamp": 1758412800000,
+    "goals": {
+      "home": 2,
+      "away": 2
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "757359",
@@ -278844,7 +278914,12 @@
     "awayScore": 2,
     "league": "Thai League 1",
     "date": "2025-09-21",
-    "timestamp": 1758412800000
+    "timestamp": 1758412800000,
+    "goals": {
+      "home": 1,
+      "away": 2
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "727259",
@@ -281115,7 +281190,12 @@
     "awayScore": 2,
     "league": "Northern Irish Premiership",
     "date": "2025-09-27",
-    "timestamp": 1758931200000
+    "timestamp": 1758931200000,
+    "goals": {
+      "home": 0,
+      "away": 2
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "743878",
@@ -281125,7 +281205,12 @@
     "awayScore": 2,
     "league": "Northern Irish Premiership",
     "date": "2025-09-27",
-    "timestamp": 1758931200000
+    "timestamp": 1758931200000,
+    "goals": {
+      "home": 1,
+      "away": 2
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "743881",
@@ -281135,7 +281220,12 @@
     "awayScore": 1,
     "league": "Northern Irish Premiership",
     "date": "2025-09-27",
-    "timestamp": 1758931200000
+    "timestamp": 1758931200000,
+    "goals": {
+      "home": 2,
+      "away": 1
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "743876",
@@ -281145,7 +281235,12 @@
     "awayScore": 2,
     "league": "Northern Irish Premiership",
     "date": "2025-09-27",
-    "timestamp": 1758931200000
+    "timestamp": 1758931200000,
+    "goals": {
+      "home": 0,
+      "away": 2
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "736704",
@@ -295225,7 +295320,12 @@
     "awayScore": 1,
     "league": "Irish Premier Division",
     "date": "2025-11-01",
-    "timestamp": 1761955200000
+    "timestamp": 1761955200000,
+    "goals": {
+      "home": 0,
+      "away": 1
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "725405",
@@ -295235,7 +295335,12 @@
     "awayScore": 4,
     "league": "Irish Premier Division",
     "date": "2025-11-01",
-    "timestamp": 1761955200000
+    "timestamp": 1761955200000,
+    "goals": {
+      "home": 1,
+      "away": 4
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "725403",
@@ -295245,7 +295350,12 @@
     "awayScore": 2,
     "league": "Irish Premier Division",
     "date": "2025-11-01",
-    "timestamp": 1761955200000
+    "timestamp": 1761955200000,
+    "goals": {
+      "home": 1,
+      "away": 2
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "725402",
@@ -295255,7 +295365,12 @@
     "awayScore": 0,
     "league": "Irish Premier Division",
     "date": "2025-11-01",
-    "timestamp": 1761955200000
+    "timestamp": 1761955200000,
+    "goals": {
+      "home": 0,
+      "away": 0
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "725406",
@@ -295265,7 +295380,12 @@
     "awayScore": 1,
     "league": "Irish Premier Division",
     "date": "2025-11-01",
-    "timestamp": 1761955200000
+    "timestamp": 1761955200000,
+    "goals": {
+      "home": 1,
+      "away": 1
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "736749",
@@ -369144,7 +369264,12 @@
     "awayScore": 0,
     "league": "Malaysian Super League",
     "date": "2026-05-17",
-    "timestamp": 1778976000000
+    "timestamp": 1778976000000,
+    "goals": {
+      "home": 1,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "752625",
@@ -369154,7 +369279,12 @@
     "awayScore": 0,
     "league": "Malaysian Super League",
     "date": "2026-05-17",
-    "timestamp": 1778976000000
+    "timestamp": 1778976000000,
+    "goals": {
+      "home": 6,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "761637",
@@ -370786,7 +370916,12 @@
     "awayScore": 2,
     "league": "Indian Super League",
     "date": "2026-05-21",
-    "timestamp": 1779321600000
+    "timestamp": 1779321600000,
+    "goals": {
+      "home": 1,
+      "away": 2
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401861204",
@@ -370796,7 +370931,12 @@
     "awayScore": 0,
     "league": "Indian Super League",
     "date": "2026-05-21",
-    "timestamp": 1779321600000
+    "timestamp": 1779321600000,
+    "goals": {
+      "home": 0,
+      "away": 0
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401861201",
@@ -370806,7 +370946,12 @@
     "awayScore": 1,
     "league": "Indian Super League",
     "date": "2026-05-21",
-    "timestamp": 1779321600000
+    "timestamp": 1779321600000,
+    "goals": {
+      "home": 2,
+      "away": 1
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401861198",
@@ -370816,7 +370961,12 @@
     "awayScore": 2,
     "league": "Indian Super League",
     "date": "2026-05-21",
-    "timestamp": 1779321600000
+    "timestamp": 1779321600000,
+    "goals": {
+      "home": 0,
+      "away": 2
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401873225",
@@ -391787,7 +391937,12 @@
     "awayScore": 1,
     "league": "U.S. Open Cup",
     "date": "2026-09-16",
-    "timestamp": 1789516800000
+    "timestamp": 1789516800000,
+    "goals": {
+      "home": 2,
+      "away": 1
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401876991",
@@ -392037,7 +392192,12 @@
     "awayScore": 0,
     "league": "Russian Premier League",
     "date": "2026-09-17",
-    "timestamp": 1789603200000
+    "timestamp": 1789603200000,
+    "goals": {
+      "home": 0,
+      "away": 0
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401879848",
@@ -392047,7 +392207,12 @@
     "awayScore": 0,
     "league": "Russian Premier League",
     "date": "2026-09-17",
-    "timestamp": 1789603200000
+    "timestamp": 1789603200000,
+    "goals": {
+      "home": 2,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401879853",
@@ -392057,7 +392222,12 @@
     "awayScore": 3,
     "league": "Russian Premier League",
     "date": "2026-09-17",
-    "timestamp": 1789603200000
+    "timestamp": 1789603200000,
+    "goals": {
+      "home": 0,
+      "away": 3
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401879854",
@@ -392067,7 +392237,12 @@
     "awayScore": 3,
     "league": "Russian Premier League",
     "date": "2026-09-17",
-    "timestamp": 1789603200000
+    "timestamp": 1789603200000,
+    "goals": {
+      "home": 1,
+      "away": 3
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401874269",
@@ -392077,7 +392252,12 @@
     "awayScore": 3,
     "league": "U.S. Open Cup",
     "date": "2026-09-17",
-    "timestamp": 1789603200000
+    "timestamp": 1789603200000,
+    "goals": {
+      "home": 0,
+      "away": 3
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401882874",
@@ -392117,7 +392297,12 @@
     "awayScore": 3,
     "league": "Bolivian Liga Profesional",
     "date": "2026-09-18",
-    "timestamp": 1789689600000
+    "timestamp": 1789689600000,
+    "goals": {
+      "home": 1,
+      "away": 3
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401861443",
@@ -392127,7 +392312,12 @@
     "awayScore": 1,
     "league": "Chinese Super League",
     "date": "2026-09-18",
-    "timestamp": 1789689600000
+    "timestamp": 1789689600000,
+    "goals": {
+      "home": 4,
+      "away": 1
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401912526",
@@ -392452,7 +392642,12 @@
     "awayScore": 1,
     "league": "English League One",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 1,
+      "away": 1
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401880846",
@@ -392462,7 +392657,12 @@
     "awayScore": 2,
     "league": "English League One",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 2,
+      "away": 2
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401880848",
@@ -392472,7 +392672,12 @@
     "awayScore": 4,
     "league": "English League One",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 2,
+      "away": 4
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401880847",
@@ -392482,7 +392687,12 @@
     "awayScore": 1,
     "league": "English League One",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 2,
+      "away": 1
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401880845",
@@ -392492,7 +392702,12 @@
     "awayScore": 0,
     "league": "English League One",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 1,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401880844",
@@ -392502,7 +392717,12 @@
     "awayScore": 1,
     "league": "English League One",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 0,
+      "away": 1
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401880843",
@@ -392512,7 +392732,12 @@
     "awayScore": 1,
     "league": "English League One",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 1,
+      "away": 1
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401880842",
@@ -392522,7 +392747,12 @@
     "awayScore": 2,
     "league": "English League One",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 0,
+      "away": 2
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401880841",
@@ -392532,7 +392762,12 @@
     "awayScore": 0,
     "league": "English League One",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 2,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401880840",
@@ -392542,7 +392777,12 @@
     "awayScore": 0,
     "league": "English League One",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 0,
+      "away": 0
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401880839",
@@ -392552,7 +392792,12 @@
     "awayScore": 1,
     "league": "English League One",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 0,
+      "away": 1
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401881363",
@@ -392562,7 +392807,12 @@
     "awayScore": 0,
     "league": "English League Two",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 2,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401881361",
@@ -392572,7 +392822,12 @@
     "awayScore": 0,
     "league": "English League Two",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 2,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401881372",
@@ -392582,7 +392837,12 @@
     "awayScore": 0,
     "league": "English League Two",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 0,
+      "away": 0
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401881371",
@@ -392592,7 +392852,12 @@
     "awayScore": 1,
     "league": "English League Two",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 3,
+      "away": 1
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401881370",
@@ -392602,7 +392867,12 @@
     "awayScore": 0,
     "league": "English League Two",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 2,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401881369",
@@ -392612,7 +392882,12 @@
     "awayScore": 1,
     "league": "English League Two",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 1,
+      "away": 1
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401881368",
@@ -392622,7 +392897,12 @@
     "awayScore": 1,
     "league": "English League Two",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 1,
+      "away": 1
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401881367",
@@ -392632,7 +392912,12 @@
     "awayScore": 0,
     "league": "English League Two",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 0,
+      "away": 0
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401881366",
@@ -392642,7 +392927,12 @@
     "awayScore": 0,
     "league": "English League Two",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 3,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401881365",
@@ -392652,7 +392942,12 @@
     "awayScore": 0,
     "league": "English League Two",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 2,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401881364",
@@ -392662,7 +392957,12 @@
     "awayScore": 1,
     "league": "English League Two",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 0,
+      "away": 1
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401881362",
@@ -392672,7 +392972,12 @@
     "awayScore": 0,
     "league": "English League Two",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 1,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401876744",
@@ -392682,7 +392987,12 @@
     "awayScore": 2,
     "league": "French Ligue 2",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 1,
+      "away": 2
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401876742",
@@ -392692,7 +393002,12 @@
     "awayScore": 3,
     "league": "French Ligue 2",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 1,
+      "away": 3
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401876740",
@@ -392702,7 +393017,12 @@
     "awayScore": 2,
     "league": "French Ligue 2",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 2,
+      "away": 2
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401878566",
@@ -392712,7 +393032,12 @@
     "awayScore": 1,
     "league": "Scottish Championship",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 0,
+      "away": 1
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401878565",
@@ -392722,7 +393047,12 @@
     "awayScore": 2,
     "league": "Scottish Championship",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 2,
+      "away": 2
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401878564",
@@ -392732,7 +393062,12 @@
     "awayScore": 0,
     "league": "Scottish Championship",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 0,
+      "away": 0
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401878562",
@@ -392742,7 +393077,12 @@
     "awayScore": 0,
     "league": "Scottish Championship",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 1,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401888032",
@@ -392752,7 +393092,12 @@
     "awayScore": 2,
     "league": "French Première Ligue",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 2,
+      "away": 2
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401885705",
@@ -392762,7 +393107,12 @@
     "awayScore": 2,
     "league": "French Première Ligue",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 0,
+      "away": 2
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401885665",
@@ -392772,7 +393122,12 @@
     "awayScore": 0,
     "league": "French Première Ligue",
     "date": "2026-09-19",
-    "timestamp": 1789776000000
+    "timestamp": 1789776000000,
+    "goals": {
+      "home": 0,
+      "away": 0
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401876973",
@@ -395017,7 +395372,12 @@
     "awayScore": 4,
     "league": "Italian Serie B",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 1,
+      "away": 4
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401899615",
@@ -395027,7 +395387,12 @@
     "awayScore": 1,
     "league": "Italian Serie B",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 2,
+      "away": 1
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401899613",
@@ -395037,7 +395402,12 @@
     "awayScore": 2,
     "league": "Italian Serie B",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 2,
+      "away": 2
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401899612",
@@ -395047,7 +395417,12 @@
     "awayScore": 1,
     "league": "Italian Serie B",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 2,
+      "away": 1
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401888665",
@@ -395057,7 +395432,12 @@
     "awayScore": 3,
     "league": "Paraguayan Primera División",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 0,
+      "away": 3
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401888594",
@@ -395067,7 +395447,12 @@
     "awayScore": 0,
     "league": "Paraguayan Primera División",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 1,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401903322",
@@ -395077,7 +395462,12 @@
     "awayScore": 1,
     "league": "Venezuelan Primera División",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 1,
+      "away": 1
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401903319",
@@ -395087,7 +395477,12 @@
     "awayScore": 3,
     "league": "Venezuelan Primera División",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 1,
+      "away": 3
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401903321",
@@ -395097,7 +395492,12 @@
     "awayScore": 1,
     "league": "Venezuelan Primera División",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 1,
+      "away": 1
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401902038",
@@ -395107,7 +395507,12 @@
     "awayScore": 0,
     "league": "South African Premiership",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 0,
+      "away": 0
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401902034",
@@ -395117,7 +395522,12 @@
     "awayScore": 2,
     "league": "South African Premiership",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 0,
+      "away": 2
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401902037",
@@ -395127,7 +395537,12 @@
     "awayScore": 1,
     "league": "South African Premiership",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 1,
+      "away": 1
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401902033",
@@ -395137,7 +395552,12 @@
     "awayScore": 1,
     "league": "South African Premiership",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 0,
+      "away": 1
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401902910",
@@ -395147,7 +395567,12 @@
     "awayScore": 1,
     "league": "English Women's Super League",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 1,
+      "away": 1
+    },
+    "actualWinner": "DRAW"
   },
   {
     "id": "401902909",
@@ -395157,7 +395582,12 @@
     "awayScore": 7,
     "league": "English Women's Super League",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 0,
+      "away": 7
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401902908",
@@ -395167,7 +395597,12 @@
     "awayScore": 1,
     "league": "English Women's Super League",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 0,
+      "away": 1
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401882514",
@@ -395177,7 +395612,12 @@
     "awayScore": 3,
     "league": "Spanish Liga F",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 1,
+      "away": 3
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401882511",
@@ -395187,7 +395627,12 @@
     "awayScore": 3,
     "league": "Spanish Liga F",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 0,
+      "away": 3
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401882513",
@@ -395197,7 +395642,12 @@
     "awayScore": 0,
     "league": "Spanish Liga F",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 1,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401854086",
@@ -395207,7 +395657,12 @@
     "awayScore": 2,
     "league": "NWSL",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 1,
+      "away": 2
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401854006",
@@ -395217,7 +395672,12 @@
     "awayScore": 3,
     "league": "NWSL",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 0,
+      "away": 3
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "401854007",
@@ -395227,7 +395687,12 @@
     "awayScore": 0,
     "league": "NWSL",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 2,
+      "away": 0
+    },
+    "actualWinner": "HOME"
   },
   {
     "id": "401854008",
@@ -395237,7 +395702,12 @@
     "awayScore": 3,
     "league": "NWSL",
     "date": "2026-09-20",
-    "timestamp": 1789862400000
+    "timestamp": 1789862400000,
+    "goals": {
+      "home": 0,
+      "away": 3
+    },
+    "actualWinner": "AWAY"
   },
   {
     "id": "761822",
@@ -395463,5 +395933,25 @@
       "away": 1
     },
     "actualWinner": "DRAW"
+  },
+  {
+    "id": "401861050",
+    "home": "Armenia",
+    "away": "Latvia",
+    "homeScore": 2,
+    "awayScore": 0,
+    "league": "UEFA Nations League",
+    "date": "2026-09-25",
+    "timestamp": 1790294400000
+  },
+  {
+    "id": "401861049",
+    "home": "Georgia",
+    "away": "Northern Ireland",
+    "homeScore": 0,
+    "awayScore": 1,
+    "league": "UEFA Nations League",
+    "date": "2026-09-25",
+    "timestamp": 1790294400000
   }
 ]
