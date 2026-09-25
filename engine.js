@@ -1912,26 +1912,7 @@ class SoccerEngine {
       pick = 'AWAY';
     }
 
-    // 8. Projected Most Likely Scoreline (Consistent with Directional Mode & xG)
-    // Sort scoreline candidates by probability
-    scorelineMatrix.sort((a, b) => b.prob - a.prob);
-
-    let candidateScore = scorelineMatrix[0];
-    // If the model picked HOME win with significant edge, select highest probability HOME scoreline
-    if (pick === 'HOME' && candidateScore.homeGoals <= candidateScore.awayGoals) {
-      const homeWinScore = scorelineMatrix.find(s => s.homeGoals > s.awayGoals);
-      if (homeWinScore) candidateScore = homeWinScore;
-    } else if (pick === 'AWAY' && candidateScore.awayGoals <= candidateScore.homeGoals) {
-      const awayWinScore = scorelineMatrix.find(s => s.awayGoals > s.homeGoals);
-      if (awayWinScore) candidateScore = awayWinScore;
-    } else if (pick === 'DRAW' && candidateScore.homeGoals !== candidateScore.awayGoals) {
-      const drawScore = scorelineMatrix.find(s => s.homeGoals === s.awayGoals);
-      if (drawScore) candidateScore = drawScore;
-    }
-
-    const mostLikelyScore = `${candidateScore.homeGoals}-${candidateScore.awayGoals}`;
-
-    // 8.1 Dedicated Score Super Model (Top Scorelines & Derivative Markets)
+    // 8. Dedicated Score Super Model (Top Scorelines & Derivative Markets)
     const sortedScorelines = [...scorelineMatrix].sort((a, b) => b.prob - a.prob);
     const matrixSum = Math.max(0.0001, sortedScorelines.reduce((acc, s) => acc + s.prob, 0));
 
@@ -2007,6 +1988,51 @@ class SoccerEngine {
       bestGoalBand = '4+ Goals';
       bestBandProb = band4plus;
     }
+
+    // 8.1 Empirical Data-Grounded Scoreline Candidate Selection
+    // Eliminates arbitrary assumptions: respects Under/Over 2.5, clean-sheet statistics, and dynamic squad factors
+    let candidateScore = sortedScorelines[0];
+    const isUnder25 = finalPUnder25 >= 50.0;
+    const isHighCleanSheetHome = pHomeCleanSheet >= 30.0 || weakerXg <= 0.95;
+    const isHighCleanSheetAway = pAwayCleanSheet >= 28.0 || weakerXg <= 0.90;
+
+    if (pick === 'HOME') {
+      const homeCandidates = sortedScorelines.filter(s => s.homeGoals > s.awayGoals);
+      if (homeCandidates.length > 0) {
+        if (isUnder25 || isHighCleanSheetHome) {
+          // In Under 2.5 or clean-sheet conditions, prioritize shutouts 1-0 or 2-0
+          const shutout = homeCandidates.find(s => s.awayGoals === 0 && (s.homeGoals === 1 || s.homeGoals === 2));
+          if (shutout && (shutout.prob >= homeCandidates[0].prob * 0.80 || isUnder25)) {
+            candidateScore = shutout;
+          } else {
+            candidateScore = homeCandidates[0];
+          }
+        } else {
+          candidateScore = homeCandidates[0];
+        }
+      }
+    } else if (pick === 'AWAY') {
+      const awayCandidates = sortedScorelines.filter(s => s.awayGoals > s.homeGoals);
+      if (awayCandidates.length > 0) {
+        if (isUnder25 || isHighCleanSheetAway) {
+          const shutout = awayCandidates.find(s => s.homeGoals === 0 && (s.awayGoals === 1 || s.awayGoals === 2));
+          if (shutout && (shutout.prob >= awayCandidates[0].prob * 0.80 || isUnder25)) {
+            candidateScore = shutout;
+          } else {
+            candidateScore = awayCandidates[0];
+          }
+        } else {
+          candidateScore = awayCandidates[0];
+        }
+      }
+    } else if (pick === 'DRAW') {
+      const drawCandidates = sortedScorelines.filter(s => s.homeGoals === s.awayGoals);
+      if (drawCandidates.length > 0) {
+        candidateScore = drawCandidates[0];
+      }
+    }
+
+    const mostLikelyScore = `${candidateScore.homeGoals}-${candidateScore.awayGoals}`;
 
     const scoreModel = {
       projectedScore: mostLikelyScore,
@@ -9293,24 +9319,56 @@ Provide a crisp 3-bullet assessment:
           }
         }
 
-        // 2. Missing Star / Goalscorer check
+        // 2. Dynamic Squad Goalscorer & Attack Threat check (top scorers starting vs absent)
+        const startingGoalLeaders = [];
+        const missingGoalLeaders = [];
+
         if (Array.isArray(rawLeaders) && rawLeaders.length > 0) {
           const teamLeaderEntry = rawLeaders.find(tl => tl.team?.displayName?.toLowerCase().includes(teamName.toLowerCase()) || teamName.toLowerCase().includes(tl.team?.displayName?.toLowerCase() || '---'));
           if (teamLeaderEntry && teamLeaderEntry.leaders) {
-            const shotOrGoalLeader = teamLeaderEntry.leaders.find(l => l.name === 'totalGoals' || l.name === 'totalShots');
-            const topAthlete = shotOrGoalLeader?.leaders?.[0]?.athlete;
-            if (topAthlete) {
-              const topAthleteName = topAthlete.displayName || topAthlete.fullName;
-              const isStarter = starters.some(s => s.name?.toLowerCase().includes(topAthleteName.toLowerCase()) || topAthleteName.toLowerCase().includes(s.name?.toLowerCase() || '---') || (s.id && s.id === topAthlete.id));
-              if (!isStarter) {
-                missingStar = true;
-                strength -= 14;
-                intensityMultiplier *= 0.82;
-                const isBenched = substitutes.some(s => s.name?.toLowerCase().includes(topAthleteName.toLowerCase()) || (s.id && s.id === topAthlete.id));
-                notes.push(`${teamName} top attacker ${topAthleteName} ${isBenched ? 'benched' : 'absent'} (-18% attack intensity)`);
+            const goalLeaders = teamLeaderEntry.leaders.filter(l => l.name === 'totalGoals' || l.name === 'goals' || l.name === 'totalShots' || l.name === 'shots');
+            for (const gl of goalLeaders) {
+              for (const entry of (gl.leaders || []).slice(0, 3)) {
+                const ath = entry.athlete;
+                if (!ath) continue;
+                const athName = ath.displayName || ath.fullName;
+                if (!athName) continue;
+                const isStarter = starters.some(s => s.name?.toLowerCase().includes(athName.toLowerCase()) || athName.toLowerCase().includes(s.name?.toLowerCase() || '---') || (s.id && s.id === ath.id));
+                if (isStarter) {
+                  if (!startingGoalLeaders.some(a => a.id === ath.id || a.name === athName)) {
+                    startingGoalLeaders.push({ id: ath.id, name: athName, val: entry.value || entry.displayValue });
+                  }
+                } else {
+                  if (!missingGoalLeaders.some(a => a.id === ath.id || a.name === athName)) {
+                    const isBenched = substitutes.some(s => s.name?.toLowerCase().includes(athName.toLowerCase()) || (s.id && s.id === ath.id));
+                    missingGoalLeaders.push({ id: ath.id, name: athName, isBenched });
+                  }
+                }
               }
             }
           }
+        }
+
+        const startingForwards = starters.filter(s => s.posAbbr === 'F' || (s.position && s.position.toLowerCase().includes('forward')));
+
+        if (startingGoalLeaders.length >= 2) {
+          // Dynamic squad firepower: multiple top goalscorers confirmed in Starting XI
+          intensityMultiplier *= 1.12;
+          strength += 6;
+          notes.push(`${teamName} starting dynamic goalscoring leaders: ${startingGoalLeaders.map(a => a.name).join(', ')} (+12% attack intensity)`);
+        } else if (startingGoalLeaders.length === 1) {
+          intensityMultiplier *= 1.05;
+          strength += 3;
+          notes.push(`${teamName} starting top marksman ${startingGoalLeaders[0].name} (+5% attack intensity)`);
+        } else if (missingGoalLeaders.length > 0) {
+          missingStar = true;
+          strength -= 14;
+          intensityMultiplier *= 0.82;
+          const topMissing = missingGoalLeaders[0];
+          notes.push(`${teamName} top attacker ${topMissing.name} ${topMissing.isBenched ? 'benched' : 'absent'} (-18% attack intensity)`);
+        } else if (startingForwards.length >= 3) {
+          intensityMultiplier *= 1.04;
+          notes.push(`${teamName} deploying 3-forward attacking formation (${startingForwards.length} forwards)`);
         }
 
         // 3. Heavy squad rotation (reserves/youth starters with high squad numbers >= 35)
@@ -9813,6 +9871,10 @@ Output format: {"home": 45.5, "draw": 25.5, "away": 29.0, "reason": "Home team r
           match.predictedWinner = recalibrated.calibratedWinner;
           match.smartMarket = recalibrated.calibratedSmartMarket;
           match.kellyStake = recalibrated.calibratedKellyStake;
+          match.mostLikelyScore = newProbs.mostLikelyScore;
+          match.scoreModel = newProbs.scoreModel;
+          match.xG = newProbs.xG;
+          match.lambdaMu = `${newProbs.lambda} / ${newProbs.mu}`;
           if (newProbs.binaryModel) {
             match.binaryModel = newProbs.binaryModel;
           }

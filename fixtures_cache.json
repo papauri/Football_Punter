@@ -6574,7 +6574,7 @@
       "utcDate": "2026-09-25T16:00Z",
       "timestamp": 1790352000000,
       "goals": {
-        "home": 2,
+        "home": 0,
         "away": 0
       },
       "odds": {
@@ -6608,7 +6608,7 @@
         "ITV"
       ],
       "liveMinute": "77'",
-      "liveScore": "2-0",
+      "liveScore": "0-0",
       "inPlayPrediction": {
         "minute": 77,
         "minuteDisplay": "77'",
@@ -10564,5 +10564,5 @@
       "inPlayPrediction": null
     }
   ],
-  "cachedAt": "2026-09-25T17:34:34.484Z"
+  "cachedAt": "2026-09-25T17:49:40.226Z"
 }
