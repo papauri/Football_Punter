@@ -34,8 +34,10 @@
       "temperature": 1.3,
       "maxScorelineSim": 10
     },
-    "isHit": null,
-    "resolvedAt": null
+    "isHit": false,
+    "resolvedAt": "2026-09-25T20:56:51.506Z",
+    "actualScore": "0-2",
+    "actualWinner": "AWAY"
   },
   {
     "id": "401861056",
@@ -72,8 +74,10 @@
       "temperature": 1.3,
       "maxScorelineSim": 10
     },
-    "isHit": null,
-    "resolvedAt": null
+    "isHit": true,
+    "resolvedAt": "2026-09-25T20:56:51.506Z",
+    "actualScore": "2-1",
+    "actualWinner": "HOME"
   },
   {
     "id": "401861055",
@@ -110,8 +114,10 @@
       "temperature": 1.3,
       "maxScorelineSim": 10
     },
-    "isHit": null,
-    "resolvedAt": null
+    "isHit": false,
+    "resolvedAt": "2026-09-25T20:56:51.506Z",
+    "actualScore": "0-0",
+    "actualWinner": "DRAW"
   },
   {
     "id": "401861051",
@@ -148,8 +154,10 @@
       "temperature": 1.3,
       "maxScorelineSim": 10
     },
-    "isHit": null,
-    "resolvedAt": null
+    "isHit": true,
+    "resolvedAt": "2026-09-25T20:56:51.506Z",
+    "actualScore": "2-1",
+    "actualWinner": "HOME"
   },
   {
     "id": "401861053",
@@ -186,8 +194,10 @@
       "temperature": 1.3,
       "maxScorelineSim": 10
     },
-    "isHit": null,
-    "resolvedAt": null
+    "isHit": true,
+    "resolvedAt": "2026-09-25T20:56:51.506Z",
+    "actualScore": "0-1",
+    "actualWinner": "AWAY"
   },
   {
     "id": "401861054",
@@ -224,8 +234,10 @@
       "temperature": 1.3,
       "maxScorelineSim": 10
     },
-    "isHit": null,
-    "resolvedAt": null
+    "isHit": false,
+    "resolvedAt": "2026-09-25T20:56:51.506Z",
+    "actualScore": "0-1",
+    "actualWinner": "AWAY"
   },
   {
     "id": "401861047",
@@ -249,9 +261,9 @@
       "pick": "PASS",
       "label": "Pass / Entropy Floor"
     },
-    "isHit": true,
-    "resolvedAt": "2026-09-25T15:44:17.015Z",
-    "actualScore": "1-1",
-    "actualWinner": "DRAW"
+    "isHit": false,
+    "resolvedAt": "2026-09-25T20:55:37.427Z",
+    "actualScore": "1-2",
+    "actualWinner": "AWAY"
   }
 ]

@@ -284,6 +284,15 @@ function negativeBinomialPmf(k, mu, r = 4.5) {
   return comb * Math.pow(p, r) * Math.pow(q, k);
 }
 
+// True only for an explicit full-time status from a feed (not a live minute like "51'")
+function isFinalMatchStatus(status) {
+  const s = String(status || '').trim();
+  const l = s.toLowerCase();
+  return s === 'FT' || s.includes('FT') || s.startsWith('STATUS_FINAL') || s === 'STATUS_FULL_TIME' ||
+    l === 'final' || l.includes('full time') || l.includes('full-time') || l === 'finished' || l === 'ended' ||
+    l === 'aet' || l === 'pen' || l === 'pens' || l.includes('after extra time') || l.includes('penalties');
+}
+
 // Dixon-Coles tau adjustment function for low scorelines (0-0, 1-0, 0-1, 1-1)
 function dixonColesTau(x, y, lambda, mu, rho) {
   if (x === 0 && y === 0) {
@@ -2721,14 +2730,10 @@ class SoccerEngine {
     const statusStr = String(raw.status || '').trim();
     const statusLower = statusStr.toLowerCase();
 
+    const hasFinalStatus = isFinalMatchStatus(statusStr);
+
     const isExplicitlyCompleted = (
-      statusStr === 'FT' || 
-      statusStr === 'STATUS_FULL_TIME' || 
-      statusStr === 'STATUS_FINAL' || 
-      statusStr === 'Final' || 
-      statusStr.includes('FT') || 
-      statusStr.includes('Full Time') || 
-      statusStr === 'FINISHED' ||
+      hasFinalStatus ||
       (raw.isCompleted === true && raw.actualScore != null) ||
       (isBeyondMatchDuration && !statusLower.includes('pen') && !statusLower.includes('et') && !statusLower.includes('extra'))
     );
@@ -2743,6 +2748,9 @@ class SoccerEngine {
     );
 
     const isCompleted = Boolean(isExplicitlyCompleted);
+    // Completed only because >130 min elapsed (feed went stale mid-game): the last seen score is
+    // NOT a final score, so it must not be graded as a hit/miss until a real full-time result arrives.
+    const isProvisionalResult = isCompleted && !hasFinalStatus;
 
     // A match can ONLY be Live if within the 0 to 130 minutes window or explicitly verified with a live clock
     const isLive = !isCompleted && !isScheduled && (
@@ -2774,8 +2782,8 @@ class SoccerEngine {
     const broadcast = raw.broadcast || this.getDefaultBroadcastForLeague(league);
     const channels = raw.channels || (broadcast ? broadcast.split(',').map(s => s.trim()).filter(Boolean) : this.getDefaultChannelsForLeague(league));
 
-    const hG = isCompleted ? (raw.homeScore ?? raw.goals?.home ?? (raw.actualScore ? parseInt(raw.actualScore.split('-')[0], 10) : null)) : null;
-    const aG = isCompleted ? (raw.awayScore ?? raw.goals?.away ?? (raw.actualScore ? parseInt(raw.actualScore.split('-')[1], 10) : null)) : null;
+    const hG = isCompleted && !isProvisionalResult ? (raw.homeScore ?? raw.goals?.home ?? (raw.actualScore ? parseInt(raw.actualScore.split('-')[0], 10) : null)) : null;
+    const aG = isCompleted && !isProvisionalResult ? (raw.awayScore ?? raw.goals?.away ?? (raw.actualScore ? parseInt(raw.actualScore.split('-')[1], 10) : null)) : null;
     const actualScore = isCompleted && hG != null && aG != null ? `${hG}-${aG}` : null;
     const actualWinner = isCompleted && hG != null && aG != null ? (hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW') : null;
 
@@ -2798,13 +2806,14 @@ class SoccerEngine {
       utcDate: raw.utcDate,
       timestamp: raw.timestamp,
       isCompleted,
+      isProvisionalResult,
       isLive,
       liveMinute,
       liveScore: isLive && liveHomeScore != null && liveAwayScore != null ? `${liveHomeScore}-${liveAwayScore}` : null,
       inPlayPrediction,
       broadcast,
       channels,
-      goals: isCompleted ? (raw.goals || (hG != null && aG != null ? { home: hG, away: aG } : { home: null, away: null })) : (isLive ? { home: liveHomeScore, away: liveAwayScore } : { home: null, away: null }),
+      goals: isCompleted ? (isProvisionalResult ? { home: null, away: null } : (raw.goals || (hG != null && aG != null ? { home: hG, away: aG } : { home: null, away: null }))) : (isLive ? { home: liveHomeScore, away: liveAwayScore } : { home: null, away: null }),
       homeScore: isCompleted ? hG : (isLive ? liveHomeScore : null),
       awayScore: isCompleted ? aG : (isLive ? liveAwayScore : null),
       actualScore,
@@ -3120,7 +3129,7 @@ class SoccerEngine {
       const m = byId.get(id) || completedPool.find(c => c && norm(c.home) === norm(entry.home) && norm(c.away) === norm(entry.away) &&
         String(c.dateIso || c.utcDate || c.date || '').slice(0, 10) === kickoffDay);
       if (!m) continue;
-      const isFT = m.isCompleted || m.status === 'FT' || m.status === 'STATUS_FULL_TIME' || String(m.status || '').includes('Full Time') || m.actualWinner;
+      const isFT = !m.isProvisionalResult && (isFinalMatchStatus(m.status) || (!m.status && m.actualWinner));
       const score = scoreOf(m);
       if (!isFT || !score || Number.isNaN(score.home) || Number.isNaN(score.away)) continue;
       const actualWinner = score.home > score.away ? 'HOME' : score.away > score.home ? 'AWAY' : 'DRAW';
@@ -8999,6 +9008,7 @@ Provide a crisp 3-bullet assessment:
     const localCompleted = (this.todayCompletedMatches || [])
       .concat(this.yesterdayMatches || [])
       .concat((this.matches || []).filter(m => m.isCompleted || m.status === 'FT' || m.actualScore))
+      .filter(m => !m.isProvisionalResult)
       .filter(m => (m.dateIso && m.dateIso.startsWith(dateStr)) || (m.date && m.date.startsWith(dateStr)));
 
     if (localCompleted.length > 0) {
