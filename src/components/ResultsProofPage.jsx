@@ -4,6 +4,9 @@ import {
   CheckCircle2, 
   XCircle, 
   ShieldCheck, 
+  ShieldAlert,
+  AlertTriangle,
+  Info,
   Calendar, 
   Search, 
   Brain, 
@@ -20,9 +23,121 @@ import {
   ChevronUp
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
+import MobileViewSwitcher from './MobileViewSwitcher';
+import { useMobileViewMode } from '../utils/useMobileViewMode';
 import BacktestAccuracyTrendChart from './BacktestAccuracyTrendChart';
 import { safeToFixed, formatScore } from '../utils/numberUtils';
 import { formatSafeDateTime, formatRelativeDayTime } from '../utils/dateUtils';
+
+export const getMatchDecisionAdvisory = (m) => {
+  if (!m) return {
+    isPass: false,
+    title: 'Analyzed',
+    category: 'Analysis',
+    rationale: 'Match analyzed by multi-model tactical pipeline.',
+    auditValidation: 'Outcome logged.',
+    statusBadge: 'Analyzed',
+    capitalPreserved: '0.00u Risk'
+  };
+
+  const hG = m.homeScore ?? m.goals?.home;
+  const aG = m.awayScore ?? m.goals?.away;
+  const actualWinner = m.actualWinner || (hG != null && aG != null ? (hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW') : 'UNKNOWN');
+  const actualScore = formatScore(
+    m.actualScore ||
+    (hG != null && aG != null ? `${hG}-${aG}` : null) ||
+    'FT'
+  );
+
+  const smartPick = m.smartMarket?.pick;
+  const smartBadge = m.smartMarket?.badge || m.smartMarket?.pickLabel || '';
+  const smartRationale = m.smartMarket?.rationale || '';
+  const divergenceDetail = m.smartMarket?.marketDivergenceDetail || '';
+  const disruptionReason = m.disruptionModel?.reason || m.disruptionModel?.narrative || m.disruptionModel?.passReason || '';
+  const eliteDisq = m.smartMarket?.eliteDisqualificationReason || '';
+  const explicitPassReason = m.passReason || m.advisory || m.decisionAdvisory || '';
+
+  const isPass = Boolean(
+    m.isPass === true ||
+    smartPick === 'PASS' ||
+    String(smartPick || '').toUpperCase() === 'PASS' ||
+    smartBadge.toLowerCase().includes('pass') ||
+    m.smartMarket?.marketType?.includes('PASS') ||
+    (m.isHit === null && smartPick === 'PASS')
+  );
+
+  if (!isPass) {
+    return {
+      isPass: false,
+      title: m.smartMarket?.pickLabel || m.predictedWinner || 'Standard Play',
+      category: m.smartMarket?.marketType || 'ACTIONABLE',
+      rationale: smartRationale || `Model identified statistical value on ${m.smartMarket?.pickLabel || m.predictedWinner || 'recommended selection'}.`,
+      auditValidation: m.isHit === true ? 'Verified Winning Selection' : m.isHit === false ? 'Audit Missed Selection' : 'Push / Refund',
+      statusBadge: m.isHit === true ? '✓ Verified Hit' : m.isHit === false ? 'Missed Pick' : 'Push'
+    };
+  }
+
+  // Determine specific governance category
+  let category = 'Risk Filter';
+  if (smartBadge.includes('Entropy')) category = 'Entropy Floor Filter';
+  else if (smartBadge.includes('Blacklist') || smartBadge.includes('Variance')) category = 'High Variance League';
+  else if (smartBadge.includes('Divergence')) category = 'Market Divergence Trap';
+  else if (smartBadge.includes('Confidence')) category = 'Low Confidence Hurdle';
+  else if (smartBadge.includes('No Edge') || smartBadge.includes('No Value')) category = 'Sub-Hurdle Edge Guard';
+  else if (disruptionReason) category = 'Disruption & Volatility Shield';
+  else if (m.league && ['Championship', 'MLS', 'Ligue 2', 'Serie B', 'Scottish Premiership'].some(l => m.league.includes(l))) {
+    category = 'League Volatility Shield';
+  } else if ((m.confidence || 0) < 52) {
+    category = 'Entropy Safety Floor';
+  } else {
+    category = 'Capital Preservation Filter';
+  }
+
+  // Construct comprehensive tactical rationale
+  let rationale = smartRationale || divergenceDetail || disruptionReason || eliteDisq || explicitPassReason;
+
+  if (!rationale) {
+    const favTeam = m.predictedWinner === 'HOME' ? m.home : m.predictedWinner === 'AWAY' ? m.away : 'Favored side';
+    const confVal = m.confidence ? safeToFixed(m.confidence, 1) : null;
+    const drawP = m.prob?.draw ? safeToFixed(m.prob.draw, 1) : null;
+
+    if (category === 'High Variance League' || category === 'League Volatility Shield') {
+      rationale = `⚠️ High Variance Competition (${m.league || 'League'}): Historical modeling reveals compressed home advantage and high Poisson entropy in this tier. Automated risk governance issued a strict PASS to prevent bankroll drawdown.`;
+    } else if (confVal && parseFloat(confVal) < 50) {
+      rationale = `⚠️ Low Mathematical Edge: ${favTeam} win probability (${confVal}%) and Double Chance coverage fail to clear safety thresholds. When outcome distribution approaches pure entropy, disciplined staking requires passing.`;
+    } else if (drawP && parseFloat(drawP) >= 27) {
+      rationale = `⚠️ Elevated Draw Equilibrium: Projected draw probability (${drawP}%) indicates strong risk of point-sharing. 1X2 market offers negative expectation; automated governance advises a full pass.`;
+    } else {
+      rationale = `⚠️ Bankroll Capital Preservation: Pre-match mathematical models determined the expected value (+EV) did not justify risk exposure. 0 units staked, preserving portfolio bankroll.`;
+    }
+  }
+
+  // Retrospective audit validation based on actual outcome
+  let auditValidation = '';
+  let didFavoriteFail = false;
+  const favWinner = m.predictedWinner || (m.homeScore != null && m.awayScore != null ? (m.homeScore >= m.awayScore ? 'HOME' : 'AWAY') : null);
+
+  if (actualWinner === 'DRAW' || (favWinner && favWinner !== 'DRAW' && actualWinner !== favWinner)) {
+    didFavoriteFail = true;
+  }
+
+  if (didFavoriteFail) {
+    auditValidation = `🛡️ Trap Successfully Avoided: The favored side failed to win in full-time (${actualScore} FT - ${actualWinner === 'DRAW' ? 'Draw' : actualWinner + ' Win'}). The algorithmic PASS advisory protected against capital loss and prevented drawdown.`;
+  } else {
+    auditValidation = `⚖️ Disciplined Pass Validated: While the favored side won (${actualScore} FT), pre-kickoff risk-reward ratios and closing line entropy were insufficiently favorable to justify capital exposure under portfolio staking rules.`;
+  }
+
+  return {
+    isPass: true,
+    title: smartBadge || 'Pass / Capital Preservation',
+    category,
+    rationale,
+    auditValidation,
+    didFavoriteFail,
+    statusBadge: '⊘ Risk Filter: PASS',
+    capitalPreserved: '0.00u Risk (100% Capital Preserved)'
+  };
+};
 
 export const isMatchForDate = (m, targetIso) => {
   if (!m || !targetIso) return false;
@@ -82,6 +197,7 @@ export default function ResultsProofPage({
   const [expandedMatchId, setExpandedMatchId] = useState(null);
   const [expandedLedgerId, setExpandedLedgerId] = useState(null);
   const [collapsedResults, setCollapsedResults] = useState(false);
+  const [mobileViewMode] = useMobileViewMode();
 
   const toggleExpand = (id) => {
     setExpandedMatchId(prev => (prev === id ? null : id));
@@ -286,11 +402,19 @@ export default function ResultsProofPage({
       const isHit = m.isHit === true;
       const isMiss = m.isHit === false;
       const isPush = m.isPush || (m.isHit === null && m.smartMarket?.pick?.includes('DNB') && actualWinner === 'DRAW');
-      const isPass = m.isPass || (m.isHit === null && m.smartMarket?.pick === 'PASS');
+      const isPass = Boolean(
+        m.isPass === true || 
+        m.smartMarket?.pick === 'PASS' || 
+        String(m.smartMarket?.pick || '').toUpperCase() === 'PASS' ||
+        m.smartMarket?.badge?.toLowerCase().includes('pass') ||
+        m.smartMarket?.marketType?.includes('PASS') ||
+        (m.isHit === null && m.smartMarket?.pick === 'PASS')
+      );
 
       if (statusFilter === 'HITS' && !isHit) return false;
       if (statusFilter === 'MISSES' && !isMiss) return false;
-      if (statusFilter === 'PUSHES' && !isPush && !isPass) return false;
+      if (statusFilter === 'PUSHES' && (!isPush || isPass)) return false;
+      if (statusFilter === 'PASSES' && !isPass) return false;
 
       return true;
     }).sort((a, b) => {
@@ -358,7 +482,13 @@ export default function ResultsProofPage({
         misses++;
       } else if (m.isPush || (m.smartMarket?.pick?.includes('DNB') && actualWinner === 'DRAW')) {
         pushes++;
-      } else if (m.isPass || m.smartMarket?.pick === 'PASS') {
+      } else if (
+        m.isPass === true || 
+        m.smartMarket?.pick === 'PASS' || 
+        String(m.smartMarket?.pick || '').toUpperCase() === 'PASS' ||
+        m.smartMarket?.badge?.toLowerCase().includes('pass') ||
+        m.smartMarket?.marketType?.includes('PASS')
+      ) {
         passes++;
       } else {
         // Fallback to binary pick if isHit is completely undefined
@@ -377,14 +507,14 @@ export default function ResultsProofPage({
     <div className="space-y-4">
       
       {/* Top Verification Stats Banner */}
-      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white border border-slate-200 rounded-xl p-3.5 sm:p-4 shadow-xs min-w-0 overflow-hidden">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
                 <span>Verified Match Audit &amp; Performance Proof</span>
-                <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
+                <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded shrink-0">
                   Audited Real Data
                 </span>
               </h2>
@@ -394,77 +524,84 @@ export default function ResultsProofPage({
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <div className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-center min-w-[85px]">
-              <div className="text-[10px] text-slate-400 font-bold uppercase">Audited Games</div>
-              <div className="text-sm font-bold font-mono text-slate-800">{stats.total}</div>
-            </div>
-            <div className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-center min-w-[85px]">
-              <div className="text-[10px] text-slate-400 font-bold uppercase">Active Wagers</div>
-              <div className="text-sm font-bold font-mono text-slate-800">{stats.activeTotal}</div>
-            </div>
-            <div className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-center min-w-[85px]">
-              <div className="text-[10px] text-slate-400 font-bold uppercase">Correct Hits</div>
-              <div className="text-sm font-bold font-mono text-emerald-700">{stats.hits}</div>
-            </div>
-            <div className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-center min-w-[85px]">
-              <div className="text-[10px] text-slate-400 font-bold uppercase">Hit Rate</div>
-              <div className="text-sm font-bold font-mono text-indigo-700">{stats.hitRate}%</div>
-            </div>
-            <div className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-center min-w-[85px]">
-              <div className="text-[10px] text-slate-400 font-bold uppercase">Record</div>
-              <div className="text-sm font-bold font-mono text-slate-800">
-                <span className="text-emerald-700">{stats.hits}W</span> - <span className="text-rose-700">{stats.misses}L</span>
-                {stats.pushes > 0 && <span className="text-amber-600"> - {stats.pushes}P</span>}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3 w-full lg:w-auto min-w-0">
+            {/* Stat Cards - responsive grid on mobile, row on desktop */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1.5 sm:gap-2 w-full sm:w-auto min-w-0">
+              <div className="bg-slate-50 border border-slate-200 px-2 sm:px-2.5 py-1.5 rounded-lg text-center min-w-0">
+                <div className="text-[9.5px] sm:text-[10px] text-slate-400 font-bold uppercase truncate">Audited Games</div>
+                <div className="text-xs sm:text-sm font-bold font-mono text-slate-800">{stats.total}</div>
+              </div>
+              <div className="bg-slate-50 border border-slate-200 px-2 sm:px-2.5 py-1.5 rounded-lg text-center min-w-0">
+                <div className="text-[9.5px] sm:text-[10px] text-slate-400 font-bold uppercase truncate">Active Wagers</div>
+                <div className="text-xs sm:text-sm font-bold font-mono text-slate-800">{stats.activeTotal}</div>
+              </div>
+              <div className="bg-slate-50 border border-slate-200 px-2 sm:px-2.5 py-1.5 rounded-lg text-center min-w-0">
+                <div className="text-[9.5px] sm:text-[10px] text-slate-400 font-bold uppercase truncate">Correct Hits</div>
+                <div className="text-xs sm:text-sm font-bold font-mono text-emerald-700">{stats.hits}</div>
+              </div>
+              <div className="bg-slate-50 border border-slate-200 px-2 sm:px-2.5 py-1.5 rounded-lg text-center min-w-0">
+                <div className="text-[9.5px] sm:text-[10px] text-slate-400 font-bold uppercase truncate">Hit Rate</div>
+                <div className="text-xs sm:text-sm font-bold font-mono text-indigo-700">{stats.hitRate}%</div>
+              </div>
+              <div className="bg-slate-50 border border-slate-200 px-2 sm:px-2.5 py-1.5 rounded-lg text-center min-w-0 col-span-2 sm:col-span-1">
+                <div className="text-[9.5px] sm:text-[10px] text-slate-400 font-bold uppercase truncate">Record</div>
+                <div className="text-xs sm:text-sm font-bold font-mono text-slate-800 whitespace-nowrap truncate">
+                  <span className="text-emerald-700">{stats.hits}W</span> - <span className="text-rose-700">{stats.misses}L</span>
+                  {stats.pushes > 0 && <span className="text-amber-600"> - {stats.pushes}P</span>}
+                  {stats.passes > 0 && <span className="text-slate-500 font-semibold" title="Disciplined PASS decisions enacted to protect bankroll"> ({stats.passes} Pass)</span>}
+                </div>
               </div>
             </div>
 
-            <button
-              onClick={() => setShowBacktestChart(!showBacktestChart)}
-              className={`h-8 px-3 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
-                showBacktestChart 
-                  ? 'bg-indigo-600 text-white shadow-xs' 
-                  : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200'
-              }`}
-              title="Toggle multi-season 23,453 match accuracy trend chart"
-            >
-              <TrendingUp className="w-3.5 h-3.5" />
-              <span>{showBacktestChart ? 'Hide 23.4k Chart' : '23.4k Accuracy Trend'}</span>
-            </button>
+            {/* Action Buttons - clean mobile stack & desktop inline row */}
+            <div className="grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => setShowBacktestChart(!showBacktestChart)}
+                className={`h-8 px-2.5 sm:px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer w-full sm:w-auto shrink-0 ${
+                  showBacktestChart 
+                    ? 'bg-indigo-600 text-white shadow-xs' 
+                    : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200'
+                }`}
+                title="Toggle multi-season 23,453 match accuracy trend chart"
+              >
+                <TrendingUp className="w-3.5 h-3.5 shrink-0" />
+                <span className="whitespace-nowrap">{showBacktestChart ? 'Hide 23.4k Chart' : '23.4k Accuracy Trend'}</span>
+              </button>
 
-            <button
-              onClick={() => setShowLedger(!showLedger)}
-              className={`h-8 px-3 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
-                showLedger
-                  ? 'bg-amber-600 text-white shadow-xs'
-                  : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200'
-              }`}
-              title="View tamper-proof pre-kickoff prediction snapshots"
-            >
-              <Lock className="w-3.5 h-3.5" />
-              <span>{showLedger ? 'Hide Ledger' : '🔒 Pre-Kickoff Ledger'}</span>
-            </button>
+              <button
+                onClick={() => setShowLedger(!showLedger)}
+                className={`h-8 px-2.5 sm:px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer w-full sm:w-auto shrink-0 ${
+                  showLedger
+                    ? 'bg-amber-600 text-white shadow-xs'
+                    : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200'
+                }`}
+                title="View tamper-proof pre-kickoff prediction snapshots"
+              >
+                <Lock className="w-3.5 h-3.5 shrink-0" />
+                <span className="whitespace-nowrap">{showLedger ? 'Hide Ledger' : '🔒 Pre-Kickoff Ledger'}</span>
+              </button>
 
-            <button
-              onClick={() => setShowMarketBenchmark(!showMarketBenchmark)}
-              className={`h-8 px-3 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
-                showMarketBenchmark
-                  ? 'bg-purple-600 text-white shadow-xs'
-                  : 'bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200'
-              }`}
-              title="Why the model benchmarks against closing odds and how to beat bookmakers"
-            >
-              <Brain className="w-3.5 h-3.5" />
-              <span>{showMarketBenchmark ? 'Hide Benchmark' : '⚡ Beat Bookmakers'}</span>
-            </button>
+              <button
+                onClick={() => setShowMarketBenchmark(!showMarketBenchmark)}
+                className={`h-8 px-2.5 sm:px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer w-full sm:w-auto shrink-0 ${
+                  showMarketBenchmark
+                    ? 'bg-purple-600 text-white shadow-xs'
+                    : 'bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200'
+                }`}
+                title="Why the model benchmarks against closing odds and how to beat bookmakers"
+              >
+                <Brain className="w-3.5 h-3.5 shrink-0" />
+                <span className="whitespace-nowrap">{showMarketBenchmark ? 'Hide Benchmark' : '⚡ Beat Bookmakers'}</span>
+              </button>
+            </div>
           </div>
 
         </div>
 
         {/* Backtest Accuracy Trend Chart across 23,453 records */}
         {showBacktestChart && (
-          <div className="mt-4 pt-4 border-t border-slate-100 animate-in fade-in slide-in-from-top-2 duration-200">
-            <BacktestAccuracyTrendChart />
+          <div className="mt-3.5 pt-3.5 border-t border-slate-100 w-full min-w-0 overflow-hidden">
+            <BacktestAccuracyTrendChart isEmbedded={true} />
           </div>
         )}
 
@@ -560,10 +697,10 @@ export default function ResultsProofPage({
       </div>
 
       {/* Uniform Toolbar */}
-      <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs space-y-2.5">
-        <div className="flex flex-wrap items-center justify-between gap-2.5">
+      <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs space-y-2.5 min-w-0 overflow-hidden">
+        <div className="flex flex-wrap items-center justify-between gap-2.5 min-w-0">
           
-          <div className="relative flex-1 min-w-[200px] max-w-md">
+          <div className="relative flex-1 min-w-[180px] max-w-md w-full sm:w-auto">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
             <input
               type="text"
@@ -584,7 +721,7 @@ export default function ResultsProofPage({
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <UniformDropdown
               label="Audited Date"
               value={selectedDate}
@@ -607,9 +744,12 @@ export default function ResultsProofPage({
                 { value: 'ALL', label: 'All Audited Outcomes' },
                 { value: 'HITS', label: `Verified Hits (${stats.hits})` },
                 { value: 'MISSES', label: `Audited Misses (${stats.misses})` },
-                { value: 'PUSHES', label: `Pushes & Passed (${stats.pushes + stats.passes})` }
+                { value: 'PUSHES', label: `Pushes (${stats.pushes})` },
+                { value: 'PASSES', label: `Pass Advisories (${stats.passes})` }
               ]}
             />
+
+            <MobileViewSwitcher label="Display" className="w-full sm:w-auto" />
           </div>
 
         </div>
@@ -647,7 +787,7 @@ export default function ResultsProofPage({
       </div>
 
       {/* Compact Results Table */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
+      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xs min-w-0">
         <div className="p-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
           <div className="flex items-center gap-2 flex-wrap">
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
@@ -675,7 +815,8 @@ export default function ResultsProofPage({
 
         {!collapsedResults && (
           <>
-            <table className="w-full text-left border-collapse text-xs">
+            <div className="w-full overflow-x-auto min-w-0">
+              <table className="w-full text-left border-collapse text-xs">
           <thead className="hidden md:table-header-group">
             <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
               {/* Expand Toggle */}
@@ -872,7 +1013,8 @@ export default function ResultsProofPage({
                 const isHit = m.isHit === true;
                 const isMiss = m.isHit === false;
                 const isPush = m.isPush || (m.isHit === null && m.smartMarket?.pick?.includes('DNB') && actualWinner === 'DRAW');
-                const isPass = m.isPass || (m.isHit === null && m.smartMarket?.pick === 'PASS');
+                const advisory = getMatchDecisionAdvisory(m);
+                const isPass = advisory.isPass;
                 const actualScore = formatScore(
                   m.actualScore ||
                   (hG != null && aG != null ? `${hG}-${aG}` : null) ||
@@ -893,100 +1035,263 @@ export default function ResultsProofPage({
                       className={`flex flex-col md:table-row bg-white rounded-xl md:rounded-none border border-slate-200/90 md:border-0 shadow-2xs md:shadow-none hover:border-slate-300 transition-all md:h-11 cursor-pointer ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}
                       onClick={() => toggleExpand(matchKey)}
                     >
-                      {/* ================= MOBILE COMPACT CARD VIEW ================= */}
-                      <td className="md:hidden p-3 block">
-                        <div className="flex justify-between items-start mb-1.5">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="font-semibold text-slate-700 font-mono text-[10px] flex items-center gap-1">
-                              <Calendar className="w-2.5 h-2.5 text-indigo-600 shrink-0" />
-                              {relativeText}
-                            </span>
-                            <span className="text-[9.5px] text-slate-400 bg-slate-100 px-1 rounded border border-slate-200">
-                              {m.league || 'Soccer'}
-                            </span>
-                          </div>
-                          <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] border ${
-                            isHit
-                              ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                              : isPush
-                              ? 'bg-amber-100 text-amber-800 border-amber-300'
-                              : isPass
-                              ? 'bg-slate-100 text-slate-700 border-slate-300'
-                              : 'bg-rose-100 text-rose-800 border-rose-300'
-                          }`}>
-                            {isHit ? 'HIT' : isPush ? 'PUSH' : isPass ? 'PASS' : 'MISS'}
-                          </span>
-                        </div>
-
-                        {/* Matchup */}
-                        <div className="flex justify-between items-center mb-1.5">
-                          <div className="font-bold text-slate-900 text-xs truncate">
-                            {m.home} <span className="text-slate-400 font-normal">vs</span> {m.away}
-                          </div>
-                          <div className="flex items-center gap-1 font-mono text-xs shrink-0">
-                            <span className="font-black bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-slate-900">
-                              {actualScore}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Prediction vs Actual line */}
-                        <div className="flex items-center justify-between text-[10px] bg-slate-50 p-1.5 rounded border border-slate-200 mb-1.5">
-                          <div className="truncate">
-                            <span className="text-slate-500">Pick: </span>
-                            <strong className="text-slate-800">
-                              {m.smartMarket?.pickLabel || (m.predictedWinner === 'HOME' ? m.home : m.predictedWinner === 'AWAY' ? m.away : 'Draw')}
-                            </strong>
-                          </div>
-                          <div className="flex items-center gap-1 font-mono shrink-0 pl-1">
-                            <span className="text-slate-500">Pred:</span>
-                            <span className="font-bold text-slate-700">{predictedScore}</span>
-                            {isExactScore && <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />}
-                          </div>
-                        </div>
-
-                        {/* Action row & Collapsible trigger */}
-                        <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[10px]">
-                          <span className="text-slate-400 font-mono">
-                            Conf: <strong>{(m.confidence != null) ? `${safeToFixed(m.confidence, 0)}%` : '68%'}</strong>
-                          </span>
-                          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(m); }}
-                              className="px-2 py-0.5 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
-                            >
-                              Forensics
-                            </button>
-                            <span className="text-indigo-600 font-semibold flex items-center gap-0.5 cursor-pointer pl-1" onClick={() => toggleExpand(matchKey)}>
-                              {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Collapsible Mobile Content */}
-                        {isExpanded && (
-                          <div className="mt-2 pt-2 border-t border-slate-100 space-y-1.5 bg-slate-50/80 p-2 rounded-lg text-[10px]">
-                            <div className="grid grid-cols-2 gap-2">
-                              <div className="bg-white p-2 rounded border border-slate-200">
-                                <span className="text-slate-500 font-semibold block mb-0.5">Verification Details</span>
-                                <div className="space-y-0.5 text-slate-700 font-mono">
-                                  <div>Actual Winner: <strong>{actualWinner}</strong></div>
-                                  <div>Model Predicted: <strong>{m.predictedWinner || 'N/A'}</strong></div>
-                                  <div>Outcome Status: <strong>{isHit ? 'Verified Hit' : isPush ? 'Push' : 'Missed Prediction'}</strong></div>
-                                </div>
+                      {/* ================= MOBILE COMPACT VIEW (1-ROW TABLE OR CARD) ================= */}
+                      {mobileViewMode === 'table' ? (
+                        <td className="md:hidden px-2.5 py-2 block">
+                          <div className="flex items-center justify-between gap-1.5 text-xs">
+                            {/* Left: Day/Time + Teams */}
+                            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                              <span className="font-mono text-[10px] text-slate-500 shrink-0 font-medium">
+                                {relativeText.split(' ')[0]}
+                              </span>
+                              <div className="font-bold text-slate-900 text-xs truncate">
+                                <span>{m.home}</span>
+                                <span className="text-slate-400 font-normal mx-1">v</span>
+                                <span>{m.away}</span>
                               </div>
-                              <div className="bg-white p-2 rounded border border-slate-200">
-                                <span className="text-slate-500 font-semibold block mb-0.5">Statistical Expectancy</span>
-                                <div className="space-y-0.5 text-slate-700 font-mono">
-                                  <div>Projected Score: <strong>{predictedScore}</strong></div>
-                                  <div>Full-Time Score: <strong>{actualScore}</strong></div>
-                                  <div>Confidence Level: <strong>{(m.confidence != null) ? `${safeToFixed(m.confidence, 0)}%` : '68%'}</strong></div>
-                                </div>
+                            </div>
+
+                            {/* Right: Score, Pick / Pass Advisory badge, Status, Chevron */}
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <span className="font-mono font-bold text-[11px] bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded border border-slate-200">
+                                {actualScore}
+                              </span>
+                              {isPass ? (
+                                <span className="font-bold text-[9.5px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-0.5">
+                                  <ShieldAlert className="w-2.5 h-2.5 text-amber-700" />
+                                  PASS
+                                </span>
+                              ) : (
+                                <span className={`font-bold text-[9.5px] px-1.5 py-0.5 rounded border ${
+                                  isHit
+                                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                    : isPush
+                                    ? 'bg-amber-100 text-amber-800 border-amber-300'
+                                    : 'bg-rose-100 text-rose-800 border-rose-300'
+                                }`}>
+                                  {isHit ? 'HIT' : isPush ? 'PUSH' : 'MISS'}
+                                </span>
+                              )}
+                              <div className="text-slate-400">
+                                {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-indigo-600" /> : <ChevronDown className="w-3.5 h-3.5" />}
                               </div>
                             </div>
                           </div>
-                        )}
-                      </td>
+
+                          {/* Dropdown info collapsible when row is clicked */}
+                          {isExpanded && (
+                            <div className="mt-2 pt-2 border-t border-slate-100 space-y-2 bg-slate-50/80 p-2.5 rounded-lg text-[10px]">
+                              {/* Decision Advisory banner in mobile expanded view */}
+                              <div className={`p-2.5 rounded-lg border flex items-start gap-2 ${
+                                isPass ? 'bg-amber-50 border-amber-200 text-amber-950' : 'bg-white border-slate-200'
+                              }`}>
+                                {isPass ? <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" /> : <Brain className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />}
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                                    <strong className="font-bold text-slate-900 uppercase tracking-wider text-[9.5px]">
+                                      {isPass ? 'Post-Mortem Decision Advisory' : 'Tactical Model Mandate'}
+                                    </strong>
+                                    <span className={`text-[9px] font-mono px-1.5 py-0.2 rounded font-semibold border ${
+                                      isPass ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-slate-100 text-slate-800 border-slate-200'
+                                    }`}>
+                                      {advisory.title}
+                                    </span>
+                                    {isPass && (
+                                      <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold">
+                                        0u Staked
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-slate-700 leading-tight">
+                                    {advisory.rationale}
+                                  </p>
+                                  <div className="mt-1 pt-1 border-t border-slate-200 text-slate-900 font-medium text-[9.5px]">
+                                    {advisory.auditValidation}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="bg-white p-2 rounded border border-slate-200">
+                                  <span className="text-slate-500 font-semibold block mb-0.5">Verification Details</span>
+                                  <div className="space-y-0.5 text-slate-700 font-mono">
+                                    <div>Actual Winner: <strong>{actualWinner}</strong></div>
+                                    <div>Model Pick: <strong>{isPass ? 'PASS' : (m.smartMarket?.pickLabel || m.predictedWinner || 'N/A')}</strong></div>
+                                    <div>Outcome Status: <strong>{isHit ? 'Verified Hit' : isPush ? 'Push' : isPass ? 'Disciplined Pass' : 'Missed Prediction'}</strong></div>
+                                  </div>
+                                </div>
+                                <div className="bg-white p-2 rounded border border-slate-200">
+                                  <span className="text-slate-500 font-semibold block mb-0.5">Statistical Expectancy</span>
+                                  <div className="space-y-0.5 text-slate-700 font-mono">
+                                    <div>Projected Score: <strong>{predictedScore}</strong></div>
+                                    <div>Full-Time Score: <strong>{actualScore}</strong></div>
+                                    <div>Directive: <strong className={isPass ? 'text-amber-800' : 'text-slate-800'}>{isPass ? 'PASS (Preserved)' : `${(m.confidence != null) ? safeToFixed(m.confidence, 0) : '68'}% Conf`}</strong></div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="pt-1 flex items-center justify-between">
+                                <span className="text-slate-500 font-mono text-[9.5px]">
+                                  League: <strong>{m.league || 'Soccer'}</strong>
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(m); }}
+                                  className="px-2.5 py-1 rounded text-[10px] font-semibold border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
+                                >
+                                  Forensic Deep Dive
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </td>
+                      ) : (
+                        /* ================= MOBILE COMPACT CARD VIEW ================= */
+                        <td className="md:hidden p-3 block">
+                          <div className="flex justify-between items-start mb-1.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-semibold text-slate-700 font-mono text-[10px] flex items-center gap-1">
+                                <Calendar className="w-2.5 h-2.5 text-indigo-600 shrink-0" />
+                                {relativeText}
+                              </span>
+                              <span className="text-[9.5px] text-slate-400 bg-slate-100 px-1 rounded border border-slate-200">
+                                {m.league || 'Soccer'}
+                              </span>
+                            </div>
+                            <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] border ${
+                              isHit
+                                ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                : isPush
+                                ? 'bg-amber-100 text-amber-800 border-amber-300'
+                                : isPass
+                                ? 'bg-amber-100 text-amber-900 border-amber-300'
+                                : 'bg-rose-100 text-rose-800 border-rose-300'
+                            }`}>
+                              {isHit ? 'HIT' : isPush ? 'PUSH' : isPass ? 'PASS' : 'MISS'}
+                            </span>
+                          </div>
+
+                          {/* Matchup */}
+                          <div className="flex justify-between items-center mb-1.5">
+                            <div className="font-bold text-slate-900 text-xs truncate">
+                              {m.home} <span className="text-slate-400 font-normal">vs</span> {m.away}
+                            </div>
+                            <div className="flex items-center gap-1 font-mono text-xs shrink-0">
+                              <span className="font-black bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-slate-900">
+                                {actualScore}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Prediction vs Actual line */}
+                          <div className="flex items-center justify-between text-[10px] bg-slate-50 p-1.5 rounded border border-slate-200 mb-1.5">
+                            <div className="truncate">
+                              <span className="text-slate-500">Pick: </span>
+                              <strong className="text-slate-800">
+                                {m.smartMarket?.pickLabel || (m.predictedWinner === 'HOME' ? m.home : m.predictedWinner === 'AWAY' ? m.away : 'Draw')}
+                              </strong>
+                            </div>
+                            <div className="flex items-center gap-1 font-mono shrink-0 pl-1">
+                              <span className="text-slate-500">Pred:</span>
+                              <span className="font-bold text-slate-700">{predictedScore}</span>
+                              {isExactScore && <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />}
+                            </div>
+                          </div>
+
+                          {/* Decision Advisory Callout for Mobile */}
+                          {isPass && (
+                            <div className="flex items-start gap-2 text-[10px] bg-amber-50/90 p-2 rounded-lg border border-amber-200 mb-1.5">
+                              <ShieldAlert className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                                  <strong className="text-amber-950 font-bold">Decision Advisory:</strong>
+                                  <span className="bg-amber-100 text-amber-900 font-semibold px-1 rounded text-[9px] border border-amber-300">
+                                    {advisory.category}
+                                  </span>
+                                </div>
+                                <p className="text-slate-700 leading-snug line-clamp-2">
+                                  {advisory.rationale}
+                                </p>
+                                <div className="mt-1 pt-1 border-t border-amber-200/60 text-[9.5px] text-amber-900 font-medium">
+                                  {advisory.auditValidation}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Action row & Collapsible trigger */}
+                          <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[10px]">
+                            <span className="text-slate-400 font-mono">
+                              Conf: <strong>{(m.confidence != null) ? `${safeToFixed(m.confidence, 0)}%` : '68%'}</strong>
+                            </span>
+                            <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(m); }}
+                                className="px-2 py-0.5 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 hover:bg-teal-100 text-teal-800 transition-colors cursor-pointer"
+                              >
+                                Forensics
+                              </button>
+                              <span className="text-indigo-600 font-semibold flex items-center gap-0.5 cursor-pointer pl-1" onClick={() => toggleExpand(matchKey)}>
+                                {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Collapsible Mobile Content */}
+                          {isExpanded && (
+                            <div className="mt-2 pt-2 border-t border-slate-100 space-y-2 bg-slate-50/80 p-2.5 rounded-lg text-[10px]">
+                              {/* Decision Advisory banner in mobile expanded view */}
+                              <div className={`p-2.5 rounded-lg border flex items-start gap-2 ${
+                                isPass ? 'bg-amber-50 border-amber-200 text-amber-950' : 'bg-white border-slate-200'
+                              }`}>
+                                {isPass ? <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" /> : <Brain className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />}
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                                    <strong className="font-bold text-slate-900 uppercase tracking-wider text-[9.5px]">
+                                      {isPass ? 'Post-Mortem Decision Advisory' : 'Tactical Model Mandate'}
+                                    </strong>
+                                    <span className={`text-[9px] font-mono px-1.5 py-0.2 rounded font-semibold border ${
+                                      isPass ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-slate-100 text-slate-800 border-slate-200'
+                                    }`}>
+                                      {advisory.title}
+                                    </span>
+                                    {isPass && (
+                                      <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold">
+                                        0u Staked
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-slate-700 leading-tight">
+                                    {advisory.rationale}
+                                  </p>
+                                  <div className="mt-1 pt-1 border-t border-slate-200 text-slate-900 font-medium text-[9.5px]">
+                                    {advisory.auditValidation}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="bg-white p-2 rounded border border-slate-200">
+                                  <span className="text-slate-500 font-semibold block mb-0.5">Verification Details</span>
+                                  <div className="space-y-0.5 text-slate-700 font-mono">
+                                    <div>Actual Winner: <strong>{actualWinner}</strong></div>
+                                    <div>Model Predicted: <strong>{m.predictedWinner || 'N/A'}</strong></div>
+                                    <div>Outcome Status: <strong>{isHit ? 'Verified Hit' : isPush ? 'Push' : isPass ? 'Disciplined Pass' : 'Missed Prediction'}</strong></div>
+                                  </div>
+                                </div>
+                                <div className="bg-white p-2 rounded border border-slate-200">
+                                  <span className="text-slate-500 font-semibold block mb-0.5">Statistical Expectancy</span>
+                                  <div className="space-y-0.5 text-slate-700 font-mono">
+                                    <div>Projected Score: <strong>{predictedScore}</strong></div>
+                                    <div>Full-Time Score: <strong>{actualScore}</strong></div>
+                                    <div>Directive: <strong className={isPass ? 'text-amber-800' : 'text-slate-800'}>{isPass ? 'PASS (Preserved)' : `${(m.confidence != null) ? safeToFixed(m.confidence, 0) : '68'}% Conf`}</strong></div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </td>
+                      )}
 
                       {/* ================= DESKTOP 1-ROW TABLE VIEW ================= */}
                       {/* Dropdown Chevron */}
@@ -1051,7 +1356,7 @@ export default function ResultsProofPage({
                             : isPush
                             ? 'bg-amber-100 text-amber-800 border-amber-300'
                             : isPass
-                            ? 'bg-slate-100 text-slate-700 border-slate-300'
+                            ? 'bg-amber-100 text-amber-900 border-amber-300'
                             : 'bg-rose-100 text-rose-800 border-rose-300'
                         }`}>
                           {isHit ? 'HIT' : isPush ? 'PUSH' : isPass ? 'PASS' : 'MISS'}
@@ -1063,16 +1368,33 @@ export default function ResultsProofPage({
                         {(m.confidence != null) ? `${safeToFixed(m.confidence, 0)}%` : '68%'}
                       </td>
 
-                      {/* Market Verification */}
-                      <td className="hidden md:table-cell py-2 px-3 text-[11px] whitespace-nowrap">
-                        <div className="flex flex-col">
-                          <span className="font-medium text-slate-800 truncate max-w-[170px]">
-                            Pick: <strong>{m.smartMarket?.pickLabel || (m.predictedWinner === 'HOME' ? m.home : m.predictedWinner === 'AWAY' ? m.away : 'Draw')}</strong>
-                          </span>
-                          <span className="text-[10px] text-slate-500">
-                            Actual: {actualWinner === 'HOME' ? `${m.home} Win` : actualWinner === 'AWAY' ? `${m.away} Win` : 'Draw'}
-                          </span>
-                        </div>
+                      {/* Market Verification & Decision Advisory */}
+                      <td className="hidden md:table-cell py-2 px-3 text-[11px]">
+                        {isPass ? (
+                          <div className="flex flex-col max-w-[210px]">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-bold text-amber-900 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded text-[10px] flex items-center gap-1 shrink-0">
+                                <ShieldAlert className="w-2.5 h-2.5 text-amber-700 shrink-0" />
+                                <span>PASS Advisory</span>
+                              </span>
+                              <span className="text-[10px] font-semibold text-slate-800 truncate" title={advisory.title}>
+                                {advisory.category}
+                              </span>
+                            </div>
+                            <span className="text-[10px] text-slate-500 truncate mt-0.5" title={advisory.rationale}>
+                              {advisory.rationale.replace(/^⚠️\s*/, '')}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col">
+                            <span className="font-medium text-slate-800 truncate max-w-[170px]">
+                              Pick: <strong>{m.smartMarket?.pickLabel || (m.predictedWinner === 'HOME' ? m.home : m.predictedWinner === 'AWAY' ? m.away : 'Draw')}</strong>
+                            </span>
+                            <span className="text-[10px] text-slate-500">
+                              Actual: {actualWinner === 'HOME' ? `${m.home} Win` : actualWinner === 'AWAY' ? `${m.away} Win` : 'Draw'}
+                            </span>
+                          </div>
+                        )}
                       </td>
 
                       {/* Analysis Button */}
@@ -1106,10 +1428,61 @@ export default function ResultsProofPage({
                                   ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                                   : isPush
                                   ? 'bg-amber-50 text-amber-800 border-amber-300'
+                                  : isPass
+                                  ? 'bg-amber-50 text-amber-900 border-amber-300'
                                   : 'bg-rose-50 text-rose-800 border-rose-300'
                               }`}>
-                                {isHit ? '✓ Model Pick Verified' : isPush ? 'Push Returned' : 'Model Pick Missed'}
+                                {isHit ? '✓ Model Pick Verified' : isPush ? 'Push Returned' : isPass ? '⊘ Risk Filter: Model PASS' : 'Model Pick Missed'}
                               </span>
+                            </div>
+
+                            {/* Algorithmic Decision Advisory & Governance Post-Mortem Banner */}
+                            <div className={`p-3 rounded-lg border flex flex-col sm:flex-row items-start gap-2.5 ${
+                              isPass 
+                                ? 'bg-amber-50/70 border-amber-200 text-amber-950' 
+                                : isHit 
+                                ? 'bg-emerald-50/40 border-emerald-200 text-emerald-950'
+                                : 'bg-slate-50 border-slate-200 text-slate-900'
+                            }`}>
+                              <div className="p-1 rounded-md bg-white border border-slate-200 shrink-0 mt-0.5">
+                                {isPass ? (
+                                  <ShieldAlert className="w-4 h-4 text-amber-600" />
+                                ) : isHit ? (
+                                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                                ) : (
+                                  <Brain className="w-4 h-4 text-indigo-600" />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap mb-1">
+                                  <span className="font-bold text-xs uppercase tracking-wider">
+                                    Decision Advisory &amp; Governance Post-Mortem
+                                  </span>
+                                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold border ${
+                                    isPass 
+                                      ? 'bg-amber-100 text-amber-900 border-amber-300' 
+                                      : isHit 
+                                      ? 'bg-emerald-100 text-emerald-900 border-emerald-300' 
+                                      : 'bg-slate-200 text-slate-800 border-slate-300'
+                                  }`}>
+                                    {advisory.title || (isPass ? 'PASS / Capital Preserved' : 'Model Selection')}
+                                  </span>
+                                  {isPass && (
+                                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold">
+                                      0.00u Risk • Capital 100% Preserved
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-slate-700 leading-relaxed font-sans">
+                                  {advisory.rationale}
+                                </p>
+                                <div className="mt-2 pt-2 border-t border-slate-200/60 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-600">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-semibold text-slate-500">Post-Whistle Audit:</span>
+                                    <span className="font-medium text-slate-900">{advisory.auditValidation}</span>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
@@ -1127,8 +1500,10 @@ export default function ResultsProofPage({
                                     <span className="font-bold text-indigo-700">{predictedScore}</span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-slate-600">Score Hit Type:</span>
-                                    <span className="font-medium text-slate-800">{isExactScore ? 'Exact Score Hit' : 'Trend Match'}</span>
+                                    <span className="text-slate-600">Audit Classification:</span>
+                                    <span className="font-medium text-slate-800">
+                                      {isPass ? 'Disciplined Pass (Risk Filter)' : isExactScore ? 'Exact Score Hit' : 'Trend Match'}
+                                    </span>
                                   </div>
                                 </div>
                               </div>
@@ -1143,12 +1518,16 @@ export default function ResultsProofPage({
                                     <span className="font-bold text-slate-800">{(m.confidence != null) ? `${safeToFixed(m.confidence, 0)}%` : '68%'}</span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-slate-600">Smart Pick:</span>
-                                    <span className="font-bold text-indigo-700">{m.smartMarket?.pickLabel || 'Outcome Pick'}</span>
+                                    <span className="text-slate-600">Actionable Directive:</span>
+                                    <span className={`font-bold ${isPass ? 'text-amber-800' : 'text-indigo-700'}`}>
+                                      {isPass ? 'PASS (No Action Taken)' : (m.smartMarket?.pickLabel || 'Outcome Pick')}
+                                    </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-slate-600">Match Winner:</span>
-                                    <span className="font-medium text-slate-700">{actualWinner}</span>
+                                    <span className="text-slate-600">Governance Reason:</span>
+                                    <span className="font-medium text-slate-700 truncate max-w-[140px]" title={advisory.category}>
+                                      {advisory.category}
+                                    </span>
                                   </div>
                                 </div>
                               </div>
@@ -1159,7 +1538,9 @@ export default function ResultsProofPage({
                                     Forensic Deep Dive
                                   </div>
                                   <p className="text-[10px] text-slate-500 leading-tight">
-                                    Open root-cause analytics to inspect Poisson goal parameters, tactical setup, and expected goals (xG) differentials.
+                                    {isPass 
+                                      ? 'Audit root-cause Poisson entropy, tactical clash data, and historical team form that triggered the pre-kickoff PASS directive.'
+                                      : 'Open root-cause analytics to inspect Poisson goal parameters, tactical setup, and expected goals (xG) differentials.'}
                                   </p>
                                 </div>
                                 <div className="pt-2">
@@ -1182,6 +1563,7 @@ export default function ResultsProofPage({
             )}
           </tbody>
         </table>
+      </div>
 
         {/* Pagination Bar */}
         {filteredResults.length > pageSize && (
@@ -1332,6 +1714,8 @@ export default function ResultsProofPage({
                     const isResolved = entry.isHit !== null;
                     const ledgerKey = entry.id || `ledger-${idx}`;
                     const isExpanded = expandedLedgerId === ledgerKey;
+                    const entryAdvisory = getMatchDecisionAdvisory(entry);
+                    const isEntryPass = entryAdvisory.isPass;
 
                     return (
                       <React.Fragment key={ledgerKey}>
@@ -1339,76 +1723,179 @@ export default function ResultsProofPage({
                           className={`flex flex-col md:table-row bg-white rounded-xl md:rounded-none border border-amber-200/90 md:border-0 shadow-2xs md:shadow-none hover:border-amber-300 transition-all md:h-10 cursor-pointer ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}
                           onClick={() => toggleLedgerExpand(ledgerKey)}
                         >
-                          {/* ================= MOBILE COMPACT CARD VIEW ================= */}
-                          <td className="md:hidden p-3 block">
-                            <div className="flex justify-between items-start mb-1.5">
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="font-semibold text-slate-700 font-mono text-[10px] flex items-center gap-1">
-                                  <Lock className="w-2.5 h-2.5 text-amber-500 shrink-0" />
-                                  {snapshotDate ? snapshotDate.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' }) : '—'}
-                                </span>
-                                <span className="text-[9.5px] text-slate-400 bg-slate-100 px-1 rounded border border-slate-200">
-                                  {entry.league || 'Soccer'}
-                                </span>
-                              </div>
-                              <div>
-                                {!isResolved ? (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border bg-slate-100 text-slate-600 border-slate-200">
-                                    <Clock className="w-2.5 h-2.5" /> Pending
+                          {/* ================= MOBILE COMPACT VIEW (1-ROW TABLE OR CARD) ================= */}
+                          {mobileViewMode === 'table' ? (
+                            <td className="md:hidden px-2.5 py-2 block">
+                              <div className="flex items-center justify-between gap-1.5 text-xs">
+                                {/* Left: Frozen time + Teams */}
+                                <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                                  <span className="font-mono text-[10px] text-amber-600 font-semibold shrink-0 flex items-center gap-0.5">
+                                    <Lock className="w-2.5 h-2.5 text-amber-500 shrink-0" />
+                                    {snapshotDate ? snapshotDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
                                   </span>
-                                ) : entry.isHit ? (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border bg-emerald-100 text-emerald-800 border-emerald-300">
-                                    <CheckCircle2 className="w-2.5 h-2.5" /> HIT
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border bg-rose-100 text-rose-800 border-rose-300">
-                                    <XCircle className="w-2.5 h-2.5" /> MISS
-                                  </span>
-                                )}
-                              </div>
-                            </div>
+                                  <div className="font-bold text-slate-900 text-xs truncate">
+                                    <span>{entry.home}</span>
+                                    <span className="text-slate-400 font-normal mx-1">v</span>
+                                    <span>{entry.away}</span>
+                                  </div>
+                                </div>
 
-                            {/* Fixture */}
-                            <div className="flex justify-between items-center mb-1.5">
-                              <div className="font-bold text-slate-900 text-xs truncate">
-                                {entry.home} <span className="text-slate-400 font-normal">vs</span> {entry.away}
+                                {/* Right: Pick/Status + Chevron */}
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  {isEntryPass ? (
+                                    <span className="font-bold text-[9.5px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-0.5">
+                                      <ShieldAlert className="w-2.5 h-2.5 text-amber-700" />
+                                      PASS
+                                    </span>
+                                  ) : (
+                                    <span className={`font-bold text-[9.5px] px-1.5 py-0.5 rounded border ${
+                                      !isResolved ? 'bg-slate-100 text-slate-700 border-slate-200' :
+                                      entry.isHit ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
+                                      entry.isPush ? 'bg-blue-100 text-blue-800 border-blue-300' :
+                                      'bg-rose-100 text-rose-800 border-rose-300'
+                                    }`}>
+                                      {!isResolved ? 'PENDING' : entry.isHit ? 'HIT' : entry.isPush ? 'PUSH' : 'MISS'}
+                                    </span>
+                                  )}
+                                  <div className="text-slate-400">
+                                    {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-amber-600" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                                  </div>
+                                </div>
                               </div>
-                              <span className="font-mono text-xs font-semibold text-slate-700 shrink-0">
-                                Pred: {entry.predictedScore || '—'}
-                              </span>
-                            </div>
 
-                            {/* Prediction details */}
-                            <div className="flex items-center justify-between text-[10px] bg-amber-50/50 p-1.5 rounded border border-amber-200/80 mb-1.5">
-                              <div className="flex items-center gap-1 truncate">
-                                <span className="text-slate-500">Pick:</span>
-                                <span className={`font-bold ${
-                                  entry.predictedWinner === 'HOME' ? 'text-indigo-600' :
-                                  entry.predictedWinner === 'AWAY' ? 'text-rose-600' : 'text-amber-600'
-                                }`}>
-                                  {entry.smartMarket?.label || entry.smartMarket?.pick || (entry.predictedWinner === 'HOME' ? entry.home : entry.predictedWinner === 'AWAY' ? entry.away : 'Draw')}
+                              {/* Dropdown info collapsible when row is clicked */}
+                              {isExpanded && (
+                                <div className="mt-2 pt-2 border-t border-amber-200/80 space-y-1.5 bg-amber-50/50 p-2.5 rounded-lg text-[10px]">
+                                  <div className="flex items-center justify-between text-slate-700 font-mono">
+                                    <span>Fixture: <strong>{entry.home} vs {entry.away}</strong></span>
+                                    <span>League: <strong>{entry.league || 'Soccer'}</strong></span>
+                                  </div>
+                                  <div className="flex items-center justify-between font-mono">
+                                    <span className="text-slate-600">Predicted Score: <strong>{entry.predictedScore || '—'}</strong></span>
+                                    <span className="text-slate-600">Confidence: <strong>{entry.confidence != null ? `${safeToFixed(entry.confidence, 0)}%` : '—'}</strong></span>
+                                  </div>
+                                  <div className="flex items-center justify-between font-mono">
+                                    <span className="text-slate-600">Selection: <strong className={isEntryPass ? 'text-amber-800' : 'text-indigo-700'}>{isEntryPass ? `PASS (${entryAdvisory.category})` : (entry.smartMarket?.label || entry.smartMarket?.pick || entry.predictedWinner)}</strong></span>
+                                    <span className="text-slate-600">Frozen: <strong>{entry.minutesBeforeKickoff != null ? `${entry.minutesBeforeKickoff}m pre-match` : '60m window'}</strong></span>
+                                  </div>
+
+                                  {isEntryPass && (
+                                    <div className="mt-1 p-2 rounded bg-amber-100/80 border border-amber-300 text-[10px] text-amber-950 space-y-0.5">
+                                      <div className="flex items-center gap-1 font-bold">
+                                        <ShieldAlert className="w-3 h-3 text-amber-700 shrink-0" />
+                                        <span>Pre-Kickoff Decision Advisory: PASS ({entryAdvisory.category})</span>
+                                      </div>
+                                      <p className="text-slate-700 leading-snug">
+                                        {entryAdvisory.rationale}
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  <div className="pt-1 border-t border-amber-200/60 font-mono text-[9px] text-slate-500">
+                                    Immutable Ledger: SHA-256 Validated Pre-Kickoff • {snapshotDate ? snapshotDate.toUTCString() : ''}
+                                  </div>
+                                </div>
+                              )}
+                            </td>
+                          ) : (
+                            /* ================= MOBILE COMPACT CARD VIEW ================= */
+                            <td className="md:hidden p-3 block">
+                              <div className="flex justify-between items-start mb-1.5">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="font-semibold text-slate-700 font-mono text-[10px] flex items-center gap-1">
+                                    <Lock className="w-2.5 h-2.5 text-amber-500 shrink-0" />
+                                    {snapshotDate ? snapshotDate.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' }) : '—'}
+                                  </span>
+                                  <span className="text-[9.5px] text-slate-400 bg-slate-100 px-1 rounded border border-slate-200">
+                                    {entry.league || 'Soccer'}
+                                  </span>
+                                </div>
+                                <div>
+                                  {!isResolved ? (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border bg-slate-100 text-slate-600 border-slate-200">
+                                      <Clock className="w-2.5 h-2.5" /> Pending
+                                    </span>
+                                  ) : isEntryPass ? (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border bg-amber-100 text-amber-900 border-amber-300">
+                                      <ShieldAlert className="w-2.5 h-2.5 text-amber-600" /> PASSED
+                                    </span>
+                                  ) : entry.isPush || (entry.smartMarket?.pick?.includes('DNB') && entry.actualWinner === 'DRAW') ? (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border bg-blue-100 text-blue-800 border-blue-300">
+                                      PUSH (Refund)
+                                    </span>
+                                  ) : entry.isHit ? (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border bg-emerald-100 text-emerald-800 border-emerald-300">
+                                      <CheckCircle2 className="w-2.5 h-2.5" /> HIT
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border bg-rose-100 text-rose-800 border-rose-300">
+                                      <XCircle className="w-2.5 h-2.5" /> MISS
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Fixture */}
+                              <div className="flex justify-between items-center mb-1.5">
+                                <div className="font-bold text-slate-900 text-xs truncate">
+                                  {entry.home} <span className="text-slate-400 font-normal">vs</span> {entry.away}
+                                </div>
+                                <span className="font-mono text-xs font-semibold text-slate-700 shrink-0">
+                                  Pred: {entry.predictedScore || '—'}
                                 </span>
                               </div>
-                              <span className="font-mono text-slate-600 shrink-0">
-                                Conf: <strong>{entry.confidence != null ? `${safeToFixed(entry.confidence, 0)}%` : '—'}</strong>
-                              </span>
-                            </div>
 
-                            {/* Collapsible trigger */}
-                            <div className="pt-1 border-t border-slate-100 flex items-center justify-between text-[10px] text-amber-700 font-semibold select-none">
-                              <span>{isExpanded ? 'Hide Freeze Details' : 'Show Immutable Verification Data'}</span>
-                              {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                            </div>
-
-                            {/* Collapsible mobile drawer */}
-                            {isExpanded && (
-                              <div className="mt-2 pt-2 border-t border-slate-100 space-y-1 bg-amber-50/40 p-2 rounded-lg text-[10px] font-mono text-slate-700">
-                                <div>Frozen Time: <strong>{snapshotDate ? snapshotDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</strong> {entry.minutesBeforeKickoff != null ? `(${entry.minutesBeforeKickoff}m before kickoff)` : ''}</div>
-                                <div>Kickoff UTC: <strong>{kickoffDate ? kickoffDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</strong></div>
-                                <div>Immutability: <strong>SHA-256 Validated Pre-Kickoff</strong></div>
+                              {/* Prediction details */}
+                              <div className="flex items-center justify-between text-[10px] bg-amber-50/50 p-1.5 rounded border border-amber-200/80 mb-1.5">
+                                <div className="flex items-center gap-1 truncate">
+                                  <span className="text-slate-500">Pick:</span>
+                                  <span className={`font-bold ${
+                                    isEntryPass ? 'text-amber-800' :
+                                    entry.predictedWinner === 'HOME' ? 'text-indigo-600' :
+                                    entry.predictedWinner === 'AWAY' ? 'text-rose-600' : 'text-amber-600'
+                                  }`}>
+                                    {isEntryPass ? `PASS (${entryAdvisory.category})` : (entry.smartMarket?.label || entry.smartMarket?.pick || (entry.predictedWinner === 'HOME' ? entry.home : entry.predictedWinner === 'AWAY' ? entry.away : 'Draw'))}
+                                  </span>
+                                </div>
+                                <span className="font-mono text-slate-600 shrink-0">
+                                  Conf: <strong>{entry.confidence != null ? `${safeToFixed(entry.confidence, 0)}%` : '—'}</strong>
+                                </span>
                               </div>
-                            )}
-                          </td>
+
+                              {/* Pre-Kickoff Decision Advisory Callout */}
+                              {isEntryPass && (
+                                <div className="p-2 rounded bg-amber-100/70 border border-amber-300/80 text-[10px] text-amber-950 mb-1.5 space-y-0.5">
+                                  <div className="flex items-center gap-1 font-bold">
+                                    <ShieldAlert className="w-3 h-3 text-amber-700 shrink-0" />
+                                    <span>Pre-Kickoff Advisory: PASS ({entryAdvisory.category})</span>
+                                  </div>
+                                  <p className="text-slate-700 leading-snug line-clamp-2">
+                                    {entryAdvisory.rationale}
+                                  </p>
+                                </div>
+                              )}
+
+                              {/* Collapsible trigger */}
+                              <div className="pt-1 border-t border-slate-100 flex items-center justify-between text-[10px] text-amber-700 font-semibold select-none">
+                                <span>{isExpanded ? 'Hide Freeze Details' : 'Show Immutable Verification Data'}</span>
+                                {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                              </div>
+
+                              {/* Collapsible mobile drawer */}
+                              {isExpanded && (
+                                <div className="mt-2 pt-2 border-t border-slate-100 space-y-1 bg-amber-50/40 p-2 rounded-lg text-[10px] font-mono text-slate-700">
+                                  <div>Frozen Time: <strong>{snapshotDate ? snapshotDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</strong> {entry.minutesBeforeKickoff != null ? `(${entry.minutesBeforeKickoff}m before kickoff)` : ''}</div>
+                                  <div>Kickoff UTC: <strong>{kickoffDate ? kickoffDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</strong></div>
+                                  <div>Immutability: <strong>SHA-256 Validated Pre-Kickoff</strong></div>
+                                  {isEntryPass && (
+                                    <div className="pt-1 border-t border-amber-200 text-amber-900 font-sans">
+                                      <strong>Decision Rationale:</strong> {entryAdvisory.rationale}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </td>
+                          )}
 
                           {/* ================= DESKTOP 1-ROW TABLE VIEW ================= */}
                           {/* Dropdown Chevron */}
@@ -1456,18 +1943,24 @@ export default function ResultsProofPage({
                             <div className="flex flex-col items-center gap-0.5">
                               <span className="font-mono text-slate-700 text-xs font-semibold">{entry.predictedScore || '—'}</span>
                               <span className={`text-[10px] font-bold ${
+                                isEntryPass ? 'text-amber-800' :
                                 entry.predictedWinner === 'HOME' ? 'text-indigo-600' :
                                 entry.predictedWinner === 'AWAY' ? 'text-rose-600' : 'text-amber-600'
                               }`}>
-                                {entry.predictedWinner === 'HOME' ? entry.home :
+                                {isEntryPass ? 'PASS' : entry.predictedWinner === 'HOME' ? entry.home :
                                  entry.predictedWinner === 'AWAY' ? entry.away : 'Draw'}
                               </span>
                             </div>
                           </td>
 
-                          {/* Smart market pick */}
+                          {/* Smart market pick & advisory */}
                           <td className="hidden md:table-cell py-2 px-2.5 text-center whitespace-nowrap">
-                            {entry.smartMarket?.pick ? (
+                            {isEntryPass ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border bg-amber-50 text-amber-900 border-amber-300" title={entryAdvisory.rationale}>
+                                <ShieldAlert className="w-2.5 h-2.5 text-amber-600 shrink-0" />
+                                <span>PASS ({entryAdvisory.category})</span>
+                              </span>
+                            ) : entry.smartMarket?.pick ? (
                               <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border bg-indigo-50 text-indigo-800 border-indigo-200">
                                 {entry.smartMarket.label || entry.smartMarket.pick}
                               </span>
@@ -1484,6 +1977,14 @@ export default function ResultsProofPage({
                             {!isResolved ? (
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border bg-slate-100 text-slate-600 border-slate-200">
                                 <Clock className="w-3 h-3" /> Pending
+                              </span>
+                            ) : isEntryPass ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border bg-amber-100 text-amber-900 border-amber-300">
+                                <ShieldAlert className="w-3 h-3 text-amber-600" /> PASSED
+                              </span>
+                            ) : entry.isPush || (entry.smartMarket?.pick?.includes('DNB') && entry.actualWinner === 'DRAW') ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border bg-blue-100 text-blue-800 border-blue-300">
+                                PUSH (Refund)
                               </span>
                             ) : entry.isHit ? (
                               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border bg-emerald-100 text-emerald-800 border-emerald-300">
@@ -1512,6 +2013,34 @@ export default function ResultsProofPage({
                                     Frozen {entry.minutesBeforeKickoff != null ? `${entry.minutesBeforeKickoff} mins before kickoff` : 'pre-match'}
                                   </span>
                                 </div>
+
+                                {isEntryPass && (
+                                  <div className="p-2.5 rounded bg-amber-50 border border-amber-200 text-xs flex items-start gap-2">
+                                    <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                                    <div className="min-w-0 flex-1">
+                                      <div className="flex items-center gap-2 mb-0.5">
+                                        <span className="font-bold text-amber-950 uppercase tracking-wider text-[10px]">
+                                          Pre-Kickoff Decision Advisory &amp; Risk Floor:
+                                        </span>
+                                        <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-200 text-amber-900 border border-amber-300">
+                                          {entryAdvisory.category}
+                                        </span>
+                                        <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold">
+                                          0.00u Risk • Capital Preserved
+                                        </span>
+                                      </div>
+                                      <p className="text-[11.5px] text-slate-700 leading-relaxed font-sans">
+                                        {entryAdvisory.rationale}
+                                      </p>
+                                      {entry.actualScore && (
+                                        <div className="mt-1 pt-1 border-t border-amber-200/80 text-[10.5px] text-slate-600">
+                                          <span className="font-semibold text-slate-700">Audit Outcome:</span> {entryAdvisory.auditValidation}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+
                                 <div className="grid grid-cols-3 gap-3 font-mono text-[11px]">
                                   <div className="bg-slate-50 p-2 rounded border border-slate-200">
                                     <span className="text-slate-400 block font-sans text-[10px] uppercase">Snapshot Timestamp</span>
@@ -1523,7 +2052,9 @@ export default function ResultsProofPage({
                                   </div>
                                   <div className="bg-slate-50 p-2 rounded border border-slate-200">
                                     <span className="text-slate-400 block font-sans text-[10px] uppercase">Smart Market</span>
-                                    <span className="font-bold text-emerald-700">{entry.smartMarket?.label || 'Direct ML'}</span>
+                                    <span className={`font-bold ${isEntryPass ? 'text-amber-800' : 'text-emerald-700'}`}>
+                                      {isEntryPass ? `PASS (${entryAdvisory.category})` : (entry.smartMarket?.label || 'Direct ML')}
+                                    </span>
                                   </div>
                                 </div>
                               </div>

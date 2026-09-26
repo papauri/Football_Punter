@@ -21,6 +21,8 @@ import {
   ChevronUp
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
+import MobileViewSwitcher from './MobileViewSwitcher';
+import { useMobileViewMode } from '../utils/useMobileViewMode';
 import InfoTooltip from './InfoTooltip';
 import { safeParseFloat, safeToFixed } from '../utils/numberUtils';
 import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey } from '../utils/dateUtils';
@@ -45,6 +47,7 @@ export default function ScoresTablePage({
   const [sortBy, setSortBy] = useState('time_asc');
   const [expandedMatchId, setExpandedMatchId] = useState(null);
   const [collapsedScores, setCollapsedScores] = useState(false);
+  const [mobileViewMode] = useMobileViewMode();
 
   const toggleExpand = (matchId) => {
     setExpandedMatchId(prev => (prev === matchId ? null : matchId));
@@ -452,6 +455,8 @@ export default function ScoresTablePage({
                 { value: 'xg_desc', label: 'Total Expected Goals (xG)' }
               ]}
             />
+
+            <MobileViewSwitcher label="Display" className="w-full sm:w-auto" />
           </div>
 
         </div>
@@ -727,145 +732,259 @@ export default function ScoresTablePage({
                       className={`flex flex-col md:table-row bg-white rounded-xl md:rounded-none border border-slate-200/90 md:border-0 shadow-2xs md:shadow-none hover:border-slate-300 transition-all md:h-10 cursor-pointer ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}
                       onClick={() => toggleExpand(matchKey)}
                     >
-                      {/* ================= MOBILE COMPACT CARD VIEW ================= */}
-                      <td className="md:hidden p-3 block">
-                        <div className="flex justify-between items-start mb-1.5">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="font-semibold text-slate-700 font-mono text-[10px] flex items-center gap-1">
-                              <Calendar className="w-2.5 h-2.5 text-indigo-600 shrink-0" />
-                              {relativeText}
-                            </span>
-                            {m.isLive && (
-                              <span className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse">
-                                <span className="w-1 h-1 rounded-full bg-white"></span>
-                                LIVE {m.liveMinute ? `${m.liveMinute}'` : ''}
-                              </span>
-                            )}
-                            <span className="text-[9.5px] text-slate-400 bg-slate-100 px-1 rounded border border-slate-200">
-                              {m.league || 'Soccer'}
-                            </span>
-                          </div>
-                          <span className="font-bold text-[10px] text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">
-                            {bestValuePick}
-                          </span>
-                        </div>
-
-                        {/* Teams & Score Projection */}
-                        <div className="flex justify-between items-center mb-2">
-                          <div className="flex flex-col flex-1 min-w-0 pr-2">
-                            <div className="font-bold text-slate-900 text-xs truncate">
-                              {m.home} <span className="text-slate-400 font-normal">vs</span> {m.away}
+                      {/* ================= MOBILE COMPACT VIEW (1-ROW TABLE OR CARD) ================= */}
+                      {mobileViewMode === 'table' ? (
+                        <td className="md:hidden px-2.5 py-2 block">
+                          <div className="flex items-center justify-between gap-1.5 text-xs">
+                            {/* Left: Day/Time/LIVE + Teams */}
+                            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                              {m.isLive ? (
+                                <span className="px-1 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white animate-pulse shrink-0">
+                                  {m.liveMinute ? `${m.liveMinute}'` : 'LIVE'}
+                                </span>
+                              ) : (
+                                <span className="font-mono text-[10px] text-slate-500 shrink-0 font-medium">
+                                  {relativeText.split(' ')[0]}
+                                </span>
+                              )}
+                              <div className="font-bold text-slate-900 text-xs truncate">
+                                <span>{m.home}</span>
+                                <span className="text-slate-400 font-normal mx-1">v</span>
+                                <span>{m.away}</span>
+                              </div>
                             </div>
-                            <div className="text-[9.5px] text-slate-400 font-mono mt-0.5">
-                              xG: {homeLambda.toFixed(1)} - {awayMu.toFixed(1)} (Total: {totalXg})
+
+                            {/* Right: Top Score, Best Value Pick, Chevron */}
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {topScores[0] && (
+                                <span className="font-mono font-bold text-[11px] bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded border border-slate-200">
+                                  {topScores[0].score}
+                                </span>
+                              )}
+                              <span className="font-bold text-[9.5px] text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">
+                                {bestValuePick}
+                              </span>
+                              <div className="text-slate-400">
+                                {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-indigo-600" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                              </div>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-1 shrink-0">
-                            {topScores[0] && (
-                              <span className="px-2 py-1 rounded bg-indigo-50 text-indigo-900 font-mono font-bold text-xs border border-indigo-200">
-                                {topScores[0].score} <span className="text-[10px] font-normal text-indigo-600">({safeToFixed(topScores[0].prob, 0)}%)</span>
+                          {/* Mobile Collapsible Details when row is clicked */}
+                          {isExpanded && (
+                            <div className="mt-2 pt-2 border-t border-slate-100 space-y-2 bg-slate-50/60 p-2 rounded-lg text-[10px]">
+                              <div className="flex justify-between items-center">
+                                <div className="font-mono text-slate-600">
+                                  xG: <strong>{homeLambda.toFixed(1)} - {awayMu.toFixed(1)}</strong> (Total: {totalXg})
+                                </div>
+                                <span className="text-[9.5px] text-slate-400 bg-slate-100 px-1 rounded border border-slate-200">
+                                  {m.league || 'Soccer'}
+                                </span>
+                              </div>
+
+                              <div>
+                                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                  Top Projected Scorelines (Poisson Simulation)
+                                </div>
+                                <div className="flex flex-wrap gap-1">
+                                  {topScores.map((sc, scIdx) => (
+                                    <span key={scIdx} className="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-mono">
+                                      <strong>{sc.score}</strong> ({safeToFixed(sc.prob, 1)}%)
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2 text-[10px]">
+                                <div className="bg-white p-1.5 rounded border border-slate-200">
+                                  <span className="text-slate-500 block">Goal Over Lines</span>
+                                  <div className="font-mono text-slate-800 font-semibold mt-0.5 space-y-0.5">
+                                    <div>O 1.5: {safeToFixed(over15, 0)}%</div>
+                                    <div>O 2.5: {safeToFixed(over25, 0)}%</div>
+                                    <div>O 3.5: {safeToFixed(Math.max(10, over25 - 28), 0)}%</div>
+                                  </div>
+                                </div>
+                                <div className="bg-white p-1.5 rounded border border-slate-200">
+                                  <span className="text-slate-500 block">BTTS &amp; xG Expectancy</span>
+                                  <div className="font-mono text-slate-800 font-semibold mt-0.5 space-y-0.5">
+                                    <div>BTTS Yes: {safeToFixed(bttsYes, 0)}%</div>
+                                    <div>BTTS No: {safeToFixed(100 - bttsYes, 0)}%</div>
+                                    <div>xG: {homeLambda.toFixed(1)} - {awayMu.toFixed(1)}</div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center justify-end gap-1.5 pt-1 border-t border-slate-200/60" onClick={(e) => e.stopPropagation()}>
+                                <button
+                                  type="button"
+                                  onClick={() => onOpenWatchLive && onOpenWatchLive(m)}
+                                  className="px-2 py-1 rounded text-[10px] font-bold border border-indigo-200 bg-indigo-50 text-indigo-700 cursor-pointer"
+                                >
+                                  Intel
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => onOpenDeepResearch && onOpenDeepResearch(m)}
+                                  className="px-2 py-1 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 text-teal-800 cursor-pointer"
+                                >
+                                  Analysis
+                                </button>
+                                {onAddToSlip && (
+                                  <button
+                                    type="button"
+                                    onClick={handleSlipAdd}
+                                    className={`px-2 py-1 rounded text-[10px] font-bold border cursor-pointer ${
+                                      inSlip ? 'bg-rose-50 text-rose-700 border-rose-300' : 'bg-indigo-600 text-white border-indigo-600'
+                                    }`}
+                                  >
+                                    {inSlip ? '✓ Added' : '+ Slip'}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </td>
+                      ) : (
+                        /* ================= MOBILE COMPACT CARD VIEW ================= */
+                        <td className="md:hidden p-3 block">
+                          <div className="flex justify-between items-start mb-1.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-semibold text-slate-700 font-mono text-[10px] flex items-center gap-1">
+                                <Calendar className="w-2.5 h-2.5 text-indigo-600 shrink-0" />
+                                {relativeText}
                               </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Compact Metrics Row */}
-                        <div className="flex items-center justify-between gap-1.5 text-[10px] pt-1.5 border-t border-slate-100">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className={`px-1.5 py-0.5 rounded font-mono font-semibold border ${over25 >= 50 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>
-                              {over25 >= 50 ? `O 2.5: ${safeToFixed(over25, 0)}%` : `U 2.5: ${safeToFixed(under25, 0)}%`}
+                              {m.isLive && (
+                                <span className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse">
+                                  <span className="w-1 h-1 rounded-full bg-white"></span>
+                                  LIVE {m.liveMinute ? `${m.liveMinute}'` : ''}
+                                </span>
+                              )}
+                              <span className="text-[9.5px] text-slate-400 bg-slate-100 px-1 rounded border border-slate-200">
+                                {m.league || 'Soccer'}
+                              </span>
+                            </div>
+                            <span className="font-bold text-[10px] text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">
+                              {bestValuePick}
                             </span>
-                            <span className={`px-1.5 py-0.5 rounded font-mono font-semibold border ${bttsYes >= 50 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
-                              BTTS: {safeToFixed(bttsYes, 0)}%
-                            </span>
                           </div>
 
-                          <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
-                            <button
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(m); }}
-                              className={`w-[98px] h-6 px-1.5 rounded text-[10px] font-bold border transition-colors inline-flex items-center justify-center gap-0.5 shrink-0 shadow-2xs ${
-                                m.isLive
-                                  ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
-                                  : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
-                              }`}
-                              title={m.isLive ? "Live Match Tactical AI Intelligence" : "Match Tactical AI Analysis"}
-                            >
-                              <Brain className={`w-2.5 h-2.5 shrink-0 ${m.isLive ? 'text-white' : 'text-indigo-600'}`} />
-                              <span className="truncate">{m.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(m); }}
-                              className="w-[44px] h-6 px-1 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 text-teal-800 hover:bg-teal-100 transition-colors inline-flex items-center justify-center shrink-0 cursor-pointer"
-                              title="Open Deep Analysis"
-                            >
-                              Intel
-                            </button>
-                            {onAddToSlip ? (
+                          {/* Teams & Score Projection */}
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="flex flex-col flex-1 min-w-0 pr-2">
+                              <div className="font-bold text-slate-900 text-xs truncate">
+                                {m.home} <span className="text-slate-400 font-normal">vs</span> {m.away}
+                              </div>
+                              <div className="text-[9.5px] text-slate-400 font-mono mt-0.5">
+                                xG: {homeLambda.toFixed(1)} - {awayMu.toFixed(1)} (Total: {totalXg})
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-1 shrink-0">
+                              {topScores[0] && (
+                                <span className="px-2 py-1 rounded bg-indigo-50 text-indigo-900 font-mono font-bold text-xs border border-indigo-200">
+                                  {topScores[0].score} <span className="text-[10px] font-normal text-indigo-600">({safeToFixed(topScores[0].prob, 0)}%)</span>
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Compact Metrics Row */}
+                          <div className="flex items-center justify-between gap-1.5 text-[10px] pt-1.5 border-t border-slate-100">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className={`px-1.5 py-0.5 rounded font-mono font-semibold border ${over25 >= 50 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>
+                                {over25 >= 50 ? `O 2.5: ${safeToFixed(over25, 0)}%` : `U 2.5: ${safeToFixed(under25, 0)}%`}
+                              </span>
+                              <span className={`px-1.5 py-0.5 rounded font-mono font-semibold border ${bttsYes >= 50 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                                BTTS: {safeToFixed(bttsYes, 0)}%
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
                               <button
                                 type="button"
-                                onClick={handleSlipAdd}
-                                className={`w-[58px] h-6 px-1 rounded text-[10px] font-bold border transition-colors inline-flex items-center justify-center gap-0.5 shrink-0 cursor-pointer ${
-                                  inSlip
-                                    ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-300'
-                                    : 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700'
+                                onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(m); }}
+                                className={`w-[98px] h-6 px-1.5 rounded text-[10px] font-bold border transition-colors inline-flex items-center justify-center gap-0.5 shrink-0 shadow-2xs ${
+                                  m.isLive
+                                    ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
+                                    : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
                                 }`}
-                                title={inSlip ? 'In Slip (Click to toggle)' : `Add ${bestValuePick} to Slip`}
+                                title={m.isLive ? "Live Match Tactical AI Intelligence" : "Match Tactical AI Analysis"}
                               >
-                                {inSlip ? <Check className="w-2.5 h-2.5" /> : <Plus className="w-2.5 h-2.5" />}
-                                <span>{inSlip ? 'In Slip' : '+ Slip'}</span>
+                                <Brain className={`w-2.5 h-2.5 shrink-0 ${m.isLive ? 'text-white' : 'text-indigo-600'}`} />
+                                <span className="truncate">{m.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
                               </button>
-                            ) : (
-                              <div className="w-[58px]" />
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Mobile Dropdown Collapsible Toggle */}
-                        <div className="mt-2 pt-1 border-t border-slate-100 flex items-center justify-between text-[10px] text-indigo-600 font-semibold select-none">
-                          <span>{isExpanded ? 'Hide Probability Details' : 'Show Score & Probability Breakdown'}</span>
-                          {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                        </div>
-
-                        {/* Mobile Collapsible Details */}
-                        {isExpanded && (
-                          <div className="mt-2 pt-2 border-t border-slate-100 space-y-2 bg-slate-50/60 p-2 rounded-lg">
-                            <div>
-                              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                                Top Projected Scorelines (Poisson Simulation)
-                              </div>
-                              <div className="flex flex-wrap gap-1">
-                                {topScores.map((sc, scIdx) => (
-                                  <span key={scIdx} className="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-mono">
-                                    <strong>{sc.score}</strong> ({safeToFixed(sc.prob, 1)}%)
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-2 text-[10px]">
-                              <div className="bg-white p-1.5 rounded border border-slate-200">
-                                <span className="text-slate-500 block">Goal Over Lines</span>
-                                <div className="font-mono text-slate-800 font-semibold mt-0.5 space-y-0.5">
-                                  <div>O 1.5: {safeToFixed(over15, 0)}%</div>
-                                  <div>O 2.5: {safeToFixed(over25, 0)}%</div>
-                                  <div>O 3.5: {safeToFixed(Math.max(10, over25 - 28), 0)}%</div>
-                                </div>
-                              </div>
-                              <div className="bg-white p-1.5 rounded border border-slate-200">
-                                <span className="text-slate-500 block">BTTS &amp; xG Expectancy</span>
-                                <div className="font-mono text-slate-800 font-semibold mt-0.5 space-y-0.5">
-                                  <div>BTTS Yes: {safeToFixed(bttsYes, 0)}%</div>
-                                  <div>BTTS No: {safeToFixed(100 - bttsYes, 0)}%</div>
-                                  <div>xG: {homeLambda.toFixed(1)} - {awayMu.toFixed(1)}</div>
-                                </div>
-                              </div>
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(m); }}
+                                className="w-[44px] h-6 px-1 rounded text-[10px] font-medium border border-teal-200 bg-teal-50 text-teal-800 hover:bg-teal-100 transition-colors inline-flex items-center justify-center shrink-0 cursor-pointer"
+                                title="Open Deep Analysis"
+                              >
+                                Intel
+                              </button>
+                              {onAddToSlip ? (
+                                <button
+                                  type="button"
+                                  onClick={handleSlipAdd}
+                                  className={`w-[58px] h-6 px-1 rounded text-[10px] font-bold border transition-colors inline-flex items-center justify-center gap-0.5 shrink-0 cursor-pointer ${
+                                    inSlip
+                                      ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-300'
+                                      : 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700'
+                                  }`}
+                                  title={inSlip ? 'In Slip (Click to toggle)' : `Add ${bestValuePick} to Slip`}
+                                >
+                                  {inSlip ? <Check className="w-2.5 h-2.5" /> : <Plus className="w-2.5 h-2.5" />}
+                                  <span>{inSlip ? 'In Slip' : '+ Slip'}</span>
+                                </button>
+                              ) : (
+                                <div className="w-[58px]" />
+                              )}
                             </div>
                           </div>
-                        )}
-                      </td>
+
+                          {/* Mobile Dropdown Collapsible Toggle */}
+                          <div className="mt-2 pt-1 border-t border-slate-100 flex items-center justify-between text-[10px] text-indigo-600 font-semibold select-none">
+                            <span>{isExpanded ? 'Hide Probability Details' : 'Show Score & Probability Breakdown'}</span>
+                            {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                          </div>
+
+                          {/* Mobile Collapsible Details */}
+                          {isExpanded && (
+                            <div className="mt-2 pt-2 border-t border-slate-100 space-y-2 bg-slate-50/60 p-2 rounded-lg">
+                              <div>
+                                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                  Top Projected Scorelines (Poisson Simulation)
+                                </div>
+                                <div className="flex flex-wrap gap-1">
+                                  {topScores.map((sc, scIdx) => (
+                                    <span key={scIdx} className="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-mono">
+                                      <strong>{sc.score}</strong> ({safeToFixed(sc.prob, 1)}%)
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2 text-[10px]">
+                                <div className="bg-white p-1.5 rounded border border-slate-200">
+                                  <span className="text-slate-500 block">Goal Over Lines</span>
+                                  <div className="font-mono text-slate-800 font-semibold mt-0.5 space-y-0.5">
+                                    <div>O 1.5: {safeToFixed(over15, 0)}%</div>
+                                    <div>O 2.5: {safeToFixed(over25, 0)}%</div>
+                                    <div>O 3.5: {safeToFixed(Math.max(10, over25 - 28), 0)}%</div>
+                                  </div>
+                                </div>
+                                <div className="bg-white p-1.5 rounded border border-slate-200">
+                                  <span className="text-slate-500 block">BTTS &amp; xG Expectancy</span>
+                                  <div className="font-mono text-slate-800 font-semibold mt-0.5 space-y-0.5">
+                                    <div>BTTS Yes: {safeToFixed(bttsYes, 0)}%</div>
+                                    <div>BTTS No: {safeToFixed(100 - bttsYes, 0)}%</div>
+                                    <div>xG: {homeLambda.toFixed(1)} - {awayMu.toFixed(1)}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </td>
+                      )}
 
                       {/* ================= DESKTOP 1-ROW TABLE VIEW ================= */}
                       {/* Dropdown Chevron */}

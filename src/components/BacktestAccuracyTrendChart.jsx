@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { safeToFixed } from '../utils/numberUtils';
 
-export default function BacktestAccuracyTrendChart({ data = [], metrics = null }) {
+export default function BacktestAccuracyTrendChart({ data = [], metrics = null, isEmbedded = false }) {
   const [activeSeries, setActiveSeries] = useState({
     eliteConviction: true,
     highConviction: true,
@@ -78,80 +78,83 @@ export default function BacktestAccuracyTrendChart({ data = [], metrics = null }
   const firstCohort = chartData[0] || {};
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl shadow-xs p-5 md:p-6 mb-6">
+    <div className={isEmbedded 
+      ? "w-full min-w-0 overflow-hidden" 
+      : "bg-white border border-slate-200 rounded-xl shadow-xs p-3 sm:p-5 md:p-6 mb-6 w-full min-w-0 overflow-hidden"
+    }>
       {/* Header & Badges */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-slate-100">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg">
-              <TrendingUp className="w-5 h-5" />
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 pb-3 sm:pb-4 border-b border-slate-100 min-w-0">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            <span className="p-1 sm:p-1.5 bg-indigo-50 text-indigo-600 rounded-lg shrink-0">
+              <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </span>
-            <h3 className="text-base font-bold text-slate-900">
+            <h3 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 leading-tight">
               Multi-Season Accuracy Trend (23,453 Back-Tested Records)
             </h3>
-            <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 text-[10px] font-bold rounded-full uppercase tracking-wider">
+            <span className="px-1.5 sm:px-2 py-0.5 bg-indigo-100 text-indigo-800 text-[9.5px] sm:text-[10px] font-bold rounded-full uppercase tracking-wider shrink-0">
               16 Cohorts
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1.5 max-w-2xl">
+          <p className="text-[11px] sm:text-xs text-slate-500 mt-1 max-w-2xl leading-normal">
             Chronological performance trajectory across all 23,453 multi-season historical records (2021–2026). As team ratings and xG weights calibrate over time, elite consensus accuracy expands from <span className="font-semibold text-indigo-600">{firstCohort.eliteConviction}%</span> to <span className="font-semibold text-indigo-600">{latestCohort.eliteConviction}%</span> in out-of-sample holdout fixtures.
           </p>
         </div>
 
         {/* Quick KPI summary cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <div className="bg-purple-50/70 border border-purple-200 rounded-lg p-2.5 text-center">
-            <div className="text-[10px] uppercase font-bold text-purple-700 tracking-wider flex items-center justify-center gap-1">
-              <Award className="w-3 h-3 text-purple-600" />
-              Elite Consensus
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2 w-full lg:w-auto min-w-0">
+          <div className="bg-purple-50/70 border border-purple-200 rounded-lg p-1.5 sm:p-2.5 text-center min-w-0">
+            <div className="text-[9.5px] sm:text-[10px] uppercase font-bold text-purple-700 tracking-wider flex items-center justify-center gap-1 truncate">
+              <Award className="w-3 h-3 text-purple-600 shrink-0" />
+              <span className="truncate">Elite Consensus</span>
             </div>
-            <div className="text-base font-black text-purple-800 font-mono mt-0.5">
+            <div className="text-sm sm:text-base font-black text-purple-800 font-mono mt-0.5">
               {safeToFixed(latestCohort.eliteConviction || 82.5, 1)}%
             </div>
-            <div className="text-[9px] text-purple-600/90 font-medium">Recent 4.6k Holdout</div>
+            <div className="text-[8.5px] sm:text-[9px] text-purple-600/90 font-medium truncate">Recent 4.6k Holdout</div>
           </div>
 
-          <div className="bg-emerald-50/70 border border-emerald-200 rounded-lg p-2.5 text-center">
-            <div className="text-[10px] uppercase font-bold text-emerald-700 tracking-wider flex items-center justify-center gap-1">
-              <Target className="w-3 h-3 text-emerald-600" />
-              High Conviction
+          <div className="bg-emerald-50/70 border border-emerald-200 rounded-lg p-1.5 sm:p-2.5 text-center min-w-0">
+            <div className="text-[9.5px] sm:text-[10px] uppercase font-bold text-emerald-700 tracking-wider flex items-center justify-center gap-1 truncate">
+              <Target className="w-3 h-3 text-emerald-600 shrink-0" />
+              <span className="truncate">High Conviction</span>
             </div>
-            <div className="text-base font-black text-emerald-800 font-mono mt-0.5">
+            <div className="text-sm sm:text-base font-black text-emerald-800 font-mono mt-0.5">
               {safeToFixed(latestCohort.highConviction || 77.2, 1)}%
             </div>
-            <div className="text-[9px] text-emerald-600/90 font-medium">≥65% Probability</div>
+            <div className="text-[8.5px] sm:text-[9px] text-emerald-600/90 font-medium truncate">≥65% Probability</div>
           </div>
 
-          <div className="bg-blue-50/70 border border-blue-200 rounded-lg p-2.5 text-center">
-            <div className="text-[10px] uppercase font-bold text-blue-700 tracking-wider flex items-center justify-center gap-1">
-              <ShieldCheck className="w-3 h-3 text-blue-600" />
-              Capital Protect
+          <div className="bg-blue-50/70 border border-blue-200 rounded-lg p-1.5 sm:p-2.5 text-center min-w-0">
+            <div className="text-[9.5px] sm:text-[10px] uppercase font-bold text-blue-700 tracking-wider flex items-center justify-center gap-1 truncate">
+              <ShieldCheck className="w-3 h-3 text-blue-600 shrink-0" />
+              <span className="truncate">Capital Protect</span>
             </div>
-            <div className="text-base font-black text-blue-800 font-mono mt-0.5">
+            <div className="text-sm sm:text-base font-black text-blue-800 font-mono mt-0.5">
               {safeToFixed(latestCohort.capitalProtection || 83.2, 1)}%
             </div>
-            <div className="text-[9px] text-blue-600/90 font-medium">DNB Win or Push</div>
+            <div className="text-[8.5px] sm:text-[9px] text-blue-600/90 font-medium truncate">DNB Win or Push</div>
           </div>
 
-          <div className="bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-center">
-            <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-1.5 sm:p-2.5 text-center min-w-0">
+            <div className="text-[9.5px] sm:text-[10px] uppercase font-bold text-slate-500 tracking-wider truncate">
               1X2 Raw Baseline
             </div>
-            <div className="text-base font-black text-slate-700 font-mono mt-0.5">
+            <div className="text-sm sm:text-base font-black text-slate-700 font-mono mt-0.5">
               {safeToFixed(latestCohort.raw1X2 || 58.7, 1)}%
             </div>
-            <div className="text-[9px] text-slate-400 font-medium">24.7% Draw Drag</div>
+            <div className="text-[8.5px] sm:text-[9px] text-slate-400 font-medium truncate">24.7% Draw Drag</div>
           </div>
         </div>
       </div>
 
       {/* Preset View Filters & Series Toggles */}
-      <div className="flex flex-wrap items-center justify-between gap-3 my-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 my-3 sm:my-4 min-w-0">
         {/* Preset Selector */}
-        <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-lg">
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg w-full sm:w-auto min-w-0 overflow-x-auto scrollbar-none">
           <button
             onClick={() => handlePreset('all')}
-            className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${
+            className={`flex-1 sm:flex-initial px-2 sm:px-3 py-1 text-[10.5px] sm:text-xs font-semibold rounded-md transition-colors whitespace-nowrap text-center cursor-pointer ${
               viewPreset === 'all'
                 ? 'bg-white text-slate-900 shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
@@ -161,116 +164,121 @@ export default function BacktestAccuracyTrendChart({ data = [], metrics = null }
           </button>
           <button
             onClick={() => handlePreset('selective')}
-            className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${
+            className={`flex-1 sm:flex-initial px-2 sm:px-3 py-1 text-[10.5px] sm:text-xs font-semibold rounded-md transition-colors whitespace-nowrap text-center cursor-pointer ${
               viewPreset === 'selective'
                 ? 'bg-white text-indigo-700 shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Selective &amp; Hedged Only
+            <span className="hidden sm:inline">Selective &amp; Hedged Only</span>
+            <span className="sm:hidden">Hedged Only</span>
           </button>
           <button
             onClick={() => handlePreset('focus')}
-            className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${
+            className={`flex-1 sm:flex-initial px-2 sm:px-3 py-1 text-[10.5px] sm:text-xs font-semibold rounded-md transition-colors whitespace-nowrap text-center cursor-pointer ${
               viewPreset === 'focus'
                 ? 'bg-white text-purple-700 shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Elite vs. Unhedged Baseline
+            <span className="hidden sm:inline">Elite vs. Unhedged Baseline</span>
+            <span className="sm:hidden">Elite vs 1X2</span>
           </button>
         </div>
 
         {/* Legend Interactive Toggles */}
-        <div className="flex flex-wrap items-center gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs min-w-0">
           <button
             onClick={() => toggleSeries('eliteConviction')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all ${
+            className={`flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border transition-all cursor-pointer ${
               activeSeries.eliteConviction
                 ? 'bg-purple-50 border-purple-300 text-purple-800 font-semibold'
                 : 'bg-white border-slate-200 text-slate-400 opacity-60'
             }`}
           >
-            <span className="w-2.5 h-2.5 rounded-full bg-purple-600"></span>
-            Elite Consensus (≥72%)
+            <span className="w-2 h-2 rounded-full bg-purple-600 shrink-0"></span>
+            <span className="whitespace-nowrap">Elite (≥72%)</span>
           </button>
 
           <button
             onClick={() => toggleSeries('highConviction')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all ${
+            className={`flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border transition-all cursor-pointer ${
               activeSeries.highConviction
                 ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-semibold'
                 : 'bg-white border-slate-200 text-slate-400 opacity-60'
             }`}
           >
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
-            High Conviction (≥65%)
+            <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0"></span>
+            <span className="whitespace-nowrap">High Conv (≥65%)</span>
           </button>
 
           <button
             onClick={() => toggleSeries('doubleChance')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all ${
+            className={`flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border transition-all cursor-pointer ${
               activeSeries.doubleChance
                 ? 'bg-blue-50 border-blue-300 text-blue-800 font-semibold'
                 : 'bg-white border-slate-200 text-slate-400 opacity-60'
             }`}
           >
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-            Double Chance (1X/X2)
+            <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0"></span>
+            <span className="whitespace-nowrap">Double Chance</span>
           </button>
 
           <button
             onClick={() => toggleSeries('capitalProtection')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all ${
+            className={`flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border transition-all cursor-pointer ${
               activeSeries.capitalProtection
                 ? 'bg-amber-50 border-amber-300 text-amber-800 font-semibold'
                 : 'bg-white border-slate-200 text-slate-400 opacity-60'
             }`}
           >
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-            DNB Capital Protect
+            <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+            <span className="whitespace-nowrap">DNB Protect</span>
           </button>
 
           <button
             onClick={() => toggleSeries('raw1X2')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all ${
+            className={`flex items-center gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full border transition-all cursor-pointer ${
               activeSeries.raw1X2
                 ? 'bg-slate-100 border-slate-300 text-slate-800 font-semibold'
                 : 'bg-white border-slate-200 text-slate-400 opacity-60'
             }`}
           >
-            <span className="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-            1X2 Baseline
+            <span className="w-2 h-2 rounded-full bg-slate-400 shrink-0"></span>
+            <span className="whitespace-nowrap">1X2 Baseline</span>
           </button>
         </div>
       </div>
 
       {/* Main Recharts Area */}
-      <div className="h-80 w-full pt-2">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 10, right: 15, left: -15, bottom: 20 }}>
+      <div className="h-60 sm:h-72 md:h-80 w-full min-w-0 overflow-hidden pt-1">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={220}>
+          <LineChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 15 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
             
             <XAxis 
               dataKey="period" 
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 10, fill: '#64748b', fontWeight: 500 }}
-              dy={10}
+              tick={{ fontSize: 9, fill: '#64748b', fontWeight: 500 }}
+              dy={8}
+              minTickGap={14}
+              interval="preserveStartEnd"
             />
             
             <YAxis 
               domain={[45, 90]}
               ticks={[50, 60, 70, 80, 90]}
+              width={34}
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 10, fill: '#64748b', fontWeight: 500 }}
+              tick={{ fontSize: 9, fill: '#64748b', fontWeight: 500 }}
               tickFormatter={(val) => `${val}%`}
             />
 
             {/* Reference benchmarks */}
-            <ReferenceLine y={50} stroke="#94a3b8" strokeDasharray="4 4" label={{ value: 'Coin-Flip 50%', position: 'insideBottomRight', fill: '#94a3b8', fontSize: 10 }} />
-            <ReferenceLine y={70} stroke="#10b981" strokeDasharray="3 3" strokeOpacity={0.6} label={{ value: '70% High Conviction Target', position: 'insideTopRight', fill: '#10b981', fontSize: 10 }} />
+            <ReferenceLine y={50} stroke="#94a3b8" strokeDasharray="4 4" label={{ value: '50% Base', position: 'insideBottomLeft', fill: '#94a3b8', fontSize: 9 }} />
+            <ReferenceLine y={70} stroke="#10b981" strokeDasharray="3 3" strokeOpacity={0.6} label={{ value: '70% Target', position: 'insideTopLeft', fill: '#10b981', fontSize: 9 }} />
             
             <Tooltip 
               contentStyle={{ 

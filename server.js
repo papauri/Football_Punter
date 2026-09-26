@@ -65,51 +65,128 @@ async function startServer() {
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
     
-    // Combine todayCompletedMatches, yesterdayMatches, and historicalMatches so recent finishes appear immediately
-    const allMatches = (engine.todayCompletedMatches || [])
+    // Combine resolved preKickoffLedger, yesterdayMatches, todayCompletedMatches, and historicalMatches
+    const ledgerCompleted = (typeof engine.getPreKickoffLedger === 'function' ? engine.getPreKickoffLedger() : [])
+      .filter(e => e && e.actualScore)
+      .map(e => ({
+        id: e.id,
+        home: e.home,
+        away: e.away,
+        league: e.league,
+        dateIso: String(e.kickoffUtc || e.snapshotAt || '').slice(0, 10),
+        utcDate: e.kickoffUtc,
+        homeScore: parseInt(e.actualScore.split('-')[0], 10),
+        awayScore: parseInt(e.actualScore.split('-')[1], 10),
+        actualScore: e.actualScore,
+        actualWinner: e.actualWinner,
+        predictedWinner: e.predictedWinner?.pick || e.predictedWinner,
+        predictedScore: e.predictedScore,
+        smartMarket: e.smartMarket,
+        isHit: e.isHit,
+        smartHit: e.smartHit,
+        isPush: e.isPush,
+        isPass: e.isPass,
+        confidence: e.confidence,
+        prob: e.prob
+      }));
+
+    const allMatches = ledgerCompleted
       .concat(engine.yesterdayMatches || [])
+      .concat(engine.todayCompletedMatches || [])
       .concat(engine.historicalMatches || []);
 
-    const seenIds = new Set();
+    const seenKeys = new Set();
     const recentMatches = [];
 
+    const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
     for (const m of allMatches) {
-      if (isLeagueBlacklisted(m.league) || engine.isLeagueDisabled(m.league)) continue;
-      const idKey = m.id || `${m.home}-${m.away}-${m.dateIso || m.date}`;
-      if (seenIds.has(idKey)) continue;
+      if (!m || isLeagueBlacklisted(m.league) || (engine.isLeagueDisabled && engine.isLeagueDisabled(m.league))) continue;
+      
       const d = m.dateIso || m.date || m.utcDate;
       if (!d) continue;
       const matchDate = new Date(d);
-      if (!isNaN(matchDate.getTime()) && matchDate >= thirtyDaysAgo) {
-        seenIds.add(idKey);
-        recentMatches.push(m);
+      if (isNaN(matchDate.getTime()) || matchDate < thirtyDaysAgo) continue;
+
+      let hG = m.homeScore ?? m.goals?.home;
+      let aG = m.awayScore ?? m.goals?.away;
+      if ((hG == null || isNaN(hG)) && m.actualScore && m.actualScore.includes('-')) {
+        const parts = m.actualScore.split('-').map(x => parseInt(x.trim(), 10));
+        if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+          hG = parts[0];
+          aG = parts[1];
+        }
       }
+
+      const hasScore = (hG != null && aG != null && !isNaN(hG) && !isNaN(aG)) || (m.actualScore && m.actualScore.includes('-'));
+      // Only include finished fixtures that have actual recorded scores
+      if (!hasScore) continue;
+
+      const dateStr = typeof d === 'string' ? d.slice(0, 10) : matchDate.toISOString().slice(0, 10);
+      const key = `${norm(m.home)}_${norm(m.away)}_${dateStr}`;
+      if (seenKeys.has(key)) continue;
+      seenKeys.add(key);
+
+      recentMatches.push(m);
     }
 
     // Populate predictions for historical matches so the chart has real accuracy data
     const populated = recentMatches.map(m => {
-        const hG = m.homeScore ?? m.goals?.home;
-        const aG = m.awayScore ?? m.goals?.away;
+        let hG = m.homeScore ?? m.goals?.home;
+        let aG = m.awayScore ?? m.goals?.away;
+        if ((hG == null || isNaN(hG)) && m.actualScore && m.actualScore.includes('-')) {
+          const parts = m.actualScore.split('-').map(x => parseInt(x.trim(), 10));
+          if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+            hG = parts[0];
+            aG = parts[1];
+          }
+        }
         const actualWinner = m.actualWinner || (hG != null && aG != null ? (hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW') : 'DRAW');
 
-        if (m.predictedWinner && m.prob && m.confidence) {
-          const isHit = m.isHit !== undefined ? m.isHit : (m.predictedWinner === actualWinner);
-          return {
-            ...m,
-            actualWinner,
-            actualScore: (hG != null && aG != null) ? `${hG}-${aG}` : m.actualScore,
-            isHit
-          };
-        }
+        const dcProbs = (m.predictedWinner && m.prob && m.confidence)
+          ? {
+              predictedWinner: m.predictedWinner?.pick || m.predictedWinner,
+              confidence: m.confidence,
+              prob: m.prob,
+              smartMarket: m.smartMarket
+            }
+          : engine.computeDixonColesProbabilities(m.home, m.away, { league: m.league });
 
-        const dcProbs = engine.computeDixonColesProbabilities(m.home, m.away, { league: m.league });
-        const smartHit = (hG != null && aG != null) ? engine.evaluateHit(dcProbs, hG, aG) : null;
-        const isHit = smartHit !== null ? smartHit : (dcProbs.predictedWinner === actualWinner);
-        const isPush = smartHit === null && (dcProbs.smartMarket?.pick?.includes('DNB') || false);
-        const isPass = dcProbs.smartMarket?.pick === 'PASS';
+        let isHit = m.isHit;
+        let smartHit = m.smartHit;
+        let isPush = m.isPush;
+        let isPass = m.isPass;
+
+        if (isHit === undefined || isHit === null) {
+          const evalRes = (hG != null && aG != null) ? engine.evaluateHit(m.smartMarket ? m : dcProbs, hG, aG) : null;
+          if (evalRes !== null) {
+            isHit = evalRes;
+            smartHit = evalRes;
+            isPush = false;
+            isPass = false;
+          } else if ((m.smartMarket?.pick || dcProbs.smartMarket?.pick) === 'PASS') {
+            isHit = null;
+            smartHit = null;
+            isPass = true;
+            isPush = false;
+          } else if (((m.smartMarket?.pick || dcProbs.smartMarket?.pick)?.includes('DNB')) && actualWinner === 'DRAW') {
+            isHit = null;
+            smartHit = null;
+            isPush = true;
+            isPass = false;
+          } else {
+            const predWin = String(dcProbs.predictedWinner || '').toUpperCase();
+            isHit = predWin === actualWinner;
+            smartHit = isHit;
+            isPush = false;
+            isPass = false;
+          }
+        }
 
         return {
             ...m,
+            homeScore: hG,
+            awayScore: aG,
             actualWinner,
             actualScore: (hG != null && aG != null) ? `${hG}-${aG}` : m.actualScore,
             predictedWinner: dcProbs.predictedWinner,
@@ -117,11 +194,11 @@ async function startServer() {
             smartHit,
             isPush,
             isPass,
-            smartMarket: dcProbs.smartMarket,
-            binaryModel: dcProbs.binaryModel,
-            disruptionModel: dcProbs.disruptionModel,
-            confidence: dcProbs.confidence,
-            prob: {
+            smartMarket: m.smartMarket || dcProbs.smartMarket,
+            binaryModel: m.binaryModel || dcProbs.binaryModel,
+            disruptionModel: m.disruptionModel || dcProbs.disruptionModel,
+            confidence: m.confidence || dcProbs.confidence,
+            prob: m.prob || {
               home: typeof dcProbs.home === 'number' ? dcProbs.home.toFixed(1) : '33.3',
               draw: typeof dcProbs.draw === 'number' ? dcProbs.draw.toFixed(1) : '33.4',
               away: typeof dcProbs.away === 'number' ? dcProbs.away.toFixed(1) : '33.3'
@@ -130,7 +207,7 @@ async function startServer() {
     });
 
     res.json({ matches: populated });
-});
+  });
 
 app.get('/api/state', (req, res) => {
     try {
@@ -682,6 +759,21 @@ app.get('/api/state', (req, res) => {
       const forceRefresh = req.query.refresh === 'true';
       const lotto = await engine.getAllDayWinnerLotto({ size, minConfidence, forceRefresh });
       res.json({ success: true, ...lotto });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/match/:id', (req, res) => {
+    try {
+      const id = String(req.params.id || '');
+      const match = (engine.matches || []).find(m => String(m.id) === id || String(m.espnEventId) === id) ||
+                    (engine.todayCompletedMatches || []).find(m => String(m.id) === id || String(m.espnEventId) === id) ||
+                    (engine.yesterdayMatches || []).find(m => String(m.id) === id || String(m.espnEventId) === id);
+      if (match) {
+        return res.json({ success: true, match });
+      }
+      res.status(404).json({ success: false, error: 'Match not found' });
     } catch (error) {
       res.status(500).json({ success: false, error: error.message });
     }

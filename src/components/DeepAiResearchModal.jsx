@@ -32,46 +32,43 @@ export default function DeepAiResearchModal({ match, onClose, onPatchSuccess, tz
   const [isPatching, setIsPatching] = useState(false);
   const [patchResult, setPatchResult] = useState(null);
   const [error, setError] = useState(null);
+  const [lastRefreshTime, setLastRefreshTime] = useState(null);
+
+  const fetchResearch = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/deep-ai-research', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          matchId: match.id,
+          home: match.home,
+          away: match.away,
+          league: match.league,
+          actualScore: match.actualScore || (match.homeScore !== undefined ? `${match.homeScore}-${match.awayScore}` : null),
+          predictedScore: match.predictedScore || match.mostLikelyScore,
+          predictedWinner: match.predictedWinner || match.pick,
+          actualWinner: match.actualWinner
+        })
+      });
+      const data = await res.json();
+      if (data.success && data.research) {
+        setResearchData(data.research);
+        setLastRefreshTime(new Date().toLocaleTimeString());
+      } else {
+        setError(data.error || 'Unable to complete AI game research.');
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!match) return;
-
-    let isMounted = true;
-    const fetchResearch = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const res = await fetch('/api/deep-ai-research', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            matchId: match.id,
-            home: match.home,
-            away: match.away,
-            league: match.league,
-            actualScore: match.actualScore || (match.homeScore !== undefined ? `${match.homeScore}-${match.awayScore}` : null),
-            predictedScore: match.predictedScore || match.mostLikelyScore,
-            predictedWinner: match.predictedWinner || match.pick,
-            actualWinner: match.actualWinner
-          })
-        });
-        const data = await res.json();
-        if (isMounted) {
-          if (data.success && data.research) {
-            setResearchData(data.research);
-          } else {
-            setError(data.error || 'Unable to complete AI game research.');
-          }
-        }
-      } catch (err) {
-        if (isMounted) setError(err.message);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-
     fetchResearch();
-    return () => { isMounted = false; };
   }, [match]);
 
   const handleApplySingleMatchPatch = async () => {
@@ -121,6 +118,14 @@ export default function DeepAiResearchModal({ match, onClose, onPatchSuccess, tz
   const forensics = researchData?.lossForensics;
   const teamTrends = researchData?.teamTrends;
 
+  const isPass = Boolean(
+    match.isPass === true ||
+    match.smartMarket?.pick === 'PASS' ||
+    String(match.smartMarket?.pick || '').toUpperCase() === 'PASS' ||
+    match.smartMarket?.badge?.toLowerCase().includes('pass') ||
+    match.smartMarket?.marketType?.includes('PASS')
+  );
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm overflow-y-auto">
       <div className="relative w-full max-w-4xl bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200">
@@ -160,12 +165,25 @@ export default function DeepAiResearchModal({ match, onClose, onPatchSuccess, tz
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={fetchResearch}
+              disabled={isLoading}
+              className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-700 transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
+              title="Refresh AI match research and Poisson matrix"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-emerald-400' : 'text-slate-400'}`} />
+              <span className="hidden sm:inline">{isLoading ? 'Refreshing...' : 'Refresh'}</span>
+            </button>
+
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Body */}
@@ -190,6 +208,96 @@ export default function DeepAiResearchModal({ match, onClose, onPatchSuccess, tz
             </div>
           ) : researchData ? (
             <div className="space-y-4">
+
+              {/* ================= MOMENT CONCLUSION (REAL-TIME MATCH VERDICT) ================= */}
+              <div className="rounded-xl border border-emerald-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/40 p-4 sm:p-5 shadow-lg space-y-3 relative overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-emerald-500/20">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="p-1 bg-emerald-500/20 text-emerald-400 rounded-md border border-emerald-500/30 shrink-0">
+                      <Zap className="w-3.5 h-3.5" />
+                    </span>
+                    <h4 className="text-xs sm:text-sm font-extrabold text-white tracking-tight">
+                      Match Analysis — Conclusion for This Moment
+                    </h4>
+                    <span className="text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      {researchData?.actualScore ? 'Audited Final Verdict' : 'Real-Time Strategic Stance'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-[10.5px] text-slate-400">
+                    {lastRefreshTime && (
+                      <span className="font-mono text-slate-400">Updated {lastRefreshTime}</span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={fetchResearch}
+                      disabled={isLoading}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors cursor-pointer text-[10.5px] font-semibold"
+                    >
+                      <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin text-emerald-400' : 'text-slate-400'}`} />
+                      <span>{isLoading ? 'Updating...' : 'Refresh'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <h5 className="text-sm font-bold text-emerald-300 mb-1 flex items-center gap-1.5">
+                    <Target className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>
+                      {researchData?.actualScore 
+                        ? `Final Outcome Autopsy: ${match.home} vs ${match.away} (${researchData.actualScore})`
+                        : `Current Tactical Mandate: ${match.home} vs ${match.away}`}
+                    </span>
+                  </h5>
+                  <p className="text-slate-200 text-xs sm:text-[12.5px] leading-relaxed bg-slate-950/70 p-3 rounded-lg border border-white/5">
+                    {executiveVerdict || defeatBreakdown?.masterDiagnosis || 'Dixon-Coles empirical Poisson distribution confirms statistical alignment between underlying xG performance and realized match events.'}
+                  </p>
+                </div>
+
+                {/* Pre-Match Risk Governance Decision Advisory for PASS */}
+                {isPass && (
+                  <div className="p-3 rounded-lg bg-amber-950/50 border border-amber-500/40 flex items-start gap-2.5">
+                    <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                    <div className="text-xs flex-1">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <strong className="text-amber-300 uppercase tracking-wider text-[10px]">
+                          Pre-Match Decision Advisory: PASS (Capital Preserved)
+                        </strong>
+                        <span className="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-amber-900/80 text-amber-200 border border-amber-600/40 font-semibold">
+                          {match.smartMarket?.badge || match.smartMarket?.pickLabel || 'Risk Avoidance Filter'}
+                        </span>
+                        <span className="text-[9.5px] font-mono px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-semibold">
+                          0.00u Risk
+                        </span>
+                      </div>
+                      <p className="text-amber-100/90 leading-relaxed font-sans">
+                        {match.smartMarket?.rationale || match.smartMarket?.marketDivergenceDetail || match.disruptionModel?.reason || 'Model identified sub-optimal edge and elevated entropy prior to kickoff. Disciplined risk governance enforced a strict PASS, protecting portfolio bankroll.'}
+                      </p>
+                      {researchData?.actualScore && (
+                        <div className="mt-1.5 pt-1.5 border-t border-amber-500/30 text-amber-200/80 font-mono text-[10.5px]">
+                          Retrospective Audit: {researchData.actualScore} FT — Capital safely insulated from market noise.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="p-2.5 rounded-lg bg-emerald-950/60 border border-emerald-500/30 flex items-start gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <div className="text-xs">
+                    <strong className="text-emerald-300 block mb-0.5 uppercase tracking-wider text-[10px]">
+                      Core Managerial &amp; Market Takeaway:
+                    </strong>
+                    <span className="text-emerald-100 font-medium leading-snug">
+                      {isPass
+                        ? `Strict capital governance enforced. Model recognized negative expectation / entropy floor (${match.smartMarket?.badge || 'Variance Shield'}) and preserved bankroll against Poisson noise.`
+                        : (calibration?.calibratedPoissonAdjustment || defeatBreakdown?.fatalConcessionZone 
+                            ? `Structural breakdown centered on ${defeatBreakdown?.fatalConcessionZone || 'transition defense'}. Poisson matrix adjusted for upcoming holding fixtures.`
+                            : `Pre-match model baseline indicates ${match.predictedWinner || 'HOME'} position holds positive expectation against market closing lines.`)}
+                    </span>
+                  </div>
+                </div>
+              </div>
               
               {/* 1. MASTER AGENT EXECUTIVE STRATEGIC VERDICT */}
               <div className="rounded-xl border border-teal-500/30 bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 p-4 sm:p-5 shadow-xl relative overflow-hidden">

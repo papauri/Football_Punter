@@ -151,8 +151,45 @@ check('Kickoff +300m → not live', !past300.isLive);
 check('Kickoff +60m in-play → live', at60.isLive === true);
 check('Kickoff in 30m → scheduled, not live', !future.isLive && !future.isCompleted);
 
-// ── Phase 3: cache serialization recovery ──────────────────────────────────────────────────
+// ── Phase 3: cache serialization recovery & ledger resolution audit ─────────────
 check('Fixture cache writes are atomic with .bak recovery', /renameSync\(tmpPath, filePath\)/.test(fs.readFileSync(new URL('../engine.js', import.meta.url), 'utf8')));
+
+// Ledger smart market hit audit: Double Chance 1X on 0-0 draw must be HIT
+const testLedgerEntry1X = {
+  id: 'test-pol-dc',
+  home: 'Poland',
+  away: 'Bosnia-Herzegovina',
+  predictedWinner: 'HOME',
+  smartMarket: { pick: '1X', label: '1X (Poland/Draw)' },
+  actualScore: '0-0',
+  isHit: null
+};
+engine.auditAndCalibrateLedgerEntry(testLedgerEntry1X);
+check('Ledger resolution: Double Chance 1X on 0-0 draw evaluates to HIT', testLedgerEntry1X.isHit === true && testLedgerEntry1X.actualWinner === 'DRAW');
+
+const testLedgerEntryDnbDraw = {
+  id: 'test-dnb-draw',
+  home: 'Montenegro',
+  away: 'Cyprus',
+  predictedWinner: 'HOME',
+  smartMarket: { pick: 'HOME_DNB', label: 'Montenegro DNB' },
+  actualScore: '1-1',
+  isHit: null
+};
+engine.auditAndCalibrateLedgerEntry(testLedgerEntryDnbDraw);
+check('Ledger resolution: DNB on draw evaluates to PUSH (null hit, isPush true)', testLedgerEntryDnbDraw.isHit === null && testLedgerEntryDnbDraw.isPush === true);
+
+const testLedgerEntryPass = {
+  id: 'test-pass',
+  home: 'Hungary',
+  away: 'Ukraine',
+  predictedWinner: 'HOME',
+  smartMarket: { pick: 'PASS', label: 'Pass / Entropy Floor' },
+  actualScore: '0-1',
+  isHit: null
+};
+engine.auditAndCalibrateLedgerEntry(testLedgerEntryPass);
+check('Ledger resolution: PASS market evaluates to PASSED (null hit, isPass true)', testLedgerEntryPass.isHit === null && testLedgerEntryPass.isPass === true);
 
 console.log(results.join('\n'));
 console.log(`\n${failures === 0 ? 'ALL CHECKS PASSED' : `${failures} CHECK(S) FAILED`}`);

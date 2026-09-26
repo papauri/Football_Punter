@@ -2923,7 +2923,8 @@ class SoccerEngine {
         const newlyCompleted = [];
 
         for (const m of analyzed) {
-          if (m.isCompleted) {
+          const hasScore = (m.homeScore != null && m.awayScore != null) || (m.actualScore && m.actualScore.includes('-'));
+          if (m.isCompleted && hasScore) {
             newlyCompleted.push(m);
           } else {
             activeMatches.push(m);
@@ -2945,7 +2946,9 @@ class SoccerEngine {
         }
 
         const existingCompleted = Array.isArray(raw.todayCompletedMatches)
-          ? raw.todayCompletedMatches.map(m => this.analyzeRawFixture(m))
+          ? raw.todayCompletedMatches
+              .map(m => this.analyzeRawFixture(m))
+              .filter(m => (m.homeScore != null && m.awayScore != null) || (m.actualScore && m.actualScore.includes('-')))
           : [];
         
         // Merge completed without duplicates
@@ -3049,6 +3052,40 @@ class SoccerEngine {
   // timestamped and tamper-proof before any result is known.
   // ──────────────────────────────────────────────────────────────────────────
 
+  auditAndCalibrateLedgerEntry(entry) {
+    if (!entry || !entry.actualScore) return;
+    const parts = String(entry.actualScore).split('-').map(s => parseInt(s.trim(), 10));
+    if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return;
+    const [hG, aG] = parts;
+    const actualWinner = hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW';
+    entry.actualWinner = actualWinner;
+
+    const smartHit = this.evaluateHit(entry, hG, aG);
+    if (smartHit !== null) {
+      entry.isHit = smartHit;
+      entry.smartHit = smartHit;
+      entry.isPush = false;
+      entry.isPass = false;
+    } else if (entry.smartMarket?.pick === 'PASS') {
+      entry.isHit = null;
+      entry.smartHit = null;
+      entry.isPass = true;
+      entry.isPush = false;
+    } else if (entry.smartMarket?.pick?.includes('DNB') && actualWinner === 'DRAW') {
+      entry.isHit = null;
+      entry.smartHit = null;
+      entry.isPush = true;
+      entry.isPass = false;
+    } else {
+      const predicted = String(entry.predictedWinner?.pick || entry.predictedWinner || '').toUpperCase()
+        .replace(/^1$/, 'HOME').replace(/^2$/, 'AWAY').replace(/^X$/, 'DRAW');
+      entry.isHit = predicted === actualWinner;
+      entry.smartHit = entry.isHit;
+      entry.isPush = false;
+      entry.isPass = false;
+    }
+  }
+
   loadSnapshotLedger() {
     try {
       const filePath = path.join(process.cwd(), 'pre_kickoff_ledger.json');
@@ -3060,6 +3097,18 @@ class SoccerEngine {
       this.preKickoffLedger = new Map(
         Array.isArray(raw) ? raw.map(entry => [String(entry.id), entry]) : []
       );
+      // Self-heal and calibrate any completed snapshots loaded from disk
+      let modified = false;
+      for (const entry of this.preKickoffLedger.values()) {
+        if (entry.actualScore) {
+          const oldHit = entry.isHit;
+          this.auditAndCalibrateLedgerEntry(entry);
+          if (entry.isHit !== oldHit) modified = true;
+        }
+      }
+      if (modified) {
+        this.saveSnapshotLedger();
+      }
       this.log('SnapshotLedger', `Loaded ${this.preKickoffLedger.size} pre-kickoff snapshots from disk.`);
     } catch (err) {
       this.preKickoffLedger = new Map();
@@ -3158,7 +3207,11 @@ class SoccerEngine {
 
     let resolved = 0;
     for (const [id, entry] of this.preKickoffLedger.entries()) {
-      if (entry.isHit !== null) continue;
+      if (entry.isHit !== null && entry.actualScore) {
+        // Continuous audit in case existing entry had raw 1X2 mismatch with smartMarket pick
+        this.auditAndCalibrateLedgerEntry(entry);
+        continue;
+      }
       const kickoffDay = String(entry.kickoffUtc || '').slice(0, 10);
       const m = byId.get(id) || completedPool.find(c => c && norm(c.home) === norm(entry.home) && norm(c.away) === norm(entry.away) &&
         String(c.dateIso || c.utcDate || c.date || '').slice(0, 10) === kickoffDay);
@@ -3166,13 +3219,9 @@ class SoccerEngine {
       const isFT = !m.isProvisionalResult && (isFinalMatchStatus(m.status) || (!m.status && m.actualWinner));
       const score = scoreOf(m);
       if (!isFT || !score || Number.isNaN(score.home) || Number.isNaN(score.away)) continue;
-      const actualWinner = score.home > score.away ? 'HOME' : score.away > score.home ? 'AWAY' : 'DRAW';
-      const predicted = String(entry.predictedWinner?.pick || entry.predictedWinner || '').toUpperCase()
-        .replace(/^1$/, 'HOME').replace(/^2$/, 'AWAY').replace(/^X$/, 'DRAW');
       entry.actualScore = `${score.home}-${score.away}`;
-      entry.actualWinner = actualWinner;
-      entry.isHit = predicted === actualWinner;
-      entry.resolvedAt = new Date().toISOString();
+      this.auditAndCalibrateLedgerEntry(entry);
+      entry.resolvedAt = entry.resolvedAt || new Date().toISOString();
       resolved++;
     }
     return resolved;
@@ -10759,7 +10808,8 @@ Output format: {"home": 45.5, "draw": 25.5, "away": 29.0, "reason": "Home team r
         edgePercent = Number(((winnerProb / 100) - (1 / effectiveOdds)) * 100).toFixed(1);
 
         const actualWinner = m.actualWinner || (m.homeGoals > m.awayGoals ? 'HOME' : m.awayGoals > m.homeGoals ? 'AWAY' : 'DRAW');
-        isHit = (winnerPick === actualWinner);
+        const smartHit = this.evaluateHit(dcProbs, m.homeGoals, m.awayGoals);
+        isHit = smartHit !== null ? smartHit : (winnerPick === actualWinner);
         hitStatus = isHit ? 'WON' : 'LOST';
 
         const actualScore = m.actualScore || `${m.homeGoals}-${m.awayGoals}`;

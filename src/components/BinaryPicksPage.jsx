@@ -23,6 +23,8 @@ import {
   ChevronUp
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
+import MobileViewSwitcher from './MobileViewSwitcher';
+import { useMobileViewMode } from '../utils/useMobileViewMode';
 import { safeParseFloat, safeToFixed } from '../utils/numberUtils';
 import { getMatchRiskProfile } from '../utils/riskUtils';
 import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey } from '../utils/dateUtils';

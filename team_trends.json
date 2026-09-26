@@ -1,7 +1,7 @@
 {
   "Arsenal": {
     "team": "Arsenal",
-    "updatedAt": "2026-09-25T18:44:15.505Z",
+    "updatedAt": "2026-09-26T20:12:20.681Z",
     "matchesCount": 3,
     "record": {
       "wins": 1,
@@ -80,7 +80,7 @@
   },
   "Chelsea": {
     "team": "Chelsea",
-    "updatedAt": "2026-09-25T18:44:15.502Z",
+    "updatedAt": "2026-09-26T20:12:20.963Z",
     "matchesCount": 3,
     "record": {
       "wins": 2,
@@ -158,7 +158,7 @@
   },
   "FC Twente": {
     "team": "FC Twente",
-    "updatedAt": "2026-09-25T18:44:15.426Z",
+    "updatedAt": "2026-09-26T20:12:21.015Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -211,7 +211,7 @@
   },
   "PSV Eindhoven": {
     "team": "PSV Eindhoven",
-    "updatedAt": "2026-09-25T18:44:15.426Z",
+    "updatedAt": "2026-09-26T20:12:21.059Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -277,7 +277,7 @@
   },
   "Fiorentina": {
     "team": "Fiorentina",
-    "updatedAt": "2026-09-25T18:44:15.441Z",
+    "updatedAt": "2026-09-26T20:12:19.927Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -343,7 +343,7 @@
   },
   "Napoli": {
     "team": "Napoli",
-    "updatedAt": "2026-09-25T18:44:15.441Z",
+    "updatedAt": "2026-09-26T20:12:19.927Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -396,7 +396,7 @@
   },
   "Deportivo": {
     "team": "Deportivo",
-    "updatedAt": "2026-09-25T18:44:15.407Z",
+    "updatedAt": "2026-09-26T20:12:19.884Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -449,7 +449,7 @@
   },
   "Real Betis": {
     "team": "Real Betis",
-    "updatedAt": "2026-09-25T18:44:15.407Z",
+    "updatedAt": "2026-09-26T20:12:19.884Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -501,7 +501,7 @@
   },
   "Frosinone": {
     "team": "Frosinone",
-    "updatedAt": "2026-09-25T18:44:15.442Z",
+    "updatedAt": "2026-09-26T20:12:21.176Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -554,7 +554,7 @@
   },
   "Como": {
     "team": "Como",
-    "updatedAt": "2026-09-25T18:44:15.442Z",
+    "updatedAt": "2026-09-26T20:12:21.176Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -621,7 +621,7 @@
   },
   "Fenerbahce": {
     "team": "Fenerbahce",
-    "updatedAt": "2026-09-25T18:44:15.465Z",
+    "updatedAt": "2026-09-26T20:12:20.895Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -687,7 +687,7 @@
   },
   "AS Roma": {
     "team": "AS Roma",
-    "updatedAt": "2026-09-25T18:44:15.411Z",
+    "updatedAt": "2026-09-26T20:12:20.259Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -739,7 +739,7 @@
   },
   "Celtic": {
     "team": "Celtic",
-    "updatedAt": "2026-09-25T18:44:15.473Z",
+    "updatedAt": "2026-09-26T20:12:20.927Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -806,7 +806,7 @@
   },
   "Rangers": {
     "team": "Rangers",
-    "updatedAt": "2026-09-25T18:44:15.440Z",
+    "updatedAt": "2026-09-26T20:12:20.619Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -859,7 +859,7 @@
   },
   "Bayern Munich": {
     "team": "Bayern Munich",
-    "updatedAt": "2026-09-25T18:44:15.507Z",
+    "updatedAt": "2026-09-26T20:12:20.522Z",
     "matchesCount": 3,
     "record": {
       "wins": 3,
@@ -938,7 +938,7 @@
   },
   "Bodo/Glimt": {
     "team": "Bodo/Glimt",
-    "updatedAt": "2026-09-25T18:44:15.414Z",
+    "updatedAt": "2026-09-26T20:12:20.267Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -991,7 +991,7 @@
   },
   "Shakhtar Donetsk": {
     "team": "Shakhtar Donetsk",
-    "updatedAt": "2026-09-25T18:44:15.412Z",
+    "updatedAt": "2026-09-26T20:12:21.059Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -1043,7 +1043,7 @@
   },
   "Villarreal": {
     "team": "Villarreal",
-    "updatedAt": "2026-09-25T18:44:15.409Z",
+    "updatedAt": "2026-09-26T20:12:20.018Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -1096,7 +1096,7 @@
   },
   "Levante": {
     "team": "Levante",
-    "updatedAt": "2026-09-25T18:44:15.409Z",
+    "updatedAt": "2026-09-26T20:12:20.018Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -1149,7 +1149,7 @@
   },
   "Feyenoord Rotterdam": {
     "team": "Feyenoord Rotterdam",
-    "updatedAt": "2026-09-25T18:44:15.424Z",
+    "updatedAt": "2026-09-26T20:12:20.221Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -1202,7 +1202,7 @@
   },
   "FC Utrecht": {
     "team": "FC Utrecht",
-    "updatedAt": "2026-09-25T18:44:15.424Z",
+    "updatedAt": "2026-09-26T20:12:20.221Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -1255,7 +1255,7 @@
   },
   "Santa Clara": {
     "team": "Santa Clara",
-    "updatedAt": "2026-09-25T18:44:15.437Z",
+    "updatedAt": "2026-09-26T20:12:20.954Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -1307,7 +1307,7 @@
   },
   "Braga": {
     "team": "Braga",
-    "updatedAt": "2026-09-25T18:44:15.437Z",
+    "updatedAt": "2026-09-26T20:12:20.954Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -1359,7 +1359,7 @@
   },
   "Getafe": {
     "team": "Getafe",
-    "updatedAt": "2026-09-25T18:44:15.405Z",
+    "updatedAt": "2026-09-26T20:12:20.838Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -1412,7 +1412,7 @@
   },
   "Málaga": {
     "team": "Málaga",
-    "updatedAt": "2026-09-25T18:44:15.405Z",
+    "updatedAt": "2026-09-26T20:12:20.838Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -1478,7 +1478,7 @@
   },
   "Manchester United": {
     "team": "Manchester United",
-    "updatedAt": "2026-09-25T18:44:15.417Z",
+    "updatedAt": "2026-09-26T20:12:20.288Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -1544,7 +1544,7 @@
   },
   "Sabah FK": {
     "team": "Sabah FK",
-    "updatedAt": "2026-09-25T18:44:15.417Z",
+    "updatedAt": "2026-09-26T20:12:20.288Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -1597,7 +1597,7 @@
   },
   "Amed SFK": {
     "team": "Amed SFK",
-    "updatedAt": "2026-09-25T18:44:15.466Z",
+    "updatedAt": "2026-09-26T20:12:20.845Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -1650,7 +1650,7 @@
   },
   "Besiktas": {
     "team": "Besiktas",
-    "updatedAt": "2026-09-25T18:44:15.471Z",
+    "updatedAt": "2026-09-26T20:12:20.845Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -1718,7 +1718,7 @@
   },
   "Marseille": {
     "team": "Marseille",
-    "updatedAt": "2026-09-25T18:44:15.471Z",
+    "updatedAt": "2026-09-26T20:12:21.138Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -1784,7 +1784,7 @@
   },
   "Paris Saint-Germain": {
     "team": "Paris Saint-Germain",
-    "updatedAt": "2026-09-25T18:44:15.480Z",
+    "updatedAt": "2026-09-26T20:12:21.138Z",
     "matchesCount": 2,
     "record": {
       "wins": 2,
@@ -1850,7 +1850,7 @@
   },
   "Bolivia": {
     "team": "Bolivia",
-    "updatedAt": "2026-09-25T18:44:15.496Z",
+    "updatedAt": "2026-09-26T20:12:21.192Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -1903,7 +1903,7 @@
   },
   "Brazil": {
     "team": "Brazil",
-    "updatedAt": "2026-09-25T18:44:15.496Z",
+    "updatedAt": "2026-09-26T20:12:21.192Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -1955,7 +1955,7 @@
   },
   "Parma": {
     "team": "Parma",
-    "updatedAt": "2026-09-25T18:44:15.443Z",
+    "updatedAt": "2026-09-26T20:12:20.441Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -2007,7 +2007,7 @@
   },
   "Genoa": {
     "team": "Genoa",
-    "updatedAt": "2026-09-25T18:44:15.443Z",
+    "updatedAt": "2026-09-26T20:12:20.441Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -2073,7 +2073,7 @@
   },
   "AJ Auxerre": {
     "team": "AJ Auxerre",
-    "updatedAt": "2026-09-25T18:44:15.428Z",
+    "updatedAt": "2026-09-26T20:12:20.828Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -2125,7 +2125,7 @@
   },
   "Brest": {
     "team": "Brest",
-    "updatedAt": "2026-09-25T18:44:15.428Z",
+    "updatedAt": "2026-09-26T20:12:20.828Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2178,7 +2178,7 @@
   },
   "Vitória de Guimaraes": {
     "team": "Vitória de Guimaraes",
-    "updatedAt": "2026-09-25T18:44:15.435Z",
+    "updatedAt": "2026-09-26T20:12:21.042Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2231,7 +2231,7 @@
   },
   "Moreirense": {
     "team": "Moreirense",
-    "updatedAt": "2026-09-25T18:44:15.435Z",
+    "updatedAt": "2026-09-26T20:12:21.042Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2283,7 +2283,7 @@
   },
   "Estrela": {
     "team": "Estrela",
-    "updatedAt": "2026-09-25T18:44:15.433Z",
+    "updatedAt": "2026-09-26T20:12:21.030Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2337,7 +2337,7 @@
   },
   "Académico de Viseu": {
     "team": "Académico de Viseu",
-    "updatedAt": "2026-09-25T18:44:15.433Z",
+    "updatedAt": "2026-09-26T20:12:21.030Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -2389,7 +2389,7 @@
   },
   "SC Paderborn 07": {
     "team": "SC Paderborn 07",
-    "updatedAt": "2026-09-25T18:44:15.422Z",
+    "updatedAt": "2026-09-26T20:12:20.332Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -2442,7 +2442,7 @@
   },
   "TSG Hoffenheim": {
     "team": "TSG Hoffenheim",
-    "updatedAt": "2026-09-25T18:44:15.470Z",
+    "updatedAt": "2026-09-26T20:12:21.224Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -2509,7 +2509,7 @@
   },
   "Levadiakos": {
     "team": "Levadiakos",
-    "updatedAt": "2026-09-25T18:44:15.457Z",
+    "updatedAt": "2026-09-26T20:12:20.361Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2561,7 +2561,7 @@
   },
   "Olympiacos": {
     "team": "Olympiacos",
-    "updatedAt": "2026-09-25T18:44:15.457Z",
+    "updatedAt": "2026-09-26T20:12:20.361Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -2613,7 +2613,7 @@
   },
   "NEC Nijmegen": {
     "team": "NEC Nijmegen",
-    "updatedAt": "2026-09-25T18:44:15.475Z",
+    "updatedAt": "2026-09-26T20:12:20.888Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -2679,7 +2679,7 @@
   },
   "Go Ahead Eagles": {
     "team": "Go Ahead Eagles",
-    "updatedAt": "2026-09-25T18:44:15.427Z",
+    "updatedAt": "2026-09-26T20:12:20.888Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2732,7 +2732,7 @@
   },
   "AZ Alkmaar": {
     "team": "AZ Alkmaar",
-    "updatedAt": "2026-09-25T18:44:15.425Z",
+    "updatedAt": "2026-09-26T20:12:20.880Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -2785,7 +2785,7 @@
   },
   "Telstar": {
     "team": "Telstar",
-    "updatedAt": "2026-09-25T18:44:15.425Z",
+    "updatedAt": "2026-09-26T20:12:20.880Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2837,7 +2837,7 @@
   },
   "Aston Villa": {
     "team": "Aston Villa",
-    "updatedAt": "2026-09-25T18:44:15.480Z",
+    "updatedAt": "2026-09-26T20:12:20.573Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2890,7 +2890,7 @@
   },
   "Erzurum BB": {
     "team": "Erzurum BB",
-    "updatedAt": "2026-09-25T18:44:15.462Z",
+    "updatedAt": "2026-09-26T20:12:20.861Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -2942,7 +2942,7 @@
   },
   "Samsunspor": {
     "team": "Samsunspor",
-    "updatedAt": "2026-09-25T18:44:15.463Z",
+    "updatedAt": "2026-09-26T20:12:20.861Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -2995,7 +2995,7 @@
   },
   "Nice": {
     "team": "Nice",
-    "updatedAt": "2026-09-25T18:44:15.508Z",
+    "updatedAt": "2026-09-26T20:12:20.920Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -3062,7 +3062,7 @@
   },
   "Lille": {
     "team": "Lille",
-    "updatedAt": "2026-09-25T18:44:15.430Z",
+    "updatedAt": "2026-09-26T20:12:20.920Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3117,7 +3117,7 @@
   },
   "Levski Sofia": {
     "team": "Levski Sofia",
-    "updatedAt": "2026-09-25T18:44:15.469Z",
+    "updatedAt": "2026-09-26T20:12:20.872Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3169,7 +3169,7 @@
   },
   "RB Salzburg": {
     "team": "RB Salzburg",
-    "updatedAt": "2026-09-25T18:44:15.469Z",
+    "updatedAt": "2026-09-26T20:12:20.872Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -3222,7 +3222,7 @@
   },
   "Estoril": {
     "team": "Estoril",
-    "updatedAt": "2026-09-25T18:44:15.436Z",
+    "updatedAt": "2026-09-26T20:12:20.431Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3276,7 +3276,7 @@
   },
   "Casa Pia": {
     "team": "Casa Pia",
-    "updatedAt": "2026-09-25T18:44:15.436Z",
+    "updatedAt": "2026-09-26T20:12:20.431Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -3432,7 +3432,7 @@
   },
   "Atlético Madrid": {
     "team": "Atlético Madrid",
-    "updatedAt": "2026-09-25T18:44:15.406Z",
+    "updatedAt": "2026-09-26T20:12:20.193Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -3485,7 +3485,7 @@
   },
   "Real Madrid": {
     "team": "Real Madrid",
-    "updatedAt": "2026-09-25T18:44:15.406Z",
+    "updatedAt": "2026-09-26T20:12:20.193Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -3550,7 +3550,7 @@
   },
   "Bosnia-Herzegovina": {
     "team": "Bosnia-Herzegovina",
-    "updatedAt": "2026-09-25T18:44:15.490Z",
+    "updatedAt": "2026-09-26T20:12:20.767Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3603,7 +3603,7 @@
   },
   "Italy": {
     "team": "Italy",
-    "updatedAt": "2026-09-25T18:44:15.490Z",
+    "updatedAt": "2026-09-26T20:12:20.767Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3655,7 +3655,7 @@
   },
   "FC Porto": {
     "team": "FC Porto",
-    "updatedAt": "2026-09-25T18:44:15.438Z",
+    "updatedAt": "2026-09-26T20:12:21.158Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -3708,7 +3708,7 @@
   },
   "Benfica": {
     "team": "Benfica",
-    "updatedAt": "2026-09-25T18:44:15.438Z",
+    "updatedAt": "2026-09-26T20:12:21.158Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3761,7 +3761,7 @@
   },
   "Club Brugge": {
     "team": "Club Brugge",
-    "updatedAt": "2026-09-25T18:44:15.451Z",
+    "updatedAt": "2026-09-26T20:12:20.712Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -3814,7 +3814,7 @@
   },
   "Racing Genk": {
     "team": "Racing Genk",
-    "updatedAt": "2026-09-25T18:44:15.451Z",
+    "updatedAt": "2026-09-26T20:12:20.712Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3867,7 +3867,7 @@
   },
   "Peru": {
     "team": "Peru",
-    "updatedAt": "2026-09-25T18:44:15.499Z",
+    "updatedAt": "2026-09-26T20:12:20.695Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -3919,7 +3919,7 @@
   },
   "Paraguay": {
     "team": "Paraguay",
-    "updatedAt": "2026-09-25T18:44:15.499Z",
+    "updatedAt": "2026-09-26T20:12:20.695Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -3972,7 +3972,7 @@
   },
   "Eyupspor": {
     "team": "Eyupspor",
-    "updatedAt": "2026-09-25T18:44:15.465Z",
+    "updatedAt": "2026-09-26T20:12:20.895Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4026,7 +4026,7 @@
   },
   "Schalke 04": {
     "team": "Schalke 04",
-    "updatedAt": "2026-09-25T18:44:15.421Z",
+    "updatedAt": "2026-09-26T20:12:20.125Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4078,7 +4078,7 @@
   },
   "SV Elversberg": {
     "team": "SV Elversberg",
-    "updatedAt": "2026-09-25T18:44:15.421Z",
+    "updatedAt": "2026-09-26T20:12:20.125Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4130,7 +4130,7 @@
   },
   "Spain": {
     "team": "Spain",
-    "updatedAt": "2026-09-25T18:44:15.489Z",
+    "updatedAt": "2026-09-26T20:12:20.911Z",
     "matchesCount": 2,
     "record": {
       "wins": 2,
@@ -4196,7 +4196,7 @@
   },
   "England": {
     "team": "England",
-    "updatedAt": "2026-09-25T18:44:15.484Z",
+    "updatedAt": "2026-09-26T20:12:20.775Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4356,7 +4356,7 @@
   },
   "KV Kortrijk": {
     "team": "KV Kortrijk",
-    "updatedAt": "2026-09-25T18:44:15.452Z",
+    "updatedAt": "2026-09-26T20:12:20.498Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -4408,7 +4408,7 @@
   },
   "Waasland-Beveren": {
     "team": "Waasland-Beveren",
-    "updatedAt": "2026-09-25T18:44:15.452Z",
+    "updatedAt": "2026-09-26T20:12:20.498Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4460,7 +4460,7 @@
   },
   "Slavia Prague": {
     "team": "Slavia Prague",
-    "updatedAt": "2026-09-25T18:44:15.418Z",
+    "updatedAt": "2026-09-26T20:12:20.323Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4514,7 +4514,7 @@
   },
   "Lens": {
     "team": "Lens",
-    "updatedAt": "2026-09-25T18:44:15.508Z",
+    "updatedAt": "2026-09-26T20:12:20.673Z",
     "matchesCount": 2,
     "record": {
       "wins": 2,
@@ -4580,7 +4580,7 @@
   },
   "Kalamata": {
     "team": "Kalamata",
-    "updatedAt": "2026-09-25T18:44:15.460Z",
+    "updatedAt": "2026-09-26T20:12:20.592Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4632,7 +4632,7 @@
   },
   "Panathinaikos": {
     "team": "Panathinaikos",
-    "updatedAt": "2026-09-25T18:44:15.460Z",
+    "updatedAt": "2026-09-26T20:12:20.592Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -4685,7 +4685,7 @@
   },
   "Venezuela": {
     "team": "Venezuela",
-    "updatedAt": "2026-09-25T18:44:15.501Z",
+    "updatedAt": "2026-09-26T20:12:20.484Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4739,7 +4739,7 @@
   },
   "Colombia": {
     "team": "Colombia",
-    "updatedAt": "2026-09-25T18:44:15.501Z",
+    "updatedAt": "2026-09-26T20:12:20.484Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -4792,7 +4792,7 @@
   },
   "OFI CRETE": {
     "team": "OFI CRETE",
-    "updatedAt": "2026-09-25T18:44:15.470Z",
+    "updatedAt": "2026-09-26T20:12:21.224Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -4857,7 +4857,7 @@
   },
   "Volos NFC": {
     "team": "Volos NFC",
-    "updatedAt": "2026-09-25T18:44:15.458Z",
+    "updatedAt": "2026-09-26T20:12:20.368Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -4910,7 +4910,7 @@
   },
   "AEK Athens": {
     "team": "AEK Athens",
-    "updatedAt": "2026-09-25T18:44:15.458Z",
+    "updatedAt": "2026-09-26T20:12:20.368Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -4962,7 +4962,7 @@
   },
   "Sint-Truidense": {
     "team": "Sint-Truidense",
-    "updatedAt": "2026-09-25T18:44:15.449Z",
+    "updatedAt": "2026-09-26T20:12:20.637Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5015,7 +5015,7 @@
   },
   "KVC Westerlo": {
     "team": "KVC Westerlo",
-    "updatedAt": "2026-09-25T18:44:15.449Z",
+    "updatedAt": "2026-09-26T20:12:20.637Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -5068,7 +5068,7 @@
   },
   "Kosovo": {
     "team": "Kosovo",
-    "updatedAt": "2026-09-25T18:44:15.493Z",
+    "updatedAt": "2026-09-26T20:12:20.536Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5120,7 +5120,7 @@
   },
   "Türkiye": {
     "team": "Türkiye",
-    "updatedAt": "2026-09-25T18:44:15.493Z",
+    "updatedAt": "2026-09-26T20:12:20.536Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -5172,7 +5172,7 @@
   },
   "Manchester City": {
     "team": "Manchester City",
-    "updatedAt": "2026-09-25T18:44:15.505Z",
+    "updatedAt": "2026-09-26T20:12:20.963Z",
     "matchesCount": 4,
     "record": {
       "wins": 3,
@@ -5267,7 +5267,7 @@
   },
   "Argentina": {
     "team": "Argentina",
-    "updatedAt": "2026-09-25T18:44:15.495Z",
+    "updatedAt": "2026-09-26T20:12:20.911Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -5333,7 +5333,7 @@
   },
   "Ecuador": {
     "team": "Ecuador",
-    "updatedAt": "2026-09-25T18:44:15.495Z",
+    "updatedAt": "2026-09-26T20:12:20.746Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -5385,7 +5385,7 @@
   },
   "Antwerp": {
     "team": "Antwerp",
-    "updatedAt": "2026-09-25T18:44:15.448Z",
+    "updatedAt": "2026-09-26T20:12:20.666Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5438,7 +5438,7 @@
   },
   "Union St.-Gilloise": {
     "team": "Union St.-Gilloise",
-    "updatedAt": "2026-09-25T18:44:15.478Z",
+    "updatedAt": "2026-09-26T20:12:20.818Z",
     "matchesCount": 2,
     "record": {
       "wins": 2,
@@ -5505,7 +5505,7 @@
   },
   "Borussia Dortmund": {
     "team": "Borussia Dortmund",
-    "updatedAt": "2026-09-25T18:44:15.507Z",
+    "updatedAt": "2026-09-26T20:12:20.521Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5558,7 +5558,7 @@
   },
   "Juventus": {
     "team": "Juventus",
-    "updatedAt": "2026-09-25T18:44:15.475Z",
+    "updatedAt": "2026-09-26T20:12:20.854Z",
     "matchesCount": 2,
     "record": {
       "wins": 2,
@@ -5625,7 +5625,7 @@
   },
   "Atalanta": {
     "team": "Atalanta",
-    "updatedAt": "2026-09-25T18:44:15.445Z",
+    "updatedAt": "2026-09-26T20:12:20.855Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5678,7 +5678,7 @@
   },
   "Goztepe": {
     "team": "Goztepe",
-    "updatedAt": "2026-09-25T18:44:15.468Z",
+    "updatedAt": "2026-09-26T20:12:20.475Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5731,7 +5731,7 @@
   },
   "Caykur Rizespor": {
     "team": "Caykur Rizespor",
-    "updatedAt": "2026-09-25T18:44:15.468Z",
+    "updatedAt": "2026-09-26T20:12:20.475Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5783,7 +5783,7 @@
   },
   "Viktoria Plzen": {
     "team": "Viktoria Plzen",
-    "updatedAt": "2026-09-25T18:44:15.478Z",
+    "updatedAt": "2026-09-26T20:12:20.818Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -5837,7 +5837,7 @@
   },
   "Real Sociedad": {
     "team": "Real Sociedad",
-    "updatedAt": "2026-09-25T18:44:15.477Z",
+    "updatedAt": "2026-09-26T20:12:20.935Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -5904,7 +5904,7 @@
   },
   "AFC Bournemouth": {
     "team": "AFC Bournemouth",
-    "updatedAt": "2026-09-25T18:44:15.477Z",
+    "updatedAt": "2026-09-26T20:12:20.759Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -5969,7 +5969,7 @@
   },
   "Asteras Tripoli": {
     "team": "Asteras Tripoli",
-    "updatedAt": "2026-09-25T18:44:15.459Z",
+    "updatedAt": "2026-09-26T20:12:21.127Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6021,7 +6021,7 @@
   },
   "Czechia": {
     "team": "Czechia",
-    "updatedAt": "2026-09-25T18:44:15.491Z",
+    "updatedAt": "2026-09-26T20:12:20.557Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6073,7 +6073,7 @@
   },
   "Denmark": {
     "team": "Denmark",
-    "updatedAt": "2026-09-25T18:44:15.491Z",
+    "updatedAt": "2026-09-26T20:12:20.557Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6286,7 +6286,7 @@
   },
   "Georgia": {
     "team": "Georgia",
-    "updatedAt": "2026-09-25T18:44:15.486Z",
+    "updatedAt": "2026-09-26T20:12:21.183Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -6352,7 +6352,7 @@
   },
   "Greece": {
     "team": "Greece",
-    "updatedAt": "2026-09-25T18:44:15.486Z",
+    "updatedAt": "2026-09-26T20:12:21.183Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6404,7 +6404,7 @@
   },
   "Norwich City": {
     "team": "Norwich City",
-    "updatedAt": "2026-09-25T18:44:15.503Z",
+    "updatedAt": "2026-09-26T20:12:20.491Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6457,7 +6457,7 @@
   },
   "VfL Osnabruck": {
     "team": "VfL Osnabruck",
-    "updatedAt": "2026-09-25T18:44:15.506Z",
+    "updatedAt": "2026-09-26T20:12:20.467Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6510,7 +6510,7 @@
   },
   "AC Milan": {
     "team": "AC Milan",
-    "updatedAt": "2026-09-25T18:44:15.446Z",
+    "updatedAt": "2026-09-26T20:12:21.212Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -6562,7 +6562,7 @@
   },
   "Lecce": {
     "team": "Lecce",
-    "updatedAt": "2026-09-25T18:44:15.446Z",
+    "updatedAt": "2026-09-26T20:12:21.212Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6615,7 +6615,7 @@
   },
   "Panetolikos": {
     "team": "Panetolikos",
-    "updatedAt": "2026-09-25T18:44:15.461Z",
+    "updatedAt": "2026-09-26T20:12:20.579Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6668,7 +6668,7 @@
   },
   "PAOK": {
     "team": "PAOK",
-    "updatedAt": "2026-09-25T18:44:15.461Z",
+    "updatedAt": "2026-09-26T20:12:20.579Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -6721,7 +6721,7 @@
   },
   "Chile": {
     "team": "Chile",
-    "updatedAt": "2026-09-25T18:44:15.498Z",
+    "updatedAt": "2026-09-26T20:12:20.613Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6773,7 +6773,7 @@
   },
   "Uruguay": {
     "team": "Uruguay",
-    "updatedAt": "2026-09-25T18:44:15.498Z",
+    "updatedAt": "2026-09-26T20:12:20.613Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6825,7 +6825,7 @@
   },
   "RB Leipzig": {
     "team": "RB Leipzig",
-    "updatedAt": "2026-09-25T18:44:15.420Z",
+    "updatedAt": "2026-09-26T20:12:20.945Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -6943,7 +6943,7 @@
   },
   "Valencia": {
     "team": "Valencia",
-    "updatedAt": "2026-09-25T18:44:15.410Z",
+    "updatedAt": "2026-09-26T20:12:20.935Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -6997,7 +6997,7 @@
   },
   "Ferencvaros": {
     "team": "Ferencvaros",
-    "updatedAt": "2026-09-25T18:44:15.473Z",
+    "updatedAt": "2026-09-26T20:12:20.927Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -7050,7 +7050,7 @@
   },
   "Bayer Leverkusen": {
     "team": "Bayer Leverkusen",
-    "updatedAt": "2026-09-25T18:44:15.420Z",
+    "updatedAt": "2026-09-26T20:12:20.945Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -7103,7 +7103,7 @@
   },
   "Ukraine": {
     "team": "Ukraine",
-    "updatedAt": "2026-09-25T18:44:15.487Z",
+    "updatedAt": "2026-09-26T20:12:21.200Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -7156,42 +7156,56 @@
   },
   "Iceland": {
     "team": "Iceland",
-    "updatedAt": "2026-09-25T18:44:15.487Z",
-    "matchesCount": 1,
+    "updatedAt": "2026-09-26T20:12:21.200Z",
+    "matchesCount": 2,
     "record": {
       "wins": 0,
-      "draws": 0,
+      "draws": 1,
       "losses": 1,
       "winRate": 0
     },
     "metrics": {
-      "avgPossession": 39.9,
-      "avgShots": 6,
-      "avgShotsOnTarget": 3,
+      "avgPossession": 51.3,
+      "avgShots": 12.5,
+      "avgShotsOnTarget": 5.5,
       "avgGoalsScored": 1,
-      "avgGoalsConceded": 2,
-      "avgXgCreated": 1.08,
-      "avgXgConceded": 1.9,
+      "avgGoalsConceded": 1.5,
+      "avgXgCreated": 2.05,
+      "avgXgConceded": 1.42,
       "cleanSheets": 0,
       "failedToScore": 0
     },
     "tacticalIndices": {
-      "lateCapitulationIndex": 100,
+      "lateCapitulationIndex": 50,
       "lateCapitulationRisk": "CRITICAL",
       "lowBlockFrictionIndex": 4.5,
-      "counterAttackLethality": 8.2,
+      "counterAttackLethality": 5.5,
       "setPieceVulnerability": 3.5
     },
     "recurringWinDrivers": [
-      "Lethal transition efficiency on vertical counter-attacks (<39.9% possession)"
+      "Lethal transition efficiency on vertical counter-attacks (<51.3% possession)",
+      "High box penetration: 5.5 shots on target/game"
     ],
     "recurringLossDrivers": [
-      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
-      "Defensive frailty: conceding 2 goals/game on average"
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 2 matches",
+      "Defensive frailty: conceding 1.5 goals/game on average"
     ],
     "tacticalIdentity": "Balanced Structural Mid-Block",
     "badge": "⚠️ Late Conceder",
     "recentMatches": [
+      {
+        "matchId": "401861058",
+        "opponent": "Estonia",
+        "venue": "HOME",
+        "result": "DRAW",
+        "score": "1-1",
+        "date": "2026-09-26",
+        "possession": 62.7,
+        "shots": 19,
+        "shotsOnTarget": 8,
+        "xG": 3.03,
+        "lossReason": null
+      },
       {
         "matchId": "701206",
         "opponent": "Ukraine",
@@ -7209,7 +7223,7 @@
   },
   "Crystal Palace": {
     "team": "Crystal Palace",
-    "updatedAt": "2026-09-25T18:44:15.474Z",
+    "updatedAt": "2026-09-26T20:12:20.782Z",
     "matchesCount": 2,
     "record": {
       "wins": 1,
@@ -7276,7 +7290,7 @@
   },
   "Lech Poznan": {
     "team": "Lech Poznan",
-    "updatedAt": "2026-09-25T18:44:15.474Z",
+    "updatedAt": "2026-09-26T20:12:20.782Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -7330,7 +7344,7 @@
   },
   "Lillestrom": {
     "team": "Lillestrom",
-    "updatedAt": "2026-09-25T18:44:15.476Z",
+    "updatedAt": "2026-09-26T20:12:21.166Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -7385,7 +7399,7 @@
   },
   "Torreense": {
     "team": "Torreense",
-    "updatedAt": "2026-09-25T18:44:15.476Z",
+    "updatedAt": "2026-09-26T20:12:21.166Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -7437,7 +7451,7 @@
   },
   "Sweden": {
     "team": "Sweden",
-    "updatedAt": "2026-09-25T18:44:15.494Z",
+    "updatedAt": "2026-09-26T20:12:21.145Z",
     "matchesCount": 1,
     "record": {
       "wins": 1,
@@ -7490,7 +7504,7 @@
   },
   "Poland": {
     "team": "Poland",
-    "updatedAt": "2026-09-25T18:44:15.494Z",
+    "updatedAt": "2026-09-26T20:12:21.145Z",
     "matchesCount": 2,
     "record": {
       "wins": 0,
@@ -7557,7 +7571,7 @@
   },
   "Wales": {
     "team": "Wales",
-    "updatedAt": "2026-09-25T18:44:15.488Z",
+    "updatedAt": "2026-09-26T20:12:20.657Z",
     "matchesCount": 1,
     "record": {
       "wins": 0,
@@ -8078,6 +8092,1006 @@
         "shotsOnTarget": 5,
         "xG": 1.9,
         "lossReason": null
+      }
+    ]
+  },
+  "UB Lebrijana": {
+    "team": "UB Lebrijana",
+    "updatedAt": "2026-09-26T20:12:20.145Z",
+    "matchesCount": 1,
+    "record": {
+      "wins": 1,
+      "draws": 0,
+      "losses": 0,
+      "winRate": 100
+    },
+    "metrics": {
+      "avgPossession": 50,
+      "avgShots": 0,
+      "avgShotsOnTarget": 0,
+      "avgGoalsScored": 5,
+      "avgGoalsConceded": 0,
+      "avgXgCreated": 0.1,
+      "avgXgConceded": 0,
+      "cleanSheets": 1,
+      "failedToScore": 0
+    },
+    "tacticalIndices": {
+      "lateCapitulationIndex": 0,
+      "lateCapitulationRisk": "LOW",
+      "lowBlockFrictionIndex": 4.5,
+      "counterAttackLethality": 5.5,
+      "setPieceVulnerability": 3.5
+    },
+    "recurringWinDrivers": [
+      "Lethal transition efficiency on vertical counter-attacks (<50% possession)"
+    ],
+    "recurringLossDrivers": [
+      "Occasional finishing variance when facing elite shot-stoppers"
+    ],
+    "tacticalIdentity": "Balanced Structural Mid-Block",
+    "badge": "🔥 Scoring Machine",
+    "recentMatches": [
+      {
+        "matchId": "401918765",
+        "opponent": "Ceuta 6 de Junio",
+        "venue": "HOME",
+        "result": "WIN",
+        "score": "5-0",
+        "date": "2026-09-26",
+        "possession": 50,
+        "shots": 0,
+        "shotsOnTarget": 0,
+        "xG": 0.1,
+        "lossReason": null
+      }
+    ]
+  },
+  "Ceuta 6 de Junio": {
+    "team": "Ceuta 6 de Junio",
+    "updatedAt": "2026-09-26T20:12:20.145Z",
+    "matchesCount": 1,
+    "record": {
+      "wins": 0,
+      "draws": 0,
+      "losses": 1,
+      "winRate": 0
+    },
+    "metrics": {
+      "avgPossession": 50,
+      "avgShots": 0,
+      "avgShotsOnTarget": 0,
+      "avgGoalsScored": 0,
+      "avgGoalsConceded": 5,
+      "avgXgCreated": 0.1,
+      "avgXgConceded": 4.75,
+      "cleanSheets": 0,
+      "failedToScore": 1
+    },
+    "tacticalIndices": {
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
+      "lowBlockFrictionIndex": 4.5,
+      "counterAttackLethality": 5.5,
+      "setPieceVulnerability": 3.5
+    },
+    "recurringWinDrivers": [
+      "Lethal transition efficiency on vertical counter-attacks (<50% possession)"
+    ],
+    "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
+      "Defensive frailty: conceding 5 goals/game on average"
+    ],
+    "tacticalIdentity": "Compact Low-Block & Counter",
+    "badge": "⚠️ Late Conceder",
+    "recentMatches": [
+      {
+        "matchId": "401918765",
+        "opponent": "UB Lebrijana",
+        "venue": "AWAY",
+        "result": "LOSS",
+        "score": "0-5",
+        "date": "2026-09-26",
+        "possession": 50,
+        "shots": 0,
+        "shotsOnTarget": 0,
+        "xG": 0.1,
+        "lossReason": "Executive Tactical Verdict: UB Lebrijana dismantled Ceuta 6 de Junio 5-0 by ruthlessly exploiting structural and situational vulnerabilities. UB Lebrijana generated 0.1 xG across 0 shots (0 on target) with 50% possession, systematically pinning Ceuta 6 de Junio (50% possession, 0.1 xG). While Ceuta 6 de Junio attempted late adjustments, UB Lebrijana's defensive discipline and transitional speed rendered the victory completely authoritative."
+      }
+    ]
+  },
+  "Anaitasuna": {
+    "team": "Anaitasuna",
+    "updatedAt": "2026-09-26T20:12:20.155Z",
+    "matchesCount": 1,
+    "record": {
+      "wins": 1,
+      "draws": 0,
+      "losses": 0,
+      "winRate": 100
+    },
+    "metrics": {
+      "avgPossession": 50,
+      "avgShots": 0,
+      "avgShotsOnTarget": 0,
+      "avgGoalsScored": 5,
+      "avgGoalsConceded": 0,
+      "avgXgCreated": 0.1,
+      "avgXgConceded": 0,
+      "cleanSheets": 1,
+      "failedToScore": 0
+    },
+    "tacticalIndices": {
+      "lateCapitulationIndex": 0,
+      "lateCapitulationRisk": "LOW",
+      "lowBlockFrictionIndex": 4.5,
+      "counterAttackLethality": 5.5,
+      "setPieceVulnerability": 3.5
+    },
+    "recurringWinDrivers": [
+      "Lethal transition efficiency on vertical counter-attacks (<50% possession)"
+    ],
+    "recurringLossDrivers": [
+      "Occasional finishing variance when facing elite shot-stoppers"
+    ],
+    "tacticalIdentity": "Compact Low-Block & Counter",
+    "badge": "🔥 Scoring Machine",
+    "recentMatches": [
+      {
+        "matchId": "401918750",
+        "opponent": "CD Tedeón",
+        "venue": "HOME",
+        "result": "WIN",
+        "score": "5-0",
+        "date": "2026-09-26",
+        "possession": 50,
+        "shots": 0,
+        "shotsOnTarget": 0,
+        "xG": 0.1,
+        "lossReason": null
+      }
+    ]
+  },
+  "CD Tedeón": {
+    "team": "CD Tedeón",
+    "updatedAt": "2026-09-26T20:12:20.155Z",
+    "matchesCount": 1,
+    "record": {
+      "wins": 0,
+      "draws": 0,
+      "losses": 1,
+      "winRate": 0
+    },
+    "metrics": {
+      "avgPossession": 50,
+      "avgShots": 0,
+      "avgShotsOnTarget": 0,
+      "avgGoalsScored": 0,
+      "avgGoalsConceded": 5,
+      "avgXgCreated": 0.1,
+      "avgXgConceded": 4.75,
+      "cleanSheets": 0,
+      "failedToScore": 1
+    },
+    "tacticalIndices": {
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
+      "lowBlockFrictionIndex": 4.5,
+      "counterAttackLethality": 5.5,
+      "setPieceVulnerability": 3.5
+    },
+    "recurringWinDrivers": [
+      "Lethal transition efficiency on vertical counter-attacks (<50% possession)"
+    ],
+    "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
+      "Defensive frailty: conceding 5 goals/game on average"
+    ],
+    "tacticalIdentity": "Balanced Structural Mid-Block",
+    "badge": "⚠️ Late Conceder",
+    "recentMatches": [
+      {
+        "matchId": "401918750",
+        "opponent": "Anaitasuna",
+        "venue": "AWAY",
+        "result": "LOSS",
+        "score": "0-5",
+        "date": "2026-09-26",
+        "possession": 50,
+        "shots": 0,
+        "shotsOnTarget": 0,
+        "xG": 0.1,
+        "lossReason": "Executive Tactical Verdict: Anaitasuna dismantled CD Tedeón 5-0 by ruthlessly exploiting structural and situational vulnerabilities. Anaitasuna generated 0.1 xG across 0 shots (0 on target) with 50% possession, systematically pinning CD Tedeón (50% possession, 0.1 xG). While CD Tedeón attempted late adjustments, Anaitasuna's defensive discipline and transitional speed rendered the victory completely authoritative."
+      }
+    ]
+  },
+  "San Marino": {
+    "team": "San Marino",
+    "updatedAt": "2026-09-26T20:12:20.250Z",
+    "matchesCount": 1,
+    "record": {
+      "wins": 0,
+      "draws": 0,
+      "losses": 1,
+      "winRate": 0
+    },
+    "metrics": {
+      "avgPossession": 24.7,
+      "avgShots": 1,
+      "avgShotsOnTarget": 0,
+      "avgGoalsScored": 0,
+      "avgGoalsConceded": 7,
+      "avgXgCreated": 0.1,
+      "avgXgConceded": 6.65,
+      "cleanSheets": 0,
+      "failedToScore": 1
+    },
+    "tacticalIndices": {
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
+      "lowBlockFrictionIndex": 4.5,
+      "counterAttackLethality": 8.2,
+      "setPieceVulnerability": 6.5
+    },
+    "recurringWinDrivers": [
+      "Lethal transition efficiency on vertical counter-attacks (<24.7% possession)"
+    ],
+    "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
+      "Defensive frailty: conceding 7 goals/game on average"
+    ],
+    "tacticalIdentity": "Compact Low-Block & Counter",
+    "badge": "⚠️ Late Conceder",
+    "recentMatches": [
+      {
+        "matchId": "401861059",
+        "opponent": "Finland",
+        "venue": "HOME",
+        "result": "LOSS",
+        "score": "0-7",
+        "date": "2026-09-26",
+        "possession": 24.7,
+        "shots": 1,
+        "shotsOnTarget": 0,
+        "xG": 0.1,
+        "lossReason": "Executive Tactical Verdict: Finland dismantled San Marino 0-7 by ruthlessly exploiting structural and situational vulnerabilities. Finland generated 4.01 xG across 23 shots (11 on target) with 75.3% possession, systematically pinning San Marino (24.7% possession, 0.1 xG). The match pivoted irrevocably in the 51' when Alessandro Golinucci was dismissed, shattering San Marino's tactical shape. Finland's breakthrough via Joel Pohjanpalo (5') established insurmountable tactical momentum. While San Marino attempted late adjustments, Finland's defensive discipline and transitional speed rendered the victory completely authoritative."
+      }
+    ]
+  },
+  "Finland": {
+    "team": "Finland",
+    "updatedAt": "2026-09-26T20:12:20.250Z",
+    "matchesCount": 1,
+    "record": {
+      "wins": 1,
+      "draws": 0,
+      "losses": 0,
+      "winRate": 100
+    },
+    "metrics": {
+      "avgPossession": 75.3,
+      "avgShots": 23,
+      "avgShotsOnTarget": 11,
+      "avgGoalsScored": 7,
+      "avgGoalsConceded": 0,
+      "avgXgCreated": 4.01,
+      "avgXgConceded": 0,
+      "cleanSheets": 1,
+      "failedToScore": 0
+    },
+    "tacticalIndices": {
+      "lateCapitulationIndex": 0,
+      "lateCapitulationRisk": "LOW",
+      "lowBlockFrictionIndex": 7.2,
+      "counterAttackLethality": 5.5,
+      "setPieceVulnerability": 3.5
+    },
+    "recurringWinDrivers": [
+      "Territorial dominance with high possession volume (75.3% avg)",
+      "High box penetration: 11 shots on target/game"
+    ],
+    "recurringLossDrivers": [
+      "Occasional finishing variance when facing elite shot-stoppers"
+    ],
+    "tacticalIdentity": "Compact Low-Block & Counter",
+    "badge": "🔥 Scoring Machine",
+    "recentMatches": [
+      {
+        "matchId": "401861059",
+        "opponent": "San Marino",
+        "venue": "AWAY",
+        "result": "WIN",
+        "score": "7-0",
+        "date": "2026-09-26",
+        "possession": 75.3,
+        "shots": 23,
+        "shotsOnTarget": 11,
+        "xG": 4.01,
+        "lossReason": null
+      }
+    ]
+  },
+  "Bulgaria": {
+    "team": "Bulgaria",
+    "updatedAt": "2026-09-26T20:12:20.738Z",
+    "matchesCount": 1,
+    "record": {
+      "wins": 0,
+      "draws": 0,
+      "losses": 1,
+      "winRate": 0
+    },
+    "metrics": {
+      "avgPossession": 49.7,
+      "avgShots": 10,
+      "avgShotsOnTarget": 7,
+      "avgGoalsScored": 1,
+      "avgGoalsConceded": 2,
+      "avgXgCreated": 2.32,
+      "avgXgConceded": 1.9,
+      "cleanSheets": 0,
+      "failedToScore": 0
+    },
+    "tacticalIndices": {
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
+      "lowBlockFrictionIndex": 4.5,
+      "counterAttackLethality": 5.5,
+      "setPieceVulnerability": 3.5
+    },
+    "recurringWinDrivers": [
+      "Lethal transition efficiency on vertical counter-attacks (<49.7% possession)",
+      "High box penetration: 7 shots on target/game"
+    ],
+    "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
+      "Defensive frailty: conceding 2 goals/game on average"
+    ],
+    "tacticalIdentity": "Compact Low-Block & Counter",
+    "badge": "⚠️ Late Conceder",
+    "recentMatches": [
+      {
+        "matchId": "401861061",
+        "opponent": "Luxembourg",
+        "venue": "HOME",
+        "result": "LOSS",
+        "score": "1-2",
+        "date": "2026-09-26",
+        "possession": 49.7,
+        "shots": 10,
+        "shotsOnTarget": 7,
+        "xG": 2.32,
+        "lossReason": "Executive Tactical Verdict: Luxembourg dismantled Bulgaria 1-2 by ruthlessly exploiting structural and situational vulnerabilities. Luxembourg generated 2.57 xG across 15 shots (7 on target) with 50.3% possession, systematically pinning Bulgaria (49.7% possession, 2.32 xG). Luxembourg's breakthrough via Asen Chandarov (18') established insurmountable tactical momentum. While Bulgaria attempted late adjustments, Luxembourg's defensive discipline and transitional speed rendered the victory completely authoritative."
+      }
+    ]
+  },
+  "Luxembourg": {
+    "team": "Luxembourg",
+    "updatedAt": "2026-09-26T20:12:20.738Z",
+    "matchesCount": 1,
+    "record": {
+      "wins": 1,
+      "draws": 0,
+      "losses": 0,
+      "winRate": 100
+    },
+    "metrics": {
+      "avgPossession": 50.3,
+      "avgShots": 15,
+      "avgShotsOnTarget": 7,
+      "avgGoalsScored": 2,
+      "avgGoalsConceded": 1,
+      "avgXgCreated": 2.57,
+      "avgXgConceded": 0.95,
+      "cleanSheets": 0,
+      "failedToScore": 0
+    },
+    "tacticalIndices": {
+      "lateCapitulationIndex": 0,
+      "lateCapitulationRisk": "LOW",
+      "lowBlockFrictionIndex": 4.5,
+      "counterAttackLethality": 5.5,
+      "setPieceVulnerability": 3.5
+    },
+    "recurringWinDrivers": [
+      "Lethal transition efficiency on vertical counter-attacks (<50.3% possession)",
+      "High box penetration: 7 shots on target/game"
+    ],
+    "recurringLossDrivers": [
+      "Occasional finishing variance when facing elite shot-stoppers"
+    ],
+    "tacticalIdentity": "Compact Low-Block & Counter",
+    "badge": "🔥 Scoring Machine",
+    "recentMatches": [
+      {
+        "matchId": "401861061",
+        "opponent": "Bulgaria",
+        "venue": "AWAY",
+        "result": "WIN",
+        "score": "2-1",
+        "date": "2026-09-26",
+        "possession": 50.3,
+        "shots": 15,
+        "shotsOnTarget": 7,
+        "xG": 2.57,
+        "lossReason": null
+      }
+    ]
+  },
+  "Atlético Calatayud": {
+    "team": "Atlético Calatayud",
+    "updatedAt": "2026-09-26T20:12:20.164Z",
+    "matchesCount": 1,
+    "record": {
+      "wins": 1,
+      "draws": 0,
+      "losses": 0,
+      "winRate": 100
+    },
+    "metrics": {
+      "avgPossession": 50,
+      "avgShots": 0,
+      "avgShotsOnTarget": 0,
+      "avgGoalsScored": 2,
+      "avgGoalsConceded": 0,
+      "avgXgCreated": 0.1,
+      "avgXgConceded": 0,
+      "cleanSheets": 1,
+      "failedToScore": 0
+    },
+    "tacticalIndices": {
+      "lateCapitulationIndex": 0,
+      "lateCapitulationRisk": "LOW",
+      "lowBlockFrictionIndex": 4.5,
+      "counterAttackLethality": 5.5,
+      "setPieceVulnerability": 6.5
+    },
+    "recurringWinDrivers": [
+      "Lethal transition efficiency on vertical counter-attacks (<50% possession)"
+    ],
+    "recurringLossDrivers": [
+      "Occasional finishing variance when facing elite shot-stoppers"
+    ],
+    "tacticalIdentity": "Balanced Structural Mid-Block",
+    "badge": "🔥 Scoring Machine",
+    "recentMatches": [
+      {
+        "matchId": "401918755",
+        "opponent": "CD Baztán",
+        "venue": "HOME",
+        "result": "WIN",
+        "score": "2-0",
+        "date": "2026-09-26",
+        "possession": 50,
+        "shots": 0,
+        "shotsOnTarget": 0,
+        "xG": 0.1,
+        "lossReason": null
+      }
+    ]
+  },
+  "CD Baztán": {
+    "team": "CD Baztán",
+    "updatedAt": "2026-09-26T20:12:20.164Z",
+    "matchesCount": 1,
+    "record": {
+      "wins": 0,
+      "draws": 0,
+      "losses": 1,
+      "winRate": 0
+    },
+    "metrics": {
+      "avgPossession": 50,
+      "avgShots": 0,
+      "avgShotsOnTarget": 0,
+      "avgGoalsScored": 0,
+      "avgGoalsConceded": 2,
+      "avgXgCreated": 0.1,
+      "avgXgConceded": 1.9,
+      "cleanSheets": 0,
+      "failedToScore": 1
+    },
+    "tacticalIndices": {
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
+      "lowBlockFrictionIndex": 4.5,
+      "counterAttackLethality": 5.5,
+      "setPieceVulnerability": 3.5
+    },
+    "recurringWinDrivers": [
+      "Lethal transition efficiency on vertical counter-attacks (<50% possession)"
+    ],
+    "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
+      "Defensive frailty: conceding 2 goals/game on average"
+    ],
+    "tacticalIdentity": "Compact Low-Block & Counter",
+    "badge": "⚠️ Late Conceder",
+    "recentMatches": [
+      {
+        "matchId": "401918755",
+        "opponent": "Atlético Calatayud",
+        "venue": "AWAY",
+        "result": "LOSS",
+        "score": "0-2",
+        "date": "2026-09-26",
+        "possession": 50,
+        "shots": 0,
+        "shotsOnTarget": 0,
+        "xG": 0.1,
+        "lossReason": "Executive Tactical Verdict: Atlético Calatayud dismantled CD Baztán 2-0 by ruthlessly exploiting structural and situational vulnerabilities. Atlético Calatayud generated 0.1 xG across 0 shots (0 on target) with 50% possession, systematically pinning CD Baztán (50% possession, 0.1 xG). While CD Baztán attempted late adjustments, Atlético Calatayud's defensive discipline and transitional speed rendered the victory completely authoritative."
+      }
+    ]
+  },
+  "Ribadesella": {
+    "team": "Ribadesella",
+    "updatedAt": "2026-09-26T20:12:20.353Z",
+    "matchesCount": 1,
+    "record": {
+      "wins": 1,
+      "draws": 0,
+      "losses": 0,
+      "winRate": 100
+    },
+    "metrics": {
+      "avgPossession": 50,
+      "avgShots": 0,
+      "avgShotsOnTarget": 0,
+      "avgGoalsScored": 1,
+      "avgGoalsConceded": 0,
+      "avgXgCreated": 0.1,
+      "avgXgConceded": 0,
+      "cleanSheets": 1,
+      "failedToScore": 0
+    },
+    "tacticalIndices": {
+      "lateCapitulationIndex": 0,
+      "lateCapitulationRisk": "LOW",
+      "lowBlockFrictionIndex": 4.5,
+      "counterAttackLethality": 5.5,
+      "setPieceVulnerability": 3.5
+    },
+    "recurringWinDrivers": [
+      "Lethal transition efficiency on vertical counter-attacks (<50% possession)"
+    ],
+    "recurringLossDrivers": [
+      "Occasional finishing variance when facing elite shot-stoppers"
+    ],
+    "tacticalIdentity": "Balanced Structural Mid-Block",
+    "badge": "⚔️ Competitive Shape",
+    "recentMatches": [
+      {
+        "matchId": "401918756",
+        "opponent": "SD Noja",
+        "venue": "HOME",
+        "result": "WIN",
+        "score": "1-0",
+        "date": "2026-09-26",
+        "possession": 50,
+        "shots": 0,
+        "shotsOnTarget": 0,
+        "xG": 0.1,
+        "lossReason": null
+      }
+    ]
+  },
+  "SD Noja": {
+    "team": "SD Noja",
+    "updatedAt": "2026-09-26T20:12:20.353Z",
+    "matchesCount": 1,
+    "record": {
+      "wins": 0,
+      "draws": 0,
+      "losses": 1,
+      "winRate": 0
+    },
+    "metrics": {
+      "avgPossession": 50,
+      "avgShots": 0,
+      "avgShotsOnTarget": 0,
+      "avgGoalsScored": 0,
+      "avgGoalsConceded": 1,
+      "avgXgCreated": 0.1,
+      "avgXgConceded": 0.95,
+      "cleanSheets": 0,
+      "failedToScore": 1
+    },
+    "tacticalIndices": {
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
+      "lowBlockFrictionIndex": 4.5,
+      "counterAttackLethality": 5.5,
+      "setPieceVulnerability": 3.5
+    },
+    "recurringWinDrivers": [
+      "Lethal transition efficiency on vertical counter-attacks (<50% possession)"
+    ],
+    "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches"
+    ],
+    "tacticalIdentity": "Balanced Structural Mid-Block",
+    "badge": "⚠️ Late Conceder",
+    "recentMatches": [
+      {
+        "matchId": "401918756",
+        "opponent": "Ribadesella",
+        "venue": "AWAY",
+        "result": "LOSS",
+        "score": "0-1",
+        "date": "2026-09-26",
+        "possession": 50,
+        "shots": 0,
+        "shotsOnTarget": 0,
+        "xG": 0.1,
+        "lossReason": "Executive Tactical Verdict: Ribadesella dismantled SD Noja 1-0 by ruthlessly exploiting structural and situational vulnerabilities. Ribadesella generated 0.1 xG across 0 shots (0 on target) with 50% possession, systematically pinning SD Noja (50% possession, 0.1 xG). While SD Noja attempted late adjustments, Ribadesella's defensive discipline and transitional speed rendered the victory completely authoritative."
+      }
+    ]
+  },
+  "Faroe Islands": {
+    "team": "Faroe Islands",
+    "updatedAt": "2026-09-26T20:12:20.586Z",
+    "matchesCount": 1,
+    "record": {
+      "wins": 0,
+      "draws": 1,
+      "losses": 0,
+      "winRate": 0
+    },
+    "metrics": {
+      "avgPossession": 42.3,
+      "avgShots": 14,
+      "avgShotsOnTarget": 5,
+      "avgGoalsScored": 1,
+      "avgGoalsConceded": 1,
+      "avgXgCreated": 2,
+      "avgXgConceded": 0.95,
+      "cleanSheets": 0,
+      "failedToScore": 0
+    },
+    "tacticalIndices": {
+      "lateCapitulationIndex": 0,
+      "lateCapitulationRisk": "LOW",
+      "lowBlockFrictionIndex": 4.5,
+      "counterAttackLethality": 8.2,
+      "setPieceVulnerability": 6.5
+    },
+    "recurringWinDrivers": [
+      "Lethal transition efficiency on vertical counter-attacks (<42.3% possession)",
+      "High box penetration: 5 shots on target/game"
+    ],
+    "recurringLossDrivers": [
+      "Occasional finishing variance when facing elite shot-stoppers"
+    ],
+    "tacticalIdentity": "Compact Low-Block & Counter",
+    "badge": "⚔️ Competitive Shape",
+    "recentMatches": [
+      {
+        "matchId": "401861060",
+        "opponent": "Kazakhstan",
+        "venue": "HOME",
+        "result": "DRAW",
+        "score": "1-1",
+        "date": "2026-09-26",
+        "possession": 42.3,
+        "shots": 14,
+        "shotsOnTarget": 5,
+        "xG": 2,
+        "lossReason": null
+      }
+    ]
+  },
+  "Kazakhstan": {
+    "team": "Kazakhstan",
+    "updatedAt": "2026-09-26T20:12:20.586Z",
+    "matchesCount": 1,
+    "record": {
+      "wins": 0,
+      "draws": 1,
+      "losses": 0,
+      "winRate": 0
+    },
+    "metrics": {
+      "avgPossession": 57.7,
+      "avgShots": 10,
+      "avgShotsOnTarget": 2,
+      "avgGoalsScored": 1,
+      "avgGoalsConceded": 1,
+      "avgXgCreated": 1.02,
+      "avgXgConceded": 0.95,
+      "cleanSheets": 0,
+      "failedToScore": 0
+    },
+    "tacticalIndices": {
+      "lateCapitulationIndex": 0,
+      "lateCapitulationRisk": "LOW",
+      "lowBlockFrictionIndex": 7.2,
+      "counterAttackLethality": 5.5,
+      "setPieceVulnerability": 3.5
+    },
+    "recurringWinDrivers": [
+      "Territorial dominance with high possession volume (57.7% avg)"
+    ],
+    "recurringLossDrivers": [
+      "Occasional finishing variance when facing elite shot-stoppers"
+    ],
+    "tacticalIdentity": "Compact Low-Block & Counter",
+    "badge": "⚔️ Competitive Shape",
+    "recentMatches": [
+      {
+        "matchId": "401861060",
+        "opponent": "Faroe Islands",
+        "venue": "AWAY",
+        "result": "DRAW",
+        "score": "1-1",
+        "date": "2026-09-26",
+        "possession": 57.7,
+        "shots": 10,
+        "shotsOnTarget": 2,
+        "xG": 1.02,
+        "lossReason": null
+      }
+    ]
+  },
+  "Estonia": {
+    "team": "Estonia",
+    "updatedAt": "2026-09-26T20:12:20.731Z",
+    "matchesCount": 1,
+    "record": {
+      "wins": 0,
+      "draws": 1,
+      "losses": 0,
+      "winRate": 0
+    },
+    "metrics": {
+      "avgPossession": 37.3,
+      "avgShots": 8,
+      "avgShotsOnTarget": 5,
+      "avgGoalsScored": 1,
+      "avgGoalsConceded": 1,
+      "avgXgCreated": 1.7,
+      "avgXgConceded": 0.95,
+      "cleanSheets": 0,
+      "failedToScore": 0
+    },
+    "tacticalIndices": {
+      "lateCapitulationIndex": 0,
+      "lateCapitulationRisk": "LOW",
+      "lowBlockFrictionIndex": 4.5,
+      "counterAttackLethality": 8.2,
+      "setPieceVulnerability": 3.5
+    },
+    "recurringWinDrivers": [
+      "Lethal transition efficiency on vertical counter-attacks (<37.3% possession)",
+      "High box penetration: 5 shots on target/game"
+    ],
+    "recurringLossDrivers": [
+      "Occasional finishing variance when facing elite shot-stoppers"
+    ],
+    "tacticalIdentity": "Compact Low-Block & Counter",
+    "badge": "⚔️ Competitive Shape",
+    "recentMatches": [
+      {
+        "matchId": "401861058",
+        "opponent": "Iceland",
+        "venue": "AWAY",
+        "result": "DRAW",
+        "score": "1-1",
+        "date": "2026-09-26",
+        "possession": 37.3,
+        "shots": 8,
+        "shotsOnTarget": 5,
+        "xG": 1.7,
+        "lossReason": null
+      }
+    ]
+  },
+  "Slovenia": {
+    "team": "Slovenia",
+    "updatedAt": "2026-09-26T20:12:20.724Z",
+    "matchesCount": 1,
+    "record": {
+      "wins": 0,
+      "draws": 1,
+      "losses": 0,
+      "winRate": 0
+    },
+    "metrics": {
+      "avgPossession": 35.3,
+      "avgShots": 4,
+      "avgShotsOnTarget": 1,
+      "avgGoalsScored": 0,
+      "avgGoalsConceded": 0,
+      "avgXgCreated": 0.46,
+      "avgXgConceded": 0,
+      "cleanSheets": 1,
+      "failedToScore": 1
+    },
+    "tacticalIndices": {
+      "lateCapitulationIndex": 0,
+      "lateCapitulationRisk": "LOW",
+      "lowBlockFrictionIndex": 4.5,
+      "counterAttackLethality": 8.2,
+      "setPieceVulnerability": 3.5
+    },
+    "recurringWinDrivers": [
+      "Lethal transition efficiency on vertical counter-attacks (<35.3% possession)"
+    ],
+    "recurringLossDrivers": [
+      "Occasional finishing variance when facing elite shot-stoppers"
+    ],
+    "tacticalIdentity": "Compact Low-Block & Counter",
+    "badge": "⚔️ Competitive Shape",
+    "recentMatches": [
+      {
+        "matchId": "401861057",
+        "opponent": "Scotland",
+        "venue": "HOME",
+        "result": "DRAW",
+        "score": "0-0",
+        "date": "2026-09-26",
+        "possession": 35.3,
+        "shots": 4,
+        "shotsOnTarget": 1,
+        "xG": 0.46,
+        "lossReason": null
+      }
+    ]
+  },
+  "Scotland": {
+    "team": "Scotland",
+    "updatedAt": "2026-09-26T20:12:20.724Z",
+    "matchesCount": 1,
+    "record": {
+      "wins": 0,
+      "draws": 1,
+      "losses": 0,
+      "winRate": 0
+    },
+    "metrics": {
+      "avgPossession": 64.7,
+      "avgShots": 17,
+      "avgShotsOnTarget": 5,
+      "avgGoalsScored": 0,
+      "avgGoalsConceded": 0,
+      "avgXgCreated": 2.15,
+      "avgXgConceded": 0,
+      "cleanSheets": 1,
+      "failedToScore": 1
+    },
+    "tacticalIndices": {
+      "lateCapitulationIndex": 0,
+      "lateCapitulationRisk": "LOW",
+      "lowBlockFrictionIndex": 7.2,
+      "counterAttackLethality": 5.5,
+      "setPieceVulnerability": 3.5
+    },
+    "recurringWinDrivers": [
+      "Territorial dominance with high possession volume (64.7% avg)",
+      "High box penetration: 5 shots on target/game"
+    ],
+    "recurringLossDrivers": [
+      "Occasional finishing variance when facing elite shot-stoppers"
+    ],
+    "tacticalIdentity": "Balanced Structural Mid-Block",
+    "badge": "⚔️ Competitive Shape",
+    "recentMatches": [
+      {
+        "matchId": "401861057",
+        "opponent": "Slovenia",
+        "venue": "AWAY",
+        "result": "DRAW",
+        "score": "0-0",
+        "date": "2026-09-26",
+        "possession": 64.7,
+        "shots": 17,
+        "shotsOnTarget": 5,
+        "xG": 2.15,
+        "lossReason": null
+      }
+    ]
+  },
+  "Atlético Pinatarense": {
+    "team": "Atlético Pinatarense",
+    "updatedAt": "2026-09-26T20:12:20.150Z",
+    "matchesCount": 1,
+    "record": {
+      "wins": 1,
+      "draws": 0,
+      "losses": 0,
+      "winRate": 100
+    },
+    "metrics": {
+      "avgPossession": 50,
+      "avgShots": 0,
+      "avgShotsOnTarget": 0,
+      "avgGoalsScored": 8,
+      "avgGoalsConceded": 0,
+      "avgXgCreated": 0.1,
+      "avgXgConceded": 0,
+      "cleanSheets": 1,
+      "failedToScore": 0
+    },
+    "tacticalIndices": {
+      "lateCapitulationIndex": 0,
+      "lateCapitulationRisk": "LOW",
+      "lowBlockFrictionIndex": 4.5,
+      "counterAttackLethality": 5.5,
+      "setPieceVulnerability": 3.5
+    },
+    "recurringWinDrivers": [
+      "Lethal transition efficiency on vertical counter-attacks (<50% possession)"
+    ],
+    "recurringLossDrivers": [
+      "Occasional finishing variance when facing elite shot-stoppers"
+    ],
+    "tacticalIdentity": "Compact Low-Block & Counter",
+    "badge": "🔥 Scoring Machine",
+    "recentMatches": [
+      {
+        "matchId": "401918764",
+        "opponent": "Atlético Melilla",
+        "venue": "HOME",
+        "result": "WIN",
+        "score": "8-0",
+        "date": "2026-09-26",
+        "possession": 50,
+        "shots": 0,
+        "shotsOnTarget": 0,
+        "xG": 0.1,
+        "lossReason": null
+      }
+    ]
+  },
+  "Atlético Melilla": {
+    "team": "Atlético Melilla",
+    "updatedAt": "2026-09-26T20:12:20.150Z",
+    "matchesCount": 1,
+    "record": {
+      "wins": 0,
+      "draws": 0,
+      "losses": 1,
+      "winRate": 0
+    },
+    "metrics": {
+      "avgPossession": 50,
+      "avgShots": 0,
+      "avgShotsOnTarget": 0,
+      "avgGoalsScored": 0,
+      "avgGoalsConceded": 8,
+      "avgXgCreated": 0.1,
+      "avgXgConceded": 7.6,
+      "cleanSheets": 0,
+      "failedToScore": 1
+    },
+    "tacticalIndices": {
+      "lateCapitulationIndex": 100,
+      "lateCapitulationRisk": "CRITICAL",
+      "lowBlockFrictionIndex": 4.5,
+      "counterAttackLethality": 5.5,
+      "setPieceVulnerability": 6.5
+    },
+    "recurringWinDrivers": [
+      "Lethal transition efficiency on vertical counter-attacks (<50% possession)"
+    ],
+    "recurringLossDrivers": [
+      "Chronic late-game capitulation: conceded in 75'+ in 1 of last 1 matches",
+      "Defensive frailty: conceding 8 goals/game on average"
+    ],
+    "tacticalIdentity": "Compact Low-Block & Counter",
+    "badge": "⚠️ Late Conceder",
+    "recentMatches": [
+      {
+        "matchId": "401918764",
+        "opponent": "Atlético Pinatarense",
+        "venue": "AWAY",
+        "result": "LOSS",
+        "score": "0-8",
+        "date": "2026-09-26",
+        "possession": 50,
+        "shots": 0,
+        "shotsOnTarget": 0,
+        "xG": 0.1,
+        "lossReason": "Executive Tactical Verdict: Atlético Pinatarense dismantled Atlético Melilla 8-0 by ruthlessly exploiting structural and situational vulnerabilities. Atlético Pinatarense generated 0.1 xG across 0 shots (0 on target) with 50% possession, systematically pinning Atlético Melilla (50% possession, 0.1 xG). While Atlético Melilla attempted late adjustments, Atlético Pinatarense's defensive discipline and transitional speed rendered the victory completely authoritative."
       }
     ]
   }

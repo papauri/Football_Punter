@@ -21,6 +21,19 @@ export default function PerformanceChart({ historicalResults = [] }) {
       const rawDate = m.dateIso || m.date;
       const dateStr = typeof rawDate === 'string' ? rawDate.slice(0, 10) : new Date(m.timestamp || rawDate).toISOString().slice(0, 10);
       
+      let hG = m.homeScore ?? m.goals?.home;
+      let aG = m.awayScore ?? m.goals?.away;
+      if ((hG == null || isNaN(hG)) && m.actualScore && m.actualScore.includes('-')) {
+        const parts = m.actualScore.split('-').map(x => parseInt(x.trim(), 10));
+        if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+          hG = parts[0];
+          aG = parts[1];
+        }
+      }
+      const hasScore = (hG != null && aG != null && !isNaN(hG) && !isNaN(aG)) || (m.actualScore && m.actualScore.includes('-'));
+      // Only plot completed fixtures that have actual recorded scores
+      if (!hasScore) return acc;
+
       if (!acc[dateStr]) {
         acc[dateStr] = { date: dateStr, total: 0, activeWagers: 0, hits: 0, pushes: 0, passes: 0, confidenceSum: 0 };
       }
@@ -42,9 +55,13 @@ export default function PerformanceChart({ historicalResults = [] }) {
       } else if (isPass) {
         acc[dateStr].passes += 1;
       } else {
-        const fallbackHit = m.isHit !== undefined ? Boolean(m.isHit) : (m.actualWinner && m.predictedWinner ? m.actualWinner === m.predictedWinner : false);
-        if (fallbackHit) acc[dateStr].hits += 1;
-        acc[dateStr].activeWagers += 1;
+        const actualWinner = m.actualWinner || (hG != null && aG != null ? (hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW') : null);
+        const pred = m.predictedWinner?.pick || m.predictedWinner;
+        if (pred && actualWinner) {
+          const fallbackHit = pred === actualWinner;
+          if (fallbackHit) acc[dateStr].hits += 1;
+          acc[dateStr].activeWagers += 1;
+        }
       }
 
       acc[dateStr].confidenceSum += confidence;
@@ -52,8 +69,10 @@ export default function PerformanceChart({ historicalResults = [] }) {
       return acc;
     }, {});
 
-    // Convert to array, sort chronologically, and calculate rolling average
-    const sortedDates = Object.values(dailyStats).sort((a, b) => a.date.localeCompare(b.date));
+    // Convert to array, sort chronologically, and calculate rolling average across active wagering days
+    const sortedDates = Object.values(dailyStats)
+      .filter(day => day.activeWagers > 0)
+      .sort((a, b) => a.date.localeCompare(b.date));
     
     return sortedDates.map((day) => {
       const activeCount = day.activeWagers > 0 ? day.activeWagers : day.total;
@@ -116,72 +135,75 @@ export default function PerformanceChart({ historicalResults = [] }) {
   const avgWinRate = rawStats.smartWinRate || (chartData.reduce((sum, d) => sum + (d.winRate * d.volume), 0) / (totalMatches || 1));
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl shadow-xs p-5">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
-        <div>
+    <div className="bg-white border border-slate-200 rounded-xl shadow-xs p-3.5 sm:p-5 w-full min-w-0 overflow-hidden">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4 sm:mb-6 pb-4 border-b border-slate-100 min-w-0">
+        <div className="min-w-0">
           <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-indigo-600" />
-            30-Day Model Trajectory &amp; Calibration Audit
+            <TrendingUp className="w-4 h-4 text-indigo-600 shrink-0" />
+            <span>30-Day Model Trajectory &amp; Calibration Audit</span>
           </h3>
           <p className="text-xs text-slate-500 mt-1">
             Rolling daily win rate accuracy on recommended plays across audited global fixtures
           </p>
         </div>
         
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="bg-emerald-50/60 border border-emerald-200 px-3.5 py-1.5 rounded-lg text-right">
-            <div className="text-[10px] text-emerald-800 font-semibold uppercase tracking-wider flex items-center justify-end gap-1">
-              <span>Smart Strike Rate</span>
-              <span className="text-[9px] px-1 py-0.2 bg-emerald-200 text-emerald-900 rounded font-bold">Recommended</span>
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto min-w-0">
+          <div className="bg-emerald-50/60 border border-emerald-200 px-3 py-1.5 rounded-lg text-left sm:text-right min-w-0">
+            <div className="text-[10px] text-emerald-800 font-semibold uppercase tracking-wider flex items-center sm:justify-end gap-1 truncate">
+              <span>Smart Strike</span>
+              <span className="text-[8.5px] px-1 py-0.2 bg-emerald-200 text-emerald-900 rounded font-bold shrink-0">Rec</span>
             </div>
-            <div className="text-lg font-black text-emerald-700 font-mono flex items-center justify-end gap-1">
-              <Crosshair className="w-3.5 h-3.5 text-emerald-600" />
+            <div className="text-base sm:text-lg font-black text-emerald-700 font-mono flex items-center sm:justify-end gap-1">
+              <Crosshair className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
               {safeToFixed(avgWinRate, 1)}%
             </div>
-            <div className="text-[10px] text-emerald-600/90 font-mono">
-              {rawStats.hits}W - {rawStats.misses}L on active wagers
+            <div className="text-[10px] text-emerald-600/90 font-mono truncate">
+              {rawStats.hits}W - {rawStats.misses}L
             </div>
           </div>
 
-          <div className="bg-slate-50 border border-slate-200 px-3.5 py-1.5 rounded-lg text-right">
-            <div className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">
+          <div className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-left sm:text-right min-w-0">
+            <div className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider truncate">
               Raw 1X2 Baseline
             </div>
-            <div className="text-lg font-black text-slate-700 font-mono">
+            <div className="text-base sm:text-lg font-black text-slate-700 font-mono">
               {safeToFixed(rawStats.rawRate, 1)}%
             </div>
-            <div className="text-[10px] text-slate-400 font-mono">
-              Unhedged single-winner
+            <div className="text-[10px] text-slate-400 font-mono truncate">
+              Unhedged
             </div>
           </div>
 
-          <div className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-right hidden sm:block">
-            <div className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">
+          <div className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-left sm:text-right col-span-2 sm:col-span-1 min-w-0">
+            <div className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider truncate">
               Traps Passed
             </div>
-            <div className="text-lg font-black text-slate-700 font-mono">
+            <div className="text-base sm:text-lg font-black text-slate-700 font-mono">
               {safeToFixed(rawStats.passRate, 1)}%
             </div>
-            <div className="text-[10px] text-slate-400 font-mono">
+            <div className="text-[10px] text-slate-400 font-mono truncate">
               {rawStats.passes} coin-flips bypassed
             </div>
           </div>
         </div>
       </div>
 
-      <div className="h-64 w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+      <div className="h-60 sm:h-64 w-full min-w-0 overflow-hidden">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={220}>
+          <LineChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
             <XAxis 
               dataKey="shortDate" 
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 10, fill: '#64748b', fontWeight: 500 }}
+              tick={{ fontSize: 9, fill: '#64748b', fontWeight: 500 }}
               dy={10}
+              minTickGap={20}
+              interval="preserveStartEnd"
             />
             <YAxis 
               domain={[0, 100]}
+              width={34}
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 10, fill: '#64748b', fontWeight: 500 }}

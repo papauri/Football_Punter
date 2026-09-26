@@ -1,5 +1,93 @@
 [
   {
+    "id": "401916344",
+    "home": "Ñublense",
+    "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/7427.png",
+    "away": "Puerto Montt",
+    "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/4423.png",
+    "league": "Copa Chile",
+    "kickoffUtc": "2026-09-26T20:30Z",
+    "snapshotAt": "2026-09-26T19:31:41.357Z",
+    "minutesBeforeKickoff": 58,
+    "predictedWinner": "HOME",
+    "predictedScore": "2-0",
+    "prob": {
+      "home": 64.40928039228103,
+      "draw": 22.4395144538015,
+      "away": 13.15120515391747
+    },
+    "confidence": 64.40928039228103,
+    "smartMarket": {
+      "pick": "PASS",
+      "label": "Pass / League Blacklist"
+    },
+    "inputs": {
+      "odds": {
+        "provider": "DraftKings",
+        "home": 1.61,
+        "draw": 3.85,
+        "away": 5.25
+      },
+      "lineup": {
+        "status": "PROJECTED",
+        "homeSquadStrength": 100,
+        "awaySquadStrength": 100,
+        "homeMissingStar": false,
+        "awayMissingStar": false,
+        "applied": true
+      }
+    },
+    "modelVersion": {
+      "temperature": 1.3,
+      "maxScorelineSim": 10
+    },
+    "isHit": null,
+    "resolvedAt": null
+  },
+  {
+    "id": "401861057",
+    "home": "Slovenia",
+    "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/svn.png",
+    "away": "Scotland",
+    "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/sco.png",
+    "league": "UEFA Nations League",
+    "kickoffUtc": "2026-09-26T13:00Z",
+    "snapshotAt": "2026-09-26T12:06:16.427Z",
+    "minutesBeforeKickoff": 54,
+    "predictedWinner": "HOME",
+    "predictedScore": "2-1",
+    "prob": {
+      "home": "36.2",
+      "draw": "31.1",
+      "away": "32.7"
+    },
+    "confidence": "36.2",
+    "smartMarket": {
+      "pick": "PASS",
+      "label": "Pass / Entropy Floor"
+    },
+    "inputs": {
+      "odds": {
+        "provider": "DraftKings",
+        "home": 2.45,
+        "draw": 3.1,
+        "away": 2.85
+      },
+      "lineup": null
+    },
+    "modelVersion": {
+      "temperature": 1.3,
+      "maxScorelineSim": 10
+    },
+    "isHit": null,
+    "resolvedAt": "2026-09-26T19:23:09.512Z",
+    "actualScore": "0-0",
+    "actualWinner": "DRAW",
+    "smartHit": null,
+    "isPass": true,
+    "isPush": false
+  },
+  {
     "id": "401861052",
     "home": "Italy",
     "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/ita.png",
@@ -37,7 +125,10 @@
     "isHit": false,
     "resolvedAt": "2026-09-25T20:56:51.506Z",
     "actualScore": "0-2",
-    "actualWinner": "AWAY"
+    "actualWinner": "AWAY",
+    "smartHit": false,
+    "isPush": false,
+    "isPass": false
   },
   {
     "id": "401861056",
@@ -77,7 +168,10 @@
     "isHit": true,
     "resolvedAt": "2026-09-25T20:56:51.506Z",
     "actualScore": "2-1",
-    "actualWinner": "HOME"
+    "actualWinner": "HOME",
+    "smartHit": true,
+    "isPush": false,
+    "isPass": false
   },
   {
     "id": "401861055",
@@ -114,10 +208,13 @@
       "temperature": 1.3,
       "maxScorelineSim": 10
     },
-    "isHit": false,
+    "isHit": true,
     "resolvedAt": "2026-09-25T20:56:51.506Z",
     "actualScore": "0-0",
-    "actualWinner": "DRAW"
+    "actualWinner": "DRAW",
+    "smartHit": true,
+    "isPush": false,
+    "isPass": false
   },
   {
     "id": "401861051",
@@ -157,7 +254,10 @@
     "isHit": true,
     "resolvedAt": "2026-09-25T20:56:51.506Z",
     "actualScore": "2-1",
-    "actualWinner": "HOME"
+    "actualWinner": "HOME",
+    "smartHit": true,
+    "isPush": false,
+    "isPass": false
   },
   {
     "id": "401861053",
@@ -197,7 +297,10 @@
     "isHit": true,
     "resolvedAt": "2026-09-25T20:56:51.506Z",
     "actualScore": "0-1",
-    "actualWinner": "AWAY"
+    "actualWinner": "AWAY",
+    "smartHit": true,
+    "isPush": false,
+    "isPass": false
   },
   {
     "id": "401861054",
@@ -234,10 +337,13 @@
       "temperature": 1.3,
       "maxScorelineSim": 10
     },
-    "isHit": false,
+    "isHit": null,
     "resolvedAt": "2026-09-25T20:56:51.506Z",
     "actualScore": "0-1",
-    "actualWinner": "AWAY"
+    "actualWinner": "AWAY",
+    "smartHit": null,
+    "isPass": true,
+    "isPush": false
   },
   {
     "id": "401861047",
@@ -261,9 +367,12 @@
       "pick": "PASS",
       "label": "Pass / Entropy Floor"
     },
-    "isHit": false,
+    "isHit": null,
     "resolvedAt": "2026-09-25T20:55:37.427Z",
     "actualScore": "1-2",
-    "actualWinner": "AWAY"
+    "actualWinner": "AWAY",
+    "smartHit": null,
+    "isPass": true,
+    "isPush": false
   }
 ]

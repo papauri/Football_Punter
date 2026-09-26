@@ -48,6 +48,8 @@ import { resolveMatchOdds, resolveMatchProb, getOddsProviderLabel, calculatePote
 import ConfidenceGauge from './ConfidenceGauge';
 import KellyTooltip from './KellyTooltip';
 import InfoTooltip from './InfoTooltip';
+import MobileViewSwitcher from './MobileViewSwitcher';
+import { useMobileViewMode } from '../utils/useMobileViewMode';
 import StrategyProofModal from './StrategyProofModal';
 
 // Helper to reliably extract match pick without gaps
@@ -100,6 +102,7 @@ export default function FixturesTablePage({
   const [sortBy, setSortBy] = useState('probs_desc');
   const [expandedMatchId, setExpandedMatchId] = useState(null);
   const [expandedCouncilId, setExpandedCouncilId] = useState(null);
+  const [mobileViewMode] = useMobileViewMode();
 
   const toggleCouncilExpand = (id) => {
     setExpandedCouncilId(prev => (prev === id ? null : id));
@@ -1956,104 +1959,138 @@ export default function FixturesTablePage({
                           className="flex flex-col md:table-row bg-white rounded-xl md:rounded-none border border-slate-200/90 md:border-0 shadow-2xs md:shadow-none hover:border-slate-300 transition-all md:h-10 cursor-pointer"
                           onClick={() => toggleCouncilExpand(legKey)}
                         >
-                          {/* ================= MOBILE COMPACT VIEW ================= */}
-                          <td className="md:hidden p-3 block">
-                            <div className="flex items-center justify-between gap-1.5 mb-1.5">
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="w-4 h-4 rounded-full bg-slate-900 text-white font-mono text-[9.5px] font-bold flex items-center justify-center shrink-0">
-                                  {idx + 1}
-                                </span>
-                                <span className="font-mono text-[10px] text-slate-600 font-semibold flex items-center gap-1">
-                                  <Clock className="w-2.5 h-2.5 text-slate-400" />
-                                  {kickoff.day} {kickoff.time}
-                                </span>
-                                {leg.isLive && (
-                                  <span className="px-1 py-0.2 rounded text-[8.5px] font-bold bg-rose-600 text-white animate-pulse">
-                                    LIVE {leg.liveMinute ? `${leg.liveMinute}'` : ''}
+                          {/* ================= MOBILE COMPACT VIEW (1-ROW TABLE OR CARD) ================= */}
+                          {mobileViewMode === 'table' ? (
+                            <td className="md:hidden px-2.5 py-2 block">
+                              <div className="flex items-center justify-between gap-1.5 text-xs">
+                                {/* Left: Number + Kickoff + Teams */}
+                                <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                                  <span className="w-4 h-4 rounded-full bg-slate-900 text-white font-mono text-[9px] font-bold flex items-center justify-center shrink-0">
+                                    {idx + 1}
                                   </span>
-                                )}
-                                <span className="text-[9.5px] text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200 truncate max-w-[120px]">
-                                  {leg.league}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                {leg.isDnb ? (
-                                  <span className="text-[9.5px] font-bold text-indigo-800 bg-indigo-50 px-1.5 py-0.2 rounded border border-indigo-200 inline-flex items-center gap-0.5" title={`Elevated draw risk (${safeToFixed(leg.drawRisk, 1)}%) — Draw-No-Bet stake refund active`}>
-                                    <Shield className="w-2.5 h-2.5 text-indigo-600" />
-                                    {leg.isUnanimous ? '6/6 Agree · DNB' : 'DNB Protected'}
+                                  <span className="font-mono text-[10px] text-slate-500 shrink-0 font-medium">
+                                    {kickoff.time}
                                   </span>
-                                ) : leg.isUnanimous ? (
-                                  <span className="text-[9.5px] font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 inline-flex items-center gap-0.5" title="All 6 autonomous AI agents reached unanimous consensus on straight outright win">
-                                    <Check className="w-2.5 h-2.5 text-emerald-600" />
-                                    6/6 Unanimous
+                                  <div className="font-bold text-slate-900 text-xs truncate">
+                                    <span>{leg.home}</span>
+                                    <span className="text-slate-400 font-normal mx-1">v</span>
+                                    <span>{leg.away}</span>
+                                  </div>
+                                </div>
+
+                                {/* Right: Pick, Odds, Win %, Chevron */}
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  <span className="font-mono font-bold text-[10.5px] bg-indigo-50 text-indigo-800 border border-indigo-200 px-1.5 py-0.5 rounded">
+                                    {pickTeam} {leg.isDnb ? '(DNB)' : ''} @{safeToFixed(leg.odds, 2)}
                                   </span>
-                                ) : (
-                                  <span className="text-[9.5px] font-medium text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200 inline-flex items-center gap-0.5" title="Algorithmic slate lean">
-                                    <Zap className="w-2.5 h-2.5 text-slate-400" />
-                                    Model Lean ({safeToFixed(leg.prob, 0)}%)
+                                  <span className="text-[10px] font-mono text-emerald-700 font-bold">
+                                    {safeToFixed(leg.prob, 0)}%
                                   </span>
-                                )}
-                                <div className="text-slate-400 p-0.5">
-                                  {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                                  <div className="text-slate-400">
+                                    {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-indigo-600" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-
-                            {/* Fixture & Selection */}
-                            <div className="flex items-center justify-between gap-2 mb-2">
-                              <div className="font-bold text-slate-900 text-xs">
-                                <span>{leg.home}</span>
-                                <span className="text-slate-400 font-normal mx-1">vs</span>
-                                <span>{leg.away}</span>
-                              </div>
-                              <div className="text-right shrink-0">
-                                <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 font-mono">
-                                  {pickTeam} {leg.isDnb ? '(DNB)' : ''} @{safeToFixed(leg.odds, 2)}x
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Probability & Actions Row */}
-                            <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 text-[11px]">
-                              <span className="font-semibold text-emerald-700">
-                                {safeToFixed(leg.prob, 0)}% Win Rate {leg.isDnb ? '(85% Safe)' : ''}
-                              </span>
-                              <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                                <button
-                                  type="button"
-                                  onClick={() => onOpenWatchLive && onOpenWatchLive(matchObj)}
-                                  className={`w-[98px] h-6 flex items-center justify-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded border shadow-2xs transition-colors cursor-pointer shrink-0 ${
-                                    (leg.match?.isLive || leg.isLive)
-                                      ? 'bg-rose-600 text-white border-rose-600 animate-pulse font-extrabold'
-                                      : 'text-indigo-700 bg-indigo-50 border-indigo-200'
-                                  }`}
-                                  title={(leg.match?.isLive || leg.isLive) ? "Live Tactical AI Analysis" : "Tactical AI Match Intelligence"}
-                                >
-                                  <Brain className="w-2.5 h-2.5 shrink-0" />
-                                  <span className="truncate">{(leg.match?.isLive || leg.isLive) ? 'Live Intel' : 'Tactical Intel'}</span>
-                                </button>
-                                {inSlip ? (
-                                  <span className="w-[58px] h-6 flex items-center justify-center gap-0.5 text-[10px] font-medium text-slate-600 bg-slate-100 px-1 py-0.5 rounded border border-slate-200 shrink-0">
-                                    <Check className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                                    <span>In Slip</span>
+                            </td>
+                          ) : (
+                            <td className="md:hidden p-3 block">
+                              <div className="flex items-center justify-between gap-1.5 mb-1.5">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="w-4 h-4 rounded-full bg-slate-900 text-white font-mono text-[9.5px] font-bold flex items-center justify-center shrink-0">
+                                    {idx + 1}
                                   </span>
-                                ) : (
+                                  <span className="font-mono text-[10px] text-slate-600 font-semibold flex items-center gap-1">
+                                    <Clock className="w-2.5 h-2.5 text-slate-400" />
+                                    {kickoff.day} {kickoff.time}
+                                  </span>
+                                  {leg.isLive && (
+                                    <span className="px-1 py-0.2 rounded text-[8.5px] font-bold bg-rose-600 text-white animate-pulse">
+                                      LIVE {leg.liveMinute ? `${leg.liveMinute}'` : ''}
+                                    </span>
+                                  )}
+                                  <span className="text-[9.5px] text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200 truncate max-w-[120px]">
+                                    {leg.league}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  {leg.isDnb ? (
+                                    <span className="text-[9.5px] font-bold text-indigo-800 bg-indigo-50 px-1.5 py-0.2 rounded border border-indigo-200 inline-flex items-center gap-0.5" title={`Elevated draw risk (${safeToFixed(leg.drawRisk, 1)}%) — Draw-No-Bet stake refund active`}>
+                                      <Shield className="w-2.5 h-2.5 text-indigo-600" />
+                                      {leg.isUnanimous ? '6/6 Agree · DNB' : 'DNB Protected'}
+                                    </span>
+                                  ) : leg.isUnanimous ? (
+                                    <span className="text-[9.5px] font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 inline-flex items-center gap-0.5" title="All 6 autonomous AI agents reached unanimous consensus on straight outright win">
+                                      <Check className="w-2.5 h-2.5 text-emerald-600" />
+                                      6/6 Unanimous
+                                    </span>
+                                  ) : (
+                                    <span className="text-[9.5px] font-medium text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200 inline-flex items-center gap-0.5" title="Algorithmic slate lean">
+                                      <Zap className="w-2.5 h-2.5 text-slate-400" />
+                                      Model Lean ({safeToFixed(leg.prob, 0)}%)
+                                    </span>
+                                  )}
+                                  <div className="text-slate-400 p-0.5">
+                                    {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Fixture & Selection */}
+                              <div className="flex items-center justify-between gap-2 mb-2">
+                                <div className="font-bold text-slate-900 text-xs">
+                                  <span>{leg.home}</span>
+                                  <span className="text-slate-400 font-normal mx-1">vs</span>
+                                  <span>{leg.away}</span>
+                                </div>
+                                <div className="text-right shrink-0">
+                                  <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 font-mono">
+                                    {pickTeam} {leg.isDnb ? '(DNB)' : ''} @{safeToFixed(leg.odds, 2)}x
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Probability & Actions Row */}
+                              <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 text-[11px]">
+                                <span className="font-semibold text-emerald-700">
+                                  {safeToFixed(leg.prob, 0)}% Win Rate {leg.isDnb ? '(85% Safe)' : ''}
+                                </span>
+                                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                                   <button
                                     type="button"
-                                    onClick={() => {
-                                      if (onAddToSlip) {
-                                        onAddToSlip(leg.match, leg.pick, leg.market, leg.odds, leg.prob);
-                                      }
-                                    }}
-                                    className="w-[58px] h-6 flex items-center justify-center gap-0.5 text-[10px] font-semibold text-slate-800 bg-white px-1 py-0.5 rounded border border-slate-300 shadow-2xs hover:bg-slate-50 cursor-pointer shrink-0"
+                                    onClick={() => onOpenWatchLive && onOpenWatchLive(matchObj)}
+                                    className={`w-[98px] h-6 flex items-center justify-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded border shadow-2xs transition-colors cursor-pointer shrink-0 ${
+                                      (leg.match?.isLive || leg.isLive)
+                                        ? 'bg-rose-600 text-white border-rose-600 animate-pulse font-extrabold'
+                                        : 'text-indigo-700 bg-indigo-50 border-indigo-200'
+                                    }`}
+                                    title={(leg.match?.isLive || leg.isLive) ? "Live Tactical AI Analysis" : "Tactical AI Match Intelligence"}
                                   >
-                                    <Plus className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                                    <span>Add</span>
+                                    <Brain className="w-2.5 h-2.5 shrink-0" />
+                                    <span className="truncate">{(leg.match?.isLive || leg.isLive) ? 'Live Intel' : 'Tactical Intel'}</span>
                                   </button>
-                                )}
+                                  {inSlip ? (
+                                    <span className="w-[58px] h-6 flex items-center justify-center gap-0.5 text-[10px] font-medium text-slate-600 bg-slate-100 px-1 py-0.5 rounded border border-slate-200 shrink-0">
+                                      <Check className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                                      <span>In Slip</span>
+                                    </span>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (onAddToSlip) {
+                                          onAddToSlip(leg.match, leg.pick, leg.market, leg.odds, leg.prob);
+                                        }
+                                      }}
+                                      className="w-[58px] h-6 flex items-center justify-center gap-0.5 text-[10px] font-semibold text-slate-800 bg-white px-1 py-0.5 rounded border border-slate-300 shadow-2xs hover:bg-slate-50 cursor-pointer shrink-0"
+                                    >
+                                      <Plus className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                                      <span>Add</span>
+                                    </button>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          </td>
+                            </td>
+                          )}
 
                           {/* ================= DESKTOP 1-ROW VIEW ================= */}
                           {/* Chevron Toggle */}
@@ -2641,6 +2678,9 @@ export default function FixturesTablePage({
                   content="Auto-selects Draw-No-Bet (DNB) or Double Chance (1X/X2) when model draw probability is ≥24.0%, protecting your initial stake against draw stalemates. Safety hit rate: 78.3% – 83.6%."
                   align="right"
                 />
+
+                {/* Mobile View Switcher: Cards vs 1-Row Table */}
+                <MobileViewSwitcher label="Display" className="w-full sm:w-auto" />
               </div>
 
               {/* Status and Clear Filters */}
@@ -2797,53 +2837,100 @@ export default function FixturesTablePage({
                   const scoreDisplay = `${hG} - ${aG}`;
                   const isHit = m.isHit === true;
                   const isMiss = m.isHit === false;
+                  const isPass = Boolean(
+                    m.isPass === true || 
+                    m.smartMarket?.pick === 'PASS' || 
+                    String(m.smartMarket?.pick || '').toUpperCase() === 'PASS' ||
+                    m.smartMarket?.badge?.toLowerCase().includes('pass')
+                  );
 
                   return (
                     <tr key={m.id || m.espnEventId} className="flex flex-col md:table-row hover:bg-teal-50/30 transition-colors">
-                      {/* ================= MOBILE COMPACT VIEW ================= */}
-                      <td className="md:hidden p-2.5 block">
-                        <div className="flex justify-between items-center mb-1 text-[10.5px]">
-                          <span className="text-slate-500 font-mono">
-                            {formatRelativeDayTime(m, tzSettings)}
-                          </span>
-                          <span className="font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-                            {m.league || 'League'}
-                          </span>
-                        </div>
+                      {/* ================= MOBILE COMPACT VIEW (1-ROW TABLE OR CARD) ================= */}
+                      {mobileViewMode === 'table' ? (
+                        <td className="md:hidden px-2.5 py-2 block">
+                          <div className="flex items-center justify-between gap-1.5 text-xs">
+                            {/* Left: Date/Time + Matchup */}
+                            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                              <span className="font-mono text-[10px] text-slate-500 shrink-0 font-medium">
+                                {formatRelativeDayTime(m, tzSettings).split(' ')[0]}
+                              </span>
+                              <div className="font-bold text-slate-900 text-xs truncate">
+                                <span>{m.home}</span>
+                                <span className="text-slate-400 font-normal mx-1">v</span>
+                                <span>{m.away}</span>
+                              </div>
+                            </div>
 
-                        <div className="flex justify-between items-center mb-1.5">
-                          <div className="text-xs font-bold text-slate-900">
-                            <span className={m.home?.toLowerCase().includes(searchQuery.toLowerCase()) ? 'text-teal-900 font-black' : ''}>
-                              {m.home}
+                            {/* Right: Score + Pick/Status Badge + Deep Analysis Button */}
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <span className="font-mono font-bold text-[11px] bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded border border-slate-200">
+                                {scoreDisplay}
+                              </span>
+                              <span className={`px-1.5 py-0.5 rounded text-[9.5px] font-bold border ${
+                                isHit ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                                isPass ? 'bg-amber-50 text-amber-900 border-amber-300' :
+                                isMiss ? 'bg-rose-50 text-rose-800 border border-rose-200' :
+                                'bg-slate-100 text-slate-700 border border-slate-200'
+                              }`}>
+                                {isPass ? 'PASS' : (m.smartMarket?.pickLabel || m.predictedWinner || 'Analyzed')}
+                              </span>
+                              <button
+                                onClick={() => onOpenDeepResearch && onOpenDeepResearch(m)}
+                                className="px-2 py-0.5 rounded text-[10px] font-semibold bg-teal-600 hover:bg-teal-700 text-white transition-colors cursor-pointer shadow-2xs"
+                                title="Open Master Football Analyst post-mortem"
+                              >
+                                Analysis
+                              </button>
+                            </div>
+                          </div>
+                        </td>
+                      ) : (
+                        <td className="md:hidden p-2.5 block">
+                          <div className="flex justify-between items-center mb-1 text-[10.5px]">
+                            <span className="text-slate-500 font-mono">
+                              {formatRelativeDayTime(m, tzSettings)}
                             </span>
-                            <span className="text-slate-400 font-normal mx-1">vs</span>
-                            <span className={m.away?.toLowerCase().includes(searchQuery.toLowerCase()) ? 'text-teal-900 font-black' : ''}>
-                              {m.away}
+                            <span className="font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                              {m.league || 'League'}
                             </span>
                           </div>
-                          <span className="font-mono font-bold px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-slate-900 text-xs">
-                            {scoreDisplay}
-                          </span>
-                        </div>
 
-                        <div className="flex items-center justify-between pt-1">
-                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border ${
-                            isHit ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
-                            isMiss ? 'bg-rose-50 text-rose-800 border border-rose-200' :
-                            'bg-slate-100 text-slate-700 border border-slate-200'
-                          }`}>
-                            {m.smartMarket?.pickLabel || m.predictedWinner || 'Analyzed'}
-                          </span>
+                          <div className="flex justify-between items-center mb-1.5">
+                            <div className="text-xs font-bold text-slate-900">
+                              <span className={m.home?.toLowerCase().includes(searchQuery.toLowerCase()) ? 'text-teal-900 font-black' : ''}>
+                                {m.home}
+                              </span>
+                              <span className="text-slate-400 font-normal mx-1">vs</span>
+                              <span className={m.away?.toLowerCase().includes(searchQuery.toLowerCase()) ? 'text-teal-900 font-black' : ''}>
+                                {m.away}
+                              </span>
+                            </div>
+                            <span className="font-mono font-bold px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-slate-900 text-xs">
+                              {scoreDisplay}
+                            </span>
+                          </div>
 
-                          <button
-                            onClick={() => onOpenDeepResearch && onOpenDeepResearch(m)}
-                            className="px-2.5 py-1 rounded text-[10.5px] font-semibold bg-teal-600 hover:bg-teal-700 text-white transition-colors cursor-pointer shadow-2xs"
-                            title="Open Master Football Analyst post-mortem"
-                          >
-                            Deep Analysis
-                          </button>
-                        </div>
-                      </td>
+                          <div className="flex items-center justify-between pt-1">
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border ${
+                              isHit ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                              isPass ? 'bg-amber-50 text-amber-900 border-amber-300' :
+                              isMiss ? 'bg-rose-50 text-rose-800 border border-rose-200' :
+                              'bg-slate-100 text-slate-700 border border-slate-200'
+                            }`}>
+                              {isPass ? `PASS: ${m.smartMarket?.badge || 'Risk Filter'}` : (m.smartMarket?.pickLabel || m.predictedWinner || 'Analyzed')}
+                            </span>
+
+                            <button
+                              onClick={() => onOpenDeepResearch && onOpenDeepResearch(m)}
+                              className="px-2.5 py-1 rounded text-[10.5px] font-semibold bg-teal-600 hover:bg-teal-700 text-white transition-colors cursor-pointer shadow-2xs"
+                              title="Open Master Football Analyst post-mortem"
+                            >
+                              Deep Analysis
+                            </button>
+                          </div>
+                        </td>
+                      )}
 
                       {/* ================= DESKTOP 1-ROW VIEW ================= */}
                       <td className="hidden md:table-cell py-1.5 px-2.5 whitespace-nowrap text-slate-500 font-mono text-[10.5px]">
@@ -2869,10 +2956,11 @@ export default function FixturesTablePage({
                       <td className="hidden md:table-cell py-1.5 px-2.5 whitespace-nowrap text-center text-[10.5px]">
                         <span className={`px-1.5 py-0.2 rounded font-semibold ${
                           isHit ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
+                          isPass ? 'bg-amber-50 text-amber-900 border border-amber-300' :
                           isMiss ? 'bg-rose-50 text-rose-800 border border-rose-200' :
                           'bg-slate-100 text-slate-700 border border-slate-200'
                         }`}>
-                          {m.smartMarket?.pickLabel || m.predictedWinner || 'Analyzed'}
+                          {isPass ? `PASS: ${m.smartMarket?.badge || 'Risk Filter'}` : (m.smartMarket?.pickLabel || m.predictedWinner || 'Analyzed')}
                         </span>
                       </td>
                       <td className="hidden md:table-cell py-1.5 px-2.5 whitespace-nowrap text-center">
@@ -3198,126 +3286,168 @@ export default function FixturesTablePage({
                         }`}
                         onClick={() => toggleExpand(m.id || idx)}
                       >
-                        {/* ---------------- MOBILE VIEW ---------------- */}
-                        <td className="md:hidden p-3 block">
-                          <div className="flex justify-between items-start mb-1.5">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="font-semibold text-slate-700 font-mono text-[10px]">
-                                {formatMatchKickoff(m)}
-                              </span>
-                              {String(m.status || '').toLowerCase().includes('postpone') ? (
-                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[8.5px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                                  Postponed
-                                </span>
-                              ) : String(m.status || '').toLowerCase().includes('cancel') ? (
-                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[8.5px] font-bold bg-rose-100 text-rose-800 border border-rose-300">
-                                  Canceled
-                                </span>
-                              ) : String(m.status || '').toLowerCase().includes('delay') || String(m.status || '').toLowerCase().includes('suspend') ? (
-                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[8.5px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                                  Delayed
-                                </span>
-                              ) : m.isLive ? (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
-                                  LIVE {m.liveMinute ? `${m.liveMinute}'` : ''} {m.liveScore ? `(${m.liveScore.home}-${m.liveScore.away})` : ''}
-                                </span>
-                              ) : countdown ? (
-                                <span className={`inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-bold border ${countdown.color}`}>
-                                  {countdown.isWindow && <Lock className="w-2 h-2" />}
-                                  {countdown.label}
-                                </span>
-                              ) : null}
-                              <span className="text-[9.5px] text-slate-400">
-                                {m.league}
-                              </span>
-                            </div>
-                            <ConfidenceGauge confidence={conf} size="sm" />
-                          </div>
-                          <div className="flex justify-between items-center mb-1">
-                            <div className="flex flex-col flex-1">
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="font-bold text-slate-900 text-xs">{m.home}</span>
+                        {/* ---------------- MOBILE VIEW (1-ROW TABLE OR CARD) ---------------- */}
+                        {mobileViewMode === 'table' ? (
+                          <td className="md:hidden px-2.5 py-2 block">
+                            <div className="flex items-center justify-between gap-1.5 text-xs">
+                              {/* Left: Kickoff / LIVE + Teams */}
+                              <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                                {m.isLive ? (
+                                  <span className="px-1 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white animate-pulse shrink-0">
+                                    {m.liveMinute ? `${m.liveMinute}'` : 'LIVE'}
+                                  </span>
+                                ) : (
+                                  <span className="font-mono text-[10px] text-slate-500 shrink-0 font-medium">
+                                    {formatMatchKickoff(m).split(' ')[1] || formatMatchKickoff(m)}
+                                  </span>
+                                )}
+                                <div className="font-bold text-slate-900 text-xs truncate">
+                                  <span>{m.home}</span>
+                                  <span className="text-slate-400 font-normal mx-1">v</span>
+                                  <span>{m.away}</span>
+                                </div>
                                 {isUnanimous && (
-                                  <span 
-                                    className="text-[8.5px] bg-amber-100 text-amber-900 border border-amber-300 px-1 py-0.2 rounded font-bold shrink-0" 
-                                    title={`6-Agent Unanimous Consensus (All 6 AI agents agree · Historical Strategy Win Rate: ${unanimousRateDisplay})`}
-                                  >
-                                    👑 Unanimous
+                                  <span className="text-[8.5px] bg-amber-100 text-amber-900 border border-amber-300 px-1 rounded font-bold shrink-0" title="6/6 Unanimous Consensus">
+                                    👑
                                   </span>
                                 )}
-                                {leagueTierObj && (
-                                  <span className={`text-[8.5px] font-bold px-1 py-0.2 rounded border shadow-2xs ${leagueTierObj.badgeStyle}`} title={`${leagueTierObj.label} (${leagueTierObj.expectedHighConvictionWinRate} hit rate)`}>
-                                    {leagueTierObj.badgeShort}
-                                  </span>
-                                )}
-                                {isDnbAdvised && (
-                                  <span className="text-[8.5px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-1 py-0.2 rounded font-bold" title={`Draw Risk ${safeToFixed(drawProb, 1)}% ≥ 24.0% — DNB protects stake`}>
-                                    🛡️ DNB
-                                  </span>
-                                )}
-                                <span className={`text-[8.5px] border px-1 rounded font-bold ${riskProfile.badgeClass}`} title={riskProfile.reason}>{riskProfile.badge}</span>
-                                {isDerivative && <span className="text-[8.5px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-1 rounded font-bold">🛡️ {m.smartMarket?.pick}</span>}
                               </div>
-                              <span className="font-bold text-slate-900 text-xs">{m.away}</span>
+
+                              {/* Right: Pick @ Odds, Conf, Chevron */}
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <span className="font-mono font-bold text-[10.5px] bg-indigo-50 text-indigo-800 border border-indigo-200 px-1.5 py-0.5 rounded">
+                                  {smartMarketDisplay || predictedWinner} @{safeToFixed(matchOdds, 2)}
+                                </span>
+                                <span className="text-[10px] font-mono text-slate-600 font-semibold">
+                                  {safeToFixed(conf, 0)}%
+                                </span>
+                                <div className="text-slate-400">
+                                  {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-indigo-600" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                                </div>
+                              </div>
                             </div>
-                            <div className="flex flex-col items-end">
-                              <span className="text-[8.5px] uppercase font-bold text-slate-400 mb-0.5">Top Pick</span>
-                              {renderMarketPrediction(m, predictedWinner, homeProb, drawProb, awayProb, matchOdds)}
+                          </td>
+                        ) : (
+                          <td className="md:hidden p-3 block">
+                            <div className="flex justify-between items-start mb-1.5">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="font-semibold text-slate-700 font-mono text-[10px]">
+                                  {formatMatchKickoff(m)}
+                                </span>
+                                {String(m.status || '').toLowerCase().includes('postpone') ? (
+                                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[8.5px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                    Postponed
+                                  </span>
+                                ) : String(m.status || '').toLowerCase().includes('cancel') ? (
+                                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[8.5px] font-bold bg-rose-100 text-rose-800 border border-rose-300">
+                                    Canceled
+                                  </span>
+                                ) : String(m.status || '').toLowerCase().includes('delay') || String(m.status || '').toLowerCase().includes('suspend') ? (
+                                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[8.5px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                    Delayed
+                                  </span>
+                                ) : m.isLive ? (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+                                    LIVE {m.liveMinute ? `${m.liveMinute}'` : ''} {m.liveScore ? `(${m.liveScore.home}-${m.liveScore.away})` : ''}
+                                  </span>
+                                ) : countdown ? (
+                                  <span className={`inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-bold border ${countdown.color}`}>
+                                    {countdown.isWindow && <Lock className="w-2 h-2" />}
+                                    {countdown.label}
+                                  </span>
+                                ) : null}
+                                <span className="text-[9.5px] text-slate-400">
+                                  {m.league}
+                                </span>
+                              </div>
+                              <ConfidenceGauge confidence={conf} size="sm" />
                             </div>
-                          </div>
-                          
-                          <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 mt-1.5">
-                            <div className="flex items-center gap-1 flex-wrap">
-                              <span className="text-[9.5px] font-mono font-bold text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded">
-                                {score}
-                              </span>
-                              <span className="text-[9.5px] font-mono font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.2 rounded border border-indigo-100">
-                                {smartMarketDisplay} @{safeToFixed(matchOdds, 2)}
-                              </span>
-                              <span className="text-[9.5px] font-mono font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200" title={`Wager €${safeToFixed(rowStake, 0)} based on €${bankrollEuro} bankroll`}>
-                                💰 €{safeToFixed(rowStake, 0)} → €{returns.payoutStr} ({returns.profitStr})
-                              </span>
+                            <div className="flex justify-between items-center mb-1">
+                              <div className="flex flex-col flex-1">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="font-bold text-slate-900 text-xs">{m.home}</span>
+                                  {isUnanimous && (
+                                    <span 
+                                      className="text-[8.5px] bg-amber-100 text-amber-900 border border-amber-300 px-1 py-0.2 rounded font-bold shrink-0" 
+                                      title={`6-Agent Unanimous Consensus (All 6 AI agents agree · Historical Strategy Win Rate: ${unanimousRateDisplay})`}
+                                    >
+                                      👑 Unanimous
+                                    </span>
+                                  )}
+                                  {leagueTierObj && (
+                                    <span className={`text-[8.5px] font-bold px-1 py-0.2 rounded border shadow-2xs ${leagueTierObj.badgeStyle}`} title={`${leagueTierObj.label} (${leagueTierObj.expectedHighConvictionWinRate} hit rate)`}>
+                                      {leagueTierObj.badgeShort}
+                                    </span>
+                                  )}
+                                  {isDnbAdvised && (
+                                    <span className="text-[8.5px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-1 py-0.2 rounded font-bold" title={`Draw Risk ${safeToFixed(drawProb, 1)}% ≥ 24.0% — DNB protects stake`}>
+                                      🛡️ DNB
+                                    </span>
+                                  )}
+                                  <span className={`text-[8.5px] border px-1 rounded font-bold ${riskProfile.badgeClass}`} title={riskProfile.reason}>{riskProfile.badge}</span>
+                                  {isDerivative && <span className="text-[8.5px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-1 rounded font-bold">🛡️ {m.smartMarket?.pick}</span>}
+                                </div>
+                                <span className="font-bold text-slate-900 text-xs">{m.away}</span>
+                              </div>
+                              <div className="flex flex-col items-end">
+                                <span className="text-[8.5px] uppercase font-bold text-slate-400 mb-0.5">Top Pick</span>
+                                {renderMarketPrediction(m, predictedWinner, homeProb, drawProb, awayProb, matchOdds)}
+                              </div>
                             </div>
-                            <div className="flex items-center gap-1 shrink-0">
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (onOpenWatchLive) onOpenWatchLive(m);
-                                }}
-                                className={`w-[98px] h-6 flex items-center justify-center gap-1 text-[9.5px] font-bold px-1.5 py-0.5 rounded border transition-all cursor-pointer shrink-0 ${
-                                  m.isLive
-                                    ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
-                                    : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
-                                }`}
-                                title={m.isLive ? "Open Live Match Intelligence & Tactical AI Analysis" : "Open Match Intelligence & Tactical AI Analysis"}
-                              >
-                                <Brain className={`w-2 h-2 shrink-0 ${m.isLive ? 'text-white' : 'text-indigo-600'}`} />
-                                <span className="truncate">{m.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (onAddToSlip) onAddToSlip(m, slipPick);
-                                }}
-                                className={`w-7 h-7 flex items-center justify-center rounded-full transition-all cursor-pointer shrink-0 ${
-                                  isSlipAdded
-                                    ? 'bg-rose-100 text-rose-600 hover:bg-rose-200'
-                                    : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
-                                }`}
-                              >
-                                {isSlipAdded ? <Trash2 className="w-3.5 h-3.5" /> : <Target className="w-3.5 h-3.5" />}
-                              </button>
+                            
+                            <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 mt-1.5">
+                              <div className="flex items-center gap-1 flex-wrap">
+                                <span className="text-[9.5px] font-mono font-bold text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded">
+                                  {score}
+                                </span>
+                                <span className="text-[9.5px] font-mono font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.2 rounded border border-indigo-100">
+                                  {smartMarketDisplay} @{safeToFixed(matchOdds, 2)}
+                                </span>
+                                <span className="text-[9.5px] font-mono font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200" title={`Wager €${safeToFixed(rowStake, 0)} based on €${bankrollEuro} bankroll`}>
+                                  💰 €{safeToFixed(rowStake, 0)} → €{returns.payoutStr} ({returns.profitStr})
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (onOpenWatchLive) onOpenWatchLive(m);
+                                  }}
+                                  className={`w-[98px] h-6 flex items-center justify-center gap-1 text-[9.5px] font-bold px-1.5 py-0.5 rounded border transition-all cursor-pointer shrink-0 ${
+                                    m.isLive
+                                      ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 shadow-xs animate-pulse font-extrabold'
+                                      : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200'
+                                  }`}
+                                  title={m.isLive ? "Open Live Match Intelligence & Tactical AI Analysis" : "Open Match Intelligence & Tactical AI Analysis"}
+                                >
+                                  <Brain className={`w-2 h-2 shrink-0 ${m.isLive ? 'text-white' : 'text-indigo-600'}`} />
+                                  <span className="truncate">{m.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (onAddToSlip) onAddToSlip(m, slipPick);
+                                  }}
+                                  className={`w-7 h-7 flex items-center justify-center rounded-full transition-all cursor-pointer shrink-0 ${
+                                    isSlipAdded
+                                      ? 'bg-rose-100 text-rose-600 hover:bg-rose-200'
+                                      : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
+                                  }`}
+                                >
+                                  {isSlipAdded ? <Trash2 className="w-3.5 h-3.5" /> : <Target className="w-3.5 h-3.5" />}
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                          
-                          {!isExpanded && (
-                            <div className="text-[9.5px] text-slate-400 mt-1 text-center uppercase tracking-wider font-semibold">
-                              Tap for details <ChevronDown className="w-2.5 h-2.5 inline-block ml-0.5" />
-                            </div>
-                          )}
-                        </td>
+                            
+                            {!isExpanded && (
+                              <div className="text-[9.5px] text-slate-400 mt-1 text-center uppercase tracking-wider font-semibold">
+                                Tap for details <ChevronDown className="w-2.5 h-2.5 inline-block ml-0.5" />
+                              </div>
+                            )}
+                          </td>
+                        )}
 
                         {/* ---------------- DESKTOP CELLS ---------------- */}
                         {/* Time / Status */}
