@@ -1,6 +1,6 @@
 {
-  "registeredAt": "2026-09-27T15:23:52.443Z",
-  "modelGeneration": 5,
+  "registeredAt": "2026-09-27T20:30:02.201Z",
+  "modelGeneration": 6,
   "purpose": "Forward test of two markets that returned a profit in the historical walk-forward. Found after looking at six markets, so each must survive fixtures played after this date before it is trusted.",
   "scope": {
     "rule": "the frozen model's published smart pick (smartPick in data/early_picks.json) equals the hypothesis market",
@@ -92,6 +92,13 @@
         ],
         "note": "Replicated. The model was tuned on this period, so it flatters the model, though not the choice of market."
       }
+    }
+  ],
+  "history": [
+    {
+      "registeredAt": "2026-09-27T15:23:52.443Z",
+      "modelGeneration": 5,
+      "replacedBecause": "Generation 5 was superseded before any fixture was scored: engine fixes to live-score fetching and a suspended per-league home-advantage drift. Rule, scope and decision unchanged."
     }
   ]
 }

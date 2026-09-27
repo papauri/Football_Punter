@@ -41,7 +41,7 @@ import {
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
 import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey, getLocalizedTodayKey, formatFriendlyDateOption } from '../utils/dateUtils';
-import { safeParseFloat, safeToFixed, formatKellyStake, formatSmartMarket, formatScore } from '../utils/numberUtils';
+import { safeParseFloat, safeToFixed, formatKellyStake, formatSmartMarket, formatScore, plainTipText } from '../utils/numberUtils';
 import { isTrapMatch, getMatchRiskProfile, getMarketPick } from '../utils/riskUtils';
 import { getLeaguePredictabilityTier, isLeagueBlacklisted, isLeagueSolid } from '../utils/leagueUtils';
 import { resolveMatchOdds, resolveMatchProb, getOddsProviderLabel, calculatePotentialReturn } from '../utils/oddsUtils';
@@ -74,10 +74,10 @@ export default function FixturesTablePage({
   bankrollEuro = 1000,
   leaguePerformance = [],
   tzSettings,
-  unanimousHitRate = 84.8,
   onOpenDeepResearch,
   onOpenLineup,
   onOpenWatchLive,
+  onRefresh,
   onAddToSlip,
   accaMatchIds = new Set(),
   onTriggerScrape,
@@ -145,6 +145,7 @@ export default function FixturesTablePage({
   };
 
   // Strategic Enhancements: Lineup Impact, Confidence Level, Bet Safety Mode, Major League Filter
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [convictionMode, setConvictionMode] = useState('ALL'); // 'ALL' | 'HIGH' (>=60%) | 'ELITE' (>=68% or Consensus) | 'UNANIMOUS'
   const [marketMode, setMarketMode] = useState('SMART_ADAPTIVE'); // 'SMART_ADAPTIVE' | 'DNB' | 'DOUBLE_CHANCE' | 'STRAIGHT_1X2'
   const [filterByMarketOnly, setFilterByMarketOnly] = useState(false);
@@ -163,15 +164,13 @@ export default function FixturesTablePage({
       });
       const data = await res.json();
       if (data.success) {
-        setLineupCalibrateResult(`Lineups Calibrated: ${data.calibratedCount || 0} fixtures tactically weighted (${data.confirmedCount || 0} official team sheets).`);
+        setLineupCalibrateResult(`Tips updated for ${data.calibratedCount || 0} matches (${data.confirmedCount || 0} with confirmed lineups).`);
         if (typeof onRefresh === 'function') onRefresh();
       } else {
-        setLineupCalibrateResult('Calibration finished: Starting XI tactical models updated.');
-        if (typeof onRefresh === 'function') onRefresh();
+        setLineupCalibrateResult(`Couldn't check lineups: ${data.error || 'try again shortly'}.`);
       }
     } catch (err) {
-      setLineupCalibrateResult('Calibration complete: Team sheet tactical models synchronized.');
-      if (typeof onRefresh === 'function') onRefresh();
+      setLineupCalibrateResult("Couldn't check lineups: no connection to the server.");
     } finally {
       setCalibratingLineups(false);
       setTimeout(() => setLineupCalibrateResult(null), 6000);
@@ -191,16 +190,6 @@ export default function FixturesTablePage({
       // ignore
     }
   };
-
-  // Council Selections Local Filters & Sort
-  const [councilDate, setCouncilDate] = useState('All');
-  const [councilLeague, setCouncilLeague] = useState('All');
-  const [councilPick, setCouncilPick] = useState('ALL');
-  const [councilMinRate, setCouncilMinRate] = useState('0');
-  const [councilSearch, setCouncilSearch] = useState('');
-  const [councilLegCount, setCouncilLegCount] = useState(8);
-  const [councilSortField, setCouncilSortField] = useState('prob');
-  const [councilSortDirection, setCouncilSortDirection] = useState('desc');
 
   const todayKey = useMemo(() => getLocalizedTodayKey(tzSettings), [tzSettings]);
 
@@ -224,627 +213,6 @@ export default function FixturesTablePage({
     return dKey === todayKey;
   };
 
-  // Daily AI Swarm Accumulator (Highest Win Rate & Longest Acca Slate — Strictly Today's Games)
-  const dailySwarmAcca = useMemo(() => {
-    if (!matches || matches.length === 0) return null;
-
-    const map = new Map();
-
-    const createCouncilLeg = (m, pickVal, prob, odds, ev, isUnan, sw, customScore = null) => {
-      const isHome = pickVal === 'HOME';
-      const pickTeam = isHome ? m.home : m.away;
-      const drawProb = safeParseFloat(m.prob?.draw, 22);
-      const isDnbAdvised = Boolean(
-        m.smartMarket?.marketType === 'DRAW_NO_BET' || 
-        m.smartMarket?.dnbProtection?.isAdvised || 
-        m.dnbProtection?.isAdvised || 
-        drawProb >= 24.0
-      );
-
-      let consensusType = 'UNANIMOUS_OUTRIGHT';
-      let consensusLabel = '6/6 Unanimous';
-      if (isUnan && isDnbAdvised) {
-        consensusType = 'UNANIMOUS_DNB';
-        consensusLabel = '6/6 Agree · DNB';
-      } else if (!isUnan && isDnbAdvised) {
-        consensusType = 'DNB_PROTECTED';
-        consensusLabel = 'DNB Protected';
-      } else if (!isUnan) {
-        consensusType = 'MODEL_LEAN';
-        consensusLabel = `Model Lean (${safeToFixed(prob, 0)}%)`;
-      }
-
-      const market = isDnbAdvised ? `${pickVal} DNB (Draw Refund)` : `${pickVal} Win (Outright)`;
-
-      // Map realistic agent telemetry for the expanded drawer
-      const agentVotes = (sw?.agentVotes && sw.agentVotes.length > 0) ? sw.agentVotes : [
-        { agentName: 'Tactical & Pressing Council', predictedWinner: pickVal, conviction: Math.min(92, Math.round(prob * 1.1 + 8)), icon: '⚡' },
-        { agentName: 'Poisson xG Forensics', predictedWinner: pickVal, conviction: Math.round(prob), icon: '🎯' },
-        { agentName: 'Squad Depth & Lineups', predictedWinner: pickVal, conviction: Math.min(88, Math.round(prob * 1.05 + 4)), icon: '👥' },
-        { agentName: 'Market Dislocation & Odds', predictedWinner: isDnbAdvised ? 'DRAW_PROTECTED' : pickVal, conviction: Math.min(90, Math.round(prob * 0.95 + 12)), icon: '📈' },
-        { agentName: 'Pitch Physics & Fatigue', predictedWinner: pickVal, conviction: Math.min(85, Math.round(prob * 1.02)), icon: '📐' },
-        { agentName: 'Predictability Matrix Learner', predictedWinner: pickVal, conviction: Math.min(95, Math.round(prob * 1.12)), icon: '🧠' }
-      ];
-
-      return {
-        id: m.id,
-        match: m,
-        home: m.home,
-        away: m.away,
-        league: m.league,
-        time: m.time,
-        date: m.dateIso || m.date,
-        pick: pickVal,
-        pickTeam,
-        market,
-        prob,
-        odds,
-        ev,
-        drawRisk: drawProb,
-        isDnb: isDnbAdvised,
-        isUnanimous: isUnan,
-        consensusType,
-        consensusLabel,
-        agentVotes,
-        swarmScore: customScore || (sw?.swarmScore || 80) + (isUnan ? 15 : 0),
-        isLive: Boolean(m.isLive || m.inPlayPrediction || (m.status && (m.status.includes("'") || m.status.includes('LIVE') || m.status === 'HT'))),
-        liveMinute: m.liveMinute || m.inPlayPrediction?.minuteDisplay || (m.status?.includes("'") ? m.status : null),
-        liveScore: m.liveScore || m.inPlayPrediction?.currentScore || (m.homeScore != null && m.awayScore != null ? `${m.homeScore}-${m.awayScore}` : null),
-        inPlayPrediction: m.inPlayPrediction,
-        broadcast: m.broadcast,
-        channels: m.channels
-      };
-    };
-
-    // First inspect AI swarm directives (topValueParlay, unanimousDirectives)
-    const directiveLegs = [
-      ...(aiSwarm?.directives?.topValueParlay?.allLegs || aiSwarm?.directives?.topValueParlay?.legs || []),
-      ...(aiSwarm?.directives?.unanimousDirectives || [])
-    ];
-
-    directiveLegs.forEach(dLeg => {
-      const m = matches.find(item => 
-        (dLeg.fixtureId != null && String(item.id) === String(dLeg.fixtureId)) ||
-        (dLeg.id != null && String(item.id) === String(dLeg.id)) ||
-        (dLeg.fixture && `${item.home} vs ${item.away}`.toLowerCase() === String(dLeg.fixture).toLowerCase()) ||
-        (dLeg.home && dLeg.away && item.home && item.away && item.home.toLowerCase().includes(dLeg.home.toLowerCase()) && item.away.toLowerCase().includes(dLeg.away.toLowerCase()))
-      );
-      if (!m) return;
-      if (isMatchCompleted(m)) return; // Strictly exclude played matches
-      if (!isTodayUpcomingOrLive(m)) return; // Strictly today's games!
-      if (isLeagueBlacklisted(m.league)) return;
-      const sw = m.aiSwarm || m.imperialSwarm;
-      const isTrap = isTrapMatch(m);
-      if (isTrap) return;
-
-      let pickVal = dLeg.pick || dLeg.masterVerdict || 'HOME';
-      if (pickVal === '1') pickVal = 'HOME';
-      if (pickVal === '2') pickVal = 'AWAY';
-      if (pickVal !== 'HOME' && pickVal !== 'AWAY') {
-        const hp = safeParseFloat(m.prob?.home, 0);
-        const ap = safeParseFloat(m.prob?.away, 0);
-        pickVal = hp >= ap ? 'HOME' : 'AWAY';
-      }
-
-      const prob = resolveMatchProb(m, pickVal, dLeg.prob);
-      const odds = resolveMatchOdds(m, pickVal, dLeg.odds);
-      const ev = ((prob / 100) * odds) - 1;
-      if (ev < -0.08 || prob < 45) return;
-
-      const idStr = String(m.id);
-      if (!map.has(idStr)) {
-        map.set(idStr, createCouncilLeg(m, pickVal, prob, odds, ev, true, sw, (sw?.swarmScore || 85) + 20));
-      }
-    });
-
-    // Next scan all slate matches for unanimous AI council agreement
-    matches.forEach(m => {
-      const idStr = String(m.id);
-      if (map.has(idStr)) return;
-      if (isMatchCompleted(m)) return; // Strictly exclude played matches
-      if (!isTodayUpcomingOrLive(m)) return; // Strictly today's games!
-      if (isLeagueBlacklisted(m.league)) return;
-
-      const sw = m.aiSwarm || m.imperialSwarm;
-      const isTrap = isTrapMatch(m);
-      if (isTrap) return;
-
-      const isUnan = Boolean(
-        sw?.is100Unanimous || 
-        sw?.isTopValueLeg || 
-        sw?.isUnanimousDirective || 
-        sw?.consensusTier === 'UNANIMOUS_DIRECTIVE' || 
-        sw?.agreementPercentage === 100
-      );
-      if (!isUnan) return;
-
-      let pickVal = sw?.masterVerdict || (typeof m.predictedWinner === 'string' ? m.predictedWinner : m.predictedWinner?.pick) || m.binaryModel?.pick || 'HOME';
-      if (pickVal === '1') pickVal = 'HOME';
-      if (pickVal === '2') pickVal = 'AWAY';
-      if (pickVal !== 'HOME' && pickVal !== 'AWAY') {
-        const hp = safeParseFloat(m.prob?.home, 0);
-        const ap = safeParseFloat(m.prob?.away, 0);
-        pickVal = hp >= ap ? 'HOME' : 'AWAY';
-      }
-
-      const prob = resolveMatchProb(m, pickVal);
-      const odds = resolveMatchOdds(m, pickVal);
-      const ev = ((prob / 100) * odds) - 1;
-      if (ev < -0.08 || prob < 45) return;
-
-      map.set(idStr, createCouncilLeg(m, pickVal, prob, odds, ev, true, sw, (sw?.swarmScore || 80) + 15));
-    });
-
-    let candidateLegs = Array.from(map.values());
-
-    // Fallback if today's slate has < 2 unanimous matches: add top non-trap outright favorites scheduled today
-    if (candidateLegs.length < 2) {
-      const existingIds = new Set(candidateLegs.map(l => String(l.id)));
-      const backupMatches = matches
-        .filter(m => {
-          if (existingIds.has(String(m.id))) return false;
-          if (isMatchCompleted(m)) return false; // Strictly NEVER completed matches
-          if (!isTodayUpcomingOrLive(m)) return false; // Strictly today's games!
-          if (isLeagueBlacklisted(m.league)) return false;
-          const sw = m.aiSwarm || m.imperialSwarm;
-          if (isTrapMatch(m)) return false;
-          const hp = safeParseFloat(m.prob?.home, 0);
-          const ap = safeParseFloat(m.prob?.away, 0);
-          return Math.max(hp, ap) >= 45;
-        })
-        .sort((a, b) => {
-          const pA = Math.max(safeParseFloat(a.prob?.home, 0), safeParseFloat(a.prob?.away, 0));
-          const pB = Math.max(safeParseFloat(b.prob?.home, 0), safeParseFloat(b.prob?.away, 0));
-          return pB - pA;
-        });
-
-      for (const bm of backupMatches) {
-        if (candidateLegs.length >= 3) break;
-        let pickVal = (typeof bm.predictedWinner === 'string' ? bm.predictedWinner : bm.predictedWinner?.pick) || 'HOME';
-        if (pickVal !== 'HOME' && pickVal !== 'AWAY') {
-          const hp = safeParseFloat(bm.prob?.home, 0);
-          const ap = safeParseFloat(bm.prob?.away, 0);
-          pickVal = hp >= ap ? 'HOME' : 'AWAY';
-        }
-        const prob = resolveMatchProb(bm, pickVal);
-        const odds = resolveMatchOdds(bm, pickVal);
-        const ev = ((prob / 100) * odds) - 1;
-        const sw = bm.aiSwarm || bm.imperialSwarm;
-        const isUnan = Boolean(sw?.is100Unanimous || sw?.agreementPercentage === 100);
-        candidateLegs.push(createCouncilLeg(bm, pickVal, prob, odds, ev, isUnan, sw, prob));
-      }
-    }
-
-    // If today is completely finished or has no upcoming matches, gracefully fallback to next upcoming dates (STILL NEVER completed matches!)
-    if (candidateLegs.length === 0) {
-      const futureMatches = matches
-        .filter(m => !isMatchCompleted(m) && !isLeagueBlacklisted(m.league))
-        .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-
-      for (const fm of futureMatches) {
-        if (candidateLegs.length >= 3) break;
-        const sw = fm.aiSwarm || fm.imperialSwarm;
-        if (isTrapMatch(fm)) continue;
-        let pickVal = sw?.masterVerdict || (typeof fm.predictedWinner === 'string' ? fm.predictedWinner : fm.predictedWinner?.pick) || 'HOME';
-        if (pickVal !== 'HOME' && pickVal !== 'AWAY') {
-          const hp = safeParseFloat(fm.prob?.home, 0);
-          const ap = safeParseFloat(fm.prob?.away, 0);
-          pickVal = hp >= ap ? 'HOME' : 'AWAY';
-        }
-        const prob = resolveMatchProb(fm, pickVal);
-        const odds = resolveMatchOdds(fm, pickVal);
-        const ev = ((prob / 100) * odds) - 1;
-        const isUnan = Boolean(sw?.is100Unanimous || sw?.agreementPercentage === 100);
-        candidateLegs.push(createCouncilLeg(fm, pickVal, prob, odds, ev, isUnan, sw, prob));
-      }
-    }
-
-    if (candidateLegs.length === 0) return null;
-
-    // Sort candidate legs: highest effective win rate & conviction on top.
-    candidateLegs.sort((a, b) => {
-      const effectiveA = a.isDnb ? Math.min(95, Math.round(a.prob + (a.drawRisk || 20) * 0.7)) : a.prob;
-      const effectiveB = b.isDnb ? Math.min(95, Math.round(b.prob + (b.drawRisk || 20) * 0.7)) : b.prob;
-      const scoreA = effectiveA * 10 + (a.swarmScore || 0) + (a.ev > 0 ? a.ev * 40 : 0);
-      const scoreB = effectiveB * 10 + (b.swarmScore || 0) + (b.ev > 0 ? b.ev * 40 : 0);
-      return scoreB - scoreA;
-    });
-
-    const combinedOdds = candidateLegs.reduce((acc, leg) => acc * (leg.odds > 0 ? leg.odds : 1.0), 1.0);
-    const jointProb = candidateLegs.reduce((acc, leg) => acc * ((leg.prob > 0 ? leg.prob : 50) / 100), 1.0) * 100;
-    const avgWinRate = candidateLegs.reduce((acc, leg) => acc + leg.prob, 0) / candidateLegs.length;
-    const overallEv = ((jointProb / 100) * combinedOdds) - 1;
-
-    return {
-      legs: candidateLegs,
-      combinedOdds,
-      jointProb,
-      avgWinRate,
-      overallEv,
-      allUnanimous: candidateLegs.every(l => l.isUnanimous),
-      hasDnb: candidateLegs.some(l => l.isDnb),
-      isParitySlate: candidateLegs.some(l => l.prob < 60 || l.isDnb)
-    };
-  }, [matches, aiSwarm, todayKey]);
-
-  // Helper to extract localized date key for a council leg
-  const getLegDateKey = (leg) => {
-    const timeVal = leg.match?.timestamp || leg.match?.utcDate || leg.match?.dateIso || leg.match?.date || leg.date;
-    return timeVal ? getLocalizedDateKey(timeVal, tzSettings) : 'Upcoming';
-  };
-
-  // Helper to check if a council leg passes filters, skipping one dimension for faceted counts
-  const checkCouncilLegPasses = (leg, skip = null) => {
-    if (!leg) return false;
-    // Date filter
-    if (skip !== 'date' && councilDate !== 'All') {
-      const dKey = getLegDateKey(leg);
-      if (dKey !== councilDate) return false;
-    }
-    // League filter
-    if (skip !== 'league' && councilLeague !== 'All') {
-      if (leg.league !== councilLeague) return false;
-    }
-    // Pick filter
-    if (skip !== 'pick' && councilPick !== 'ALL') {
-      if (leg.pick !== councilPick) return false;
-    }
-    // Min rate
-    if (skip !== 'rate') {
-      const minP = parseFloat(councilMinRate) || 0;
-      if (minP > 0 && leg.prob < minP) return false;
-    }
-    // Search
-    if (councilSearch.trim()) {
-      const q = councilSearch.toLowerCase();
-      const home = (leg.home || '').toLowerCase();
-      const away = (leg.away || '').toLowerCase();
-      const league = (leg.league || '').toLowerCase();
-      if (!home.includes(q) && !away.includes(q) && !league.includes(q)) return false;
-    }
-    return true;
-  };
-
-  // Dynamic Council Selections Date Options
-  const councilDateOptions = useMemo(() => {
-    if (!dailySwarmAcca || !dailySwarmAcca.legs) return [{ value: 'All', label: 'All Dates' }];
-    const counts = {};
-    let total = 0;
-    dailySwarmAcca.legs.forEach(leg => {
-      if (!checkCouncilLegPasses(leg, 'date')) return;
-      total++;
-      const dKey = getLegDateKey(leg);
-      counts[dKey] = (counts[dKey] || 0) + 1;
-    });
-    const keys = Object.keys(counts).sort();
-    return [
-      { value: 'All', label: `All Dates (${total})` },
-      ...keys.map(k => ({ value: k, label: formatFriendlyDateOption(k, counts[k], tzSettings) }))
-    ];
-  }, [dailySwarmAcca, councilLeague, councilPick, councilMinRate, councilSearch, tzSettings]);
-
-  // Dynamic Council Selections League Options
-  const councilLeagueOptions = useMemo(() => {
-    if (!dailySwarmAcca || !dailySwarmAcca.legs) return [{ value: 'All', label: 'All Leagues' }];
-    const counts = {};
-    let total = 0;
-    dailySwarmAcca.legs.forEach(leg => {
-      if (!checkCouncilLegPasses(leg, 'league')) return;
-      total++;
-      const l = leg.league || 'Other';
-      counts[l] = (counts[l] || 0) + 1;
-    });
-    const keys = Object.keys(counts).sort();
-    return [
-      { value: 'All', label: `All Leagues (${total})` },
-      ...keys.map(k => ({ value: k, label: `${k} (${counts[k]})` }))
-    ];
-  }, [dailySwarmAcca, councilDate, councilPick, councilMinRate, councilSearch]);
-
-  const { homePicksCount, awayPicksCount, totalPicksCount } = useMemo(() => {
-    let home = 0;
-    let away = 0;
-    let total = 0;
-    (dailySwarmAcca?.legs || []).forEach(leg => {
-      if (!checkCouncilLegPasses(leg, 'pick')) return;
-      total++;
-      if (leg.pick === 'HOME') home++;
-      else if (leg.pick === 'AWAY') away++;
-    });
-    return { homePicksCount: home, awayPicksCount: away, totalPicksCount: total };
-  }, [dailySwarmAcca, councilDate, councilLeague, councilMinRate, councilSearch]);
-
-  // Filtered & Sorted Council Selections
-  const filteredCouncilLegs = useMemo(() => {
-    if (!dailySwarmAcca || !dailySwarmAcca.legs) return [];
-
-    let list = dailySwarmAcca.legs.filter(leg => {
-      // 1. Date filter
-      if (councilDate !== 'All') {
-        const dKey = getLegDateKey(leg);
-        if (dKey !== councilDate) return false;
-      }
-
-      // 2. League filter
-      if (councilLeague !== 'All' && leg.league !== councilLeague) {
-        return false;
-      }
-
-      // 3. Pick filter
-      if (councilPick !== 'ALL' && leg.pick !== councilPick) {
-        return false;
-      }
-
-      // 4. Min Win Rate filter
-      const minP = parseFloat(councilMinRate);
-      if (minP > 0 && leg.prob < minP) {
-        return false;
-      }
-
-      // 5. Search query
-      if (councilSearch.trim()) {
-        const q = councilSearch.toLowerCase();
-        const home = (leg.home || '').toLowerCase();
-        const away = (leg.away || '').toLowerCase();
-        const league = (leg.league || '').toLowerCase();
-        if (!home.includes(q) && !away.includes(q) && !league.includes(q)) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-
-    // Comprehensive sorting across all columns
-    list.sort((a, b) => {
-      let diff = 0;
-      if (councilSortField === 'idx') {
-        const idxA = (dailySwarmAcca?.legs || []).indexOf(a);
-        const idxB = (dailySwarmAcca?.legs || []).indexOf(b);
-        diff = idxA - idxB;
-      } else if (councilSortField === 'prob') {
-        diff = (b.prob || 0) - (a.prob || 0);
-      } else if (councilSortField === 'odds') {
-        diff = (b.odds || 0) - (a.odds || 0);
-      } else if (councilSortField === 'time') {
-        const getTs = (item) => {
-          const t = item.match?.timestamp || item.match?.utcDate || item.match?.dateIso || item.date;
-          if (typeof t === 'number') return t;
-          const parsed = new Date(t).getTime();
-          return isNaN(parsed) ? 0 : parsed;
-        };
-        diff = getTs(a) - getTs(b);
-      } else if (councilSortField === 'fixture') {
-        diff = (a.home || '').localeCompare(b.home || '');
-      } else if (councilSortField === 'league') {
-        diff = (a.league || '').localeCompare(b.league || '');
-      } else if (councilSortField === 'pick') {
-        const teamA = a.pick === 'HOME' ? a.home : a.away;
-        const teamB = b.pick === 'HOME' ? b.home : b.away;
-        diff = teamA.localeCompare(teamB);
-      } else if (councilSortField === 'consensus') {
-        const scoreA = (a.swarmScore || a.prob || 0);
-        const scoreB = (b.swarmScore || b.prob || 0);
-        diff = scoreB - scoreA;
-      } else if (councilSortField === 'slip') {
-        const inSlipA = accaMatchIds.has(String(a.id)) ? 1 : 0;
-        const inSlipB = accaMatchIds.has(String(b.id)) ? 1 : 0;
-        diff = inSlipB - inSlipA;
-      }
-      return councilSortDirection === 'asc' ? -diff : diff;
-    });
-
-    return list;
-  }, [dailySwarmAcca, councilDate, councilLeague, councilPick, councilMinRate, councilSearch, councilSortField, councilSortDirection, accaMatchIds, tzSettings]);
-
-  const matchingCouncilCount = filteredCouncilLegs.length;
-
-  // Dynamic Council Leg Count options based on matching count
-  const councilLegCountOptions = useMemo(() => {
-    if (matchingCouncilCount === 0) {
-      return [{ value: 0, label: '0 Legs (No Matches)' }];
-    }
-    if (matchingCouncilCount < 8) {
-      const opts = [];
-      if (matchingCouncilCount >= 4) {
-        opts.push({ value: 2, label: '2 Legs' });
-        opts.push({ value: 4, label: '4 Legs' });
-      } else if (matchingCouncilCount >= 2) {
-        opts.push({ value: 1, label: '1 Leg' });
-        opts.push({ value: 2, label: '2 Legs' });
-      }
-      if (!opts.some(o => o.value === matchingCouncilCount)) {
-        opts.push({ value: matchingCouncilCount, label: `${matchingCouncilCount} Legs (All Available)` });
-      } else {
-        const existing = opts.find(o => o.value === matchingCouncilCount);
-        if (existing) existing.label = `${matchingCouncilCount} Legs (All Available)`;
-      }
-      return opts;
-    }
-    const base = [
-      { value: 4, label: '4 Legs' },
-      { value: 6, label: '6 Legs' },
-      { value: 8, label: '8 Legs (Default)' }
-    ];
-    if (matchingCouncilCount >= 10) base.push({ value: 10, label: '10 Legs' });
-    if (matchingCouncilCount > 10) base.push({ value: matchingCouncilCount, label: `All ${matchingCouncilCount} Legs` });
-    return base;
-  }, [matchingCouncilCount]);
-
-  // Effective council leg count clamped to matching count (no phantom legs)
-  const effectiveCouncilLegCount = useMemo(() => {
-    if (matchingCouncilCount === 0) return 0;
-    if (matchingCouncilCount < 8) {
-      if (councilLegCount >= matchingCouncilCount || councilLegCount === 8) return matchingCouncilCount;
-      return Math.min(councilLegCount, matchingCouncilCount);
-    }
-    return Math.min(councilLegCount, matchingCouncilCount);
-  }, [councilLegCount, matchingCouncilCount]);
-
-  // Final sliced council display legs
-  const displayCouncilLegs = useMemo(() => {
-    if (effectiveCouncilLegCount === 0) return [];
-    return filteredCouncilLegs.slice(0, effectiveCouncilLegCount);
-  }, [filteredCouncilLegs, effectiveCouncilLegCount]);
-
-  // Dynamically computed stats for filtered council selections strictly based on displayCouncilLegs
-  const filteredCouncilStats = useMemo(() => {
-    const legs = displayCouncilLegs;
-    if (!legs || legs.length === 0) {
-      return {
-        count: 0,
-        combinedOdds: 0.0,
-        avgWinRate: 0,
-        jointProb: 0,
-        overallEv: 0,
-        allUnanimous: false,
-        hasDnb: false,
-        isParitySlate: false
-      };
-    }
-
-    const combinedOdds = legs.reduce((acc, leg) => acc * (leg.odds > 0 ? leg.odds : 1.0), 1.0);
-    const jointProb = legs.reduce((acc, leg) => acc * ((leg.prob > 0 ? leg.prob : 50) / 100), 1.0) * 100;
-    const avgWinRate = legs.reduce((acc, leg) => acc + leg.prob, 0) / legs.length;
-    const overallEv = ((jointProb / 100) * combinedOdds) - 1;
-
-    return {
-      count: legs.length,
-      combinedOdds,
-      avgWinRate,
-      jointProb,
-      overallEv,
-      allUnanimous: legs.every(l => l.isUnanimous),
-      hasDnb: legs.some(l => l.isDnb),
-      isParitySlate: legs.some(l => l.prob < 60 || l.isDnb)
-    };
-  }, [displayCouncilLegs]);
-
-  const isAnyCouncilFilterActive = councilDate !== 'All' || councilLeague !== 'All' || councilPick !== 'ALL' || councilMinRate !== '0' || councilSearch.trim() !== '';
-
-  const handleResetCouncilFilters = () => {
-    setCouncilDate('All');
-    setCouncilLeague('All');
-    setCouncilPick('ALL');
-    setCouncilMinRate('0');
-    setCouncilSearch('');
-    setCouncilSortField('prob');
-    setCouncilSortDirection('desc');
-  };
-
-  const handleCouncilSort = (field) => {
-    if (councilSortField === field) {
-      setCouncilSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-    } else {
-      setCouncilSortField(field);
-      const defaultDesc = ['prob', 'odds', 'consensus', 'slip'].includes(field);
-      setCouncilSortDirection(defaultDesc ? 'desc' : 'asc');
-    }
-  };
-
-  // Helper to format kickoff with relative day, day of week, and time
-  const getLegKickoffDisplay = (leg) => {
-    const timeVal = leg.match?.timestamp || leg.match?.utcDate || leg.match?.dateIso || leg.match?.date || leg.date;
-    const tzZone = tzSettings?.zone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-    const hour12 = tzSettings?.hour24 === false;
-
-    if (!timeVal) {
-      return { day: 'Upcoming', time: leg.time || '' };
-    }
-
-    try {
-      const d = new Date(typeof timeVal === 'number' ? timeVal : timeVal);
-      if (isNaN(d.getTime())) {
-        return { day: 'Upcoming', time: leg.time || '' };
-      }
-
-      const dayOfWeek = d.toLocaleDateString(undefined, { timeZone: tzZone, weekday: 'short' });
-      const monthDay = d.toLocaleDateString(undefined, { timeZone: tzZone, month: 'short', day: 'numeric' });
-      const timeStr = d.toLocaleTimeString([], { timeZone: tzZone, hour12, hour: '2-digit', minute: '2-digit' });
-
-      const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: tzZone, year: 'numeric', month: '2-digit', day: '2-digit' });
-      const todayStr = formatter.format(new Date());
-      const targetStr = formatter.format(d);
-
-      let dayLabel = `${dayOfWeek}, ${monthDay}`;
-      if (todayStr === targetStr) {
-        dayLabel = `Today (${dayOfWeek})`;
-      } else {
-        const [y1, m1, day1] = todayStr.split('-').map(Number);
-        const [y2, m2, day2] = targetStr.split('-').map(Number);
-        const diff = Math.round((Date.UTC(y2, m2 - 1, day2) - Date.UTC(y1, m1 - 1, day1)) / (1000 * 60 * 60 * 24));
-        if (diff === 1) dayLabel = `Tomorrow (${dayOfWeek})`;
-        else if (diff === -1) dayLabel = `Yesterday (${dayOfWeek})`;
-      }
-
-      return { day: dayLabel, time: timeStr };
-    } catch (e) {
-      return { day: 'Upcoming', time: leg.time || '' };
-    }
-  };
-
-  const handleLoadDailyAccaToSlip = () => {
-    const legsToLoad = displayCouncilLegs;
-    if (!legsToLoad || legsToLoad.length === 0) return;
-    const picksToLoad = legsToLoad.map(leg => ({
-      pickId: `${leg.match.id}-${leg.market}`,
-      id: leg.match.id,
-      match: leg.match,
-      home: leg.match.home,
-      away: leg.match.away,
-      league: leg.match.league,
-      time: leg.match.time,
-      date: leg.match.dateIso || leg.match.date,
-      pick: leg.pick,
-      market: leg.market,
-      confidence: leg.prob,
-      prob: leg.prob,
-      odds: leg.odds
-    }));
-
-    if (onLoadAccaPicks) {
-      onLoadAccaPicks(picksToLoad, activeSlipId || 'slip-1', {
-        type: 'success',
-        title: '👑 Council Selections Loaded',
-        message: `Loaded all ${picksToLoad.length} filtered council selections into your active bet slip.`
-      });
-    } else if (onAddToSlip) {
-      picksToLoad.forEach(p => {
-        onAddToSlip(p.match, p.pick, p.market, p.odds, p.prob);
-      });
-    }
-    setIsAccaLoaded(true);
-    setTimeout(() => setIsAccaLoaded(false), 3000);
-  };
-
-  const handleCopyDailyAcca = () => {
-    const legsToCopy = displayCouncilLegs;
-    if (!legsToCopy || legsToCopy.length === 0) return;
-    const lines = [
-      `👑 DAILY AI COUNCIL ACCUMULATOR (${legsToCopy.length} LEGS)`,
-      `⚡ 100% Unanimous AI Council Consensus • Straight Outright Wins Only`,
-      `📊 Combined Multiplier: ${safeToFixed(filteredCouncilStats.combinedOdds, 2)}x`,
-      `🎯 Average Leg Win Rate: ${safeToFixed(filteredCouncilStats.avgWinRate, 1)}%`,
-      `----------------------------------------`,
-      ...legsToCopy.map((l, i) => 
-        `${i + 1}. ${l.home} vs ${l.away} (${l.league})` +
-        `\n   ➤ Pick: ${l.pick === 'HOME' ? l.home : l.away} Win (Outright) @ ${safeToFixed(l.odds, 2)}x (${safeToFixed(l.prob, 0)}% win rate)`
-      ),
-      `----------------------------------------`,
-      `Bookmaker: LiveScore Bet Ireland (https://www.livescorebet.com/ie/sports/football)`
-    ];
-    try {
-      navigator.clipboard.writeText(lines.join('\n'));
-      setCopiedAccaSlip(true);
-      setTimeout(() => setCopiedAccaSlip(false), 2500);
-    } catch (err) {
-      console.error("Failed to copy accumulator to clipboard", err);
-    }
-  };
-
-  const unanimousRateDisplay = typeof unanimousHitRate === 'number'
-    ? `${safeToFixed(unanimousHitRate, 1)}%`
-    : (unanimousHitRate || '84.8%');
 
   const getSortFieldLabel = (field) => {
     switch (field) {
@@ -1084,9 +452,6 @@ export default function FixturesTablePage({
 
     // 5. Special Filter Mode (skipped when computing qualityOptions)
     if (skipDimension !== 'quality') {
-      if (filterMode === 'UNANIMOUS' && !item.isUnanimous) return false;
-      if (filterMode === 'HIGH_CONFIDENCE' && !isItemHigh) return false;
-      if (filterMode === 'ELITE' && !isItemElite) return false;
       if (filterMode === 'NO_TRAPS' && !item.isLowRisk) return false;
       if (filterMode === 'DERIVATIVE_SAFETY' && !item.isDerivative) return false;
       if (filterMode === 'UPSET_RISK' && !item.isTrap) return false;
@@ -1216,10 +581,10 @@ export default function FixturesTablePage({
     });
 
     return [
-      { value: 'ALL', label: `All Qualities (${all})` },
-      { value: 'HIGH', label: `Top Picks (≥60%) (${high})` },
-      { value: 'ELITE', label: `Elite Picks (≥68%) (${elite})` },
-      { value: 'UNANIMOUS', label: `👑 Council Consensus (100%) (${unanimous})` }
+      { value: 'ALL', label: `All tips (${all})` },
+      { value: 'HIGH', label: `60%+ chance (${high})` },
+      { value: 'ELITE', label: `68%+ chance (${elite})` },
+      { value: 'UNANIMOUS', label: `Strongest tips (${unanimous})` }
     ];
   }, [evaluatedItems, searchQuery, strictLeaguePruning, selectedDate, selectedLeague, selectedOutcome, marketMode, filterByMarketOnly]);
 
@@ -1249,15 +614,12 @@ export default function FixturesTablePage({
     });
 
     return [
-      { value: 'All', label: `All Picks (${all})` },
-      { value: 'UNANIMOUS', label: `👑 Council Consensus (${unanimous})` },
-      { value: 'HIGH_CONFIDENCE', label: `💎 High Confidence (≥60%) (${high})` },
-      { value: 'ELITE', label: `⭐ Elite Picks (≥68%) (${elite})` },
-      { value: 'NO_TRAPS', label: `🛡️ Low Risk Only (${noTraps})` },
-      { value: 'DNB_ONLY', label: `🛡️ Draw Protected (${dnb})` },
-      { value: 'DERIVATIVE_SAFETY', label: `🔄 Safe Alternatives (${safeAlt})` },
-      { value: 'TIER_1_ONLY', label: `🏆 Top Leagues Only (${tier1})` },
-      { value: 'UPSET_RISK', label: `⚠️ Upset Alerts (${traps})` }
+      { value: 'All', label: `Everything (${all})` },
+      { value: 'NO_TRAPS', label: `No risky tips (${noTraps})` },
+      { value: 'DNB_ONLY', label: `Draw = refund tips (${dnb})` },
+      { value: 'DERIVATIVE_SAFETY', label: `Safer bet types (${safeAlt})` },
+      { value: 'TIER_1_ONLY', label: `Top leagues only (${tier1})` },
+      { value: 'UPSET_RISK', label: `Possible upsets (${traps})` }
     ];
   }, [evaluatedItems, searchQuery, strictLeaguePruning, selectedDate, selectedLeague, selectedOutcome, marketMode, filterByMarketOnly]);
 
@@ -1536,921 +898,16 @@ export default function FixturesTablePage({
   return (
     <div className="space-y-4">
       
-      {/* 👑 Daily AI Swarm Accumulator (Highest Win Rate Council Selections Table) */}
-      {dailySwarmAcca && dailySwarmAcca.legs.length > 0 && (
-        <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
-          {/* Header & Actions Bar */}
-          <div className="p-3 sm:p-3.5 border-b border-slate-200">
-            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
-              <div className="space-y-1 max-w-2xl">
-                <div className="flex items-center gap-1.5 flex-wrap text-xs">
-                  <span className="bg-slate-900 text-white text-[10.5px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
-                    <Award className="w-3 h-3 text-slate-300" /> Council Acca
-                  </span>
-                  <span className="bg-slate-100 text-slate-700 border border-slate-200 text-[10.5px] font-semibold px-2 py-0.5 rounded-md">
-                    {filteredCouncilStats.count === dailySwarmAcca.legs.length 
-                      ? `${filteredCouncilStats.count} Legs`
-                      : `${filteredCouncilStats.count} / ${dailySwarmAcca.legs.length} Legs`}
-                  </span>
-                  <span className="bg-slate-100 text-slate-800 border border-slate-200 text-[10.5px] font-mono font-bold px-2 py-0.5 rounded-md">
-                    {safeToFixed(filteredCouncilStats.combinedOdds, 2)}x Combined Odds
-                  </span>
-                  <span className="bg-slate-100 text-slate-800 border border-slate-200 text-[10.5px] font-mono font-semibold px-2 py-0.5 rounded-md">
-                    {safeToFixed(filteredCouncilStats.avgWinRate, 1)}% Avg Hit Rate
-                  </span>
-                  <span className="text-slate-400 text-[10.5px] font-medium hidden sm:inline">
-                    • LiveScore Bet Benchmark
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                    <span>Highest Win Rate Council Selections</span>
-                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${
-                      filteredCouncilStats.allUnanimous && !filteredCouncilStats.hasDnb
-                        ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                        : 'bg-indigo-50 text-indigo-800 border-indigo-200'
-                    }`}>
-                      {filteredCouncilStats.allUnanimous && !filteredCouncilStats.hasDnb
-                        ? '👑 100% Unanimous Straight Outrights'
-                        : '🛡️ Council Consensus & Capital Protection (DNB)'}
-                    </span>
-                  </h2>
-                  <InfoTooltip
-                    title="Autonomous 6-Agent AI Council Engine"
-                    content="Selections synthesized across 6 autonomous AI engines: ⚡ Tactical & Pressing, 🎯 Poisson xG Forensics, 👥 Squad Depth & Lineups, 📈 Market Dislocation & Odds, 📐 Pitch Physics & Fatigue, and 🧠 Predictability Matrix. Matches with elevated draw risk (≥24%) are routed through Draw-No-Bet (DNB) to refund your stake on a draw."
-                    align="left"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto shrink-0">
-                <button
-                  type="button"
-                  onClick={handleLoadDailyAccaToSlip}
-                  disabled={filteredCouncilStats.count === 0}
-                  className="h-8 flex-1 sm:flex-initial px-3 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
-                >
-                  {isAccaLoaded ? (
-                    <>
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Loaded to Slip!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Load All {filteredCouncilStats.count} Legs</span>
-                    </>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleCopyDailyAcca}
-                  disabled={filteredCouncilStats.count === 0}
-                  className="h-8 flex-1 sm:flex-initial px-3 bg-white hover:bg-slate-50 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-slate-700 border border-slate-300 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
-                  title="Copy formatted bet slip for LiveScore Bet"
-                >
-                  {copiedAccaSlip ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-slate-700" />
-                      <span>Copied!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5 text-slate-400" />
-                      <span>Copy Slip</span>
-                    </>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (onNavigate) onNavigate('acca');
-                    else if (onSelectMarketMode) onSelectMarketMode('acca');
-                  }}
-                  className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
-                >
-                  <span>View Slip</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-500" />
-                </button>
-
-                <a
-                  href="https://www.livescorebet.com/ie/sports/football"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="h-8 px-2.5 text-slate-400 hover:text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center"
-                  title="Open LiveScore Bet Ireland"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-
-                <button
-                  type="button"
-                  onClick={() => setCollapsedCouncilAcca(!collapsedCouncilAcca)}
-                  className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
-                  title={collapsedCouncilAcca ? 'Expand Council Acca' : 'Collapse Council Acca'}
-                >
-                  <span>{collapsedCouncilAcca ? 'Expand' : 'Collapse'}</span>
-                  {collapsedCouncilAcca ? <ChevronDown className="w-3.5 h-3.5 text-slate-500" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-500" />}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {!collapsedCouncilAcca && (
-            <>
-              {/* Slate parity & DNB explanation banner */}
-              {filteredCouncilStats.hasDnb && (
-                <div className="mx-3 sm:mx-3.5 mt-2.5 p-2.5 bg-indigo-50/70 border border-indigo-100 rounded-lg text-xs flex items-start gap-2 text-indigo-950">
-                  <Shield className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
-                  <div className="space-y-0.5">
-                    <span className="font-bold text-indigo-900 block text-[11px]">
-                      AI Council Consensus Briefing: Parity & Draw Risk Active
-                    </span>
-                    <p className="text-[10.5px] text-indigo-800 leading-relaxed">
-                      Today's slate features tight international and cup matchups with elevated stalemate risk (draw probability ≥ 24%). All 6 AI Council agents (Tactical, Poisson xG, Squad Depth, Market Dislocation, Pitch Physics, Predictability Matrix) agree on the directional lean, but to prevent loss of capital on stalemates, high draw-risk fixtures are routed through <strong>Draw-No-Bet (DNB)</strong> — guaranteeing a 100% refund of your stake if the game finishes in a draw.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Dedicated Filter Toolbar for Council Selections */}
-          <div className="px-3 py-2 bg-slate-50/70 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
-            <div className="flex flex-wrap items-center gap-1.5 flex-1 min-w-[240px]">
-              {/* Search Club or League */}
-              <div className="relative flex-1 min-w-[130px] max-w-xs">
-                <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Filter club / league..."
-                  value={councilSearch}
-                  onChange={(e) => setCouncilSearch(e.target.value)}
-                  className="w-full pl-8 pr-6 py-1 text-xs bg-white text-slate-800 border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-slate-400 placeholder:text-slate-400"
-                />
-                {councilSearch && (
-                  <button
-                    type="button"
-                    onClick={() => setCouncilSearch('')}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 font-bold text-xs"
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-
-              {/* Date Filter */}
-              <UniformDropdown
-                label="Date"
-                value={councilDate}
-                onChange={setCouncilDate}
-                options={councilDateOptions}
-                selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
-              />
-
-              {/* League Filter */}
-              <UniformDropdown
-                label="League"
-                value={councilLeague}
-                onChange={setCouncilLeague}
-                options={councilLeagueOptions}
-                selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
-              />
-
-              {/* Outcome / Pick Filter */}
-              <UniformDropdown
-                label="Pick"
-                value={councilPick}
-                onChange={setCouncilPick}
-                options={[
-                  { value: 'ALL', label: `All Picks (${totalPicksCount})` },
-                  { value: 'HOME', label: `Home Win (${homePicksCount})` },
-                  { value: 'AWAY', label: `Away Win (${awayPicksCount})` }
-                ]}
-                selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
-              />
-
-              {/* Min Win Rate Filter */}
-              <UniformDropdown
-                label="Min Rate"
-                value={councilMinRate}
-                onChange={setCouncilMinRate}
-                options={[
-                  { value: '0', label: 'All Win %' },
-                  { value: '65', label: '≥ 65% Win Rate' },
-                  { value: '70', label: '≥ 70% Win Rate' },
-                  { value: '75', label: '≥ 75% Win Rate' },
-                  { value: '80', label: '≥ 80% Win Rate' }
-                ]}
-                selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
-              />
-
-              {/* Council Leg Count Filter */}
-              <UniformDropdown
-                label={matchingCouncilCount < 8 ? `Leg Count (${matchingCouncilCount} avail)` : 'Leg Count'}
-                value={effectiveCouncilLegCount}
-                onChange={(val) => setCouncilLegCount(Number(val))}
-                options={councilLegCountOptions}
-                selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
-              />
-            </div>
-
-            {/* Filter status & clear */}
-            <div className="flex items-center gap-2 text-slate-500 text-[11px] shrink-0">
-              <span>Showing <strong>{filteredCouncilStats.count}</strong> of {dailySwarmAcca.legs.length} legs</span>
-              {isAnyCouncilFilterActive && (
-                <button
-                  type="button"
-                  onClick={handleResetCouncilFilters}
-                  className="font-semibold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer"
-                >
-                  Clear Filters
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Council Selections Table with Sortable Column Headers */}
-          <div className="overflow-hidden">
-            <table className="block md:table w-full text-left border-collapse text-xs">
-              <thead className="hidden md:table-header-group">
-                <tr className="bg-slate-50/80 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider h-8 select-none">
-                  {/* Expand Toggle */}
-                  <th className="py-1 px-1 w-6 text-center"></th>
-
-                  {/* Leg Number / Default Order (Sortable) */}
-                  <th 
-                    onClick={() => handleCouncilSort('idx')}
-                    className="py-1 px-2 w-10 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                    title="Click to reset to default order"
-                  >
-                    <div className="inline-flex items-center justify-center gap-0.5">
-                      <span className={councilSortField === 'idx' ? 'text-slate-900 font-bold' : ''}>#</span>
-                      {councilSortField === 'idx' ? (
-                        councilSortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-700" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-700" />
-                      ) : (
-                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
-                  
-                  {/* Fixture (Sortable) */}
-                  <th 
-                    onClick={() => handleCouncilSort('fixture')}
-                    className="py-1 px-2 min-w-[180px] cursor-pointer hover:bg-slate-100 transition-colors group"
-                    title="Click to sort alphabetically by Club / Fixture"
-                  >
-                    <div className="inline-flex items-center gap-1">
-                      <span className={councilSortField === 'fixture' ? 'text-slate-900 font-bold' : ''}>Fixture</span>
-                      {councilSortField === 'fixture' ? (
-                        councilSortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-700" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-700" />
-                      ) : (
-                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
-
-                  {/* League (Sortable) */}
-                  <th 
-                    onClick={() => handleCouncilSort('league')}
-                    className="py-1 px-2 min-w-[120px] cursor-pointer hover:bg-slate-100 transition-colors group"
-                    title="Click to sort by Competition / League"
-                  >
-                    <div className="inline-flex items-center gap-1">
-                      <span className={councilSortField === 'league' ? 'text-slate-900 font-bold' : ''}>League</span>
-                      {councilSortField === 'league' ? (
-                        councilSortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-700" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-700" />
-                      ) : (
-                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
-
-                  {/* Kickoff & Day (Sortable) */}
-                  <th 
-                    onClick={() => handleCouncilSort('time')}
-                    className="py-1 px-2 min-w-[120px] text-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                    title="Click to sort chronologically by Kickoff Day & Time"
-                  >
-                    <div className="inline-flex items-center justify-center gap-1">
-                      <span className={councilSortField === 'time' ? 'text-slate-900 font-bold' : ''}>Kickoff</span>
-                      {councilSortField === 'time' ? (
-                        councilSortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-700" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-700" />
-                      ) : (
-                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
-
-                  {/* Council Pick (Sortable) */}
-                  <th 
-                    onClick={() => handleCouncilSort('pick')}
-                    className="py-1 px-2 min-w-[140px] cursor-pointer hover:bg-slate-100 transition-colors group"
-                    title="Click to sort by Selected Winner"
-                  >
-                    <div className="inline-flex items-center gap-1">
-                      <span className={councilSortField === 'pick' ? 'text-slate-900 font-bold' : ''}>Council Pick</span>
-                      {councilSortField === 'pick' ? (
-                        councilSortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-700" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-700" />
-                      ) : (
-                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
-
-                  {/* Odds (Sortable) */}
-                  <th 
-                    onClick={() => handleCouncilSort('odds')}
-                    className="py-1 px-2 w-16 text-right cursor-pointer hover:bg-slate-100 transition-colors group"
-                    title="Click to sort by Market Odds"
-                  >
-                    <div className="inline-flex items-center justify-end gap-1 w-full">
-                      <span className={councilSortField === 'odds' ? 'text-slate-900 font-bold' : ''}>Odds</span>
-                      {councilSortField === 'odds' ? (
-                        councilSortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-700" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-700" />
-                      ) : (
-                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
-
-                  {/* Win Rate (Sortable) */}
-                  <th 
-                    onClick={() => handleCouncilSort('prob')}
-                    className="py-1 px-2 w-20 text-right cursor-pointer hover:bg-slate-100 transition-colors group"
-                    title="Click to sort by Win Rate Probability"
-                  >
-                    <div className="inline-flex items-center justify-end gap-1 w-full">
-                      <span className={councilSortField === 'prob' ? 'text-slate-900 font-bold' : ''}>Win Rate</span>
-                      {councilSortField === 'prob' ? (
-                        councilSortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-700" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-700" />
-                      ) : (
-                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
-
-                  {/* Consensus (Sortable) */}
-                  <th 
-                    onClick={() => handleCouncilSort('consensus')}
-                    className="py-1 px-2 w-28 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                    title="Click to sort by Council Agreement Score"
-                  >
-                    <div className="inline-flex items-center justify-center gap-1">
-                      <span className={councilSortField === 'consensus' ? 'text-slate-900 font-bold' : ''}>Consensus</span>
-                      {councilSortField === 'consensus' ? (
-                        councilSortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-700" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-700" />
-                      ) : (
-                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
-
-                  {/* Slip (Sortable) */}
-                  <th 
-                    onClick={() => handleCouncilSort('slip')}
-                    className="py-1 px-2 w-44 text-center cursor-pointer hover:bg-slate-100 transition-colors group"
-                    title="Click to sort by Slip Inclusion"
-                  >
-                    <div className="inline-flex items-center justify-center gap-1">
-                      <span className={councilSortField === 'slip' ? 'text-slate-900 font-bold' : ''}>Actions</span>
-                      {councilSortField === 'slip' ? (
-                        councilSortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-slate-700" /> : <ArrowDown className="w-2.5 h-2.5 text-slate-700" />
-                      ) : (
-                        <ArrowUpDown className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="p-2.5 sm:p-0 flex flex-col md:table-row-group md:divide-y md:divide-slate-100 space-y-2.5 md:space-y-0">
-                {displayCouncilLegs.length === 0 ? (
-                  <tr className="flex flex-col md:table-row">
-                    <td colSpan={10} className="py-6 text-center text-slate-500 block md:table-cell">
-                      <div className="max-w-md mx-auto space-y-1.5">
-                        <p className="font-semibold text-xs text-slate-700">No council selections match the selected filters</p>
-                        <p className="text-[11px] text-slate-400">
-                          Try adjusting your Date, League, Pick, or Leg Count filters to view available council selections.
-                        </p>
-                        <button
-                          type="button"
-                          onClick={handleResetCouncilFilters}
-                          className="mt-1 px-2.5 py-1 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md transition-colors cursor-pointer"
-                        >
-                          Reset Filters
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  displayCouncilLegs.map((leg, idx) => {
-                    const legKey = leg.id || `council-${idx}`;
-                    const isExpanded = expandedCouncilId === legKey;
-                    const inSlip = accaMatchIds.has(String(leg.id));
-                    const isHome = leg.pick === 'HOME';
-                    const pickTeam = isHome ? leg.home : leg.away;
-                    const kickoff = getLegKickoffDisplay(leg);
-                    const matchObj = leg.match || leg;
-
-                    return (
-                      <React.Fragment key={legKey}>
-                        <tr 
-                          className="flex flex-col md:table-row bg-white rounded-xl md:rounded-none border border-slate-200/90 md:border-0 shadow-2xs md:shadow-none hover:border-slate-300 transition-all md:h-10 cursor-pointer"
-                          onClick={() => toggleCouncilExpand(legKey)}
-                        >
-                          {/* ================= MOBILE COMPACT VIEW (1-ROW TABLE OR CARD) ================= */}
-                          {mobileViewMode === 'table' ? (
-                            <td className="md:hidden px-2.5 py-2 block">
-                              <div className="flex items-center justify-between gap-1.5 text-xs">
-                                {/* Left: Number + Kickoff + Teams */}
-                                <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                                  <span className="w-4 h-4 rounded-full bg-slate-900 text-white font-mono text-[9px] font-bold flex items-center justify-center shrink-0">
-                                    {idx + 1}
-                                  </span>
-                                  <span className="font-mono text-[10px] text-slate-500 shrink-0 font-medium">
-                                    {kickoff.time}
-                                  </span>
-                                  <div className="font-bold text-slate-900 text-xs truncate">
-                                    <span>{leg.home}</span>
-                                    <span className="text-slate-400 font-normal mx-1">v</span>
-                                    <span>{leg.away}</span>
-                                  </div>
-                                </div>
-
-                                {/* Right: Pick, Odds, Win %, Chevron */}
-                                <div className="flex items-center gap-1.5 shrink-0">
-                                  <span className="font-mono font-bold text-[10.5px] bg-indigo-50 text-indigo-800 border border-indigo-200 px-1.5 py-0.5 rounded">
-                                    {pickTeam} {leg.isDnb ? '(DNB)' : ''} @{safeToFixed(leg.odds, 2)}
-                                  </span>
-                                  <span className="text-[10px] font-mono text-emerald-700 font-bold">
-                                    {safeToFixed(leg.prob, 0)}%
-                                  </span>
-                                  <div className="text-slate-400">
-                                    {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-indigo-600" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                          ) : (
-                            <td className="md:hidden p-3 block">
-                              <div className="flex items-center justify-between gap-1.5 mb-1.5">
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className="w-4 h-4 rounded-full bg-slate-900 text-white font-mono text-[9.5px] font-bold flex items-center justify-center shrink-0">
-                                    {idx + 1}
-                                  </span>
-                                  <span className="font-mono text-[10px] text-slate-600 font-semibold flex items-center gap-1">
-                                    <Clock className="w-2.5 h-2.5 text-slate-400" />
-                                    {kickoff.day} {kickoff.time}
-                                  </span>
-                                  {leg.isLive && (
-                                    <span className="px-1 py-0.2 rounded text-[8.5px] font-bold bg-rose-600 text-white animate-pulse">
-                                      LIVE {leg.liveMinute ? `${leg.liveMinute}'` : ''}
-                                    </span>
-                                  )}
-                                  <span className="text-[9.5px] text-slate-500 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200 truncate max-w-[120px]">
-                                    {leg.league}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                  {leg.isDnb ? (
-                                    <span className="text-[9.5px] font-bold text-indigo-800 bg-indigo-50 px-1.5 py-0.2 rounded border border-indigo-200 inline-flex items-center gap-0.5" title={`Elevated draw risk (${safeToFixed(leg.drawRisk, 1)}%) — Draw-No-Bet stake refund active`}>
-                                      <Shield className="w-2.5 h-2.5 text-indigo-600" />
-                                      {leg.isUnanimous ? '6/6 Agree · DNB' : 'DNB Protected'}
-                                    </span>
-                                  ) : leg.isUnanimous ? (
-                                    <span className="text-[9.5px] font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 inline-flex items-center gap-0.5" title="All 6 autonomous AI agents reached unanimous consensus on straight outright win">
-                                      <Check className="w-2.5 h-2.5 text-emerald-600" />
-                                      6/6 Unanimous
-                                    </span>
-                                  ) : (
-                                    <span className="text-[9.5px] font-medium text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200 inline-flex items-center gap-0.5" title="Algorithmic slate lean">
-                                      <Zap className="w-2.5 h-2.5 text-slate-400" />
-                                      Model Lean ({safeToFixed(leg.prob, 0)}%)
-                                    </span>
-                                  )}
-                                  <div className="text-slate-400 p-0.5">
-                                    {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Fixture & Selection */}
-                              <div className="flex items-center justify-between gap-2 mb-2">
-                                <div className="font-bold text-slate-900 text-xs">
-                                  <span>{leg.home}</span>
-                                  <span className="text-slate-400 font-normal mx-1">vs</span>
-                                  <span>{leg.away}</span>
-                                </div>
-                                <div className="text-right shrink-0">
-                                  <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 font-mono">
-                                    {pickTeam} {leg.isDnb ? '(DNB)' : ''} @{safeToFixed(leg.odds, 2)}x
-                                  </span>
-                                </div>
-                              </div>
-
-                              {/* Probability & Actions Row */}
-                              <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 text-[11px]">
-                                <span className="font-semibold text-emerald-700">
-                                  {safeToFixed(leg.prob, 0)}% Win Rate {leg.isDnb ? '(85% Safe)' : ''}
-                                </span>
-                                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                                  <button
-                                    type="button"
-                                    onClick={() => onOpenWatchLive && onOpenWatchLive(matchObj)}
-                                    className={`w-[98px] h-6 flex items-center justify-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded border shadow-2xs transition-colors cursor-pointer shrink-0 ${
-                                      (leg.match?.isLive || leg.isLive)
-                                        ? 'bg-rose-600 text-white border-rose-600 animate-pulse font-extrabold'
-                                        : 'text-indigo-700 bg-indigo-50 border-indigo-200'
-                                    }`}
-                                    title={(leg.match?.isLive || leg.isLive) ? "Live Tactical AI Analysis" : "Tactical AI Match Intelligence"}
-                                  >
-                                    <Brain className="w-2.5 h-2.5 shrink-0" />
-                                    <span className="truncate">{(leg.match?.isLive || leg.isLive) ? 'Live Intel' : 'Tactical Intel'}</span>
-                                  </button>
-                                  {inSlip ? (
-                                    <span className="w-[58px] h-6 flex items-center justify-center gap-0.5 text-[10px] font-medium text-slate-600 bg-slate-100 px-1 py-0.5 rounded border border-slate-200 shrink-0">
-                                      <Check className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                                      <span>In Slip</span>
-                                    </span>
-                                  ) : (
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        if (onAddToSlip) {
-                                          onAddToSlip(leg.match, leg.pick, leg.market, leg.odds, leg.prob);
-                                        }
-                                      }}
-                                      className="w-[58px] h-6 flex items-center justify-center gap-0.5 text-[10px] font-semibold text-slate-800 bg-white px-1 py-0.5 rounded border border-slate-300 shadow-2xs hover:bg-slate-50 cursor-pointer shrink-0"
-                                    >
-                                      <Plus className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                                      <span>Add</span>
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            </td>
-                          )}
-
-                          {/* ================= DESKTOP 1-ROW VIEW ================= */}
-                          {/* Chevron Toggle */}
-                          <td className="hidden md:table-cell py-1.5 px-1 text-center text-slate-400">
-                            {isExpanded ? <ChevronUp className="w-3.5 h-3.5 mx-auto" /> : <ChevronDown className="w-3.5 h-3.5 mx-auto opacity-60" />}
-                          </td>
-
-                          {/* Leg Number */}
-                          <td className="hidden md:table-cell py-1.5 px-2 text-center text-slate-400 font-mono text-[10.5px]">
-                            {idx + 1}
-                          </td>
-
-                          {/* Fixture */}
-                          <td className="hidden md:table-cell py-1.5 px-2">
-                            <div className="font-semibold text-slate-900 text-[11.5px] leading-tight">
-                              <span className={isHome ? 'font-bold text-slate-900' : 'text-slate-700'}>{leg.home}</span>
-                              <span className="text-slate-400 font-normal mx-1 text-[10.5px]">vs</span>
-                              <span className={!isHome ? 'font-bold text-slate-900' : 'text-slate-700'}>{leg.away}</span>
-                            </div>
-                          </td>
-
-                          {/* League */}
-                          <td className="hidden md:table-cell py-1.5 px-2 text-slate-500 text-[10.5px] truncate max-w-[140px]">
-                            <div>{leg.league}</div>
-                          </td>
-
-                          {/* Kickoff stating Day and Time */}
-                          <td className="hidden md:table-cell py-1.5 px-2 text-center whitespace-nowrap">
-                            {leg.isLive || leg.match?.isLive ? (
-                              <div>
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[9.5px] font-bold bg-rose-100 text-rose-700 border border-rose-300 animate-pulse">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
-                                  LIVE {leg.liveMinute || leg.match?.liveMinute || "In-Play"}
-                                </span>
-                                <div className="font-mono font-bold text-slate-900 text-[11px] mt-0.5">
-                                  {leg.liveScore || leg.match?.liveScore || '1 - 0'}
-                                </div>
-                              </div>
-                            ) : (
-                              <>
-                                <div className="font-semibold text-slate-800 text-[11px] leading-tight">
-                                  {kickoff.day}
-                                </div>
-                                <div className="text-slate-400 font-mono text-[9.5px]">
-                                  {kickoff.time}
-                                </div>
-                                {(() => {
-                                  const c = formatKickoffCountdown(leg.match || leg);
-                                  if (!c) return null;
-                                  return (
-                                    <div className="mt-0.5">
-                                      <span className={`inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-bold border ${c.color}`}>
-                                        {c.isWindow && <Lock className="w-2 h-2" />}
-                                        {c.label}
-                                      </span>
-                                    </div>
-                                  );
-                                })()}
-                              </>
-                            )}
-                          </td>
-
-                          {/* Pick */}
-                          <td className="hidden md:table-cell py-1.5 px-2">
-                            <div className="inline-flex items-center gap-1 flex-wrap">
-                              <span className="font-semibold text-slate-900 text-[11.5px]">
-                                {pickTeam}
-                              </span>
-                              {leg.isDnb ? (
-                                <span className="text-[9.5px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.2 rounded border border-indigo-200 inline-flex items-center gap-0.5" title={`Draw-No-Bet: stake refunded if match ends in a draw (Draw risk: ${safeToFixed(leg.drawRisk, 1)}%)`}>
-                                  <Shield className="w-2.5 h-2.5 text-indigo-600" />
-                                  {isHome ? 'Home DNB' : 'Away DNB'}
-                                </span>
-                              ) : (
-                                <span className="text-[9.5px] font-medium text-slate-500 bg-slate-100 px-1 py-0.2 rounded border border-slate-200">
-                                  {isHome ? 'Home Win' : 'Away Win'}
-                                </span>
-                              )}
-                            </div>
-                            {leg.inPlayPrediction && (
-                              <div className="text-[9.5px] text-emerald-700 font-medium font-mono mt-0.5">
-                                Live Proj: {leg.inPlayPrediction.projectedFinalScore}
-                              </div>
-                            )}
-                          </td>
-
-                          {/* Odds */}
-                          <td className="hidden md:table-cell py-1.5 px-2 text-right font-mono font-bold text-slate-900 text-[11px]">
-                            {safeToFixed(leg.odds, 2)}x
-                          </td>
-
-                          {/* Win Rate */}
-                          <td className="hidden md:table-cell py-1.5 px-2 text-right font-mono font-semibold text-slate-800 text-[11px]">
-                            <div>
-                              <span>{safeToFixed(leg.prob, 0)}%</span>
-                              {leg.isDnb && (
-                                <span className="text-[9px] text-indigo-600 font-normal block" title="Effective win or push refund rate">
-                                  85% Safe
-                                </span>
-                              )}
-                            </div>
-                          </td>
-
-                          {/* Consensus */}
-                          <td className="hidden md:table-cell py-1.5 px-2 text-center whitespace-nowrap">
-                            {leg.consensusType === 'UNANIMOUS_OUTRIGHT' && (
-                              <span className="inline-flex items-center gap-1 text-[9.5px] font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200" title="All 6 autonomous AI Council agents unanimously voted for straight outright victory">
-                                <Check className="w-2.5 h-2.5 text-emerald-600" />
-                                6/6 Unanimous
-                              </span>
-                            )}
-                            {leg.consensusType === 'UNANIMOUS_DNB' && (
-                              <span className="inline-flex items-center gap-1 text-[9.5px] font-bold text-indigo-800 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200" title={`All 6 AI agents agree on winner, but draw risk is elevated (${safeToFixed(leg.drawRisk, 1)}% ≥ 24.0%). DNB protects initial wager with full refund on tie.`}>
-                                <Shield className="w-2.5 h-2.5 text-indigo-600" />
-                                6/6 Agree · DNB
-                              </span>
-                            )}
-                            {leg.consensusType === 'DNB_PROTECTED' && (
-                              <span className="inline-flex items-center gap-1 text-[9.5px] font-bold text-indigo-800 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200" title={`Elevated draw probability (${safeToFixed(leg.drawRisk, 1)}% ≥ 24.0%) — Draw-No-Bet stake refund active`}>
-                                <Shield className="w-2.5 h-2.5 text-indigo-600" />
-                                DNB Protected
-                              </span>
-                            )}
-                            {leg.consensusType === 'MODEL_LEAN' && (
-                              <span className="inline-flex items-center gap-1 text-[9.5px] font-medium text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200" title="Algorithmic slate lean based on statistical ratings and positive expected value">
-                                <Zap className="w-2.5 h-2.5 text-slate-400" />
-                                Model Lean ({safeToFixed(leg.prob, 0)}%)
-                              </span>
-                            )}
-                          </td>
-
-                          {/* Actions (Watch + Slip) */}
-                          <td className="hidden md:table-cell py-1.5 px-2 text-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                            <div className="grid grid-cols-[98px_58px] gap-1.5 items-center justify-center">
-                              <button
-                                type="button"
-                                onClick={() => onOpenWatchLive && onOpenWatchLive(leg.match || leg)}
-                                className={`w-[98px] h-6 flex items-center justify-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded border shadow-2xs transition-colors cursor-pointer shrink-0 ${
-                                  (leg.match?.isLive || leg.isLive)
-                                    ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600 animate-pulse font-extrabold'
-                                    : 'text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border-indigo-200'
-                                }`}
-                                title={(leg.match?.isLive || leg.isLive) ? "Live Match Tactical AI Intelligence" : "Match Tactical AI Analysis"}
-                              >
-                                <Brain className={`w-2.5 h-2.5 shrink-0 ${(leg.match?.isLive || leg.isLive) ? 'text-white' : 'text-indigo-600'}`} />
-                                <span className="truncate">{(leg.match?.isLive || leg.isLive) ? 'Live Analysis' : 'Tactical Intel'}</span>
-                              </button>
-
-                              {inSlip ? (
-                                <span className="w-[58px] h-6 flex items-center justify-center gap-1 text-[10px] font-medium text-slate-600 bg-slate-100 px-1 py-0.5 rounded border border-slate-200 shrink-0">
-                                  <Check className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                                  <span>In Slip</span>
-                                </span>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    if (onAddToSlip) {
-                                      onAddToSlip(leg.match, leg.pick, leg.market, leg.odds, leg.prob);
-                                    }
-                                  }}
-                                  className="w-[58px] h-6 flex items-center justify-center gap-1 text-[10px] font-medium text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 px-1 py-0.5 rounded border border-slate-300 shadow-2xs transition-colors cursor-pointer shrink-0"
-                                >
-                                  <Plus className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                                  <span>Add</span>
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-
-                        {/* Collapsible Details Drawer */}
-                        {isExpanded && (
-                          <tr className="flex flex-col md:table-row bg-slate-50/90 border-b border-slate-200">
-                            <td colSpan={10} className="p-3 block md:table-cell">
-                              <div className="grid grid-cols-1 lg:grid-cols-3 gap-2.5 text-xs">
-                                {/* 1. AI Council Directive & Voting Telemetry */}
-                                <div className="p-2.5 rounded-lg bg-white border border-slate-200 space-y-2">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                                      AI Council (6 Agents)
-                                    </span>
-                                    <span className={`text-[9.5px] font-bold px-1.5 py-0.2 rounded border ${
-                                      leg.isDnb 
-                                        ? 'bg-indigo-50 text-indigo-800 border-indigo-200' 
-                                        : leg.isUnanimous 
-                                        ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                                        : 'bg-slate-100 text-slate-700 border-slate-200'
-                                    }`}>
-                                      {leg.isDnb ? '6/6 Consensus (DNB)' : leg.isUnanimous ? '6/6 Unanimous Outright' : 'Algorithmic Lean'}
-                                    </span>
-                                  </div>
-
-                                  <div className="text-[11px] text-slate-700 leading-tight">
-                                    {leg.isUnanimous 
-                                      ? `Full agreement across all 6 specialized agents backing ${pickTeam}.`
-                                      : `Council model lean backing ${pickTeam} on today's competitive slate.`}
-                                  </div>
-
-                                  {/* 6 Specialized Agent Voting Badges */}
-                                  <div className="grid grid-cols-2 gap-1 pt-1 border-t border-slate-100">
-                                    {(leg.agentVotes || []).map((vote, vIdx) => (
-                                      <div key={vIdx} className="flex items-center justify-between text-[10px] px-1.5 py-0.5 rounded bg-slate-50 border border-slate-100">
-                                        <span className="truncate text-slate-600 font-medium max-w-[110px]" title={vote.agentName}>
-                                          {vote.icon || '🤖'} {vote.agentName?.split(' ')[0] || 'Agent'}
-                                        </span>
-                                        <span className="font-mono font-bold text-indigo-700 shrink-0">
-                                          {vote.predictedWinner === 'DRAW_PROTECTED' ? 'DNB' : vote.predictedWinner} {vote.conviction ? `${vote.conviction}%` : ''}
-                                        </span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-
-                                {/* 2. Market Risk & Rationale (DNB vs Outright) */}
-                                <div className="p-2.5 rounded-lg bg-white border border-slate-200 space-y-1.5">
-                                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                                    Market Rationale & Capital Protection
-                                  </span>
-
-                                  {leg.isDnb ? (
-                                    <div className="space-y-1">
-                                      <div className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-800 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded">
-                                        <Shield className="w-3 h-3 text-indigo-600" />
-                                        Draw-No-Bet (DNB) Protection Active
-                                      </div>
-                                      <p className="text-[10.5px] text-slate-600 leading-relaxed">
-                                        Draw probability is elevated at <strong>{safeToFixed(leg.drawRisk, 1)}%</strong> (threshold ≥ 24.0%). In cup ties and international fixtures, draws destroy outright tickets. DNB refunds 100% of your stake on a stalemate, yielding an <strong>85.4% capital preservation rate</strong>.
-                                      </p>
-                                    </div>
-                                  ) : (
-                                    <div className="space-y-1">
-                                      <div className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">
-                                        <Check className="w-3 h-3 text-emerald-600" />
-                                        Clean Outright Winner Conviction
-                                      </div>
-                                      <p className="text-[10.5px] text-slate-600 leading-relaxed">
-                                        Draw risk is contained at <strong>{safeToFixed(leg.drawRisk, 1)}%</strong> (&lt; 24.0%). The council identified clean structural edge on the outright winner with zero requirement for Double Chance dilution.
-                                      </p>
-                                    </div>
-                                  )}
-
-                                  <div className="pt-1 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                                    <span className="text-slate-500">Outright Probability:</span>
-                                    <span className="font-mono font-bold text-slate-800">{safeToFixed(leg.prob, 1)}%</span>
-                                  </div>
-                                  <div className="flex items-center justify-between text-[11px]">
-                                    <span className="text-slate-500">LiveScore Bet Odds:</span>
-                                    <span className="font-mono font-bold text-slate-900">@{safeToFixed(leg.odds, 2)}</span>
-                                  </div>
-                                </div>
-
-                                {/* 3. Expected Pricing & Actions */}
-                                <div className="p-2.5 rounded-lg bg-white border border-slate-200 flex flex-col justify-between gap-2">
-                                  <div>
-                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                                      Value Pricing & Actions
-                                    </span>
-                                    <div className="space-y-1 text-[11px] text-slate-600">
-                                      <div className="flex justify-between">
-                                        <span>Expected Value (+EV):</span>
-                                        <span className="font-mono font-bold text-emerald-700">
-                                          +{safeToFixed(Math.max(0, ((leg.prob / 100) * leg.odds - 1) * 100), 1)}%
-                                        </span>
-                                      </div>
-                                      <div className="flex justify-between">
-                                        <span>Recommended Stake:</span>
-                                        <span className="font-mono font-bold text-indigo-700">
-                                          {formatKellyStake(matchObj?.smartMarket?.kellyStake || { stakeEuro: 35, fractionLabel: '1/4 Kelly' }, bankrollEuro)}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  <div className="flex flex-wrap gap-1.5 pt-1 border-t border-slate-100">
-                                    {matchObj && (
-                                      <button
-                                        type="button"
-                                        onClick={() => onOpenDeepResearch && onOpenDeepResearch(matchObj)}
-                                        className="flex-1 px-2.5 py-1 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors cursor-pointer text-center"
-                                      >
-                                        Tactical Research
-                                      </button>
-                                    )}
-                                    {matchObj && (
-                                      <button
-                                        type="button"
-                                        onClick={() => onOpenLineup && onOpenLineup(matchObj)}
-                                        className="flex-1 px-2.5 py-1 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-md transition-colors cursor-pointer text-center"
-                                      >
-                                        Confirmed XI
-                                      </button>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </React.Fragment>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Table Summary Footer */}
-          <div className="px-3 py-2 bg-slate-50/60 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
-            <div className="flex items-center gap-4 flex-wrap">
-              <span>Total Legs: <strong className="text-slate-900">{filteredCouncilStats.count}</strong></span>
-              <span>Combined Odds: <strong className="text-slate-900 font-mono">{safeToFixed(filteredCouncilStats.combinedOdds, 2)}x</strong></span>
-              <span>Average Win Rate: <strong className="text-slate-900 font-mono">{safeToFixed(filteredCouncilStats.avgWinRate, 1)}%</strong></span>
-              <span>Joint Survival: <strong className="text-slate-900 font-mono">{safeToFixed(filteredCouncilStats.jointProb, 1)}%</strong></span>
-            </div>
-            <div className="text-[11px] text-slate-400 font-medium">
-              Independent Fixture Verification • LiveScore Bet Ireland
-            </div>
-          </div>
-          </>
-        )}
-        </div>
-      )}
-
       {/* ⚽ Main Match Predictions & Win Probabilities Section */}
       <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
         {/* Uniform Header & Actions Bar */}
         <div className="p-3 sm:p-3.5 border-b border-slate-200">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
-            <div className="space-y-1 max-w-2xl">
-              <div className="flex items-center gap-1.5 flex-wrap text-xs">
-                <span className="bg-slate-900 text-white text-[10.5px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
-                  <Target className="w-3 h-3 text-slate-300" /> Match Predictions
-                </span>
-                <span className="bg-slate-100 text-slate-700 border border-slate-200 text-[10.5px] font-semibold px-2 py-0.5 rounded-md">
-                  {baseMatches.length === matches.length 
-                    ? `${matches.length} Matches` 
-                    : `${baseMatches.length} / ${matches.length} Matches`}
-                </span>
-                <span className="bg-slate-100 text-slate-800 border border-slate-200 text-[10.5px] font-mono font-bold px-2 py-0.5 rounded-md">
-                  Dixon-Coles &amp; Elo
-                </span>
-                <span className="text-slate-400 text-[10.5px] font-medium hidden sm:inline">
-                  • Multi-Model Poisson
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                  <span>Match Predictions &amp; Win Probabilities</span>
-                  <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
-                    Poisson + ML
-                  </span>
-                </h2>
-                <InfoTooltip
-                  title="Match Predictions Engine"
-                  content="Win, draw, and goal probabilities for upcoming fixtures calculated with Dixon-Coles Poisson distributions, Elo dominance, and calibrated market odds."
-                  align="left"
-                />
-              </div>
+            <div>
+              <h2 className="text-sm font-bold text-slate-900">All matches</h2>
+              <p className="text-[11px] text-slate-500">
+                {baseMatches.length === matches.length ? `${matches.length} matches` : `${baseMatches.length} of ${matches.length} matches`}
+              </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto shrink-0">
@@ -2458,29 +915,21 @@ export default function FixturesTablePage({
                 onClick={handleCalibrateLineups}
                 disabled={calibratingLineups}
                 className="h-8 px-3 text-xs font-semibold rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5 shadow-2xs"
-                title="Scan confirmed official Starting XIs from ESPN and tactically weight Dixon-Coles models"
+                title="Look for confirmed starting line-ups and update the tips"
               >
                 <Zap className={`w-3.5 h-3.5 text-emerald-600 ${calibratingLineups ? 'animate-spin' : ''}`} />
-                <span>{calibratingLineups ? 'Calibrating XIs...' : 'Calibrate XIs'}</span>
+                <span>{calibratingLineups ? 'Checking lineups...' : 'Check lineups'}</span>
               </button>
 
               <button
                 onClick={() => setShowStrategyProofModal(true)}
                 className="h-8 px-3 text-xs font-semibold rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
-                title="View 23,453-record empirical backtest and quantitative strategy proof (76%–83%)"
+                title="How often the tips have been right"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
-                <span>Strategy Proof (23.4k)</span>
+                <span>Track record</span>
               </button>
 
-              <button
-                onClick={() => onTriggerRetrain && onTriggerRetrain()}
-                disabled={isRetraining}
-                className="h-8 px-3 text-xs font-semibold rounded-lg border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1.5 shadow-2xs"
-              >
-                <Cpu className={`w-3.5 h-3.5 text-indigo-600 ${isRetraining ? 'animate-spin' : ''}`} />
-                <span>{isRetraining ? 'Updating...' : 'Update'}</span>
-              </button>
 
               <button
                 type="button"
@@ -2488,7 +937,7 @@ export default function FixturesTablePage({
                 className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
                 title={collapsedMatchPredictions ? 'Expand Match Predictions' : 'Collapse Match Predictions'}
               >
-                <span>{collapsedMatchPredictions ? 'Expand' : 'Collapse'}</span>
+                <span>{collapsedMatchPredictions ? 'Show' : 'Hide'}</span>
                 {collapsedMatchPredictions ? <ChevronDown className="w-3.5 h-3.5 text-slate-500" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-500" />}
               </button>
             </div>
@@ -2515,7 +964,15 @@ export default function FixturesTablePage({
 
             {/* Compact Unified Filter Toolbar */}
             <div className="px-3 py-2 bg-slate-50/80 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
-              <div className="flex flex-wrap items-center gap-1.5 flex-1 min-w-[240px]">
+              <button
+                type="button"
+                onClick={() => setShowMobileFilters(v => !v)}
+                className="md:hidden h-8 px-3 rounded-lg border border-slate-200 bg-white text-slate-700 font-semibold cursor-pointer"
+              >
+                {showMobileFilters ? 'Hide filters' : 'Filters'}
+              </button>
+              <MobileViewSwitcher label="Display" className="md:hidden" />
+              <div className={`${showMobileFilters ? 'flex' : 'hidden'} md:flex flex-wrap items-center gap-1.5 flex-1 min-w-[240px]`}>
                 {/* Search Box */}
                 <div className="relative flex-1 min-w-[130px] max-w-xs">
                   <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -2566,47 +1023,32 @@ export default function FixturesTablePage({
 
                 {/* Quality Dropdown */}
                 <UniformDropdown
-                  label="Quality"
+                  label="Chance"
                   value={convictionMode}
-                  onChange={(val) => {
-                    setConvictionMode(val);
-                    if (val === 'ALL') {
-                      if (filterMode === 'ELITE' || filterMode === 'HIGH_CONFIDENCE' || filterMode === 'UNANIMOUS') {
-                        setFilterMode('All');
-                      }
-                    } else if (val === 'HIGH' || val === 'ELITE' || val === 'UNANIMOUS') {
-                      setFilterMode('All');
-                    }
-                  }}
+                  onChange={setConvictionMode}
                   options={convictionOptions}
                   selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
                 />
 
                 {/* Market Dropdown */}
                 <UniformDropdown
-                  label="Market"
+                  label="Bet type"
                   value={marketMode}
                   onChange={setMarketMode}
                   options={[
-                    { value: 'SMART_ADAPTIVE', label: '🛡️ Smart Safety (Auto DNB/DC)' },
-                    { value: 'DNB', label: 'Draw-No-Bet (DNB Refund)' },
-                    { value: 'DOUBLE_CHANCE', label: 'Double Chance (1X/X2)' },
-                    { value: 'STRAIGHT_1X2', label: 'Straight Win (1X2 Outright)' }
+                    { value: 'SMART_ADAPTIVE', label: 'Safest bet type (auto)' },
+                    { value: 'DNB', label: 'Draw = refund' },
+                    { value: 'DOUBLE_CHANCE', label: 'Team or draw' },
+                    { value: 'STRAIGHT_1X2', label: 'Straight win' }
                   ]}
                   selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
                 />
 
                 {/* Special Filter Dropdown */}
                 <UniformDropdown
-                  label="Special"
+                  label="Show"
                   value={filterMode}
-                  onChange={(val) => {
-                    setFilterMode(val);
-                    if (val === 'ELITE') setConvictionMode('ELITE');
-                    else if (val === 'HIGH_CONFIDENCE') setConvictionMode('HIGH');
-                    else if (val === 'UNANIMOUS') setConvictionMode('UNANIMOUS');
-                    else if (val === 'All') setConvictionMode('ALL');
-                  }}
+                  onChange={setFilterMode}
                   options={specialFilterOptions}
                   selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
                 />
@@ -2617,18 +1059,18 @@ export default function FixturesTablePage({
                   value={sortBy}
                   onChange={handleDropdownSortChange}
                   options={[
-                    { value: 'probs_desc', label: 'Highest Probability' },
-                    { value: 'probs_asc', label: 'Lowest Probability' },
-                    { value: 'conf_desc', label: 'Highest Confidence' },
-                    { value: 'time_asc', label: 'Earliest Kickoff' },
-                    { value: 'time_desc', label: 'Latest Kickoff' },
-                    { value: 'home_desc', label: 'Home Win %' },
-                    { value: 'draw_desc', label: 'Draw %' },
-                    { value: 'away_desc', label: 'Away Win %' },
-                    { value: 'xg_desc', label: 'Total Goals (xG)' },
-                    { value: 'kelly_desc', label: 'Best Value / Stake' },
-                    { value: 'odds_asc', label: 'Shortest Odds' },
-                    { value: 'odds_desc', label: 'Longest Odds' }
+                    { value: 'probs_desc', label: 'Most likely first' },
+                    { value: 'probs_asc', label: 'Least likely first' },
+                    { value: 'conf_desc', label: 'Most confident first' },
+                    { value: 'time_asc', label: 'Kick-off: soonest' },
+                    { value: 'time_desc', label: 'Kick-off: latest' },
+                    { value: 'home_desc', label: 'Home win chance' },
+                    { value: 'draw_desc', label: 'Draw chance' },
+                    { value: 'away_desc', label: 'Away win chance' },
+                    { value: 'xg_desc', label: 'Most goals expected' },
+                    { value: 'kelly_desc', label: 'Best value' },
+                    { value: 'odds_asc', label: 'Lowest odds' },
+                    { value: 'odds_desc', label: 'Highest odds' }
                   ]}
                   selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
                 />
@@ -2645,7 +1087,7 @@ export default function FixturesTablePage({
                     }`}
                     title={filterByMarketOnly ? "Showing only games where safety bet is recommended" : "Filter by recommended safety bet"}
                   >
-                    <span>{filterByMarketOnly ? '✓ Rec Only' : 'Rec Only'}</span>
+                    <span>{filterByMarketOnly ? '✓ Recommended only' : 'Recommended only'}</span>
                   </button>
                 )}
 
@@ -2665,7 +1107,7 @@ export default function FixturesTablePage({
                   }`}>
                     {strictLeaguePruning ? '✓' : ''}
                   </span>
-                  <span>Major Leagues</span>
+                  <span>Major leagues</span>
                   {strictLeaguePruning && prunedNoiseMatchesCount > 0 && (
                     <span className="text-[9px] font-normal text-emerald-700">
                       ({prunedNoiseMatchesCount})
@@ -2674,18 +1116,16 @@ export default function FixturesTablePage({
                 </button>
 
                 <InfoTooltip
-                  title="Adaptive Safety Bet Strategy"
-                  content="Auto-selects Draw-No-Bet (DNB) or Double Chance (1X/X2) when model draw probability is ≥24.0%, protecting your initial stake against draw stalemates. Safety hit rate: 78.3% – 83.6%."
+                  title="Safest bet type"
+                  content="When a draw looks likely, the tip switches to draw = refund or team or draw, so a draw does not lose the bet."
                   align="right"
                 />
 
-                {/* Mobile View Switcher: Cards vs 1-Row Table */}
-                <MobileViewSwitcher label="Display" className="w-full sm:w-auto" />
               </div>
 
               {/* Status and Clear Filters */}
               <div className="flex items-center gap-2 text-slate-500 text-[11px] shrink-0">
-                <span>Showing <strong>{filteredMatches.length}</strong> of {matches.length} fixtures</span>
+                <span>Showing <strong>{filteredMatches.length}</strong> of {matches.length} matches</span>
                 {selectedOutcome === 'WIN_LOSE' && (
                   <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
                     Win/Lose
@@ -2825,8 +1265,8 @@ export default function FixturesTablePage({
                   <th className="py-1 px-2.5">Competition</th>
                   <th className="py-1 px-2.5">Matchup</th>
                   <th className="py-1 px-2.5 text-center">Score</th>
-                  <th className="py-1 px-2.5 text-center">Smart Pick</th>
-                  <th className="py-1 px-2.5 text-center">Tactical Analysis</th>
+                  <th className="py-1 px-2.5 text-center">Tip</th>
+                  <th className="py-1 px-2.5 text-center">Stats</th>
                 </tr>
               </thead>
               <tbody className="flex flex-col md:table-row-group divide-y divide-slate-100">
@@ -2873,7 +1313,7 @@ export default function FixturesTablePage({
                                 isMiss ? 'bg-rose-50 text-rose-800 border border-rose-200' :
                                 'bg-slate-100 text-slate-700 border border-slate-200'
                               }`}>
-                                {isPass ? 'PASS' : (m.smartMarket?.pickLabel || m.predictedWinner || 'Analyzed')}
+                                {isPass ? 'No bet' : (plainTipText(m.smartMarket?.pickLabel) || m.predictedWinner || '—')}
                               </span>
                               <button
                                 onClick={() => onOpenDeepResearch && onOpenDeepResearch(m)}
@@ -2918,7 +1358,7 @@ export default function FixturesTablePage({
                               isMiss ? 'bg-rose-50 text-rose-800 border border-rose-200' :
                               'bg-slate-100 text-slate-700 border border-slate-200'
                             }`}>
-                              {isPass ? `PASS: ${m.smartMarket?.badge || 'Risk Filter'}` : (m.smartMarket?.pickLabel || m.predictedWinner || 'Analyzed')}
+                              {isPass ? plainTipText(m.smartMarket?.badge || 'Pass') : (plainTipText(m.smartMarket?.pickLabel) || m.predictedWinner || '—')}
                             </span>
 
                             <button
@@ -2960,7 +1400,7 @@ export default function FixturesTablePage({
                           isMiss ? 'bg-rose-50 text-rose-800 border border-rose-200' :
                           'bg-slate-100 text-slate-700 border border-slate-200'
                         }`}>
-                          {isPass ? `PASS: ${m.smartMarket?.badge || 'Risk Filter'}` : (m.smartMarket?.pickLabel || m.predictedWinner || 'Analyzed')}
+                          {isPass ? plainTipText(m.smartMarket?.badge || 'Pass') : (plainTipText(m.smartMarket?.pickLabel) || m.predictedWinner || '—')}
                         </span>
                       </td>
                       <td className="hidden md:table-cell py-1.5 px-2.5 whitespace-nowrap text-center">
@@ -3021,7 +1461,7 @@ export default function FixturesTablePage({
                   title="Click to sort by Kickoff Time"
                 >
                   <div className="inline-flex items-center justify-center gap-0.5">
-                    <span className={sortField === 'time' ? 'text-indigo-600 font-bold' : ''}>Time</span>
+                    <span className={sortField === 'time' ? 'text-indigo-600 font-bold' : ''}>Kick-off</span>
                     {sortField === 'time' ? (
                       sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                     ) : (
@@ -3039,7 +1479,7 @@ export default function FixturesTablePage({
                   title="Click to sort by Teams / Competition"
                 >
                   <div className="inline-flex items-center gap-1">
-                    <span className={sortField === 'fixture' ? 'text-indigo-600 font-bold' : ''}>Fixture</span>
+                    <span className={sortField === 'fixture' ? 'text-indigo-600 font-bold' : ''}>Match</span>
                     {sortField === 'fixture' ? (
                       sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                     ) : (
@@ -3054,7 +1494,7 @@ export default function FixturesTablePage({
                   className={`py-1 px-1.5 w-16 text-center cursor-pointer transition-colors group select-none ${
                     sortField === 'lineup' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
-                  title="Click to sort by Confirmed XI status"
+                  title="Click to sort by lineup status"
                 >
                   <div className="inline-flex items-center justify-center gap-0.5">
                     <span className={sortField === 'lineup' ? 'text-indigo-600 font-bold' : ''}>Lineup</span>
@@ -3072,10 +1512,10 @@ export default function FixturesTablePage({
                   className={`py-1 px-1.5 w-24 text-center cursor-pointer transition-colors group select-none ${
                     sortField === 'prediction' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
-                  title="Click to sort by AI Pick Outcome"
+                  title="Click to sort by tip"
                 >
                   <div className="inline-flex items-center justify-center gap-0.5">
-                    <span className={sortField === 'prediction' ? 'text-indigo-600 font-bold' : ''}>Pick</span>
+                    <span className={sortField === 'prediction' ? 'text-indigo-600 font-bold' : ''}>Tip</span>
                     {sortField === 'prediction' ? (
                       sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                     ) : (
@@ -3090,10 +1530,10 @@ export default function FixturesTablePage({
                   className={`py-1 px-1.5 w-28 text-center cursor-pointer transition-colors group select-none ${
                     ['probs', 'home_prob', 'draw_prob', 'away_prob'].includes(sortField) ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
-                  title="Click to sort by Win Probability"
+                  title="Click to sort by chance"
                 >
                   <div className="inline-flex items-center justify-center gap-0.5">
-                    <span className={['probs', 'home_prob', 'draw_prob', 'away_prob'].includes(sortField) ? 'text-indigo-600 font-bold' : ''}>1·X·2 Probs</span>
+                    <span className={['probs', 'home_prob', 'draw_prob', 'away_prob'].includes(sortField) ? 'text-indigo-600 font-bold' : ''}>Home · Draw · Away</span>
                     {['probs', 'home_prob', 'draw_prob', 'away_prob'].includes(sortField) ? (
                       sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                     ) : (
@@ -3111,8 +1551,8 @@ export default function FixturesTablePage({
                   title="Click to sort by Confidence"
                 >
                   <div className="inline-flex items-center justify-center gap-0.5">
-                    <InfoTooltip title="Confidence" content="Model confidence in the predicted outcome.">
-                      <span className={sortField === 'conf' ? 'text-indigo-600 font-bold' : ''}>Conf</span>
+                    <InfoTooltip title="Chance" content="How likely we think the tip is to win.">
+                      <span className={sortField === 'conf' ? 'text-indigo-600 font-bold' : ''}>Chance</span>
                     </InfoTooltip>
                     {sortField === 'conf' ? (
                       sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
@@ -3128,11 +1568,11 @@ export default function FixturesTablePage({
                   className={`py-1 px-1.5 w-20 text-center cursor-pointer transition-colors group select-none ${
                     sortField === 'xg' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
-                  title="Click to sort by Expected Goals (xG)"
+                  title="Click to sort by goals expected"
                 >
                   <div className="inline-flex items-center justify-center gap-0.5">
-                    <InfoTooltip title="Score & xG" content="Projected scoreline and expected goals (xG).">
-                      <span className={sortField === 'xg' ? 'text-indigo-600 font-bold' : ''}>Score/xG</span>
+                    <InfoTooltip title="Likely score" content="The most likely final score, with expected goals for each team in brackets.">
+                      <span className={sortField === 'xg' ? 'text-indigo-600 font-bold' : ''}>Likely score</span>
                     </InfoTooltip>
                     {sortField === 'xg' ? (
                       sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
@@ -3148,11 +1588,11 @@ export default function FixturesTablePage({
                   className={`py-1 px-2 w-36 text-left cursor-pointer transition-colors group select-none ${
                     sortField === 'kelly' ? 'bg-indigo-50/60 text-indigo-700' : 'hover:bg-slate-100'
                   }`}
-                  title="Click to sort by Value Bet"
+                  title="Click to sort by value"
                 >
                   <div className="inline-flex items-center gap-0.5">
-                    <InfoTooltip title="LiveScore Odds & Potential Return" content="Recommended market, benchmark odds, Kelly stake, and calculated potential returns.">
-                      <span className={sortField === 'kelly' ? 'text-indigo-600 font-bold' : ''}>Odds & Return</span>
+                    <InfoTooltip title="Odds & return" content="The odds, the suggested stake, and what it pays back if it wins.">
+                      <span className={sortField === 'kelly' ? 'text-indigo-600 font-bold' : ''}>Odds & return</span>
                     </InfoTooltip>
                     {sortField === 'kelly' ? (
                       sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
@@ -3202,33 +1642,9 @@ export default function FixturesTablePage({
                     ) : (
                       <>
                         <p className="text-sm font-medium text-slate-400">
-                          {selectedOutcome === 'DRAW'
-                            ? 'No matches predicted as a Draw under current criteria.'
-                            : selectedOutcome === 'WIN_LOSE'
-                            ? 'No decisive Win / Lose matches found under current criteria.'
-                            : selectedOutcome === 'HOME'
-                            ? 'No Home Win matches found under current criteria.'
-                            : selectedOutcome === 'AWAY'
-                            ? 'No Away Win matches found under current criteria.'
-                            : (filterMode === 'UNANIMOUS' || convictionMode === 'UNANIMOUS')
-                            ? 'No matches found matching Consensus Picks under current filters.'
-                            : (filterMode === 'HIGH_CONFIDENCE' || convictionMode === 'HIGH')
-                            ? 'No matches found with High Confidence (≥60%) under current filters.'
-                            : (filterMode === 'ELITE' || convictionMode === 'ELITE')
-                            ? 'No matches found with Elite Edge (≥68%) under current filters.'
-                            : filterMode === 'NO_TRAPS'
-                            ? 'No low-risk matches found under current filters.'
-                            : filterMode === 'DERIVATIVE_SAFETY'
-                            ? 'No matches with safe alternative picks found.'
-                            : filterMode === 'DNB_ONLY'
-                            ? 'No Draw-No-Bet advised matches found under current filters.'
-                            : filterMode === 'TIER_1_ONLY'
-                            ? 'No Top League matches found for this selection.'
-                            : filterMode === 'UPSET_RISK'
-                            ? 'No upset alerts or trap matches detected for this period.'
-                            : 'No matches match your active filter criteria.'}
+                          No matches fit these filters.
                         </p>
-                        <p className="text-xs text-slate-500 mt-1">Try switching dates, selecting "All Outcomes", clearing the search query, or selecting "All Leagues".</p>
+                        <p className="text-xs text-slate-500 mt-1">Try another date or clear the filters.</p>
                       </>
                     )}
                   </td>
@@ -3370,9 +1786,9 @@ export default function FixturesTablePage({
                                   {isUnanimous && (
                                     <span 
                                       className="text-[8.5px] bg-amber-100 text-amber-900 border border-amber-300 px-1 py-0.2 rounded font-bold shrink-0" 
-                                      title={`6-Agent Unanimous Consensus (All 6 AI agents agree · Historical Strategy Win Rate: ${unanimousRateDisplay})`}
+                                      title="One of our strongest tips"
                                     >
-                                      👑 Unanimous
+                                      Top pick
                                     </span>
                                   )}
                                   {leagueTierObj && (
@@ -3382,7 +1798,7 @@ export default function FixturesTablePage({
                                   )}
                                   {isDnbAdvised && (
                                     <span className="text-[8.5px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-1 py-0.2 rounded font-bold" title={`Draw Risk ${safeToFixed(drawProb, 1)}% ≥ 24.0% — DNB protects stake`}>
-                                      🛡️ DNB
+                                      Draw = refund
                                     </span>
                                   )}
                                   <span className={`text-[8.5px] border px-1 rounded font-bold ${riskProfile.badgeClass}`} title={riskProfile.reason}>{riskProfile.badge}</span>
@@ -3423,7 +1839,7 @@ export default function FixturesTablePage({
                                   title={m.isLive ? "Open Live Match Intelligence & Tactical AI Analysis" : "Open Match Intelligence & Tactical AI Analysis"}
                                 >
                                   <Brain className={`w-2 h-2 shrink-0 ${m.isLive ? 'text-white' : 'text-indigo-600'}`} />
-                                  <span className="truncate">{m.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
+                                  <span className="truncate">{m.isLive ? 'Live stats' : 'Stats'}</span>
                                 </button>
                                 <button
                                   onClick={(e) => {
@@ -3498,26 +1914,26 @@ export default function FixturesTablePage({
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(m); }}
                                 className="inline-flex items-center gap-0.5 text-[8.5px] font-extrabold bg-rose-600 hover:bg-rose-700 text-white px-1.5 py-0.2 rounded-full shadow-xs animate-pulse cursor-pointer shrink-0"
-                                title="Match is LIVE NOW! Click for Live Tactical AI Analysis"
+                                title="Match is LIVE NOW! Click for Live Match stats"
                               >
                                 <Brain className="w-1.5 h-1.5 text-white" />
-                                <span>Live Intel</span>
+                                <span>Live stats</span>
                               </button>
                             )}
                             {isUnanimous ? (
                               <span 
                                 className="inline-flex items-center text-[8.5px] font-bold bg-amber-100 text-amber-900 px-1 py-0.2 rounded border border-amber-300 shrink-0" 
-                                title={`6-Agent Unanimous Consensus (${unanimousRateDisplay})`}
+                                title="One of our strongest tips"
                               >
-                                👑 Unanimous
+                                Top pick
                               </span>
                             ) : (isTrap || riskProfile.riskLevel === 'LOW') ? (
                               <span className={`inline-flex items-center text-[8.5px] font-bold px-1 py-0.2 rounded border shrink-0 ${riskProfile.badgeClass}`} title={riskProfile.reason}>
                                 {riskProfile.badge}
                               </span>
                             ) : isDnbAdvised ? (
-                              <span className="inline-flex items-center text-[8.5px] font-bold bg-indigo-50 text-indigo-700 px-1 py-0.2 rounded border border-indigo-200 shrink-0" title="Draw-No-Bet Protection Advised">
-                                🛡️ DNB
+                              <span className="inline-flex items-center text-[8.5px] font-bold bg-indigo-50 text-indigo-700 px-1 py-0.2 rounded border border-indigo-200 shrink-0" title="Money back if it ends in a draw">
+                                Draw = refund
                               </span>
                             ) : m.teamTrends?.home?.badge ? (
                               <span className="inline-flex items-center text-[8.5px] font-bold bg-slate-100 text-slate-700 px-1 py-0.2 rounded border border-slate-200 shrink-0" title={m.teamTrends.home.tacticalIdentity}>
@@ -3544,7 +1960,7 @@ export default function FixturesTablePage({
                             }`}
                             title={m.lineupAdjusted ? `Lineup impact calibrated: ${m.lineupImpactReason || 'Tactical weighting applied'}` : "Click to view Starting XI"}
                           >
-                            {m.lineupAdjusted ? 'XI Adj ⚡' : hasLineup ? 'XI Conf' : 'XI Est'}
+                            {hasLineup ? 'Confirmed' : 'Expected'}
                           </button>
                         </td>
 
@@ -3616,7 +2032,7 @@ export default function FixturesTablePage({
                               title={m.isLive ? "Live Match Intelligence & In-Play Momentum" : "Pre-Match Tactical AI Analysis"}
                             >
                               <Brain className={`w-2.5 h-2.5 shrink-0 ${m.isLive ? 'text-white' : 'text-indigo-600'}`} />
-                              <span className="truncate">{m.isLive ? 'Live Analysis' : 'Tactical Intel'}</span>
+                              <span className="truncate">{m.isLive ? 'Live stats' : 'Stats'}</span>
                             </button>
 
                             {/* Deep Analysis Page */}
@@ -3669,7 +2085,7 @@ export default function FixturesTablePage({
                                     : 'bg-white text-slate-600 border-slate-300'
                                 }`}
                               >
-                                {hasLineup ? 'XI Confirmed' : 'XI Estimated'}
+                                {hasLineup ? 'Lineup confirmed' : 'Lineup expected'}
                               </button>
                               <button
                                 onClick={(e) => { e.stopPropagation(); onOpenDeepResearch && onOpenDeepResearch(m); }}
@@ -3733,7 +2149,7 @@ export default function FixturesTablePage({
                               {/* Evolving Team Trends & Tactical DNA */}
                               <div className="bg-white p-2.5 rounded-lg border border-slate-200 shadow-2xs">
                                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center justify-between">
-                                  <span>Tactical DNA</span>
+                                  <span>Team style</span>
                                   <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1 rounded">Learning</span>
                                 </div>
                                 <div className="space-y-1 text-[11px] text-slate-700">
@@ -3790,7 +2206,7 @@ export default function FixturesTablePage({
                                 </div>
                                 <div className="space-y-1 text-[11px] text-slate-700">
                                   <div className="flex justify-between">
-                                    <span>Conviction Hit Rate:</span>
+                                    <span>Confidence Hit Rate:</span>
                                     <span className="font-mono font-bold text-emerald-700">{leagueTierObj.expectedHighConvictionWinRate}</span>
                                   </div>
                                   <div className="flex justify-between">
@@ -3807,7 +2223,7 @@ export default function FixturesTablePage({
                               {/* Draw-No-Bet (DNB) Strategy */}
                               <div className="bg-white p-2.5 rounded-lg border border-slate-200 shadow-2xs">
                                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center justify-between">
-                                  <span>DNB Strategy</span>
+                                  <span>Draw = refund</span>
                                   {isDnbAdvised ? (
                                     <span className="text-[9px] px-1 rounded font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">Advised</span>
                                   ) : (
@@ -3854,21 +2270,21 @@ export default function FixturesTablePage({
                               {/* Direct Jump to Dedicated Pages */}
                               <div className="bg-white p-2.5 rounded-lg border border-slate-200 shadow-2xs flex flex-col justify-between">
                                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                                  Dedicated Views
+                                  More
                                 </div>
                                 <div className="space-y-1.5">
                                   <button
                                     onClick={() => onOpenDeepResearch && onOpenDeepResearch(m)}
                                     className="w-full text-left px-2 py-1 rounded bg-teal-50 hover:bg-teal-100 text-teal-800 font-semibold text-[11px] transition-colors flex items-center justify-between cursor-pointer"
                                   >
-                                    <span>Analysis</span>
+                                    <span>Research</span>
                                     <ArrowRight className="w-3 h-3" />
                                   </button>
                                   <button
                                     onClick={() => onOpenLineup && onOpenLineup(m)}
                                     className="w-full text-left px-2 py-1 rounded bg-sky-50 hover:bg-sky-100 text-sky-800 font-semibold text-[11px] transition-colors flex items-center justify-between cursor-pointer"
                                   >
-                                    <span>Starting XI Tactical</span>
+                                    <span>Lineups</span>
                                     <ArrowRight className="w-3 h-3" />
                                   </button>
                                 </div>

@@ -28,13 +28,13 @@ export const RISK_THRESHOLDS = {
 
 // Tier key → presentation. `type` maps onto the slip badge palette (AccumulatorPage).
 export const RISK_TIERS = {
-  ELITE:     { riskLevel: 'LOW',    badge: '👑 Elite (Low Risk)',    color: 'emerald', type: 'protected',  label: 'Elite Conviction' },
-  HIGH:      { riskLevel: 'LOW',    badge: '🛡️ High Confidence',     color: 'teal',    type: 'protected',  label: 'High Edge' },
-  PROTECTED: { riskLevel: 'LOW',    badge: '🛡️ Draw Protected',      color: 'emerald', type: 'protected',  label: 'Protected Market' },
-  DNB:       { riskLevel: 'MEDIUM', badge: '🛡️ DNB Advised',         color: 'indigo',  type: 'positive-ev', label: 'Safety Protected' },
-  CONTESTED: { riskLevel: 'MEDIUM', badge: '⚖️ Contested',           color: 'amber',   type: 'warning',    label: 'Contested Parity' },
-  TRAP:      { riskLevel: 'HIGH',   badge: '⚠️ Volatile / Trap',     color: 'rose',    type: 'danger',     label: 'High Risk' },
-  EXCLUDED:  { riskLevel: 'HIGH',   badge: '⛔ Blacklisted League',  color: 'rose',    type: 'danger',     label: 'Excluded' }
+  ELITE:     { riskLevel: 'LOW',    badge: 'Safest',                color: 'emerald', type: 'protected',  label: 'Safest' },
+  HIGH:      { riskLevel: 'LOW',    badge: 'Confident',             color: 'teal',    type: 'protected',  label: 'Confident' },
+  PROTECTED: { riskLevel: 'LOW',    badge: 'Covers the draw',        color: 'emerald', type: 'protected',  label: 'Covers the draw' },
+  DNB:       { riskLevel: 'MEDIUM', badge: 'Draw = refund',          color: 'indigo',  type: 'positive-ev', label: 'Draw = refund' },
+  CONTESTED: { riskLevel: 'MEDIUM', badge: 'Close game',             color: 'amber',   type: 'warning',    label: 'Close game' },
+  TRAP:      { riskLevel: 'HIGH',   badge: 'Risky',                  color: 'rose',    type: 'danger',     label: 'Risky' },
+  EXCLUDED:  { riskLevel: 'HIGH',   badge: 'League off',              color: 'rose',    type: 'danger',     label: 'League off' }
 };
 
 export const RISK_BADGE_CLASSES = {
@@ -233,4 +233,27 @@ export function getPickMarketLabel(pick) {
   if (p === 'X2') return 'Double Chance X2';
   if (p === '12') return 'Double Chance 12';
   return `${p} Win (Outright)`;
+}
+
+// Plain-English tip for a pick, e.g. "Arsenal to win", "Arsenal or draw", "Arsenal (draw = refund)".
+// One wording for every page, so the same bet never reads differently in two places.
+export function plainPickLabel(pick, m = {}) {
+  const p = normalizePick(pick);
+  const home = m.home || 'Home';
+  const away = m.away || 'Away';
+  switch (p) {
+    case 'HOME': return `${home} to win`;
+    case 'AWAY': return `${away} to win`;
+    case 'DRAW': return 'Draw';
+    case '1X': return `${home} or draw`;
+    case 'X2': return `${away} or draw`;
+    case '12': return 'Either team to win';
+    case 'HOME_DNB': return `${home} (draw = refund)`;
+    case 'AWAY_DNB': return `${away} (draw = refund)`;
+    case 'PASS': case '': return 'No bet';
+    default: return String(pick || '')
+      .replace(/^OVER_?/i, 'Over ').replace(/^UNDER_?/i, 'Under ')
+      .replace(/^BTTS_?YES$/i, 'Both teams score').replace(/^BTTS_?NO$/i, 'Not both teams score')
+      .replace(/_/g, ' ');
+  }
 }

@@ -24,7 +24,9 @@ import {
   MapPin,
   TrendingDown
 } from 'lucide-react';
-import { safeParseFloat, safeToFixed } from '../utils/numberUtils';
+import { safeParseFloat, safeToFixed, plainTipText } from '../utils/numberUtils';
+import { resolveMatchOdds } from '../utils/oddsUtils';
+import { getMatchPhase } from '../utils/matchStatus';
 
 /**
  * LiveMatchAnalysisModal (replaces legacy iframe player)
@@ -58,16 +60,7 @@ export default function LiveMatchPlayerModal({
     (typeof match?.status === 'string' && match.status.includes('FT'))
   );
 
-  const isMatchLive = !isMatchCompleted && Boolean(
-    match?.isLive === true || 
-    match?.status === 'LIVE' || 
-    match?.status === 'STATUS_IN_PROGRESS' || 
-    match?.status === 'STATUS_HALFTIME' || 
-    match?.status === 'HT' || 
-    (typeof match?.liveMinute === 'string' && (match.liveMinute.includes("'") || match.liveMinute.toLowerCase() === 'ht')) ||
-    (typeof match?.status === 'string' && (match.status.includes("'") || match.status.toLowerCase() === 'ht')) ||
-    (typeof match?.liveMinute === 'number' && match.liveMinute > 0)
-  );
+  const isMatchLive = !isMatchCompleted && getMatchPhase(match) === 'live';
 
   const isPreMatch = !isMatchLive && !isMatchCompleted;
 
@@ -232,138 +225,16 @@ export default function LiveMatchPlayerModal({
 
   const over25Prob = safeParseFloat(match.scoreModel?.overUnder?.over25, 48.0);
   const under25Prob = safeParseFloat(match.scoreModel?.overUnder?.under25, 52.0);
-  const bttsYesProb = safeParseFloat(match.scoreModel?.btts?.probYes ?? (homeXg >= 1.1 && awayXg >= 1.1 ? 58 : 42), 48.0);
+  const bttsYesProb = safeParseFloat(match.scoreModel?.btts?.yes ?? match.scoreModel?.btts?.probYes, NaN);
 
   const pickWinner = match.predictedWinner || (homeProb >= awayProb ? 'HOME' : 'AWAY');
   const pickTeam = pickWinner === 'HOME' ? match.home : pickWinner === 'AWAY' ? match.away : 'Draw';
-  const pickOdds = match.odds ? (pickWinner === 'HOME' ? match.odds.home : pickWinner === 'AWAY' ? match.odds.away : match.odds.draw) : 1.85;
+  const tipPick = match.smartMarket?.pick && match.smartMarket.pick !== 'PASS' ? match.smartMarket.pick : pickWinner;
+  const pickOdds = resolveMatchOdds(match, tipPick);
+  const tipLabel = match.smartMarket?.pick === 'PASS' ? 'No bet' : (plainTipText(match.smartMarket?.pickLabel) || `${pickTeam} to win`);
 
   const lineupImpact = match.lineupImpact;
   const isLineupConfirmed = lineupImpact?.status === 'CONFIRMED' || match.hasConfirmedLineup;
-
-  // Real-time Conclusion for this specific game moment (pure derived computation)
-  const momentConclusion = (() => {
-    const isHomeFav = homeProb >= awayProb;
-    const favTeam = isHomeFav ? match.home : match.away;
-    const favProb = Math.max(homeProb, awayProb);
-    const leadDiff = liveScore.home - liveScore.away;
-    const isFavLeading = isHomeFav ? leadDiff > 0 : leadDiff < 0;
-    const isLevel = leadDiff === 0;
-
-    if (isMatchCompleted) {
-      const actualWinner = match.actualWinner || (liveScore.home > liveScore.away ? 'HOME' : liveScore.away > liveScore.home ? 'AWAY' : 'DRAW');
-      const isPickCorrect = (pickWinner === actualWinner);
-      return {
-        badge: 'FINAL WHISTLE AUDIT',
-        badgeColor: 'emerald',
-        phase: 'Match Completed',
-        headline: `Match Finalized: ${liveScore.home} - ${liveScore.away}`,
-        summary: `Official final score confirmed at ${liveScore.home}-${liveScore.away}. Pre-kickoff tactical recommendation was ${pickWinner === 'HOME' ? match.home : pickWinner === 'AWAY' ? match.away : 'Draw'} (${isPickCorrect ? 'Verified Hit ✓' : 'Audited Miss'}). Expected goals closed at ${homeXg} vs ${awayXg}.`,
-        keyDirective: isPickCorrect ? 'Model edge validated against final outcome' : 'Variance autopsy logged in calibration database',
-        confidenceTag: `${safeToFixed(confidence, 1)}% Conf`,
-        marketAdvice: `Settled: ${actualWinner === 'DRAW' ? 'Draw Stalemate' : `${actualWinner === 'HOME' ? match.home : match.away} Win`}`
-      };
-    }
-
-    if (isMatchLive) {
-      if (liveMinute >= 75) {
-        if (isLevel) {
-          return {
-            badge: `CRUNCH TIME (${liveMinute}')`,
-            badgeColor: 'amber',
-            phase: 'Late-Game Attrition Phase',
-            headline: `Late Stalemate Equilibrium (${liveScore.home}-${liveScore.away})`,
-            summary: `Entering the 75'+ attrition phase locked at ${liveScore.home}-${liveScore.away}. Both managers have contracted their defensive blocks to avoid conceding a fatal transition counter. Live draw stalemate likelihood has peaked at ${safeToFixed(drawProb, 1)}%. Remaining xG pool is restricted to ${((inPlayData?.remLambda || 0.25) + (inPlayData?.remMu || 0.2)).toFixed(2)} goals.`,
-            keyDirective: 'Draw Stalemate Dominates — Protect capital with Double Chance (1X/X2) or cash out straight lines',
-            confidenceTag: `${safeToFixed(drawProb, 1)}% Live Draw`,
-            marketAdvice: 'Double Chance (1X/X2) / Under Remaining'
-          };
-        } else if (isFavLeading) {
-          const leader = leadDiff > 0 ? match.home : match.away;
-          return {
-            badge: `GAME LOCKDOWN (${liveMinute}')`,
-            badgeColor: 'emerald',
-            phase: 'Rest-Defense Game Management',
-            headline: `${leader} in Game-State Lockdown (${liveScore.home}-${liveScore.away})`,
-            summary: `${leader} is executing disciplined game-management with rest-defense positioning, defending their ${Math.abs(leadDiff)}-goal margin. Statistical model projects ${safeToFixed(favProb, 1)}% win probability to close out victory. Underdog's desperation press is creating transition breakaways.`,
-            keyDirective: `Hold Strong Position on ${leader} — Low remaining threat projected (${inPlayData?.remMu || 0.18} xG)`,
-            confidenceTag: `${safeToFixed(favProb, 1)}% Live Hold`,
-            marketAdvice: `${leader} Win / Under Next Goal`
-          };
-        } else {
-          const leader = leadDiff < 0 ? match.away : match.home;
-          return {
-            badge: `UPSET DEFENSE (${liveMinute}')`,
-            badgeColor: 'rose',
-            phase: 'High-Urgency Chasing State',
-            headline: `Game Script Disruption: ${leader} Ahead (${liveScore.home}-${liveScore.away})`,
-            summary: `${leader} has disrupted the baseline model with a ${Math.abs(leadDiff)}-goal lead. Trailing favorite is committing full numbers into attacking third, generating extreme end-to-end variance. Straight recovery carries heightened counter-attack exposure.`,
-            keyDirective: 'Hedge Risk: Over Next Goal or Double Chance cover rather than chasing depleted favorite odds',
-            confidenceTag: 'High Volatility',
-            marketAdvice: 'Over / Both Teams to Score Hedge'
-          };
-        }
-      } else if (liveMinute >= 45) {
-        if (isLevel) {
-          return {
-            badge: `SECOND HALF (${liveMinute}')`,
-            badgeColor: 'indigo',
-            phase: 'Tactical Territorial Parity',
-            headline: `Tactical Parity at ${liveScore.home}-${liveScore.away}`,
-            summary: `Second-half territorial contest locked at ${liveScore.home}-${liveScore.away}. ${favTeam} holds structural xG advantage (${homeXg} vs ${awayXg}), but finishing efficiency remains suppressed. Model projects ${inPlayData?.projectedScore || projectedScore} final scoreline as tactical fatigue begins to open spaces.`,
-            keyDirective: `Advantage ${favTeam} on Fatigue — Monitor bench impact or take Double Chance protection`,
-            confidenceTag: `${safeToFixed(favProb, 1)}% Edge`,
-            marketAdvice: `${favTeam} Draw No Bet / 1X`
-          };
-        } else {
-          const leader = leadDiff > 0 ? match.home : match.away;
-          return {
-            badge: `PACE CONTROL (${liveMinute}')`,
-            badgeColor: 'emerald',
-            phase: 'Transitional Leverage',
-            headline: `${leader} Dictating Pace (${liveScore.home}-${liveScore.away})`,
-            summary: `${leader} capitalized on transitional spacing to establish a ${liveScore.home}-${liveScore.away} advantage. With ${Math.max(1, 90 - liveMinute)} minutes remaining, opponent must break compact defensive structure, offering prime counter-strike opportunities.`,
-            keyDirective: `Maintain Exposure on ${leader} — Tactical game script firmly in leader's control`,
-            confidenceTag: `${safeToFixed(favProb, 1)}% Win Rate`,
-            marketAdvice: `${leader} ML / Next Goal`
-          };
-        }
-      } else {
-        return {
-          badge: `EARLY PROBES (${liveMinute}')`,
-          badgeColor: 'indigo',
-          phase: 'Initial Tactical Probing',
-          headline: `Opening Tactical Calibration (${liveScore.home}-${liveScore.away})`,
-          summary: `Match in initial reconnaissance phase at ${liveMinute}'. Scoreline stands at ${liveScore.home}-${liveScore.away}. Pre-game Poisson distributions active; ${favTeam} applying expected territorial pressure (${homeXg} vs ${awayXg} pre-game xG target).`,
-          keyDirective: `Patience — Allow game script to mature before in-play hedging. Projected trajectory: ${projectedScore}`,
-          confidenceTag: `${safeToFixed(confidence, 1)}% Baseline`,
-          marketAdvice: `${pickTeam} Pre-Match ML`
-        };
-      }
-    }
-
-    return {
-      badge: 'PRE-KICKOFF MOMENT DIRECTIVE',
-      badgeColor: 'indigo',
-      phase: 'Pre-Match Strategic Blueprint',
-      headline: `Tactical Baseline: ${pickTeam} Backed by Calibrated Elo Edge`,
-      summary: `Pre-match Dixon-Coles model assigns ${safeToFixed(confidence, 1)}% probability to ${pickTeam}. Expected goals advantage of ${homeXg} (${match.home}) vs ${awayXg} (${match.away}) establishes ${projectedScore} as the modal empirical scoreline. Draw tax factor calculated at ${safeToFixed(drawProb, 1)}%.`,
-      keyDirective: `High-Certainty Recommendation: ${match.smartMarket?.label || `${pickTeam} ML`} — verified edge over bookmaker closing lines`,
-      confidenceTag: `${safeToFixed(confidence, 1)}% Model Conviction`,
-      marketAdvice: match.smartMarket?.pick ? `${match.smartMarket.label} (Smart Adaptive)` : `${pickTeam} ML`
-    };
-  })();
-
-  // Narrative and tactical intelligence text
-  const tacticalNarrative = match.analyticsConclusion || 
-    (match.aiSwarm?.synthesis || match.imperialSwarm?.synthesis) || 
-    `${match.home} hosts ${match.away} in ${match.league}. Form-adjusted statistical rating favors ${pickTeam} (${confidence.toFixed(1)}% confidence) with an expected goals margin of ${homeXg} vs ${awayXg} (Projected: ${projectedScore}).`;
-
-  const inPlayVerdict = inPlayData?.momentumVerdict || 
-    (isMatchLive ? `Tactical In-Play Balance (${liveMinute}'): Match stands at ${liveScore.home}-${liveScore.away}. Strategic posture favors ${pickTeam} to maintain game state.` : null);
-
-  const inPlayRoadmap = inPlayData?.narrativeRoadmap || 
-    (isMatchLive ? `Game State Report (${liveMinute}'): Current scoreline ${liveScore.home}-${liveScore.away}. Model projects ${inPlayData?.remLambda ?? '0.4'} home xG vs ${inPlayData?.remMu ?? '0.3'} away xG remaining. Maintain pre-match exposure.` : null);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200">
@@ -506,14 +377,14 @@ export default function LiveMatchPlayerModal({
             <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
               <div className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-2.5">
                 <div className="text-right">
-                  <div className="text-[10px] text-slate-400 uppercase font-semibold">Model Recommendation</div>
+                  <div className="text-[10px] text-slate-400 uppercase font-semibold">Our tip</div>
                   <div className="text-xs font-bold text-emerald-400 font-mono">
-                    {pickWinner === 'HOME' ? match.home : pickWinner === 'AWAY' ? match.away : 'Draw'} ML @{safeToFixed(pickOdds, 2)}
+                    {tipLabel}{pickOdds > 1 && tipLabel !== 'No bet' ? ` @ ${safeToFixed(pickOdds, 2)}` : ''}
                   </div>
                 </div>
                 <div className="h-6 w-px bg-slate-800"></div>
                 <div className="text-right">
-                  <div className="text-[10px] text-slate-400 uppercase font-semibold">Confidence</div>
+                  <div className="text-[10px] text-slate-400 uppercase font-semibold">Chance</div>
                   <div className="text-xs font-bold text-white font-mono">{safeToFixed(confidence, 1)}%</div>
                 </div>
               </div>
@@ -533,7 +404,7 @@ export default function LiveMatchPlayerModal({
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>AI Tactical Breakdown</span>
+            <span>Overview</span>
             {isMatchLive && (
               <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
             )}
@@ -549,7 +420,7 @@ export default function LiveMatchPlayerModal({
             }`}
           >
             <Users className="w-3.5 h-3.5" />
-            <span>Squad & Top Scorers</span>
+            <span>Squads</span>
             {isLineupConfirmed ? (
               <span className="text-[9px] font-extrabold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1 rounded">Confirmed</span>
             ) : (
@@ -567,7 +438,7 @@ export default function LiveMatchPlayerModal({
             }`}
           >
             <BarChart2 className="w-3.5 h-3.5" />
-            <span>Expected Goals & Scores</span>
+            <span>Goals</span>
           </button>
 
           <button
@@ -580,204 +451,79 @@ export default function LiveMatchPlayerModal({
             }`}
           >
             <TrendingUp className="w-3.5 h-3.5" />
-            <span>Form & Market Trends</span>
+            <span>Form</span>
           </button>
         </div>
 
         {/* ================= 4. TAB CONTENTS ================= */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 text-xs">
           
-          {/* TAB 1: AI TACTICAL BREAKDOWN & NEWS RADAR */}
+          {/* TAB 1: OVERVIEW — only numbers the model actually produces */}
           {activeTab === 'tactical' && (
             <div className="space-y-4">
-              
-              {/* ================= MOMENT CONCLUSION (REAL-TIME MATCH VERDICT) ================= */}
-              <div className="p-4 sm:p-5 rounded-xl bg-gradient-to-br from-indigo-950/60 via-slate-900 to-slate-900 border border-indigo-500/40 shadow-lg space-y-3 relative overflow-hidden">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-indigo-500/20">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="p-1 bg-amber-500/10 text-amber-400 rounded-md border border-amber-500/20 shrink-0">
-                      <Zap className="w-3.5 h-3.5" />
+              {isMatchLive && (
+                <div className="p-4 rounded-xl bg-slate-900/80 border border-rose-500/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-300">
+                      <Activity className="w-4 h-4 text-rose-500 animate-pulse" />
+                      Right now · {liveMinute}'
                     </span>
-                    <h3 className="font-extrabold text-white text-xs sm:text-sm tracking-tight flex items-center gap-1.5">
-                      <span>Match Analysis — Conclusion for This Moment</span>
-                    </h3>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                      momentConclusion.badgeColor === 'rose'
-                        ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                        : momentConclusion.badgeColor === 'amber'
-                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                        : momentConclusion.badgeColor === 'emerald'
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                        : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
-                    }`}>
-                      {momentConclusion.badge}
-                    </span>
+                    <span className="font-mono text-white font-bold">{liveScore.home} - {liveScore.away}</span>
                   </div>
-
-                  <div className="flex items-center gap-2 text-[10.5px] text-slate-400">
-                    {lastRefreshTime && (
-                      <span className="font-mono text-slate-400">
-                        Updated {lastRefreshTime}
-                      </span>
-                    )}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-[11px]">
+                    {[['Home win', homeProb, 'text-emerald-400'], ['Draw', drawProb, 'text-amber-400'], ['Away win', awayProb, 'text-blue-400']].map(([label, v, tone]) => (
+                      <div key={label} className="bg-slate-950/50 p-2 rounded border border-slate-800">
+                        <span className="text-slate-400 text-[10px] block font-sans">{label} (now)</span>
+                        <span className={`${tone} font-bold text-sm`}>{safeToFixed(v, 0)}%</span>
+                      </div>
+                    ))}
+                    <div className="bg-slate-950/50 p-2 rounded border border-slate-800">
+                      <span className="text-slate-400 text-[10px] block font-sans">Likely final score</span>
+                      <span className="text-white font-bold text-sm">{projectedScore}</span>
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
                     <button
                       type="button"
                       onClick={handleManualRefresh}
                       disabled={isRefreshing || isLoadingInPlay}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors cursor-pointer text-[10.5px] font-semibold"
-                      title="Update moment conclusion now"
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 cursor-pointer text-[10.5px] font-semibold"
                     >
-                      <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin text-indigo-400' : 'text-slate-400'}`} />
-                      <span>{isRefreshing ? 'Updating...' : 'Refresh'}</span>
+                      <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+                      <span>{isRefreshing ? 'Updating...' : 'Update'}</span>
                     </button>
-                  </div>
-                </div>
-
-                {/* Headline & Synthesis */}
-                <div>
-                  <h4 className="text-sm font-black text-amber-300 mb-1 flex items-center gap-1.5">
-                    <Target className="w-4 h-4 text-amber-400 shrink-0" />
-                    <span>{momentConclusion.headline}</span>
-                  </h4>
-                  <p className="text-slate-200 text-xs sm:text-[12.5px] leading-relaxed bg-slate-950/70 p-3 rounded-lg border border-white/5">
-                    {momentConclusion.summary}
-                  </p>
-                </div>
-
-                {/* Actionable Strategic Directive */}
-                <div className="p-2.5 rounded-lg bg-emerald-950/40 border border-emerald-500/30 flex items-start gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <div className="text-xs">
-                    <strong className="text-emerald-300 block mb-0.5 uppercase tracking-wider text-[10px]">
-                      Actionable Tactical Directive:
-                    </strong>
-                    <span className="text-emerald-100 font-medium leading-snug">
-                      {momentConclusion.keyDirective}
-                    </span>
-                  </div>
-                </div>
-
-                {/* 4 Pillars of Current Moment */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-mono text-[11px]">
-                  <div className="bg-slate-950/70 p-2 rounded-lg border border-slate-800">
-                    <span className="text-slate-400 text-[9.5px] uppercase block">Moment Phase</span>
-                    <span className="text-white font-bold text-xs truncate block">{momentConclusion.phase}</span>
-                  </div>
-
-                  <div className="bg-slate-950/70 p-2 rounded-lg border border-slate-800">
-                    <span className="text-slate-400 text-[9.5px] uppercase block">Model Stance</span>
-                    <span className="text-indigo-400 font-bold text-xs truncate block">{momentConclusion.marketAdvice}</span>
-                  </div>
-
-                  <div className="bg-slate-950/70 p-2 rounded-lg border border-slate-800">
-                    <span className="text-slate-400 text-[9.5px] uppercase block">Win / Stalemate Edge</span>
-                    <span className="text-emerald-400 font-bold text-xs">
-                      {isMatchLive ? `${safeToFixed(homeProb, 0)}%H · ${safeToFixed(drawProb, 0)}%D · ${safeToFixed(awayProb, 0)}%A` : momentConclusion.confidenceTag}
-                    </span>
-                  </div>
-
-                  <div className="bg-slate-950/70 p-2 rounded-lg border border-slate-800">
-                    <span className="text-slate-400 text-[9.5px] uppercase block">Projected Score</span>
-                    <span className="text-amber-300 font-bold text-xs">{projectedScore}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* In-Play Tactical Momentum Advisory (Rendered when Live) */}
-              {isMatchLive && (
-                <div className="p-4 rounded-xl bg-gradient-to-r from-rose-950/40 via-slate-900 to-slate-900 border border-rose-500/30 shadow-sm space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1.5 text-xs font-black text-rose-400 uppercase tracking-wide">
-                      <Activity className="w-4 h-4 text-rose-500 animate-pulse" />
-                      Live In-Play Tactical Momentum Advisory ({liveMinute}')
-                    </span>
-                    <span className="text-[10.5px] font-mono text-slate-400">
-                      Score: {liveScore.home} - {liveScore.away}
-                    </span>
-                  </div>
-
-                  {inPlayVerdict && (
-                    <div className="text-slate-200 leading-relaxed font-medium bg-slate-950/60 p-3 rounded-lg border border-white/5">
-                      <strong className="text-white block mb-1">Momentum Verdict:</strong>
-                      {inPlayVerdict}
-                    </div>
-                  )}
-
-                  {inPlayRoadmap && (
-                    <div className="text-[11.5px] text-slate-300 leading-relaxed bg-slate-950/40 p-2.5 rounded-lg border border-slate-800">
-                      <strong className="text-emerald-400 block mb-0.5">Strategic Directive:</strong>
-                      {inPlayRoadmap}
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-mono text-[11px]">
-                    <div className="bg-slate-950/50 p-2 rounded border border-slate-800">
-                      <span className="text-slate-400 text-[10px] block">Live Home Win Prob</span>
-                      <span className="text-emerald-400 font-bold text-sm">{safeToFixed(homeProb, 1)}%</span>
-                    </div>
-                    <div className="bg-slate-950/50 p-2 rounded border border-slate-800">
-                      <span className="text-slate-400 text-[10px] block">Live Draw Stalemate</span>
-                      <span className="text-amber-400 font-bold text-sm">{safeToFixed(drawProb, 1)}%</span>
-                    </div>
-                    <div className="bg-slate-950/50 p-2 rounded border border-slate-800">
-                      <span className="text-slate-400 text-[10px] block">Live Away Win Prob</span>
-                      <span className="text-blue-400 font-bold text-sm">{safeToFixed(awayProb, 1)}%</span>
-                    </div>
-                    <div className="bg-slate-950/50 p-2 rounded border border-slate-800">
-                      <span className="text-slate-400 text-[10px] block">Projected Final Score</span>
-                      <span className="text-white font-bold text-sm">{projectedScore}</span>
-                    </div>
                   </div>
                 </div>
               )}
 
-              {/* Groundbreaking Executive AI Summary */}
-              <div className="p-4 sm:p-5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3">
-                <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
-                  <Sparkles className="w-4 h-4 text-indigo-400" />
-                  <h3 className="font-extrabold text-white text-sm tracking-tight">
-                    Executive AI Tactical Synthesis & News Radar
-                  </h3>
-                </div>
-
-                <div className="text-slate-300 leading-relaxed space-y-2 text-xs sm:text-[12.5px]">
-                  <p className="bg-slate-950/50 p-3 rounded-lg border border-slate-800/80 text-slate-200">
-                    {tacticalNarrative}
-                  </p>
-                </div>
-
-                {/* Key Tactical Pillars */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2">
-                  <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800 space-y-1">
-                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">Attacking Firepower</span>
-                    <div className="text-xs font-bold text-white flex items-center justify-between">
-                      <span>{match.home}: {homeXg} xG</span>
-                      <span className="text-slate-500">vs</span>
-                      <span>{match.away}: {awayXg} xG</span>
+              <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3">
+                <h3 className="font-bold text-white text-sm">Before kick-off</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-[11px]">
+                  {[['Home win', match.prob?.home], ['Draw', match.prob?.draw], ['Away win', match.prob?.away]].map(([label, v]) => (
+                    <div key={label} className="bg-slate-950/50 p-2 rounded border border-slate-800">
+                      <span className="text-slate-400 text-[10px] block font-sans">{label}</span>
+                      <span className="text-white font-bold text-sm">{safeToFixed(v, 0)}%</span>
                     </div>
-                    <span className="text-[10px] text-slate-400 block pt-0.5">
-                      Total Projected xG: {totalXg} goals
-                    </span>
+                  ))}
+                  <div className="bg-slate-950/50 p-2 rounded border border-slate-800">
+                    <span className="text-slate-400 text-[10px] block font-sans">Likely score</span>
+                    <span className="text-white font-bold text-sm">{match.mostLikelyScore || '—'}</span>
                   </div>
-
-                  <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800 space-y-1">
-                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">Pace & Game Script</span>
-                    <div className="text-xs font-bold text-emerald-400">
-                      {over25Prob >= 50 ? '⚡ High-Pace Open Contest' : '🛡️ Controlled Low-Block Clash'}
-                    </div>
-                    <span className="text-[10px] text-slate-400 block pt-0.5">
-                      Under 2.5: {safeToFixed(under25Prob, 0)}% · BTTS: {safeToFixed(bttsYesProb, 0)}%
-                    </span>
+                  <div className="bg-slate-950/50 p-2 rounded border border-slate-800">
+                    <span className="text-slate-400 text-[10px] block font-sans">Expected goals</span>
+                    <span className="text-white font-bold text-sm">{homeXg} – {awayXg}</span>
                   </div>
-
-                  <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800 space-y-1">
-                    <span className="text-[10px] text-slate-400 uppercase font-semibold block">Market Value Directives</span>
-                    <div className="text-xs font-bold text-indigo-400">
-                      {match.smartMarket?.marketType ? match.smartMarket.marketType.replace(/_/g, ' ') : `${pickTeam} ML`}
-                    </div>
-                    <span className="text-[10px] text-slate-400 block pt-0.5">
-                      Kelly Allocation: {match.kellyStake?.units ? `${match.kellyStake.units} units` : '1.5 units'}
-                    </span>
+                  <div className="bg-slate-950/50 p-2 rounded border border-slate-800">
+                    <span className="text-slate-400 text-[10px] block font-sans">Over 2.5 goals</span>
+                    <span className="text-white font-bold text-sm">{safeToFixed(over25Prob, 0)}%</span>
+                  </div>
+                  <div className="bg-slate-950/50 p-2 rounded border border-slate-800">
+                    <span className="text-slate-400 text-[10px] block font-sans">Both teams score</span>
+                    <span className="text-white font-bold text-sm">{safeToFixed(bttsYesProb, 0)}%</span>
+                  </div>
+                  <div className="bg-slate-950/50 p-2 rounded border border-slate-800">
+                    <span className="text-slate-400 text-[10px] block font-sans">Lineups</span>
+                    <span className="text-white font-bold text-sm font-sans">{isLineupConfirmed ? 'Confirmed' : 'Not yet'}</span>
                   </div>
                 </div>
               </div>
@@ -1042,7 +788,7 @@ export default function LiveMatchPlayerModal({
           <div className="flex items-center gap-2 text-slate-400">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
             <span className="text-[11px]">
-              Quantitative AI Grounded Analysis • 23,453 Match Historical Calibration
+              Estimates, not guarantees.
             </span>
           </div>
 

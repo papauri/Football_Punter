@@ -140,49 +140,48 @@ export default function PerformanceChart({ historicalResults = [] }) {
         <div className="min-w-0">
           <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-indigo-600 shrink-0" />
-            <span>30-Day Model Trajectory &amp; Calibration Audit</span>
+            <span>Last 30 days</span>
           </h3>
           <p className="text-xs text-slate-500 mt-1">
-            Rolling daily win rate accuracy on recommended plays across audited global fixtures
+            How often the tips won, day by day
           </p>
         </div>
         
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto min-w-0">
           <div className="bg-emerald-50/60 border border-emerald-200 px-3 py-1.5 rounded-lg text-left sm:text-right min-w-0">
             <div className="text-[10px] text-emerald-800 font-semibold uppercase tracking-wider flex items-center sm:justify-end gap-1 truncate">
-              <span>Smart Strike</span>
-              <span className="text-[8.5px] px-1 py-0.2 bg-emerald-200 text-emerald-900 rounded font-bold shrink-0">Rec</span>
+              <span>Tips won</span>
             </div>
             <div className="text-base sm:text-lg font-black text-emerald-700 font-mono flex items-center sm:justify-end gap-1">
               <Crosshair className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
               {safeToFixed(avgWinRate, 1)}%
             </div>
             <div className="text-[10px] text-emerald-600/90 font-mono truncate">
-              {rawStats.hits}W - {rawStats.misses}L
+              {rawStats.hits} won · {rawStats.misses} lost
             </div>
           </div>
 
           <div className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-left sm:text-right min-w-0">
             <div className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider truncate">
-              Raw 1X2 Baseline
+              Match result right
             </div>
             <div className="text-base sm:text-lg font-black text-slate-700 font-mono">
               {safeToFixed(rawStats.rawRate, 1)}%
             </div>
             <div className="text-[10px] text-slate-400 font-mono truncate">
-              Unhedged
+              home / draw / away
             </div>
           </div>
 
           <div className="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-left sm:text-right col-span-2 sm:col-span-1 min-w-0">
             <div className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider truncate">
-              Traps Passed
+              No-bet games
             </div>
             <div className="text-base sm:text-lg font-black text-slate-700 font-mono">
               {safeToFixed(rawStats.passRate, 1)}%
             </div>
             <div className="text-[10px] text-slate-400 font-mono truncate">
-              {rawStats.passes} coin-flips bypassed
+              {rawStats.passes} skipped as too close
             </div>
           </div>
         </div>
@@ -190,7 +189,7 @@ export default function PerformanceChart({ historicalResults = [] }) {
 
       <div className="h-60 sm:h-64 w-full min-w-0 overflow-hidden">
         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={220}>
-          <LineChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+          <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
             <XAxis 
               dataKey="shortDate" 
@@ -203,7 +202,7 @@ export default function PerformanceChart({ historicalResults = [] }) {
             />
             <YAxis 
               domain={[0, 100]}
-              width={34}
+              width={44}
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 10, fill: '#64748b', fontWeight: 500 }}
@@ -219,8 +218,8 @@ export default function PerformanceChart({ historicalResults = [] }) {
               }}
               labelStyle={{ color: '#475569', fontWeight: 700, fontSize: '11px', marginBottom: '8px' }}
               formatter={(value, name, props) => {
-                if (name === 'winRate') return [<span className="font-mono font-bold text-emerald-600">{safeToFixed(value, 1)}%</span>, 'Win Rate'];
-                if (name === 'volume') return [<span className="font-mono font-bold text-slate-600">{value}</span>, 'Matches Analysed'];
+                if (name === 'winRate') return [<span className="font-mono font-bold text-emerald-600">{safeToFixed(value, 1)}%</span>, 'Won'];
+                if (name === 'volume') return [<span className="font-mono font-bold text-slate-600">{value}</span>, 'Matches'];
                 return [value, name];
               }}
             />

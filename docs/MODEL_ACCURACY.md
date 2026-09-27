@@ -62,6 +62,16 @@ noted so nothing is silently rewritten.
    fit their full unwrapped text and the right-hand badges were cut off — on the existing Fixtures and
    Goals & Totals lists as well as new ones. They are now block-level on phones.
 
+10. **Live scores never updated on a cloud server.** ESPN's firewall answered the app's fixed browser
+    identity with 403 "Access Denied", and the app read that as "no events", so matches stayed
+    "Scheduled" after kick-off while the briefing called them started from the clock alone. ESPN calls
+    now go through `espnFetch` in `engine.js`, which falls back to another identity on 403 and logs a
+    block. Every page now reads match state from `src/utils/matchStatus.js`.
+11. **A second self-adjusting parameter was still live while frozen.** The 15-minute reflection cycle
+    nudged each league's home advantage from the latest 30 days of results. It changed predictions in
+    the running app and could leak future results into a long backtest. It is now suspended while the
+    model is frozen (generation 6).
+
 ## How to reproduce
 
 ```bash
@@ -597,7 +607,7 @@ registration starting from zero):
 
 - *Rule:* the frozen model's published smart pick is AWAY, or HOME_DNB. Nothing else qualifies.
 - *Price:* the quote frozen once in `data/early_picks.json`, 6 to 96 hours before kickoff.
-- *Model:* generation 5. Every early pick is now stamped with the generation that made it, and picks
+- *Model:* generation 6 (re-registered from 5 before any fixture was scored). Every early pick is now stamped with the generation that made it, and picks
   from any other version are left out.
 - *Scope:* the 23 leagues the historical estimates came from. Other leagues are reported apart.
 - *Decision:* from 50 bets, abandon at any look where the whole 95% interval is below zero. Judge

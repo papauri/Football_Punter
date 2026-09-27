@@ -142,13 +142,12 @@ export default function LeagueProfilesPage({
             </div>
             <div>
               <h2 className="font-bold text-slate-900 text-sm tracking-tight flex items-center gap-2 flex-wrap">
-                <span>League Predictability & Volatility Profiles</span>
+                <span>Leagues</span>
                 <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
-                  Calibrated Tiers (4,303 Match Benchmark)
                 </span>
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Empirical conviction hit rates & Draw-No-Bet (DNB) risk profiling calibrated across European football divisions
+                How predictable each league is, and how often games end in a draw
               </p>
             </div>
           </div>
@@ -162,15 +161,15 @@ export default function LeagueProfilesPage({
           <div className="flex items-center justify-between">
             <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
               <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-              ⭐ Tier 1: High Predictability
+              Most predictable
             </span>
-            <span className="text-xs font-mono font-bold text-emerald-700">64%–71% Hit Rate</span>
+            
           </div>
           <p className="text-xs text-slate-600">
             High tactical structure and top Poisson model conversion. Favorite dominance is consistent; straight 1X2 performs at peak efficacy.
           </p>
           <div className="pt-1.5 border-t border-emerald-200/60 text-[11px] text-emerald-800 font-medium flex items-center justify-between">
-            <span>DNB Sizing: Standard</span>
+            <span>Straight win tips are fine</span>
             <span className="font-semibold">Serie A, La Liga, Eredivisie, UCL, Bundesliga</span>
           </div>
         </div>
@@ -180,15 +179,15 @@ export default function LeagueProfilesPage({
           <div className="flex items-center justify-between">
             <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800 border border-blue-300">
               <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-              Tier 2: Standard Edge
+              Average
             </span>
-            <span className="text-xs font-mono font-bold text-blue-700">55%–62% Hit Rate</span>
+            
           </div>
           <p className="text-xs text-slate-600">
             Balanced competitive divisions. Models provide steady baseline edge; Draw-No-Bet (DNB) recommended when draw risk exceeds 24%.
           </p>
           <div className="pt-1.5 border-t border-blue-200/60 text-[11px] text-blue-800 font-medium flex items-center justify-between">
-            <span>DNB: Advised when Draw ≥ 24%</span>
+            <span>Draw = refund tips when draws are likely</span>
             <span className="font-semibold">Premier League, Ligue 1, Primeira Liga</span>
           </div>
         </div>
@@ -198,15 +197,15 @@ export default function LeagueProfilesPage({
           <div className="flex items-center justify-between">
             <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
               <AlertTriangle className="w-3.5 h-3.5 text-amber-700" />
-              ⚠️ Tier 3: Volatile / High Parity
+              Hard to predict
             </span>
-            <span className="text-xs font-mono font-bold text-amber-800">&lt;52% Hit Rate</span>
+            
           </div>
           <p className="text-xs text-slate-600">
             High attrition, tight table parity, and heavy stalemate leakage (28%+ draws). Draw-No-Bet or Double Chance mandatory to prevent drawdown.
           </p>
           <div className="pt-1.5 border-t border-amber-200/60 text-[11px] text-amber-900 font-medium flex items-center justify-between">
-            <span>DNB: Mandatory for Bankroll</span>
+            <span>Use draw = refund or team-or-draw tips</span>
             <span className="font-semibold">Championship, LaLiga 2, Serie B, Domestic Cups</span>
           </div>
         </div>
@@ -227,14 +226,14 @@ export default function LeagueProfilesPage({
 
         <div className="flex flex-wrap items-center gap-2">
           <UniformDropdown
-            label="Tier Filter"
+            label="Show"
             value={tierFilter}
             onChange={setTierFilter}
             options={[
-              { value: 'ALL', label: 'All Predictability Tiers' },
-              { value: 'TIER_1', label: '⭐ Tier 1: High Predictability (64%–71%)' },
-              { value: 'TIER_2', label: 'Tier 2: Standard Edge (55%–62%)' },
-              { value: 'TIER_3', label: '⚠️ Tier 3: Volatile / Parity (<52%)' }
+              { value: 'ALL', label: 'All leagues' },
+              { value: 'TIER_1', label: 'Most predictable' },
+              { value: 'TIER_2', label: 'Average' },
+              { value: 'TIER_3', label: 'Hard to predict' }
             ]}
           />
 
@@ -243,11 +242,11 @@ export default function LeagueProfilesPage({
             value={sortBy}
             onChange={setSortBy}
             options={[
-              { value: 'accuracy_desc', label: 'Highest Model Hit Rate' },
-              { value: 'tier_asc', label: 'Tier Rank (Tier 1 → Tier 3)' },
-              { value: 'predict_desc', label: 'Predictability Index' },
-              { value: 'goals_desc', label: 'Average Goals / Game' },
-              { value: 'draw_desc', label: 'Highest Draw Rate' }
+              { value: 'accuracy_desc', label: 'Best hit rate' },
+              { value: 'tier_asc', label: 'Most predictable first' },
+              { value: 'predict_desc', label: 'Predictability score' },
+              { value: 'goals_desc', label: 'Most goals' },
+              { value: 'draw_desc', label: 'Most draws' }
             ]}
           />
         </div>
@@ -260,15 +259,15 @@ export default function LeagueProfilesPage({
             <thead className="hidden md:table-header-group">
               <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
                 <th className="py-1 px-1 w-6 text-center"></th>
-                <th className="py-1 px-1.5 w-10 text-center">Rank</th>
-                <th className="py-1 px-2 min-w-[180px]">Competition</th>
-                <th className="py-1 px-2 w-36 text-center">Predictability Tier</th>
-                <th className="py-1 px-2 w-28 text-center">Conviction Hit Rate</th>
-                <th className="py-1 px-2 w-32 text-center">DNB Staking Rule</th>
-                <th className="py-1 px-1.5 w-16 text-center">Draw Rate</th>
-                <th className="py-1 px-1.5 w-16 text-center">Avg Goals</th>
-                <th className="py-1 px-1.5 w-16 text-center">Pace Factor</th>
-                <th className="py-1 px-2 w-20 text-center">Index</th>
+                <th className="py-1 px-1.5 w-10 text-center">#</th>
+                <th className="py-1 px-2 min-w-[180px]">League</th>
+                <th className="py-1 px-2 w-36 text-center">Predictability</th>
+                <th className="py-1 px-2 w-28 text-center">Typical hit rate</th>
+                <th className="py-1 px-2 w-32 text-center">Draw = refund?</th>
+                <th className="py-1 px-1.5 w-16 text-center">Draws</th>
+                <th className="py-1 px-1.5 w-16 text-center">Goals/game</th>
+                <th className="py-1 px-1.5 w-16 text-center">Pace</th>
+                <th className="py-1 px-2 w-20 text-center">Score</th>
               </tr>
             </thead>
             <tbody className="flex flex-col md:table-row-group divide-y divide-slate-100">

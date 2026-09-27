@@ -26,7 +26,7 @@ import UniformDropdown from './UniformDropdown';
 import MobileViewSwitcher from './MobileViewSwitcher';
 import { useMobileViewMode } from '../utils/useMobileViewMode';
 import BacktestAccuracyTrendChart from './BacktestAccuracyTrendChart';
-import { safeToFixed, formatScore } from '../utils/numberUtils';
+import { safeToFixed, formatScore, plainTipText } from '../utils/numberUtils';
 import { formatSafeDateTime, formatRelativeDayTime } from '../utils/dateUtils';
 
 export const getMatchDecisionAdvisory = (m) => {
@@ -191,7 +191,6 @@ export default function ResultsProofPage({
   const [leagueFilter, setLeagueFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL', 'HITS', 'MISSES'
   const [showBacktestChart, setShowBacktestChart] = useState(false);
-  const [showMarketBenchmark, setShowMarketBenchmark] = useState(false);
   const [sortField, setSortField] = useState('time');
   const [sortDirection, setSortDirection] = useState('asc'); // 'asc' | 'desc'
   const [expandedMatchId, setExpandedMatchId] = useState(null);
@@ -513,14 +512,11 @@ export default function ResultsProofPage({
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                <span>Verified Match Audit &amp; Performance Proof</span>
-                <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded shrink-0">
-                  Audited Real Data
-                </span>
+                <span>Results</span>
               </h2>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Full transparent verification against official final whistle scores from ESPN &amp; Understat
+              Each tip checked against the final score
             </p>
           </div>
 
@@ -528,27 +524,27 @@ export default function ResultsProofPage({
             {/* Stat Cards - responsive grid on mobile, row on desktop */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1.5 sm:gap-2 w-full sm:w-auto min-w-0">
               <div className="bg-slate-50 border border-slate-200 px-2 sm:px-2.5 py-1.5 rounded-lg text-center min-w-0">
-                <div className="text-[9.5px] sm:text-[10px] text-slate-400 font-bold uppercase truncate">Audited Games</div>
+                <div className="text-[9.5px] sm:text-[10px] text-slate-400 font-bold uppercase truncate">Matches</div>
                 <div className="text-xs sm:text-sm font-bold font-mono text-slate-800">{stats.total}</div>
               </div>
               <div className="bg-slate-50 border border-slate-200 px-2 sm:px-2.5 py-1.5 rounded-lg text-center min-w-0">
-                <div className="text-[9.5px] sm:text-[10px] text-slate-400 font-bold uppercase truncate">Active Wagers</div>
+                <div className="text-[9.5px] sm:text-[10px] text-slate-400 font-bold uppercase truncate">Tips</div>
                 <div className="text-xs sm:text-sm font-bold font-mono text-slate-800">{stats.activeTotal}</div>
               </div>
               <div className="bg-slate-50 border border-slate-200 px-2 sm:px-2.5 py-1.5 rounded-lg text-center min-w-0">
-                <div className="text-[9.5px] sm:text-[10px] text-slate-400 font-bold uppercase truncate">Correct Hits</div>
+                <div className="text-[9.5px] sm:text-[10px] text-slate-400 font-bold uppercase truncate">Won</div>
                 <div className="text-xs sm:text-sm font-bold font-mono text-emerald-700">{stats.hits}</div>
               </div>
               <div className="bg-slate-50 border border-slate-200 px-2 sm:px-2.5 py-1.5 rounded-lg text-center min-w-0">
-                <div className="text-[9.5px] sm:text-[10px] text-slate-400 font-bold uppercase truncate">Hit Rate</div>
+                <div className="text-[9.5px] sm:text-[10px] text-slate-400 font-bold uppercase truncate">Hit rate</div>
                 <div className="text-xs sm:text-sm font-bold font-mono text-indigo-700">{stats.hitRate}%</div>
               </div>
               <div className="bg-slate-50 border border-slate-200 px-2 sm:px-2.5 py-1.5 rounded-lg text-center min-w-0 col-span-2 sm:col-span-1">
                 <div className="text-[9.5px] sm:text-[10px] text-slate-400 font-bold uppercase truncate">Record</div>
                 <div className="text-xs sm:text-sm font-bold font-mono text-slate-800 whitespace-nowrap truncate">
-                  <span className="text-emerald-700">{stats.hits}W</span> - <span className="text-rose-700">{stats.misses}L</span>
-                  {stats.pushes > 0 && <span className="text-amber-600"> - {stats.pushes}P</span>}
-                  {stats.passes > 0 && <span className="text-slate-500 font-semibold" title="Disciplined PASS decisions enacted to protect bankroll"> ({stats.passes} Pass)</span>}
+                  <span className="text-emerald-700">{stats.hits} won</span> · <span className="text-rose-700">{stats.misses} lost</span>
+                  {stats.pushes > 0 && <span className="text-amber-600"> · {stats.pushes} refunded</span>}
+                  {stats.passes > 0 && <span className="text-slate-500 font-semibold" title="Games with no tip because they were too close to call"> · {stats.passes} no bet</span>}
                 </div>
               </div>
             </div>
@@ -562,10 +558,10 @@ export default function ResultsProofPage({
                     ? 'bg-indigo-600 text-white shadow-xs' 
                     : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200'
                 }`}
-                title="Toggle multi-season 23,453 match accuracy trend chart"
+                title="Hit rate over past seasons"
               >
                 <TrendingUp className="w-3.5 h-3.5 shrink-0" />
-                <span className="whitespace-nowrap">{showBacktestChart ? 'Hide 23.4k Chart' : '23.4k Accuracy Trend'}</span>
+                <span className="whitespace-nowrap">{showBacktestChart ? 'Hide long-term chart' : 'Long-term chart'}</span>
               </button>
 
               <button
@@ -575,24 +571,12 @@ export default function ResultsProofPage({
                     ? 'bg-amber-600 text-white shadow-xs'
                     : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200'
                 }`}
-                title="View tamper-proof pre-kickoff prediction snapshots"
+                title="Tips as they were saved before kick-off"
               >
                 <Lock className="w-3.5 h-3.5 shrink-0" />
-                <span className="whitespace-nowrap">{showLedger ? 'Hide Ledger' : '🔒 Pre-Kickoff Ledger'}</span>
+                <span className="whitespace-nowrap">{showLedger ? 'Hide saved tips' : 'Tips saved before kick-off'}</span>
               </button>
 
-              <button
-                onClick={() => setShowMarketBenchmark(!showMarketBenchmark)}
-                className={`h-8 px-2.5 sm:px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer w-full sm:w-auto shrink-0 ${
-                  showMarketBenchmark
-                    ? 'bg-purple-600 text-white shadow-xs'
-                    : 'bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200'
-                }`}
-                title="Why the model benchmarks against closing odds and how to beat bookmakers"
-              >
-                <Brain className="w-3.5 h-3.5 shrink-0" />
-                <span className="whitespace-nowrap">{showMarketBenchmark ? 'Hide Benchmark' : '⚡ Beat Bookmakers'}</span>
-              </button>
             </div>
           </div>
 
@@ -605,95 +589,6 @@ export default function ResultsProofPage({
           </div>
         )}
 
-        {/* Market Benchmark & Bookmaker Edge Guide */}
-        {showMarketBenchmark && (
-          <div className="mt-4 pt-4 border-t border-slate-100 animate-in fade-in slide-in-from-top-2 duration-200 space-y-3">
-            <div className="bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 text-white rounded-xl p-4 shadow-sm border border-purple-800/40">
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-200 border border-purple-400/30 uppercase tracking-wider">
-                      Market Benchmark &amp; Edge Alpha
-                    </span>
-                    <span className="text-[10px] font-semibold text-emerald-400 flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" /> 74.4% Confident Win Rate
-                    </span>
-                  </div>
-                  <h3 className="text-base font-bold tracking-tight text-white">
-                    Why Pure Models Fall Behind Bookmakers — And How Our Architecture Beats Them
-                  </h3>
-                  <p className="text-xs text-purple-200/90 leading-relaxed max-w-3xl">
-                    Closing odds reflect hundreds of millions in sharp market liquidity, late breaking lineups, weather, and tactical shifts. A pure historical model that fights closing lines bets into information asymmetry. Here is the verified empirical breakdown and how we create true alpha.
-                  </p>
-                </div>
-                <button
-                  onClick={() => setShowMarketBenchmark(false)}
-                  className="text-purple-300 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors text-xs font-bold"
-                  aria-label="Close guide"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {/* 4 Pillar Stat Comparison */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 mt-3.5">
-                <div className="bg-white/10 backdrop-blur-xs rounded-lg p-2.5 border border-white/10">
-                  <div className="text-[10px] text-purple-200 uppercase font-semibold">1. Pure Historical Model</div>
-                  <div className="text-lg font-bold font-mono text-rose-300">46.5% <span className="text-xs font-normal text-rose-200">Hit Rate</span></div>
-                  <div className="text-[10.5px] text-slate-300 mt-0.5">Brier: 0.2110. Ignores late injuries &amp; lineup rotations; raw divergence is a -10.0% ROI trap.</div>
-                </div>
-
-                <div className="bg-white/10 backdrop-blur-xs rounded-lg p-2.5 border border-white/10">
-                  <div className="text-[10px] text-purple-200 uppercase font-semibold">2. Bookmaker Closing Odds</div>
-                  <div className="text-lg font-bold font-mono text-amber-300">52.2% <span className="text-xs font-normal text-amber-200">Hit Rate</span></div>
-                  <div className="text-[10.5px] text-slate-300 mt-0.5">Brier: 0.1967. Extremely sharp aggregator of public information and multi-million market liquidity.</div>
-                </div>
-
-                <div className="bg-white/10 backdrop-blur-xs rounded-lg p-2.5 border border-purple-400/30 bg-purple-500/10">
-                  <div className="text-[10px] text-purple-200 uppercase font-semibold">3. Engine Bayesian Blend</div>
-                  <div className="text-lg font-bold font-mono text-indigo-300">51.8% <span className="text-xs font-normal text-indigo-200">Baseline</span></div>
-                  <div className="text-[10.5px] text-slate-300 mt-0.5">Brier: 0.1981. Uses market as prior, eliminating irrational divergence traps.</div>
-                </div>
-
-                <div className="bg-emerald-500/20 backdrop-blur-xs rounded-lg p-2.5 border border-emerald-400/40">
-                  <div className="text-[10px] text-emerald-300 uppercase font-bold">4. Confident Consensus (≥60%)</div>
-                  <div className="text-lg font-bold font-mono text-emerald-300">74.4% <span className="text-xs font-normal text-emerald-200">Win Rate</span></div>
-                  <div className="text-[10.5px] text-emerald-100 mt-0.5">Beats both bookmakers (70.2%) and pure model (64.5%) by identifying high-certainty alignment.</div>
-                </div>
-              </div>
-
-              {/* 3 Strategic Rules to Beat Bookmakers */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 mt-3 pt-3 border-t border-white/10 text-xs">
-                <div className="bg-slate-900/60 p-2.5 rounded-lg border border-white/5 space-y-1">
-                  <div className="font-bold text-amber-300 flex items-center gap-1.5">
-                    <span>⚠️ Rule 1: Avoid "Phantom Edge" Traps</span>
-                  </div>
-                  <p className="text-slate-300 text-[11px] leading-relaxed">
-                    When a model thinks a 3.50 underdog is actually 2.00, it usually means star players were benched or key defenders are injured. Our Bayesian anchor prevents reckless betting into market traps.
-                  </p>
-                </div>
-
-                <div className="bg-slate-900/60 p-2.5 rounded-lg border border-white/5 space-y-1">
-                  <div className="font-bold text-indigo-300 flex items-center gap-1.5">
-                    <span>🛡️ Rule 2: Eliminate Draw Risk (DNB)</span>
-                  </div>
-                  <p className="text-slate-300 text-[11px] leading-relaxed">
-                    Over 26% of top-flight soccer matches end in draws, ruining straight 1X2 parlays. Smart Adaptive dynamically routes to Draw No Bet (stake refunded on draw) or Double Chance to protect capital.
-                  </p>
-                </div>
-
-                <div className="bg-slate-900/60 p-2.5 rounded-lg border border-white/5 space-y-1">
-                  <div className="font-bold text-emerald-300 flex items-center gap-1.5">
-                    <span>🌍 Rule 3: International Competition Depth</span>
-                  </div>
-                  <p className="text-slate-300 text-[11px] leading-relaxed">
-                    For UEFA Nations League and World Cups, calibrated Elo databases factor in tournament pedigree, squad talent tiers, and neutral-pitch discounts to beat naive club-only algorithms.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Uniform Toolbar */}
@@ -1116,7 +1011,7 @@ export default function ResultsProofPage({
                                   <span className="text-slate-500 font-semibold block mb-0.5">Verification Details</span>
                                   <div className="space-y-0.5 text-slate-700 font-mono">
                                     <div>Actual Winner: <strong>{actualWinner}</strong></div>
-                                    <div>Model Pick: <strong>{isPass ? 'PASS' : (m.smartMarket?.pickLabel || m.predictedWinner || 'N/A')}</strong></div>
+                                    <div>Tip: <strong>{isPass ? 'No bet' : plainTipText(m.smartMarket?.pickLabel || m.predictedWinner || '—')}</strong></div>
                                     <div>Outcome Status: <strong>{isHit ? 'Verified Hit' : isPush ? 'Push' : isPass ? 'Disciplined Pass' : 'Missed Prediction'}</strong></div>
                                   </div>
                                 </div>
@@ -1188,7 +1083,7 @@ export default function ResultsProofPage({
                             <div className="truncate">
                               <span className="text-slate-500">Pick: </span>
                               <strong className="text-slate-800">
-                                {m.smartMarket?.pickLabel || (m.predictedWinner === 'HOME' ? m.home : m.predictedWinner === 'AWAY' ? m.away : 'Draw')}
+                                {plainTipText(m.smartMarket?.pickLabel) || (m.predictedWinner === 'HOME' ? m.home : m.predictedWinner === 'AWAY' ? m.away : 'Draw')}
                               </strong>
                             </div>
                             <div className="flex items-center gap-1 font-mono shrink-0 pl-1">
@@ -1388,7 +1283,7 @@ export default function ResultsProofPage({
                         ) : (
                           <div className="flex flex-col">
                             <span className="font-medium text-slate-800 truncate max-w-[170px]">
-                              Pick: <strong>{m.smartMarket?.pickLabel || (m.predictedWinner === 'HOME' ? m.home : m.predictedWinner === 'AWAY' ? m.away : 'Draw')}</strong>
+                              Pick: <strong>{plainTipText(m.smartMarket?.pickLabel) || (m.predictedWinner === 'HOME' ? m.home : m.predictedWinner === 'AWAY' ? m.away : 'Draw')}</strong>
                             </span>
                             <span className="text-[10px] text-slate-500">
                               Actual: {actualWinner === 'HOME' ? `${m.home} Win` : actualWinner === 'AWAY' ? `${m.away} Win` : 'Draw'}
@@ -1520,7 +1415,7 @@ export default function ResultsProofPage({
                                   <div className="flex justify-between">
                                     <span className="text-slate-600">Actionable Directive:</span>
                                     <span className={`font-bold ${isPass ? 'text-amber-800' : 'text-indigo-700'}`}>
-                                      {isPass ? 'PASS (No Action Taken)' : (m.smartMarket?.pickLabel || 'Outcome Pick')}
+                                      {isPass ? 'No bet' : (plainTipText(m.smartMarket?.pickLabel) || 'Tip')}
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
@@ -1702,7 +1597,7 @@ export default function ResultsProofPage({
                     <th className="py-1 px-2 min-w-[110px]">League</th>
                     <th className="py-1 px-2 min-w-[180px]">Fixture</th>
                     <th className="py-1 px-2 w-24 text-center">Predicted</th>
-                    <th className="py-1 px-2 w-28 text-center">Smart Pick</th>
+                    <th className="py-1 px-2 w-28 text-center">Tip</th>
                     <th className="py-1 px-1.5 w-16 text-center">Conf</th>
                     <th className="py-1 px-2 w-24 text-center">Result</th>
                   </tr>

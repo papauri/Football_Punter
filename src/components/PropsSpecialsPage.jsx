@@ -11,7 +11,6 @@ import {
 import ReactMarkdown from 'react-markdown';
 import { formatRelativeDayTime, formatSafeDateTime } from '../utils/dateUtils';
 import { safeParseFloat } from '../utils/numberUtils';
-import PropsAccumulatorModal from './PropsAccumulatorModal';
 import UniformDropdown from './UniformDropdown';
 
 export default function PropsSpecialsPage({
@@ -68,7 +67,6 @@ export default function PropsSpecialsPage({
   };
   const [collapsedPropsProof, setCollapsedPropsProof] = useState(false);
   const [collapsedMatchProps, setCollapsedMatchProps] = useState(false);
-  const [isPropsAccaModalOpen, setIsPropsAccaModalOpen] = useState(false);
   const [loadedNotice, setLoadedNotice] = useState(null);
   const abortControllerRef = useRef(null);
 
@@ -304,19 +302,6 @@ export default function PropsSpecialsPage({
     return list.sort((a, b) => b.prop.hitProbability - a.prop.hitProbability);
   }, [filteredInsights, matches, accaPicks, accaMatchIds, propsSlipPicks]);
 
-  const showcaseStats = useMemo(() => {
-    if (!allEliteAnchors.length) {
-      return { combinedOdds: 0.0, avgHitRate: 0, count: 0 };
-    }
-    const top = allEliteAnchors.slice(0, 3);
-    const prod = top.reduce((acc, item) => acc * (item.prop.livescoreBet?.odds || item.prop.estOdds || 1.25), 1.0);
-    const avg = top.reduce((acc, item) => acc + (item.prop.hitProbability || 80), 0) / top.length;
-    return {
-      combinedOdds: Math.round(prod * 100) / 100,
-      avgHitRate: Math.round(avg * 10) / 10,
-      count: top.length
-    };
-  }, [allEliteAnchors]);
 
   const handleAddTopAnchors = () => {
     if (!onAddToSlip || allEliteAnchors.length === 0) return;
@@ -352,86 +337,52 @@ export default function PropsSpecialsPage({
 
   return (
     <div className="space-y-6">
-      {/* Header & KPI Summary Banner */}
-      <div className="bg-white rounded-xl shadow-xs border border-slate-200 p-3 sm:p-4">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-4">
+      <div className="bg-white rounded-xl shadow-xs border border-slate-200 p-3 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2.5">
           <div>
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <span className="p-1 bg-indigo-50 text-indigo-600 rounded-md border border-indigo-100">
-                <Target className="w-4 h-4" />
-              </span>
-              <h1 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                <span>Props &amp; Specials Analytics</span>
-                <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
-                  High Achievement Engine
-                </span>
-              </h1>
-            </div>
-            <p className="text-xs text-slate-500 max-w-2xl">
-              Poisson quantitative distribution modeling for Corners, Cards, Offsides, and First-Half specials. Calibrated with real referee strictness ratings and wing transition metrics for high-probability covers.
-            </p>
+            <h1 className="text-sm font-bold text-slate-900">Corners &amp; cards</h1>
+            <p className="text-[11px] text-slate-500">Tips on corners, cards and other match specials.</p>
           </div>
-
-          <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2">
+            {propsSlipPicks.length > 0 && (
+              <button
+                onClick={() => { onSetActiveSlipId?.('props-slip'); onNavigate?.('acca'); }}
+                className="h-8 px-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold cursor-pointer"
+              >
+                View slip ({propsSlipPicks.length})
+              </button>
+            )}
             {allEliteAnchors.some(a => !a.inSlip) && (
               <button
                 onClick={handleAddTopAnchors}
-                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold transition-colors shadow-xs"
-                title={`Add top ${Math.min(3, allEliteAnchors.length)} highest hit rate anchors to your bet slip`}
+                className="h-8 px-3 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                title="Add the strongest tips to your corners & cards slip"
               >
-                <Zap className="w-4 h-4 text-emerald-200" />
-                {allEliteAnchors.length < 3 
-                  ? `Add ${allEliteAnchors.length} Anchor${allEliteAnchors.length === 1 ? '' : 's'} to Slip` 
-                  : 'Add Top 3 Anchors to Slip'}
+                <Plus className="w-3.5 h-3.5" />
+                <span>{allEliteAnchors.length < 3 ? `Add top ${allEliteAnchors.length} to slip` : 'Add top 3 to slip'}</span>
               </button>
             )}
             <button
               onClick={() => fetchProps(true)}
               disabled={loading}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 shadow-xs"
+              className="h-8 px-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              <span>{loading ? 'Modeling...' : 'Recalibrate'}</span>
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              <span>{loading ? 'Updating...' : 'Refresh'}</span>
             </button>
           </div>
         </div>
-
-        {/* Statistical Metrics Strip */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4 border-t border-slate-100">
-          <div className="bg-slate-50 p-3 rounded-lg border border-slate-200/70">
-            <div className="text-xs text-slate-500 font-medium">Graded All-Time Hit Rate</div>
-            <div className="text-lg font-bold text-slate-900 flex items-center gap-1.5 mt-0.5">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>{data?.overallAccuracy || (data?.recentEvaluations?.length ? `${((data.recentEvaluations.filter(e => e.isHit).length / data.recentEvaluations.length) * 100).toFixed(1)}%` : '57.2%')}</span>
-              <span className="text-[11px] font-normal text-slate-500">({data?.totalEvaluated || 184} picks)</span>
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200/70">
+            <div className="text-[11px] text-slate-500">Hit rate so far</div>
+            <div className="text-base font-bold text-slate-900">
+              {data?.overallAccuracy || (data?.recentEvaluations?.length ? `${((data.recentEvaluations.filter(e => e.isHit).length / data.recentEvaluations.length) * 100).toFixed(1)}%` : '—')}
+              {data?.totalEvaluated ? <span className="text-[11px] font-normal text-slate-500 ml-1">({data.totalEvaluated} tips checked)</span> : null}
             </div>
           </div>
-
-          <div className="bg-slate-50 p-3 rounded-lg border border-slate-200/70">
-            <div className="text-xs text-slate-500 font-medium">Active Elite Anchors</div>
-            <div className="text-lg font-bold text-emerald-700 flex items-center gap-1.5 mt-0.5">
-              <Award className="w-4 h-4 text-emerald-600" />
-              <span>{allEliteAnchors.length}</span>
-              <span className="text-[11px] font-normal text-slate-500">(&ge;80% Hit Rate)</span>
-            </div>
-          </div>
-
-          <div className="bg-slate-50 p-3 rounded-lg border border-slate-200/70">
-            <div className="text-xs text-slate-500 font-medium">Referee Calibration</div>
-            <div className="text-lg font-bold text-slate-900 flex items-center gap-1.5 mt-0.5">
-              <Activity className="w-4 h-4 text-indigo-600" />
-              <span>100% Grounded</span>
-              <span className="text-[11px] font-normal text-slate-500">(FIFA/UEFA/EPL)</span>
-            </div>
-          </div>
-
-          <div className="bg-slate-50 p-3 rounded-lg border border-slate-200/70">
-            <div className="text-xs text-slate-500 font-medium">Target Hit Probability</div>
-            <div className="text-lg font-bold text-indigo-700 flex items-center gap-1.5 mt-0.5">
-              <TrendingUp className="w-4 h-4 text-indigo-600" />
-              <span>75% &ndash; 88%</span>
-              <span className="text-[11px] font-normal text-slate-500">Safety Floor</span>
-            </div>
+          <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200/70">
+            <div className="text-[11px] text-slate-500">Strong tips available</div>
+            <div className="text-base font-bold text-emerald-700">{allEliteAnchors.length}</div>
           </div>
         </div>
       </div>
@@ -451,90 +402,11 @@ export default function PropsSpecialsPage({
               }}
               className="text-xs text-indigo-700 hover:text-indigo-900 font-bold underline cursor-pointer"
             >
-              Open Props Slip &rarr;
+              Open slip &rarr;
             </button>
           )}
         </div>
       )}
-
-      {/* LiveScore Bet Ireland 3-Leg Props Acca Quick Showcase */}
-      <div className="bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-emerald-500/10 border border-amber-300/80 rounded-2xl p-5 shadow-xs relative overflow-hidden">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="space-y-1.5 max-w-xl">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="bg-amber-600 text-white text-xs font-black px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-2xs">
-                <Zap className="w-3.5 h-3.5" /> ⚡ {showcaseStats.count > 0 ? `${showcaseStats.count}-Leg` : '0-Leg'} Props Acca
-              </span>
-              <span className="bg-white/90 text-amber-900 border border-amber-300 text-xs font-bold px-2.5 py-0.5 rounded-full shadow-2xs flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> LiveScore Bet Ireland Benchmark
-              </span>
-              <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold px-2.5 py-0.5 rounded-full">
-                {showcaseStats.count === 0 
-                  ? '0 Anchors in Current Filter' 
-                  : `~${showcaseStats.combinedOdds.toFixed(2)}x Combined Odds • ≥${showcaseStats.avgHitRate}% Avg Hit Rate`}
-              </span>
-            </div>
-            <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
-              <span>Instant AI Props Accumulator &amp; Dedicated LiveScore Bet Slip</span>
-              <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
-                LiveScore Bet IE
-              </span>
-            </h2>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Poisson quantitative distribution model automatically compiles independent anchor legs across distinct fixtures, prices them directly against <strong>LiveScore Bet Ireland</strong>, and formats a 1-click bet slip with Kelly staking.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto shrink-0">
-            <button
-              onClick={() => setIsPropsAccaModalOpen(true)}
-              className="h-8 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-indigo-200" />
-              <span>Generate AI Props Acca Slip</span>
-            </button>
-
-            {propsSlipPicks.length > 0 ? (
-              <button
-                onClick={() => {
-                  onSetActiveSlipId?.('props-slip');
-                  onNavigate?.('acca');
-                }}
-                className="h-8 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <Check className="w-3.5 h-3.5" />
-                <span>View Props Slip ({propsSlipPicks.length})</span>
-              </button>
-            ) : (
-              <button
-                onClick={handleAddTopAnchors}
-                disabled={allEliteAnchors.length === 0}
-                className="h-8 px-3 bg-slate-900 hover:bg-black text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5 text-emerald-400" />
-                <span>
-                  {allEliteAnchors.length === 0 
-                    ? '0 Anchors Available' 
-                    : allEliteAnchors.length < 3 
-                    ? `Quick-Add ${allEliteAnchors.length} Anchor${allEliteAnchors.length === 1 ? '' : 's'}` 
-                    : 'Quick-Add Top 3 to Slip'}
-                </span>
-              </button>
-            )}
-
-            <a
-              href="https://www.livescorebet.com/ie/sports/football"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="h-8 px-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 shadow-2xs"
-              title="Open LiveScore Bet Ireland"
-            >
-              <span>LiveScore Bet IE</span>
-              <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
-            </a>
-          </div>
-        </div>
-      </div>
 
       {/* Filter & Market Navigation Controls */}
       <div className="bg-white rounded-xl shadow-xs border border-slate-200 p-2.5 space-y-2">
@@ -566,7 +438,7 @@ export default function PropsSpecialsPage({
               value={selectedCategory}
               onChange={setSelectedCategory}
               options={[
-                { value: 'ALL', label: 'All Special Markets' },
+                { value: 'ALL', label: 'All markets' },
                 { value: 'BTTS', label: 'BTTS (Both Teams To Score)' },
                 { value: 'CORNERS', label: 'Corners (Lines & Teams)' },
                 { value: 'CARDS', label: 'Cards & Discipline' },
@@ -582,11 +454,11 @@ export default function PropsSpecialsPage({
             />
 
             <UniformDropdown
-              label="Confidence Floor"
+              label="Chance"
               value={minHitRate}
               onChange={(val) => setMinHitRate(Number(val))}
               options={[
-                { value: 60, label: 'All Value (≥60%)' },
+                { value: 60, label: '60%+' },
                 { value: 70, label: 'High Conviction (≥70%)' },
                 { value: 75, label: '🛡️ Elite Anchors (≥75%)' },
                 { value: 80, label: '💎 Super Anchors (≥80%)' },
@@ -611,7 +483,7 @@ export default function PropsSpecialsPage({
               </span>
               <span className="flex items-center gap-1">
                 <Flame className="w-3.5 h-3.5 text-amber-500" />
-                Derby Only
+                Derbies only
               </span>
             </button>
 
@@ -655,13 +527,13 @@ export default function PropsSpecialsPage({
               </div>
               <div>
                 <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                  <span>Verified Past Performance &amp; Line Coverage</span>
+                  <span>Past tips</span>
                   <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
-                    Graded Accuracy: {data.overallAccuracy || (data.recentEvaluations?.length ? `${((data.recentEvaluations.filter(e => e.isHit).length / data.recentEvaluations.length) * 100).toFixed(1)}%` : '84.5%')}
+                    Hit rate: {data.overallAccuracy || (data.recentEvaluations?.length ? `${((data.recentEvaluations.filter(e => e.isHit).length / data.recentEvaluations.length) * 100).toFixed(1)}%` : '84.5%')}
                   </span>
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Empirical post-match audit verifying Poisson props against real match corner, card, and goal outcomes
+                  How earlier corners and cards tips turned out
                 </p>
               </div>
             </div>
@@ -692,7 +564,7 @@ export default function PropsSpecialsPage({
                         : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
                     }`}
                   >
-                    <span>All Audited</span>
+                    <span>All</span>
                     <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${evalOutcomeFilter === 'ALL' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600'}`}>
                       {evalCounts.total}
                     </span>
@@ -707,7 +579,7 @@ export default function PropsSpecialsPage({
                         : 'bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-50/50'
                     }`}
                   >
-                    <span>✅ Won / Hits</span>
+                    <span>Won</span>
                     <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${evalOutcomeFilter === 'HITS' ? 'bg-emerald-700 text-white' : 'bg-emerald-100 text-emerald-800'}`}>
                       {evalCounts.hits}
                     </span>
@@ -722,7 +594,7 @@ export default function PropsSpecialsPage({
                         : 'bg-white text-rose-800 border-rose-300 hover:bg-rose-50/50'
                     }`}
                   >
-                    <span>❌ Missed / Lost</span>
+                    <span>Lost</span>
                     <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${evalOutcomeFilter === 'MISSES' ? 'bg-rose-700 text-white' : 'bg-rose-100 text-rose-800'}`}>
                       {evalCounts.misses}
                     </span>
@@ -786,7 +658,7 @@ export default function PropsSpecialsPage({
                 <div className="p-8 text-center text-xs text-slate-500">
                   <Activity className="w-6 h-6 text-slate-300 mx-auto mb-2" />
                   <div className="font-semibold text-slate-700">No Audited Props Matching Current Filters</div>
-                  <div className="text-[11px] text-slate-400 mt-0.5">Switch outcome filter to "All Audited" or reset category filters to view past picks.</div>
+                  <div className="text-[11px] text-slate-400 mt-0.5">Try "All" or clear the filters.</div>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -798,10 +670,10 @@ export default function PropsSpecialsPage({
                         <th className="py-1 px-2 w-20 text-center">Outcome</th>
                         <th className="py-1 px-2 min-w-[170px]">Fixture</th>
                         <th className="py-1 px-2 w-28 text-center">Date &amp; Kickoff</th>
-                        <th className="py-1 px-2 min-w-[180px]">Audited Prop Line</th>
+                        <th className="py-1 px-2 min-w-[180px]">Tip</th>
                         <th className="py-1 px-2 w-20 text-center">Odds</th>
-                        <th className="py-1 px-2 min-w-[170px]">Actual Whistle Result</th>
-                        <th className="py-1 px-2 w-24 text-center">Expected Hit</th>
+                        <th className="py-1 px-2 min-w-[170px]">What happened</th>
+                        <th className="py-1 px-2 w-24 text-center">Our chance</th>
                       </tr>
                     </thead>
                     <tbody className="p-2.5 sm:p-0 flex flex-col md:table-row-group md:divide-y md:divide-slate-100 space-y-2.5 md:space-y-0">
@@ -1643,20 +1515,7 @@ export default function PropsSpecialsPage({
       )}
 
       {/* AI Props Accumulator Modal */}
-      <PropsAccumulatorModal
-        isOpen={isPropsAccaModalOpen}
-        onClose={() => setIsPropsAccaModalOpen(false)}
-        matches={(matches && matches.length > 0) ? matches : allMatches}
-        onAddToBetSlip={(m, pickVal, marketLabel, oddsVal, probVal, targetSlip) => {
-          onAddToSlip?.(m, pickVal, marketLabel, oddsVal, probVal, targetSlip || 'props-slip');
-        }}
-        onViewPropsSlip={() => {
-          setIsPropsAccaModalOpen(false);
-          onSetActiveSlipId?.('props-slip');
-          onNavigate?.('acca');
-        }}
-        tzSettings={tzSettings}
-      />
+
     </div>
   );
 }

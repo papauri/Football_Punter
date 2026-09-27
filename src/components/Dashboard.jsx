@@ -9,17 +9,12 @@ import FixturesTablePage from './FixturesTablePage';
 import ScoresTablePage from './ScoresTablePage';
 import BinaryPicksPage from './BinaryPicksPage';
 import AccumulatorPage from './AccumulatorPage';
-import AllDayWinnerPage from './AllDayWinnerPage';
 import ResultsProofPage, { isMatchForDate } from './ResultsProofPage';
 import PerformanceChart from './PerformanceChart';
 import LineupsPage from './LineupsPage';
 import DeepResearchPage from './DeepResearchPage';
 import LeagueProfilesPage from './LeagueProfilesPage';
-import TuningPage from './TuningPage';
-import TimezonePage from './TimezonePage';
-import AutonomousPatchCenter from './AutonomousPatchCenter';
-import AISwarmCenter from './AISwarmCenter';
-import LogsPage from './LogsPage';
+import SettingsPage from './SettingsPage';
 import ErrorBoundary from './ErrorBoundary';
 import PropsSpecialsPage from './PropsSpecialsPage';
 import StrategyProofModal from './StrategyProofModal';
@@ -30,6 +25,7 @@ import { safeToFixed } from '../utils/numberUtils';
 import { isLeagueBlacklisted } from '../utils/leagueUtils';
 import { getMatchRiskProfile, getSlipPick, normalizePick, getPickMarketLabel } from '../utils/riskUtils';
 import { getTimezoneDisplayLabel } from '../utils/dateUtils';
+import { resolvePage } from '../utils/pages';
 
 // =========================================================================
 // TIMEZONE CONTEXT & EXPORTS
@@ -96,7 +92,6 @@ export const DEFAULT_INITIAL_STATE = {
   mistakePostMortems: [],
   aiSwarm: null,
   imperialSwarm: null,
-  unanimousHitRate: 84.8,
   patchTelemetry: { patchesApplied: 0, activeGuardrails: 'Active' },
   patchGovernorState: { status: 'CONVERGED_OPTIMAL' },
   strictLeaguePruning: true,
@@ -108,6 +103,11 @@ export default function Dashboard() {
   const [isInitialSyncing, setIsInitialSyncing] = useState(true);
   const [connectionError, setConnectionError] = useState(null);
   const [activePage, setActivePage] = useState('fixtures');
+  const goToPage = (page) => {
+    setActivePage(resolvePage(page));
+    setIsMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScraping, setIsScraping] = useState(false);
   const [isRetraining, setIsRetraining] = useState(false);
@@ -127,9 +127,9 @@ export default function Dashboard() {
         const parsed = JSON.parse(savedSlips);
         if (Array.isArray(parsed) && parsed.length > 0) {
           if (!parsed.some(s => s.id === 'props-slip')) {
-            parsed.push({ id: 'props-slip', name: 'Props Slip (LiveScore Bet)', picks: [] });
+            parsed.push({ id: 'props-slip', name: 'Corners & cards slip', picks: [] });
           }
-          return parsed;
+          return parsed.map(s => (s.id === 'props-slip' ? { ...s, name: 'Corners & cards slip' } : s));
         }
       }
     } catch {}
@@ -142,7 +142,7 @@ export default function Dashboard() {
         if (Array.isArray(parsed) && parsed.length > 0) {
           return [
             { id: 'slip-1', name: 'Slip 1', picks: parsed },
-            { id: 'props-slip', name: 'Props Slip (LiveScore Bet)', picks: [] }
+            { id: 'props-slip', name: 'Corners & cards slip', picks: [] }
           ];
         }
       }
@@ -150,7 +150,7 @@ export default function Dashboard() {
     
     return [
       { id: 'slip-1', name: 'Slip 1', picks: [] },
-      { id: 'props-slip', name: 'Props Slip (LiveScore Bet)', picks: [] }
+      { id: 'props-slip', name: 'Corners & cards slip', picks: [] }
     ];
   });
 
@@ -697,22 +697,11 @@ export default function Dashboard() {
           onOpenMenu={() => setIsMenuOpen(true)}
           onToggleMenu={() => setIsMenuOpen(true)}
           activePage={activePage}
-          onSelectPage={(page) => {
-            const targetPage = page === 'autonomous' ? 'patches' : page;
-            setActivePage(targetPage);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
-          onNavigate={(page) => {
-            const targetPage = page === 'autonomous' ? 'patches' : page;
-            setActivePage(targetPage);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onSelectPage={goToPage}
+          onNavigate={goToPage}
           matchCount={matches.length}
           tzLabel={tzLabel}
-          onOpenTimezone={() => {
-            setActivePage('timezone');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onOpenTimezone={() => goToPage('tuning')}
           accaCount={accaPicks.length}
           onRefresh={handleTriggerScrape}
           onTriggerScrape={handleTriggerScrape}
@@ -770,18 +759,8 @@ export default function Dashboard() {
           isOpen={isMenuOpen}
           onClose={() => setIsMenuOpen(false)}
           activePage={activePage}
-          onSelectPage={(page) => {
-            const targetPage = page === 'autonomous' ? 'patches' : page;
-            setActivePage(targetPage);
-            setIsMenuOpen(false);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
-          onNavigate={(page) => {
-            const targetPage = page === 'autonomous' ? 'patches' : page;
-            setActivePage(targetPage);
-            setIsMenuOpen(false);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
+          onSelectPage={goToPage}
+          onNavigate={goToPage}
           matchCount={matches.length}
           patchCount={state.patchTelemetry?.patchesApplied || patches.length}
           tzLabel={tzLabel}
@@ -820,7 +799,6 @@ export default function Dashboard() {
                 bankrollEuro={state.bankrollEuro || 1000}
                 leaguePerformance={state.trainingStats?.leaguePerformance || []}
                 tzSettings={tzSettings}
-                unanimousHitRate={state.unanimousHitRate || state.aiSwarm?.directives?.telemetry?.unanimousHitRate || 84.8}
                 onAddToSlip={handleToggleAccaPick}
                 accaMatchIds={new Set(accaPicks.map(p => p.id))}
                 onClearSlip={handleClearAcca}
@@ -828,11 +806,12 @@ export default function Dashboard() {
                 onOpenDeepResearch={handleOpenDeepResearch}
                 onOpenWatchLive={(m) => setActivePlayerMatch(m)}
                 onTriggerScrape={handleTriggerScrape}
+                onRefresh={() => fetchState(true)}
                 onTriggerRetrain={handleTriggerRetrain}
                 isScraping={isScraping}
                 isRetraining={isRetraining}
-                onSelectMarketMode={setActivePage}
-                onNavigate={setActivePage}
+                onSelectMarketMode={goToPage}
+                onNavigate={goToPage}
                 onLoadAccaPicks={handleLoadPicksToSlip}
                 onSetActiveSlipId={setActiveSlipId}
                 betSlips={betSlips}
@@ -856,7 +835,7 @@ export default function Dashboard() {
                 onOpenDeepResearch={handleOpenDeepResearch}
                 onOpenWatchLive={(m) => setActivePlayerMatch(m)}
                 scoreTrainingStats={state.scoreTrainingStats || state.trainingStats}
-                onSelectMarketMode={setActivePage}
+                onSelectMarketMode={goToPage}
               />
             )}
 
@@ -870,7 +849,7 @@ export default function Dashboard() {
                 onClearSlip={handleClearAcca}
                 onOpenDeepResearch={handleOpenDeepResearch}
                 onOpenWatchLive={(m) => setActivePlayerMatch(m)}
-                onSelectMarketMode={setActivePage}
+                onSelectMarketMode={goToPage}
               />
             )}
 
@@ -908,34 +887,6 @@ export default function Dashboard() {
               />
             )}
 
-            {activePage === 'swarm' && (
-              <AISwarmCenter
-                state={state}
-                tzSettings={tzSettings}
-                onRefreshState={() => fetchState(true)}
-                onAddToAcca={handleToggleAccaPick}
-                onOpenDeepResearch={handleOpenDeepResearch}
-              />
-            )}
-
-            {activePage === 'alldaywinner' && (
-              <AllDayWinnerPage
-                state={state}
-                tzSettings={tzSettings}
-                onOpenDeepResearch={handleOpenDeepResearch}
-                onLoadPicksToSlip={handleLoadPicksToSlip}
-                onNavigateToSlip={() => setActivePage('acca')}
-              />
-            )}
-
-            {(activePage === 'patches' || activePage === 'autonomous') && (
-              <AutonomousPatchCenter
-                state={state}
-                onRefreshState={() => fetchState(true)}
-                onTriggerDeepResearch={handleOpenDeepResearch}
-              />
-            )}
-
             {activePage === 'lineups' && (
               <LineupsPage
                 selectedMatch={activeLineupMatch}
@@ -969,51 +920,27 @@ export default function Dashboard() {
             )}
 
             {activePage === 'tuning' && (
-              <TuningPage
+              <SettingsPage
                 state={state}
-                tuningConfig={tuningConfig}
-                onRefreshState={() => fetchState(true)}
                 tzSettings={tzSettings}
                 onUpdateTzSettings={updateTzSettings}
-                onSaveTuning={async (config) => {
+                onSaveLeagues={async (disabledLeagues) => {
                   try {
                     const res = await fetch('/api/tuning-config', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(config)
+                      body: JSON.stringify({ ...(state.hyperparameters || {}), disabledLeagues })
                     });
                     const data = await res.json();
-                    // A frozen model refuses setting changes. Say why, rather than letting the
-                    // refetch below silently put the old values back.
-                    if (data && data.frozen) {
-                      window.alert(data.error || 'The model is frozen for a forward exam, so settings are read-only.');
-                    }
-                    if (data && data.state) {
-                      setState(data.state);
-                    }
                     await fetchState(true);
+                    return data && data.success ? { ok: true } : { ok: false, error: data?.error };
                   } catch (err) {
-                    console.error("Failed to save tuning config", err);
+                    return { ok: false, error: err.message };
                   }
                 }}
               />
             )}
 
-            {activePage === 'timezone' && (
-              <TimezonePage
-                tzSettings={tzSettings}
-                onUpdateSettings={updateTzSettings}
-                onSaveTimezone={updateTzSettings}
-                browserTz={browserTz}
-              />
-            )}
-
-            {activePage === 'logs' && (
-              <LogsPage
-                logs={logs}
-                onClearLogs={handleClearLogs}
-              />
-            )}
             {activePage === 'props' && (
               <PropsSpecialsPage
                 matches={matches}
@@ -1027,39 +954,14 @@ export default function Dashboard() {
                 activeSlipId={activeSlipId}
                 onSetActiveSlipId={setActiveSlipId}
                 onUpdateBetSlips={handleUpdateBetSlips}
-                onNavigate={(page) => setActivePage(page)}
+                onNavigate={goToPage}
               />
             )}
           </ErrorBoundary>
         </main>
 
-        {/* Global Footer */}
         <footer className="w-full bg-white border-t border-slate-200 py-3 px-4 text-center text-xs text-slate-400">
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-            <span>AI Soccer Predictor &bull; Dixon-Coles &amp; Elo Poisson Models</span>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setActivePage('tuning')}
-                className="hover:text-slate-600 transition-colors cursor-pointer font-medium"
-              >
-                Model Settings
-              </button>
-              <span>•</span>
-              <button
-                onClick={() => setActivePage('patches')}
-                className="hover:text-slate-600 transition-colors cursor-pointer font-medium"
-              >
-                Model Updates
-              </button>
-              <span>•</span>
-              <button
-                onClick={() => setActivePage('logs')}
-                className="hover:text-slate-600 transition-colors cursor-pointer font-medium"
-              >
-                Activity Logs
-              </button>
-            </div>
-          </div>
+          Predictions are estimates, not guarantees. Bet only what you can afford to lose.
         </footer>
 
         {/* Global Strategy Proof & Accuracy Breakdown Modal */}

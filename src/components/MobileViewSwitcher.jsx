@@ -19,7 +19,7 @@ export default function MobileViewSwitcher({ className = '', label = 'View' }) {
               ? 'bg-white text-slate-900 shadow-2xs font-extrabold'
               : 'text-slate-600 hover:text-slate-900'
           }`}
-          title="Card view: Rich multi-metric mobile card"
+          title="Show each match as a card"
         >
           <LayoutGrid className="w-3 h-3 text-slate-700" />
           <span>Cards</span>
@@ -32,10 +32,10 @@ export default function MobileViewSwitcher({ className = '', label = 'View' }) {
               ? 'bg-indigo-600 text-white shadow-2xs font-extrabold'
               : 'text-slate-600 hover:text-slate-900'
           }`}
-          title="1-Row Table: Ultra-compact dense table row on mobile/tablets with tap-to-expand details"
+          title="Show each match as one line; tap a line for more"
         >
           <List className="w-3 h-3" />
-          <span>1-Row Table</span>
+          <span>List</span>
         </button>
       </div>
     </div>

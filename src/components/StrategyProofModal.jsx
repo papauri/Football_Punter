@@ -23,7 +23,6 @@ import {
 export default function StrategyProofModal({ isOpen, onClose }) {
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [runningBacktest, setRunningBacktest] = useState(false);
   const [activeTab, setActiveTab] = useState('full'); // 'full' or 'holdout'
   const [backtestNotice, setBacktestNotice] = useState(null);
 
@@ -44,27 +43,6 @@ export default function StrategyProofModal({ isOpen, onClose }) {
     if (!isOpen) return;
     fetchMetrics();
   }, [isOpen]);
-
-  const handleRun20kBacktest = async () => {
-    setRunningBacktest(true);
-    setBacktestNotice(null);
-    try {
-      const res = await fetch('/api/run-20k-backtest', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
-      });
-      const data = await res.json();
-      if (data.success && data.results) {
-        fetchMetrics();
-        setBacktestNotice(`Successfully re-evaluated all ${data.results.totalRecords.toLocaleString()} historical matches in ${data.results.elapsedSeconds}s!`);
-      }
-    } catch (e) {
-      setBacktestNotice('Backtest run failed: ' + e.message);
-    } finally {
-      setRunningBacktest(false);
-    }
-  };
 
   if (!isOpen) return null;
 
@@ -119,31 +97,22 @@ export default function StrategyProofModal({ isOpen, onClose }) {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-lg font-bold text-slate-900">
-                  Empirical Accuracy & Strategy Proof
+                  Track record
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
                   <Database className="w-3 h-3" />
-                  {count(totalMatches)} Unseen Fixtures Measured
+                  {count(totalMatches)} past matches
                 </span>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 border border-indigo-200">
-                  Multi-Season Corpus (2021–2026)
+                  2021–2026
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                Why unselective 1X2 models naturally plateau around 56%–59%, and how our 4 selective strategies elevate empirical strike rates across <strong>20,000+ fixtures</strong> to <strong>76% – 83%</strong>.
+                How often the tips were right on past matches the model had not seen before.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={handleRun20kBacktest}
-              disabled={runningBacktest}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer shadow-xs"
-              title="Execute full backtest over all 23,453 historical fixtures"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${runningBacktest ? 'animate-spin' : ''}`} />
-              <span>{runningBacktest ? 'Benchmarking 23k...' : 'Re-run 23k Backtest'}</span>
-            </button>
             <button 
               onClick={onClose}
               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer"
@@ -173,7 +142,7 @@ export default function StrategyProofModal({ isOpen, onClose }) {
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
-              Out-of-Sample Corpus ({count(totalMatches)} Fixtures)
+              All ({count(totalMatches)})
             </button>
             <button
               onClick={() => setActiveTab('holdout')}
@@ -183,7 +152,7 @@ export default function StrategyProofModal({ isOpen, onClose }) {
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
-              Out-of-Sample Holdout ({count(holdout?.sampleSize)} Fixtures)
+              Most recent ({count(holdout?.sampleSize)})
             </button>
           </div>
           <span className="text-[11px] text-slate-400 hidden sm:inline">
@@ -254,14 +223,14 @@ export default function StrategyProofModal({ isOpen, onClose }) {
                   <span className="text-xs text-slate-400 font-medium">({count(rawHits)} / {count(totalMatches)})</span>
                 </div>
                 <p className="text-[11px] text-slate-500 mt-1 leading-snug">
-                  Unfiltered forced pick across all global leagues without conviction gating.
+                  Unfiltered forced pick across all global leagues without confidence gating.
                 </p>
               </div>
 
               <div className="p-3.5 rounded-xl border border-indigo-200 bg-indigo-50/70 shadow-2xs">
                 <div className="text-[11px] font-bold text-indigo-700 uppercase tracking-wider flex items-center gap-1">
                   <Target className="w-3.5 h-3.5 text-indigo-600" />
-                  <span>High Conviction (≥65%)</span>
+                  <span>High confidence (≥65%)</span>
                 </div>
                 <div className="mt-1 flex items-baseline gap-1.5">
                   <span className="text-2xl font-black text-indigo-800 font-mono">{show(highConvRate)}</span>
@@ -318,7 +287,7 @@ export default function StrategyProofModal({ isOpen, onClose }) {
               <div className="p-3.5 rounded-xl border border-indigo-200 bg-indigo-50/70 shadow-2xs">
                 <div className="text-[11px] font-bold text-indigo-700 uppercase tracking-wider flex items-center gap-1">
                   <Target className="w-3.5 h-3.5 text-indigo-600" />
-                  <span>Holdout High Conviction</span>
+                  <span>Holdout High confidence</span>
                 </div>
                 <div className="mt-1 flex items-baseline gap-1.5">
                   <span className="text-2xl font-black text-indigo-800 font-mono">{show(holdout?.highConvictionAccuracy)}</span>
@@ -406,14 +375,14 @@ export default function StrategyProofModal({ isOpen, onClose }) {
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-slate-900 flex items-center gap-1.5">
                     <Target className="w-4 h-4 text-indigo-600" />
-                    1. Selective Conviction Filtering
+                    1. Selective Confidence Filtering
                   </span>
                   <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-100 text-indigo-800">
                     {show(highConvRate)} – {show(eliteRate)}
                   </span>
                 </div>
                 <p className="text-slate-600 leading-relaxed">
-                  The model does not force a wager on every game. By filtering to fixtures with <strong>≥65% probability</strong> (High Conviction) or <strong>≥72% probability</strong> (Elite Consensus), we discard noisy 50/50 toss-ups and capture high-separation fixtures.
+                  The model does not force a wager on every game. By filtering to fixtures with <strong>≥65% probability</strong> (High confidence) or <strong>≥72% probability</strong> (Elite Consensus), we discard noisy 50/50 toss-ups and capture high-separation fixtures.
                 </p>
               </div>
 
@@ -465,22 +434,6 @@ export default function StrategyProofModal({ isOpen, onClose }) {
             </div>
           </div>
 
-          {/* Practical Recommendation */}
-          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 space-y-1.5">
-            <div className="font-bold text-emerald-900 flex items-center gap-1.5 text-sm">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>Recommended Betting Workflow for Maximum Strike Rate</span>
-            </div>
-            <p className="leading-relaxed">
-              To achieve an <strong>78%–84% hit rate</strong> in daily practice across major leagues:
-              <br />
-              1. Keep <strong>Strict League Pruning: ON</strong> to filter out volatile lower-tier matches.
-              <br />
-              2. Use the <strong>High Conviction (≥65%)</strong> or <strong>Elite Consensus (≥72%)</strong> filter pills.
-              <br />
-              3. Keep Market Mode on <strong>🛡️ Smart Adaptive</strong> (which automatically selects Draw-No-Bet or Double Chance when draw probability exceeds 24%).
-            </p>
-          </div>
 
         </div>
 

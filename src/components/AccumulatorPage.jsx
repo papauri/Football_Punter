@@ -1,3 +1,4 @@
+import { getMatchPhase, isInPlayPhase } from '../utils/matchStatus';
 import React, { useState, useMemo } from 'react';
 import MobileViewSwitcher from './MobileViewSwitcher';
 import { useMobileViewMode } from '../utils/useMobileViewMode';
@@ -135,13 +136,6 @@ export default function AccumulatorPage({
   const [slipOutcomeFilter, setSlipOutcomeFilter] = useState('ALL'); // ALL, HOME, AWAY
   const [slipLegCount, setSlipLegCount] = useState(999); // Show all picks by default
 
-  const strategyWinRate = presetStrategy === 'max_win_rate'
-    ? '86.3% (Double Chance & DNB)'
-    : presetStrategy === 'antifragile'
-    ? '73.2% (Prime Outright Edge)'
-    : presetStrategy === 'value'
-    ? '71.5% (+EV Outright Alpha)'
-    : `${aiSwarm?.directives?.telemetry?.unanimousHitRate || '76.2%'} (All AI Agree)`;
   const accaMatchIds = useMemo(() => new Set(accaPicks.map(p => String(p.id))), [accaPicks]);
 
   // Resolved active legs - strictly ordered chronologically by kickoff time
@@ -194,8 +188,9 @@ export default function AccumulatorPage({
     activeLegs.forEach(leg => {
       all++;
       const m = leg.match || {};
-      const isFinished = m.isCompleted || m.status === 'FT' || m.status === 'FINISHED' || leg.status?.isFinished;
-      const isLive = m.isLive || m.status === 'LIVE' || m.status === 'IN_PLAY';
+      const phase = getMatchPhase(m);
+      const isFinished = phase === 'finished' || Boolean(leg.status?.isFinished);
+      const isLive = !isFinished && isInPlayPhase(phase);
       if (isFinished) finished++;
       else if (isLive) live++;
       else upcoming++;
@@ -214,8 +209,9 @@ export default function AccumulatorPage({
         if (!home.includes(q) && !away.includes(q) && !league.includes(q)) return false;
       }
       const m = leg.match || {};
-      const isFinished = m.isCompleted || m.status === 'FT' || m.status === 'FINISHED' || leg.status?.isFinished;
-      const isLive = m.isLive || m.status === 'LIVE' || m.status === 'IN_PLAY';
+      const phase = getMatchPhase(m);
+      const isFinished = phase === 'finished' || Boolean(leg.status?.isFinished);
+      const isLive = !isFinished && isInPlayPhase(phase);
       if (slipStatusFilter === 'UPCOMING' && (isFinished || isLive)) return false;
       if (slipStatusFilter === 'LIVE' && !isLive) return false;
       if (slipStatusFilter === 'FINISHED' && !isFinished) return false;
@@ -442,8 +438,8 @@ export default function AccumulatorPage({
     } else if (unanimousCount === nLegs && dcCount === 0 && blacklistedCount === 0 && trapCount === 0 && nLegs >= 4) {
       grade = 'A+';
       gradeColor = 'text-emerald-700 bg-emerald-50 border-emerald-200';
-      verdictTitle = `👑 100% Unanimous Long Acca (${nLegs} Legs)`;
-      verdictText = 'Every selection is a straight outright win with 100% unanimous AI council agreement. Longest possible high-win-rate ticket.';
+      verdictTitle = `All strongest tips (${nLegs} picks)`;
+      verdictText = 'Every pick is a straight win and one of our strongest tips.';
     } else if (nLegs >= 6) {
       grade = 'C-';
       gradeColor = 'text-amber-700 bg-amber-50 border-amber-200';
@@ -921,13 +917,13 @@ export default function AccumulatorPage({
   // Preset Generation Handler (Max Win Rate DC/DNB or Hardened Outrights)
   const handleLoadAutonomousPreset = () => {
     let pool = currentStrategyPool;
-    let label = '🛡️ Max Win Rate Ticket (Double Chance: 86.3% Hit Rate)';
+    let label = 'Safest slip (team or draw)';
     if (presetStrategy === 'unanimous') {
-      label = '👑 100% AI Consensus Outright Ticket (71%+ Win Rate)';
+      label = 'Strongest tips slip';
     } else if (presetStrategy === 'antifragile') {
-      label = '⭐ Prime Stable Outright Ticket (73%+ Win Rate)';
+      label = 'Steady favourites slip';
     } else if (presetStrategy === 'value') {
-      label = '💎 +EV Outright Alpha Ticket';
+      label = 'Value slip';
     }
 
     if (!pool || pool.length === 0) {
@@ -1203,24 +1199,13 @@ export default function AccumulatorPage({
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                  <span>Bet Slips &amp; Accumulators</span>
-                  <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
-                    Ticket Portfolio
-                  </span>
-                </h2>
+                <h2 className="text-sm font-bold text-slate-900">Bet slip</h2>
                 <span className="text-[10px] sm:text-[10.5px] px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold">
-                  {displayLegs.length === 0 && activeLegs.length > 0 ? (
-                    '0 / ' + activeLegs.length + ' Legs Filtered'
-                  ) : isSlipFiltered ? (
-                    `${displayLegs.length}/${activeLegs.length} Legs Filtered`
-                  ) : (
-                    `${activeLegs.length} ${activeLegs.length === 1 ? 'Leg' : 'Legs'}`
-                  )}
+                  {isSlipFiltered ? `${displayLegs.length} of ${activeLegs.length} picks shown` : `${activeLegs.length} ${activeLegs.length === 1 ? 'pick' : 'picks'}`}
                 </span>
               </div>
               <p className="text-xs text-slate-500">
-                Review combined odds, win probability, and recommended stakes
+                Your picks, combined odds and what the slip pays
               </p>
             </div>
           </div>
@@ -1415,16 +1400,7 @@ export default function AccumulatorPage({
         <div className="p-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2.5">
           <div className="flex items-center gap-2 flex-wrap">
             <Sparkles className="w-4 h-4 text-amber-500" />
-            <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
-              <span>Autonomous Acca Generator</span>
-              <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
-                +EV AI Consensus
-              </span>
-            </h2>
-            <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold hidden sm:inline">
-              Historical Win Rate: {strategyWinRate}
-            </span>
-            <InfoTooltip title="Autonomous Acca Generator" content="Builds mathematically optimized accumulators enforcing positive mathematical edge (+EV) and unanimous AI model consensus." />
+            <h2 className="text-sm font-bold text-slate-900">Build a slip for me</h2>
           </div>
 
           <div className="flex items-center gap-2">
@@ -1432,9 +1408,9 @@ export default function AccumulatorPage({
               type="button"
               onClick={() => setCollapsedGenerator(!collapsedGenerator)}
               className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 cursor-pointer"
-              title={collapsedGenerator ? 'Expand Generator' : 'Collapse Generator'}
+              title={collapsedGenerator ? 'Show' : 'Hide'}
             >
-              <span>{collapsedGenerator ? 'Expand' : 'Collapse'}</span>
+              <span>{collapsedGenerator ? 'Show' : 'Hide'}</span>
               {collapsedGenerator ? <ChevronDown className="w-3.5 h-3.5 text-slate-500" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-500" />}
             </button>
           </div>
@@ -1449,15 +1425,15 @@ export default function AccumulatorPage({
                   value={presetStrategy}
                   onChange={setPresetStrategy}
                   options={[
-                    { value: 'max_win_rate', label: `🛡️ Max Win Rate (86.3%) (${allMaxWinRatePool.length})` },
-                    { value: 'unanimous', label: `👑 All AI Agree Outright (${allUnanimousPool.length})` },
-                    { value: 'antifragile', label: `⭐ Prime Stable (${allEliteStraightPool.length})` },
-                    { value: 'value', label: `💎 +EV Value (${allValuePool.length})` }
+                    { value: 'max_win_rate', label: `Safest: team or draw (${allMaxWinRatePool.length})` },
+                    { value: 'unanimous', label: `Strongest tips (${allUnanimousPool.length})` },
+                    { value: 'antifragile', label: `Steady favourites (${allEliteStraightPool.length})` },
+                    { value: 'value', label: `Best value (${allValuePool.length})` }
                   ]}
                 />
 
                 <UniformDropdown
-                  label={currentStrategyPool.length < 8 ? `Acca Size (${currentStrategyPool.length} avail)` : 'Acca Size'}
+                  label={currentStrategyPool.length < 8 ? `Picks (${currentStrategyPool.length} available)` : 'Picks'}
                   value={String(presetLegCount)}
                   onChange={(val) => setPresetLegCount(val === 'ALL' ? 'ALL' : Number(val))}
                   options={presetLegCountOptions}
@@ -1471,7 +1447,7 @@ export default function AccumulatorPage({
                 className="h-8 px-3.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <Zap className="w-3.5 h-3.5" />
-                <span>Build Ticket</span>
+                <span>Build slip</span>
               </button>
             </div>
           </div>
@@ -1515,10 +1491,7 @@ export default function AccumulatorPage({
         <div className="p-3 border-b border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
-              <span>Active Selections</span>
-              <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
-                Chronological Slip
-              </span>
+              <span>Your picks</span>
             </h2>
             <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold">
               {displayLegs.length === 0 ? '0 ready' : isSlipFiltered ? `${displayLegs.length}/${activeLegs.length} ready` : `${activeLegs.length} ready`}
@@ -1532,7 +1505,7 @@ export default function AccumulatorPage({
               className="h-8 px-3 text-xs text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg font-semibold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
             >
               <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500" />
-              <span className="hidden sm:inline">{showStakingSettings ? 'Hide Staking' : 'Staking Settings'}</span>
+              <span className="hidden sm:inline">{showStakingSettings ? 'Hide stakes' : 'Stakes'}</span>
             </button>
 
             <button
@@ -1645,18 +1618,10 @@ export default function AccumulatorPage({
             {activeLegs.length === 0 ? (
               <div className="py-12 px-4 text-center">
                 <ListChecks className="w-10 h-10 mx-auto text-slate-300 mb-2" />
-                <h4 className="text-sm font-bold text-slate-700">Your Bet Slip is Empty</h4>
+                <h4 className="text-sm font-bold text-slate-700">Your slip is empty</h4>
                 <p className="text-xs text-slate-500 max-w-md mx-auto mt-1 mb-4">
-                  Select your preferred strategy and click <strong>"Build Ticket"</strong> above, or generate an instant high-conviction slip below.
+                  Tap <strong>Add</strong> on any match, or use <strong>Build slip</strong> above.
                 </p>
-                <button
-                  type="button"
-                  onClick={handleLoadAutonomousPreset}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer"
-                >
-                  <Zap className="w-3.5 h-3.5" />
-                  <span>Generate Autonomous Slip</span>
-                </button>
               </div>
             ) : displayLegs.length === 0 ? (
               <div className="py-12 px-4 text-center">
@@ -1964,9 +1929,9 @@ export default function AccumulatorPage({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              <span>Recommended High-Conviction Candidates</span>
+              <span>Suggested picks</span>
             </div>
-            <span className="text-[10px] text-slate-400">Low Chaos • Traps Filtered</span>
+            
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
@@ -2037,22 +2002,22 @@ export default function AccumulatorPage({
           className="text-xs text-slate-500 hover:text-slate-700 font-medium inline-flex items-center gap-1 cursor-pointer"
         >
           <Info className="w-3.5 h-3.5 text-blue-600" />
-          <span>Why 3-leg accumulators mathematically outperform longer parlays</span>
+          <span>Why shorter slips win more often</span>
           {showVarianceExplainer ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
         </button>
 
         {showVarianceExplainer && (
           <div className="mt-2 text-left bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600 leading-relaxed max-w-2xl mx-auto space-y-1.5">
             <p>
-              In multi-match accumulators, win probabilities compound multiplicatively ($P_1 \times P_2 \times P_3$). Even when combining 75% favorites:
+              Every pick has to win, so the chances multiply. Even with picks that each win 75% of the time:
             </p>
             <ul className="list-disc pl-5 space-y-0.5 text-slate-700">
-              <li><strong>3-Leg Slip:</strong> 75% × 75% × 75% = <strong>~42% win rate</strong> (Safe Kelly growth zone).</li>
-              <li><strong>4-Leg Slip:</strong> 75%⁴ = <strong>~31% win rate</strong>.</li>
-              <li><strong>6-Leg Slip:</strong> 75%⁶ = <strong>~17% win rate</strong> (Severe decay).</li>
+              <li><strong>3 picks:</strong> the slip wins about <strong>42%</strong> of the time.</li>
+              <li><strong>4 picks:</strong> about <strong>32%</strong>.</li>
+              <li><strong>6 picks:</strong> about <strong>18%</strong>.</li>
             </ul>
             <p>
-              Our Autonomous Optimizer automatically limits slips to the positive-equity sweet spot and enforces strictly straight outright selections with 100% unanimous agreement across all specialized AI council models.
+              Shorter slips pay less, but win far more often.
             </p>
           </div>
         )}

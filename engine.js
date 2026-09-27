@@ -153,6 +153,39 @@ function negativeBinomialPmf(k, mu, r = 4.5) {
   return comb * Math.pow(p, r) * Math.pow(q, k);
 }
 
+// ESPN's firewall answers some client identities with 403 "Access Denied" (seen from cloud servers,
+// where a desktop-browser user agent is treated as a bot while a plain HTTP client is let through).
+// Every ESPN call used to send one fixed identity and treat a 403 as "no events", so live scores
+// silently stopped updating and kicked-off matches stayed "Scheduled". This tries the identity that
+// last worked first, falls back to the others on 403, and logs a block instead of hiding it.
+const ESPN_IDENTITIES = [
+  'curl/8.5.0',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+  null // runtime default
+];
+let espnIdentityIndex = 0;
+let espnBlockedLoggedAt = 0;
+export async function espnFetch(url, options = {}) {
+  let last = null;
+  for (let attempt = 0; attempt < ESPN_IDENTITIES.length; attempt++) {
+    const idx = (espnIdentityIndex + attempt) % ESPN_IDENTITIES.length;
+    const ua = ESPN_IDENTITIES[idx];
+    const headers = { Accept: 'application/json', ...(options.headers || {}) };
+    delete headers['User-Agent'];
+    if (ua) headers['User-Agent'] = ua;
+    last = await fetch(url, { ...options, headers }).catch(() => null);
+    if (last && last.status !== 403) {
+      espnIdentityIndex = idx;
+      return last;
+    }
+  }
+  if (Date.now() - espnBlockedLoggedAt > 10 * 60 * 1000) {
+    espnBlockedLoggedAt = Date.now();
+    console.warn(`[ESPN] Requests are being refused (${last ? last.status : 'network error'}); live scores cannot update until this clears.`);
+  }
+  return last;
+}
+
 // True only for an explicit full-time status from a feed (not a live minute like "51'")
 function isFinalMatchStatus(status) {
   const s = String(status || '').trim();
@@ -3838,7 +3871,7 @@ class SoccerEngine {
       }
 
       // 1. Fetch league teams directory dynamically to get real-time team ID
-      const teamsRes = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${espnLeague}/teams`);
+      const teamsRes = await espnFetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${espnLeague}/teams`);
       if (teamsRes.ok) {
         const teamsData = await teamsRes.json();
         const teams = teamsData?.sports?.[0]?.leagues?.[0]?.teams || [];
@@ -3851,7 +3884,7 @@ class SoccerEngine {
 
         if (matched?.team?.id) {
           // 2. Fetch live team roster directly from ESPN to resolve active head coach dynamically
-          const rosterRes = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${espnLeague}/teams/${matched.team.id}/roster`);
+          const rosterRes = await espnFetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${espnLeague}/teams/${matched.team.id}/roster`);
           if (rosterRes.ok) {
             const rosterData = await rosterRes.json();
             const coachObj = rosterData?.coach?.[0] || rosterData?.coaches?.[0];
@@ -3911,7 +3944,7 @@ class SoccerEngine {
     if (eventId && !String(eventId).startsWith('FX_') && !String(eventId).startsWith('adhoc_')) {
       try {
         const summaryUrl = `https://site.api.espn.com/apis/site/v2/sports/soccer/${leagueCode}/summary?event=${eventId}`;
-        const res = await fetch(summaryUrl);
+        const res = await espnFetch(summaryUrl);
         if (res.ok) {
           rawData = await res.json();
         }
@@ -5824,7 +5857,7 @@ class SoccerEngine {
         const batch = ESPN_LEAGUES.slice(i, i + 3);
         const promises = batch.map(async (league) => {
           try {
-            const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.code}/scoreboard`, {
+            const res = await espnFetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.code}/scoreboard`, {
               headers: { 'User-Agent': UA }
             }).catch(() => null);
             const data = (res && res.ok) ? await res.json().catch(() => ({ events: [] })) : { events: [] };
@@ -5890,7 +5923,7 @@ class SoccerEngine {
             if (upcomingCalDates.length > 0) {
               const datePromises = upcomingCalDates.map(async (dateStr) => {
                 try {
-                  const dRes = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.code}/scoreboard?dates=${dateStr}`, {
+                  const dRes = await espnFetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.code}/scoreboard?dates=${dateStr}`, {
                     headers: { 'User-Agent': UA }
                   }).catch(() => null);
                   if (dRes && dRes.ok) {
@@ -6223,6 +6256,9 @@ class SoccerEngine {
             this.queue.push(item.id);
           }
         });
+        // Fixtures restored from the disk cache for a league that is switched off are never
+        // refreshed (the scrape skips those leagues), so they would sit at "Scheduled" forever.
+        this.matches = this.matches.filter(m => !isLeagueBlacklisted(m.league) && !this.isLeagueDisabled(m.league));
         this.log('ESPNScraper', `Successfully synced ${newUpcoming.length} live/upcoming fixtures with calculated probabilities and news context.`);
       this.autoFetchUpcomingLineups();
       }
@@ -9289,6 +9325,10 @@ Provide a crisp 3-bullet assessment:
   // BUILD_PLAN §5.1: compare predicted vs empirical home win rate per league over the trailing
   // 30 days and nudge the league's home Elo boost (gamma_league) when drift exceeds 3.5pp.
   calibrateLeagueHomeAdvantage({ windowDays = 30, driftThreshold = 3.5, minSamples = 20, eloPerPoint = 6, maxAdjust = 60 } = {}) {
+    // Changes predictions, so it is suspended while the model is frozen. It also reads the latest
+    // 30 days of real results, which leaked future information into any backtest that ran long
+    // enough for this 15-minute cycle to fire.
+    if (this.isModelFrozen()) return [];
     const cutoff = Date.now() - windowDays * 24 * 60 * 60 * 1000;
     const pool = [...(this.trainingSet || []), ...(this.todayCompletedMatches || [])];
     const seen = new Set();
@@ -9521,7 +9561,7 @@ Provide a crisp 3-bullet assessment:
       const fetchResults = await Promise.allSettled(ESPN_LEAGUES.map(async (league) => {
         try {
           const controller = typeof AbortSignal?.timeout === 'function' ? AbortSignal.timeout(4500) : undefined;
-          const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.code}/scoreboard?dates=${formattedYMD}`, {
+          const res = await espnFetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${league.code}/scoreboard?dates=${formattedYMD}`, {
             signal: controller
           });
           if (!res.ok) return { league: league.name, events: [] };
@@ -10187,7 +10227,7 @@ Provide a crisp 3-bullet assessment:
     try {
       this.log('LineupEngine', `Fetching Starting XI from ESPN for match ${eventId} (${leagueCode})...`);
       const summaryUrl = `https://site.api.espn.com/apis/site/v2/sports/soccer/${leagueCode}/summary?event=${eventId}`;
-      const res = await fetch(summaryUrl);
+      const res = await espnFetch(summaryUrl);
 
       let homeLineup = null;
       let awayLineup = null;
@@ -10300,12 +10340,12 @@ Provide a crisp 3-bullet assessment:
         if (homeTeamId || awayTeamId) {
           const fetchPromises = [];
           if (homeTeamId) {
-            fetchPromises.push(fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${leagueCode}/teams/${homeTeamId}/roster`));
+            fetchPromises.push(espnFetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${leagueCode}/teams/${homeTeamId}/roster`));
           } else {
             fetchPromises.push(Promise.resolve(null));
           }
           if (awayTeamId) {
-            fetchPromises.push(fetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${leagueCode}/teams/${awayTeamId}/roster`));
+            fetchPromises.push(espnFetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${leagueCode}/teams/${awayTeamId}/roster`));
           } else {
             fetchPromises.push(Promise.resolve(null));
           }
@@ -11689,6 +11729,7 @@ Output format: {"home": 45.5, "draw": 25.5, "away": 29.0, "reason": "Home team r
       aiConfig,
       bankrollEuro: this.bankrollEuro || 1000,
       kellyFraction: this.kellyFraction || 0.25,
+      modelFrozen: this.isModelFrozen(),
       matches: [...this.matches].sort((a,b) => (b.hasPrediction ? 1 : 0) - (a.hasPrediction ? 1 : 0)).map(m => {
         const sw = this.swarmOrchestrator ? this.swarmOrchestrator.getSwarmDataForMatch(m.id || m.espnEventId || `${m.home}-${m.away}`) : null;
         const synth = sw?.synthesis || m.aiSwarm || null;

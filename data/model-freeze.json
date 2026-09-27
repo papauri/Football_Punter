@@ -1,21 +1,21 @@
 {
-  "frozenAt": "2026-09-27T15:23:35.347Z",
-  "evaluateFixturesFrom": "2026-09-27T15:23:35.348Z",
+  "frozenAt": "2026-09-27T20:30:02.201Z",
+  "evaluateFixturesFrom": "2026-09-27T20:30:02.201Z",
   "supersedes": {
-    "frozenAt": "2026-09-27T15:11:24.392Z",
-    "generation": 4
+    "frozenAt": "2026-09-27T15:23:35.347Z",
+    "generation": 5
   },
-  "generation": 5,
-  "note": "Early picks now stamped with the model generation, for the pre-registered AWAY / HOME_DNB forward test. Model logic unchanged.",
+  "generation": 6,
+  "note": "Live scores fixed (ESPN requests), per-league home-advantage drift suspended while frozen, plain-English labels. Prediction logic unchanged.",
   "trainedThrough": {
     "lastResultInCorpus": "2026-09-25",
     "corpusFixtures": 23455
   },
   "hashes": {
-    "engine.js": "94ed16cee3ccd2dd",
+    "engine.js": "74c8601375b15270",
     "src/model/strengthFit.js": "f596114f8e6238f6",
     "src/model/calibration.js": "a68f18d40e1fa6c9",
-    "src/utils/leagueUtils.js": "677030294cf9e174",
+    "src/utils/leagueUtils.js": "984f1f1e2d053558",
     "hyperparameters.json": "980309e7033f9dc1",
     "data/calibration.json": "678b48636b9d3fa9"
   },
