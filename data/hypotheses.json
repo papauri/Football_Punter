@@ -1,0 +1,97 @@
+{
+  "registeredAt": "2026-09-27T15:23:52.443Z",
+  "modelGeneration": 5,
+  "purpose": "Forward test of two markets that returned a profit in the historical walk-forward. Found after looking at six markets, so each must survive fixtures played after this date before it is trusted.",
+  "scope": {
+    "rule": "the frozen model's published smart pick (smartPick in data/early_picks.json) equals the hypothesis market",
+    "price": "the pre-kickoff quote frozen once in data/early_picks.json, 6 to 96 hours before kickoff; draw-no-bet priced from that 1X2 quote with its margin kept",
+    "leagues": [
+      "Premier League",
+      "Championship",
+      "Bundesliga",
+      "2. Bundesliga",
+      "LaLiga",
+      "LaLiga 2",
+      "Serie A",
+      "Ligue 1",
+      "Eredivisie",
+      "Primeira Liga",
+      "Belgian Pro League",
+      "Scottish Premiership",
+      "Turkish Super Lig",
+      "Greek Super League",
+      "Austrian Bundesliga",
+      "Danish Superliga",
+      "Norwegian Eliteserien",
+      "Swedish Allsvenskan",
+      "Irish Premier Division",
+      "Liga MX",
+      "MLS",
+      "Brasileirão",
+      "Japanese J1 League"
+    ],
+    "otherLeagues": "reported separately, not part of the test",
+    "closeWindowMinutes": 180
+  },
+  "decision": {
+    "abandonAfterBets": 50,
+    "judgeAtBets": 300,
+    "rule": "From 50 bets, abandon a hypothesis at any look where the whole 95% bootstrap interval of ROI is below zero. Judge once, at 300 bets: supported only if the whole interval is above zero. Interim looks never confirm. The rule, scope and numbers here are not edited once fixtures have been scored; a changed rule is a new registration starting from zero."
+  },
+  "hypotheses": [
+    {
+      "id": "AWAY",
+      "historical": {
+        "window": "walk-forward 2025-04-01..2026-10-01",
+        "bets": 135,
+        "roiAvg": 7.83,
+        "ciAvg": [
+          -1.64,
+          17.73
+        ],
+        "roiBest": 10.74,
+        "ciBest": [
+          1.49,
+          21.13
+        ]
+      },
+      "replication": {
+        "window": "walk-forward 2022-07-01..2025-04-01, not used to find the hypothesis",
+        "bets": 361,
+        "roiAvg": -3.47,
+        "ciAvg": [
+          -9.67,
+          2.8
+        ],
+        "note": "Did not replicate. Expect this one to fail forward too."
+      }
+    },
+    {
+      "id": "HOME_DNB",
+      "historical": {
+        "window": "walk-forward 2025-04-01..2026-10-01",
+        "bets": 66,
+        "roiAvg": 9.21,
+        "ciAvg": [
+          -2.35,
+          20.52
+        ],
+        "roiBest": 8.24,
+        "ciBest": [
+          -2.71,
+          19.64
+        ]
+      },
+      "replication": {
+        "window": "walk-forward 2022-07-01..2025-04-01, not used to find the hypothesis",
+        "bets": 111,
+        "roiAvg": 12.17,
+        "ciAvg": [
+          4.92,
+          18.85
+        ],
+        "note": "Replicated. The model was tuned on this period, so it flatters the model, though not the choice of market."
+      }
+    }
+  ]
+}

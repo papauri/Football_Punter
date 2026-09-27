@@ -1,18 +1,18 @@
 {
-  "frozenAt": "2026-09-27T15:11:24.392Z",
-  "evaluateFixturesFrom": "2026-09-27T15:11:24.393Z",
+  "frozenAt": "2026-09-27T15:23:35.347Z",
+  "evaluateFixturesFrom": "2026-09-27T15:23:35.348Z",
   "supersedes": {
-    "frozenAt": "2026-09-27T13:02:33.721Z",
-    "generation": 3
+    "frozenAt": "2026-09-27T15:11:24.392Z",
+    "generation": 4
   },
-  "generation": 4,
-  "note": "Review fixes: converging strength fit, exact league tiers, same-provider CLV, corrected bootstrap. Freeze now suspends self-tuning.",
+  "generation": 5,
+  "note": "Early picks now stamped with the model generation, for the pre-registered AWAY / HOME_DNB forward test. Model logic unchanged.",
   "trainedThrough": {
     "lastResultInCorpus": "2026-09-25",
     "corpusFixtures": 23455
   },
   "hashes": {
-    "engine.js": "e99050fc9fbaa181",
+    "engine.js": "94ed16cee3ccd2dd",
     "src/model/strengthFit.js": "f596114f8e6238f6",
     "src/model/calibration.js": "a68f18d40e1fa6c9",
     "src/utils/leagueUtils.js": "677030294cf9e174",

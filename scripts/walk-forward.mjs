@@ -1,5 +1,5 @@
 // Rolling walk-forward evaluation: the closest thing to running the live app over history.
-// Usage: npm run walkforward [-- --from 2025-04-01 --to 2026-10-01 --stepdays 30 --calibrate]
+// Usage: npm run walkforward [-- --from 2025-04-01 --to 2026-10-01 --stepdays 30 --calibrate --bets-out file.json]
 //
 // WHY THIS EXISTS, AND WHAT WAS WRONG WITH THE OLDER SCRIPTS
 //
@@ -62,6 +62,10 @@ const STEP_DAYS = parseInt(arg('stepdays', '30'), 10);
 // holdout (Brier -0.0002), so uncalibrated walk-forward figures are representative of the live app.
 // --calibrate turns the per-step map back on, for reproducing that comparison.
 const CALIBRATE = process.argv.includes('--calibrate');
+// --bets-out <file> writes every simulated bet, one record each, for checking a narrower rule (for
+// example one market) against a window it was not chosen on. See scripts/hypothesis-test.mjs.
+const BETS_OUT = arg('bets-out', null);
+const betLog = [];
 
 const DAY = 86400000;
 const corpus = JSON.parse(fs.readFileSync('training_data.json', 'utf8'))
@@ -244,6 +248,13 @@ for (let boundary = fromTs; boundary < toTs; boundary += STEP_DAYS * DAY) {
         bucket.retAvg.push(rAvg); bucket.retMax.push(rMax);
         if (rAvg > 1) bucket.won++; else if (rAvg === 1) bucket.push++;
         acc.perPick.set(pick, bucket);
+        if (BETS_OUT) {
+          betLog.push({
+            id: m.id, date: day(m), league: m.league, home: m.home, away: m.away, pick, actual,
+            priceAvg: stakedPrice(pick, openAvg), priceBest: stakedPrice(pick, openBest),
+            priceClose: stakedPrice(pick, closeAvg), rAvg, rMax
+          });
+        }
 
         // Closing-line value on the price we would have taken. A diagnostic only.
         const takenOpen = stakedPrice(pick, openAvg);
@@ -375,4 +386,8 @@ fs.writeFileSync(path.join(ROOT, 'data', 'walk-forward-results.json'), JSON.stri
   caveat: 'Development measurement. This historical window has been inspected and changed against repeatedly; it is not an estimate of future performance.'
 }, null, 2));
 console.log('\nWritten to data/walk-forward-results.json');
+if (BETS_OUT) {
+  fs.writeFileSync(path.resolve(BETS_OUT), JSON.stringify({ window: { from: FROM, to: TO }, bets: betLog }));
+  console.log(`Per-bet records (${betLog.length}) written to ${BETS_OUT}`);
+}
 process.exit(0);

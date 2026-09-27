@@ -3217,6 +3217,7 @@ class SoccerEngine {
         quotedPrice: odds,
         priceTaken: odds,
         executable: 'unknown',
+        modelGeneration: this.isModelFrozen() ? (this._frozenGeneration ?? null) : null,
         impliedAtTake: implied ? { home: +implied.HOME.toFixed(1), draw: +implied.DRAW.toFixed(1), away: +implied.AWAY.toFixed(1) } : null
       });
       captured++;
@@ -4949,9 +4950,14 @@ class SoccerEngine {
     if (this._frozenCheckedAt && now - this._frozenCheckedAt < 60000) return this._frozen;
     this._frozenCheckedAt = now;
     try {
-      this._frozen = fs.existsSync(path.join(ENGINE_DIR, 'data', 'model-freeze.json'));
+      const freezeFile = path.join(ENGINE_DIR, 'data', 'model-freeze.json');
+      this._frozen = fs.existsSync(freezeFile);
+      // The generation is stamped on every early pick, so a forward test can tell which frozen model
+      // made each pick and ignore any made by a different one.
+      this._frozenGeneration = this._frozen ? (JSON.parse(fs.readFileSync(freezeFile, 'utf8')).generation ?? null) : null;
     } catch (_) {
       this._frozen = false;
+      this._frozenGeneration = null;
     }
     return this._frozen;
   }

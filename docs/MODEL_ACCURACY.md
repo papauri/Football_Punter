@@ -568,3 +568,44 @@ The ledger (`pre_kickoff_ledger.json`) now records, per fixture:
 `getPreKickoffLedgerSummary().versusBookmaker` reports our 1X2 hit rate, the bookmaker's on the same
 entries, the gap, and the split on disagreements. Below 200 comparable entries it returns a caveat
 saying so — at a 78% baseline it takes several hundred picks before a few points means anything.
+
+## Forward test: AWAY and HOME_DNB picks
+
+The walk-forward (April 2025 to October 2026) found two markets in profit: AWAY picks and home
+draw-no-bet picks. They were picked out after looking at six markets, so at least one was likely to
+look good by luck. Both are now registered in `data/hypotheses.json` and judged only on fixtures
+played after registration. Run `npm run hypotheses`.
+
+**First, the same rules on the earlier window.** The walk-forward was re-run over July 2022 to March
+2025, a period not used to find these two markets, at the average opening price:
+
+| Market | Window | Bets | Hit | Avg price | ROI | 95% CI |
+|---|---|---|---|---|---|---|
+| AWAY | 2025-04 to 2026-10 (where it was found) | 135 | 78.5% | 1.38 | +7.83% | [−1.64, +17.73] |
+| AWAY | 2022-07 to 2025-04 (not used to find it) | 361 | 71.2% | 1.37 | −3.47% | [−9.67, +2.80] |
+| HOME_DNB | 2025-04 to 2026-10 (where it was found) | 66 | 82.7% | 1.35 | +9.21% | [−2.35, +20.52] |
+| HOME_DNB | 2022-07 to 2025-04 (not used to find it) | 111 | 87.5% | 1.34 | +12.17% | [+4.92, +18.85] |
+
+AWAY did not replicate: most likely a lucky 18 months. HOME_DNB did, with an interval clear of zero.
+Two cautions. The model's settings were tuned on the earlier period, which flatters the model (though
+not the choice of market). And at the average price the recent HOME_DNB interval already included
+zero; the "significant" AWAY figure quoted earlier was at the best price across books, which the live
+app does not have (see Multi-book odds: there is no `ODDS_API_KEY`, so live prices are one ESPN quote).
+
+**What is fixed at registration** (and not edited once fixtures are scored; a changed rule is a new
+registration starting from zero):
+
+- *Rule:* the frozen model's published smart pick is AWAY, or HOME_DNB. Nothing else qualifies.
+- *Price:* the quote frozen once in `data/early_picks.json`, 6 to 96 hours before kickoff.
+- *Model:* generation 5. Every early pick is now stamped with the generation that made it, and picks
+  from any other version are left out.
+- *Scope:* the 23 leagues the historical estimates came from. Other leagues are reported apart.
+- *Decision:* from 50 bets, abandon at any look where the whole 95% interval is below zero. Judge
+  once, at 300 bets: supported only if the whole interval is above zero. Interim looks never confirm.
+
+**How long it takes.** In these leagues the model published about 7.5 AWAY and 3.7 HOME_DNB picks a
+month. At that pace the abandon check becomes possible after roughly 7 months (AWAY) and 14 months
+(HOME_DNB), and the 300-bet judgement after roughly 3½ and 7 years. These are short-priced bets
+(about 1.35), so each return varies less than a longshot's, but a real edge of +5% still needs about
+500 to 1,200 bets to show reliably. The forward test will mostly work as a kill switch; confirming
+an edge this size takes years at this pick rate.

@@ -163,8 +163,8 @@ if (withClv.length) {
   console.log('  a reason to keep looking, not a profit forecast: it says nothing about the margin paid,');
   console.log('  and it can be positive while returns are negative. There is no count at which it');
   console.log('  becomes proof.');
-  console.log('  For reference, over the historical walk-forward mean CLV was -0.07% and the model beat');
-  console.log('  the close on 48.7% of picks: no timing edge at all.');
+  console.log('  For reference, over the historical walk-forward mean CLV was -0.12% and the model beat');
+  console.log('  the close on 48.8% of picks: no timing edge at all.');
 }
 
 console.log('\nAll of the above covers post-freeze fixtures only. Historical figures elsewhere in this');

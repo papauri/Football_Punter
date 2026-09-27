@@ -21,7 +21,8 @@
     "signal:probe": "node scripts/signal-probe.mjs",
     "freeze": "node scripts/freeze-model.mjs",
     "forward": "node scripts/forward-eval.mjs",
-    "products": "node scripts/two-products.mjs"
+    "products": "node scripts/two-products.mjs",
+    "hypotheses": "node scripts/hypothesis-test.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",
