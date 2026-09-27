@@ -108,7 +108,14 @@ export default function AccumulatorPage({
   // Shared with every list page: Cards or 1-Row Table on phones, remembered across pages.
   const [mobileViewMode] = useMobileViewMode();
   const [copiedSlip, setCopiedSlip] = useState(false);
-  const [bankroll, setBankroll] = useState(1000);
+  // Remembered on this device, so the bank typed once is used every visit.
+  const [bankroll, setBankrollState] = useState(() => {
+    try { const v = Number(localStorage.getItem('soccer_bankroll')); return v > 0 ? v : 1000; } catch { return 1000; }
+  });
+  const setBankroll = (v) => {
+    setBankrollState(v);
+    try { if (v > 0) localStorage.setItem('soccer_bankroll', String(v)); } catch {}
+  };
   const [kellyMultiplier, setKellyMultiplier] = useState(0.25); // Quarter Kelly
   const [customWager, setCustomWager] = useState("");
   const [analysisReport, setAnalysisReport] = useState(null);
@@ -128,7 +135,7 @@ export default function AccumulatorPage({
 
   // Preset Builder Controls (Max Win Rate DC/DNB or Outrights)
   const [presetStrategy, setPresetStrategy] = useState('max_win_rate'); // 'max_win_rate' | 'unanimous' | 'antifragile' | 'value'
-  const [presetLegCount, setPresetLegCount] = useState('ALL');
+  const [presetLegCount, setPresetLegCount] = useState(3); // short slips win far more often
 
   // Active Bet Slip Filters
   const [slipSearch, setSlipSearch] = useState('');
@@ -882,35 +889,11 @@ export default function AccumulatorPage({
 
   const presetLegCountOptions = useMemo(() => {
     const total = currentStrategyPool.length;
-    if (total === 0) {
-      return [{ value: '0', label: '0 Qualifying Legs' }];
-    }
-    if (total < 8) {
-      const opts = [];
-      if (total >= 4) {
-        opts.push({ value: '2', label: '2 Legs' });
-        opts.push({ value: '4', label: '4 Legs' });
-      } else if (total >= 2) {
-        opts.push({ value: '1', label: '1 Leg' });
-        opts.push({ value: '2', label: '2 Legs' });
-      } else {
-        opts.push({ value: '1', label: '1 Leg' });
-      }
-      if (!opts.some(o => o.value === String(total))) {
-        opts.push({ value: String(total), label: `${total} Legs (All Available)` });
-      } else {
-        const item = opts.find(o => o.value === String(total));
-        if (item) item.label = `${total} Legs (All Available)`;
-      }
-      return opts;
-    }
+    if (total === 0) return [{ value: '0', label: 'No picks available' }];
+    const sizes = [1, 2, 3, 4, 5, 8].filter(n => n <= total);
     return [
-      { value: '2', label: '2 Legs' },
-      { value: '3', label: '3 Legs (Optimal)' },
-      { value: '4', label: '4 Legs' },
-      { value: '5', label: '5 Legs' },
-      { value: '8', label: '8 Legs' },
-      { value: 'ALL', label: `All Qualifying Legs (${total})` }
+      ...sizes.map(n => ({ value: String(n), label: n === 3 ? '3 picks (recommended)' : `${n} ${n === 1 ? 'pick' : 'picks'}` })),
+      { value: 'ALL', label: `All ${total} picks` }
     ];
   }, [currentStrategyPool]);
 
@@ -954,7 +937,7 @@ export default function AccumulatorPage({
     });
 
     if (picksToLoad.length > 0) {
-      loadPicksIntoSlip(picksToLoad, `${label} (${picksToLoad.length} Legs)`);
+      loadPicksIntoSlip(picksToLoad, `${label} (${picksToLoad.length} ${picksToLoad.length === 1 ? 'pick' : 'picks'})`);
     } else {
       setLoadedNotice('No matches currently qualify for this strategy filter.');
       setTimeout(() => setLoadedNotice(null), 3500);
@@ -1353,29 +1336,41 @@ export default function AccumulatorPage({
                 </div>
 
                 <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-                  <div className="text-[10px] text-slate-500 font-bold uppercase">Win Probability</div>
+                  <div className="text-[10px] text-slate-500 font-bold uppercase">Chance all win</div>
                   <div className="text-base font-black font-mono text-emerald-700 mt-0.5">{safeToFixed(combinedProb, 1)}%</div>
                 </div>
 
                 <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-                  <div className="text-[10px] text-slate-500 font-bold uppercase">Value (EV)</div>
+                  <div className="text-[10px] text-slate-500 font-bold uppercase">Value</div>
                   <div className={`text-base font-black font-mono mt-0.5 ${expectedValue > 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
                     {expectedValue > 0 ? '+' : ''}{safeToFixed(expectedValue * 100, 1)}%
                   </div>
                 </div>
 
                 <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-                  <div className="text-[10px] text-slate-500 font-bold uppercase">Suggested Stake</div>
-                  <div className="text-base font-black font-mono text-slate-800 mt-0.5">
-                    €{safeToFixed(effectiveWager, 2)}
+                  <label htmlFor="slip-stake" className="text-[10px] text-slate-500 font-bold uppercase block">Your stake (€)</label>
+                  <input
+                    id="slip-stake"
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    inputMode="decimal"
+                    placeholder={kellyRecommendation > 0 ? safeToFixed(kellyRecommendation, 2) : '10'}
+                    value={customWager}
+                    onChange={(e) => setCustomWager(e.target.value)}
+                    className="mt-0.5 w-full px-2 py-1 bg-white border border-slate-300 rounded-md font-mono font-bold text-slate-900 text-sm"
+                  />
+                  <div className="text-[10px] text-slate-500 mt-0.5">
+                    {kellyRecommendation > 0 ? `Suggested €${safeToFixed(kellyRecommendation, 2)}` : 'No stake suggested: this slip has no value'}
                   </div>
                 </div>
 
                 <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-                  <div className="text-[10px] text-slate-500 font-bold uppercase">Potential Return</div>
+                  <div className="text-[10px] text-slate-500 font-bold uppercase">Returns if it wins</div>
                   <div className="text-base font-black font-mono text-emerald-600 mt-0.5">
                     €{safeToFixed(effectiveWager * totalOdds, 2)}
                   </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">Profit €{safeToFixed(Math.max(0, effectiveWager * totalOdds - effectiveWager), 2)}</div>
                 </div>
               </div>
 
@@ -1526,7 +1521,7 @@ export default function AccumulatorPage({
             {showStakingSettings && (
               <div className="p-3 bg-slate-50/70 border-b border-slate-200 flex flex-wrap items-end gap-3 text-xs">
                 <div>
-                  <label className="block font-semibold text-slate-500 mb-1">Bankroll (€)</label>
+                  <label className="block font-semibold text-slate-500 mb-1">Your bank (€)</label>
                   <input 
                     type="number" 
                     value={bankroll} 
@@ -1536,25 +1531,15 @@ export default function AccumulatorPage({
                 </div>
                 <div>
                   <UniformDropdown
-                    label="Kelly Strategy"
+                    label="Stake size"
                     value={kellyMultiplier}
                     onChange={(val) => setKellyMultiplier(Number(val))}
                     options={[
-                      { value: 0.125, label: '1/8 Kelly (Very Safe)' },
-                      { value: 0.25, label: '1/4 Kelly (Recommended)' },
-                      { value: 0.5, label: '1/2 Kelly (Moderate)' },
-                      { value: 1.0, label: 'Full Kelly (Aggressive)' },
+                      { value: 0.125, label: 'Very small' },
+                      { value: 0.25, label: 'Normal (recommended)' },
+                      { value: 0.5, label: 'Bigger' },
+                      { value: 1.0, label: 'Maximum (risky)' },
                     ]}
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-slate-500 mb-1">Custom Wager (€)</label>
-                  <input 
-                    type="number" 
-                    placeholder="Auto Kelly"
-                    value={customWager} 
-                    onChange={(e) => setCustomWager(e.target.value)}
-                    className="w-28 px-2.5 py-1 bg-white border border-slate-200 rounded-md font-semibold text-slate-800 placeholder:text-slate-400"
                   />
                 </div>
               </div>
@@ -1595,7 +1580,7 @@ export default function AccumulatorPage({
                   />
 
                   <UniformDropdown
-                    label={matchingSlipCount < 8 ? `Leg Count (${matchingSlipCount} avail)` : 'Leg Count'}
+                    label="Show"
                     value={effectiveSlipLegCount}
                     onChange={(val) => setSlipLegCount(Number(val))}
                     options={slipLegCountOptions}

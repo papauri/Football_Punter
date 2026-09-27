@@ -1,4 +1,5 @@
 import { liveScoreText } from '../utils/matchStatus';
+import WatchButton from './WatchButton';
 import React, { useState, useMemo } from 'react';
 import { 
   Search, 
@@ -27,7 +28,7 @@ import { useMobileViewMode } from '../utils/useMobileViewMode';
 import InfoTooltip from './InfoTooltip';
 import { compactKickoff } from './MobileFold';
 import { safeParseFloat, safeToFixed } from '../utils/numberUtils';
-import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey } from '../utils/dateUtils';
+import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey, formatFriendlyDateOption } from '../utils/dateUtils';
 
 export default function ScoresTablePage({
   matches = [],
@@ -182,7 +183,7 @@ export default function ScoresTablePage({
       { value: 'All', label: `All Leagues (${totalEligible})` },
       ...sortedLeagues.map(l => {
         const perf = leaguePerformance.find(p => p.league === l);
-        const perfStr = perf ? ` - ${perf.accuracy}% Acc` : '';
+        const perfStr = perf ? ` · ${Math.round(perf.accuracy)}% hit rate` : '';
         return { value: l, label: `${l} (${leagues[l]})${perfStr}` };
       })
     ];
@@ -201,8 +202,8 @@ export default function ScoresTablePage({
 
     const sortedKeys = Object.keys(dates).sort();
     return [
-      { value: 'All', label: `All Dates (${totalEligible})` },
-      ...sortedKeys.map(k => ({ value: k, label: `${k} (${dates[k]})` }))
+      { value: 'All', label: `All dates (${totalEligible})` },
+      ...sortedKeys.map(k => ({ value: k, label: formatFriendlyDateOption(k, dates[k], tzSettings) }))
     ];
   }, [rawScoresMatches, searchQuery, selectedLeague, marketFilter]);
 
@@ -234,16 +235,16 @@ export default function ScoresTablePage({
     });
 
     return [
-      { value: 'ALL', label: `All Totals Markets (${all})` },
-      { value: 'OVER_25', label: `Over 2.5 Goals (${o25})` },
-      { value: 'OVER_25_HIGH_CONF', label: `Over 2.5 (High Conf ≥65%) (${o25High})` },
-      { value: 'UNDER_25', label: `Under 2.5 Goals (${u25})` },
-      { value: 'UNDER_25_HIGH_CONF', label: `Under 2.5 (High Conf ≥65%) (${u25High})` },
-      { value: 'BTTS_YES', label: `Both Teams To Score (${btts})` },
-      { value: 'BTTS_YES_HIGH_CONF', label: `BTTS Yes (High Conf ≥65%) (${bttsHigh})` },
-      { value: 'BTTS_NO_HIGH_CONF', label: `BTTS No (High Conf ≥60%) (${bttsNoHigh})` },
-      { value: 'HIGH_PROB', label: `High Score Prob (≥14%) (${highProb})` },
-      { value: 'EXACT_SCORE_HIGH_CONF', label: `Exact Score (High Conf ≥16%) (${exactScoreHigh})` }
+      { value: 'ALL', label: `All goals tips (${all})` },
+      { value: 'OVER_25', label: `Over 2.5 goals (${o25})` },
+      { value: 'OVER_25_HIGH_CONF', label: `Over 2.5, 65%+ chance (${o25High})` },
+      { value: 'UNDER_25', label: `Under 2.5 goals (${u25})` },
+      { value: 'UNDER_25_HIGH_CONF', label: `Under 2.5, 65%+ chance (${u25High})` },
+      { value: 'BTTS_YES', label: `Both teams score (${btts})` },
+      { value: 'BTTS_YES_HIGH_CONF', label: `Both score, 65%+ chance (${bttsHigh})` },
+      { value: 'BTTS_NO_HIGH_CONF', label: `Not both score, 60%+ chance (${bttsNoHigh})` },
+      { value: 'HIGH_PROB', label: `Likely score 14%+ (${highProb})` },
+      { value: 'EXACT_SCORE_HIGH_CONF', label: `Likely score 16%+ (${exactScoreHigh})` }
     ];
   }, [rawScoresMatches, searchQuery, selectedLeague, selectedDate]);
 
@@ -402,10 +403,10 @@ export default function ScoresTablePage({
               value={sortBy}
               onChange={handleDropdownSortChange}
               options={[
-                { value: 'time_asc', label: 'Kickoff (Earliest)' },
-                { value: 'over_desc', label: 'Over 2.5 Probability' },
-                { value: 'under_desc', label: 'Under 2.5 Probability' },
-                { value: 'xg_desc', label: 'Total Expected Goals (xG)' }
+                { value: 'time_asc', label: 'Kick-off: soonest' },
+                { value: 'over_desc', label: 'Most likely over 2.5' },
+                { value: 'under_desc', label: 'Most likely under 2.5' },
+                { value: 'xg_desc', label: 'Most goals expected' }
               ]}
             />
 
@@ -804,7 +805,7 @@ export default function ScoresTablePage({
                                       inSlip ? 'bg-rose-50 text-rose-700 border-rose-300' : 'bg-indigo-600 text-white border-indigo-600'
                                     }`}
                                   >
-                                    {inSlip ? '✓ Added' : '+ Slip'}
+                                    {inSlip ? '✓ Added' : '+ Add'}
                                   </button>
                                 )}
                               </div>
@@ -883,6 +884,7 @@ export default function ScoresTablePage({
                             </div>
 
                             <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                              <WatchButton matchId={m.id} className="!w-6 !h-6" />
                               <button
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(m); }}
@@ -913,10 +915,10 @@ export default function ScoresTablePage({
                                       ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-300'
                                       : 'border-indigo-600 bg-indigo-600 text-white hover:bg-indigo-700'
                                   }`}
-                                  title={inSlip ? 'In Slip (Click to toggle)' : `Add ${bestValuePick} to Slip`}
+                                  title={inSlip ? 'Remove from bet slip' : `Add ${bestValuePick} to bet slip`}
                                 >
                                   {inSlip ? <Check className="w-2.5 h-2.5" /> : <Plus className="w-2.5 h-2.5" />}
-                                  <span>{inSlip ? 'In Slip' : '+ Slip'}</span>
+                                  <span>{inSlip ? '✓ Added' : '+ Add'}</span>
                                 </button>
                               ) : (
                                 <div className="w-[58px]" />
@@ -1073,7 +1075,8 @@ export default function ScoresTablePage({
 
                       {/* Analysis & Slip Action */}
                       <td className="hidden md:table-cell py-1 px-2 text-center whitespace-nowrap w-56">
-                        <div className="grid grid-cols-[98px_44px_58px] gap-1.5 items-center justify-center">
+                        <WatchButton matchId={m.id} className="!w-6 !h-6 align-middle mr-1" />
+                        <div className="inline-grid align-middle grid-cols-[98px_44px_58px] gap-1.5 items-center justify-center">
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(m); }}
@@ -1106,10 +1109,10 @@ export default function ScoresTablePage({
                                   ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-300'
                                   : 'border-indigo-600 bg-indigo-600 hover:bg-indigo-700 text-white'
                               }`}
-                              title={inSlip ? 'In Slip (Click to toggle)' : `Add ${bestValuePick} to Slip`}
+                              title={inSlip ? 'Remove from bet slip' : `Add ${bestValuePick} to bet slip`}
                             >
                               {inSlip ? <Check className="w-2.5 h-2.5" /> : <Plus className="w-2.5 h-2.5" />}
-                              <span>{inSlip ? 'In Slip' : '+ Slip'}</span>
+                              <span>{inSlip ? '✓ Added' : '+ Add'}</span>
                             </button>
                           ) : (
                             <div className="w-[58px]" />

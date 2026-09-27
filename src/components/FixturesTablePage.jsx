@@ -1,4 +1,5 @@
 import { liveScoreText } from '../utils/matchStatus';
+import WatchButton from './WatchButton';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { 
   Search,
@@ -489,7 +490,7 @@ export default function FixturesTablePage({
       { value: 'All', label: `All Leagues (${totalEligible})` },
       ...sortedLeagues.map(l => {
         const perf = leaguePerformance.find(p => p.league === l);
-        const perfStr = perf ? ` - ${perf.accuracy}% Acc` : '';
+        const perfStr = perf ? ` · ${Math.round(perf.accuracy)}% hit rate` : '';
         return { value: l, label: `${l} (${leagues[l]})${perfStr}` };
       })
     ];
@@ -586,7 +587,7 @@ export default function FixturesTablePage({
       { value: 'ALL', label: `All tips (${all})` },
       { value: 'HIGH', label: `60%+ chance (${high})` },
       { value: 'ELITE', label: `68%+ chance (${elite})` },
-      { value: 'UNANIMOUS', label: `Strongest tips (${unanimous})` }
+      { value: 'UNANIMOUS', label: `Top picks (${unanimous})` }
     ];
   }, [evaluatedItems, searchQuery, strictLeaguePruning, selectedDate, selectedLeague, selectedOutcome, marketMode, filterByMarketOnly]);
 
@@ -804,7 +805,7 @@ export default function FixturesTablePage({
             className="inline-flex items-center px-1.5 py-0.5 rounded text-[10.5px] font-bold bg-amber-50 text-amber-800 border border-amber-300 shadow-2xs whitespace-nowrap" 
             title={`Smart Double Chance (${dcCode}, ${dcProb}%): ${favTeam} or Draw protects against stalemate (@${safeToFixed(dcOdds, 2)})`}
           >
-            {dcCode} ({isFavHome ? 'Home/X' : 'Away/X'})
+            {isFavHome ? 'Home or draw' : 'Away or draw'}
           </span>
         );
       }
@@ -816,7 +817,7 @@ export default function FixturesTablePage({
             className="inline-flex items-center px-1.5 py-0.5 rounded text-[10.5px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 shadow-2xs whitespace-nowrap" 
             title={`Smart Draw-No-Bet (${dnbProb}%): ${favTeam} Win, refunded if draw (@${safeToFixed(dnbOdds, 2)})`}
           >
-            {isFavHome ? 'Home DNB' : 'Away DNB'}
+            {isFavHome ? 'Home (draw = refund)' : 'Away (draw = refund)'}
           </span>
         );
       }
@@ -826,7 +827,7 @@ export default function FixturesTablePage({
           className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10.5px] font-bold border whitespace-nowrap shadow-2xs ${getWinnerBadgeClass(predictedWinner)}`}
           title={`Outright Pick: ${predictedWinner === 'HOME' ? m.home : predictedWinner === 'AWAY' ? m.away : 'Draw'} (@${safeToFixed(odds, 2)})`}
         >
-          {predictedWinner === 'HOME' ? 'Home Win' : predictedWinner === 'AWAY' ? 'Away Win' : 'Draw (X)'}
+          {predictedWinner === 'HOME' ? 'Home win' : predictedWinner === 'AWAY' ? 'Away win' : 'Draw'}
         </span>
       );
     }
@@ -839,7 +840,7 @@ export default function FixturesTablePage({
           className="inline-flex items-center px-1.5 py-0.5 rounded text-[10.5px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 shadow-2xs whitespace-nowrap" 
           title={`Draw-No-Bet (${dnbProb}%): ${favTeam} Win, refunded on tie (@${safeToFixed(dnbOdds, 2)})`}
         >
-          {isFavHome ? 'Home DNB' : 'Away DNB'}
+          {isFavHome ? 'Home (draw = refund)' : 'Away (draw = refund)'}
         </span>
       );
     }
@@ -852,7 +853,7 @@ export default function FixturesTablePage({
           className="inline-flex items-center px-1.5 py-0.5 rounded text-[10.5px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-2xs whitespace-nowrap" 
           title={`Double Chance (${dcCode}, ${dcProb}%): ${favTeam} or Draw (@${safeToFixed(dcOdds, 2)})`}
         >
-          {dcCode} ({isFavHome ? 'Home/X' : 'Away/X'})
+          {isFavHome ? 'Home or draw' : 'Away or draw'}
         </span>
       );
     }
@@ -863,7 +864,7 @@ export default function FixturesTablePage({
         className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10.5px] font-bold border whitespace-nowrap shadow-2xs ${getWinnerBadgeClass(predictedWinner)}`}
         title={`Outright Pick: ${predictedWinner === 'HOME' ? m.home : predictedWinner === 'AWAY' ? m.away : 'Draw'} (@${safeToFixed(odds, 2)})`}
       >
-        {predictedWinner === 'HOME' ? 'Home Win' : predictedWinner === 'AWAY' ? 'Away Win' : 'Draw (X)'}
+        {predictedWinner === 'HOME' ? 'Home win' : predictedWinner === 'AWAY' ? 'Away win' : 'Draw'}
       </span>
     );
   };
@@ -1871,6 +1872,7 @@ export default function FixturesTablePage({
                                 </span>
                               </div>
                               <div className="flex items-center gap-1 shrink-0">
+                                <WatchButton matchId={m.id} className="!w-6 !h-6" />
                                 <button
                                   type="button"
                                   onClick={(e) => {
@@ -2070,7 +2072,8 @@ export default function FixturesTablePage({
 
                         {/* Actions */}
                         <td className="hidden md:table-cell py-1.5 px-2 text-center whitespace-nowrap">
-                          <div className="grid grid-cols-[98px_56px_58px_52px] gap-1 items-center justify-center">
+                          <WatchButton matchId={m.id} className="!w-6 !h-6 align-middle mr-1" />
+                          <div className="inline-grid align-middle grid-cols-[98px_56px_58px_52px] gap-1 items-center justify-center">
                             {/* Tactical AI Analysis Modal */}
                             <button
                               type="button"
@@ -2103,9 +2106,9 @@ export default function FixturesTablePage({
                                   ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
                                   : 'bg-white text-slate-700 hover:bg-purple-50 hover:text-purple-700 border-slate-200 hover:border-purple-200'
                               }`}
-                              title={isSlipAdded ? 'Remove from Bet Slip' : 'Add to Bet Slip'}
+                              title={isSlipAdded ? 'Remove from bet slip' : 'Add to bet slip'}
                             >
-                              {isSlipAdded ? 'Remove' : '+ Slip'}
+                              {isSlipAdded ? '✓ Added' : '+ Add'}
                             </button>
 
                             {/* Expand Row Details */}
@@ -2152,7 +2155,7 @@ export default function FixturesTablePage({
                                     : 'bg-white text-slate-700 border-slate-300'
                                 }`}
                               >
-                                {isSlipAdded ? '✓ Added' : '+ Slip'}
+                                {isSlipAdded ? '✓ Added' : '+ Add'}
                               </button>
                             </div>
 

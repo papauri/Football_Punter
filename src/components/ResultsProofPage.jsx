@@ -370,7 +370,7 @@ export default function ResultsProofPage({
       ...Array.from(set).sort().map(l => {
         const count = validMatches.filter(m => m.league === l).length;
         const perf = leaguePerformance.find(p => p.league === l);
-        const perfStr = perf ? ` - ${perf.accuracy}% Acc` : '';
+        const perfStr = perf ? ` · ${Math.round(perf.accuracy)}% hit rate` : '';
         return { value: l, label: `${l} (${count})${perfStr}` };
       })
     ];
@@ -619,7 +619,7 @@ export default function ResultsProofPage({
 
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <UniformDropdown
-              label="Audited Date"
+              label="Date"
               value={selectedDate}
               onChange={setSelectedDate}
               options={dateOptions}
@@ -637,10 +637,10 @@ export default function ResultsProofPage({
               value={statusFilter}
               onChange={setStatusFilter}
               options={[
-                { value: 'ALL', label: 'All Audited Outcomes' },
-                { value: 'HITS', label: `Verified Hits (${stats.hits})` },
-                { value: 'MISSES', label: `Audited Misses (${stats.misses})` },
-                { value: 'PUSHES', label: `Pushes (${stats.pushes})` },
+                { value: 'ALL', label: 'All' },
+                { value: 'HITS', label: `Won (${stats.hits})` },
+                { value: 'MISSES', label: `Lost (${stats.misses})` },
+                { value: 'PUSHES', label: `Refunded (${stats.pushes})` },
                 { value: 'PASSES', label: `Pass Advisories (${stats.passes})` }
               ]}
             />

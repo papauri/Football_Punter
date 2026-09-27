@@ -23,7 +23,7 @@ export default function LeagueProfilesPage({
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [tierFilter, setTierFilter] = useState('ALL');
-  const [sortBy, setSortBy] = useState('accuracy_desc');
+  const [sortBy, setSortBy] = useState('predict_desc');
   const [expandedLeague, setExpandedLeague] = useState(null);
   const [collapsedTiers, setCollapsedTiers] = useState(false);
 
@@ -121,7 +121,6 @@ export default function LeagueProfilesPage({
 
       return true;
     }).sort((a, b) => {
-      if (sortBy === 'accuracy_desc') return b.accuracy - a.accuracy;
       if (sortBy === 'goals_desc') return b.avgGoals - a.avgGoals;
       if (sortBy === 'draw_desc') return b.drawRate - a.drawRate;
       if (sortBy === 'predict_desc') return b.predictabilityIndex - a.predictabilityIndex;
@@ -242,7 +241,6 @@ export default function LeagueProfilesPage({
             value={sortBy}
             onChange={setSortBy}
             options={[
-              { value: 'accuracy_desc', label: 'Best hit rate' },
               { value: 'tier_asc', label: 'Most predictable first' },
               { value: 'predict_desc', label: 'Predictability score' },
               { value: 'goals_desc', label: 'Most goals' },

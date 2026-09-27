@@ -439,10 +439,10 @@ export default function PropsSpecialsPage({
               onChange={setSelectedCategory}
               options={[
                 { value: 'ALL', label: 'All markets' },
-                { value: 'BTTS', label: 'BTTS (Both Teams To Score)' },
-                { value: 'CORNERS', label: 'Corners (Lines & Teams)' },
-                { value: 'CARDS', label: 'Cards & Discipline' },
-                { value: 'SPECIALS', label: 'First Half & Goals' },
+                { value: 'BTTS', label: 'Both teams score' },
+                { value: 'CORNERS', label: 'Corners' },
+                { value: 'CARDS', label: 'Cards' },
+                { value: 'SPECIALS', label: 'First half & specials' },
               ]}
             />
 
@@ -459,9 +459,9 @@ export default function PropsSpecialsPage({
               onChange={(val) => setMinHitRate(Number(val))}
               options={[
                 { value: 60, label: '60%+' },
-                { value: 70, label: 'High Conviction (≥70%)' },
-                { value: 75, label: '🛡️ Elite Anchors (≥75%)' },
-                { value: 80, label: '💎 Super Anchors (≥80%)' },
+                { value: 70, label: '70%+' },
+                { value: 75, label: '75%+' },
+                { value: 80, label: '80%+' },
               ]}
             />
 
@@ -1163,12 +1163,12 @@ export default function PropsSpecialsPage({
                                   ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
                                   : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
                               }`}
-                              title={topPropInSlip ? 'Remove from Bet Slip' : 'Add to Props Bet Slip'}
+                              title={topPropInSlip ? 'Remove from bet slip' : 'Add to bet slip'}
                             >
                               {topPropInSlip ? (
                                 <>
                                   <Check className="w-3 h-3" />
-                                  <span>In Slip</span>
+                                  <span>Added</span>
                                 </>
                               ) : (
                                 <>
@@ -1257,7 +1257,7 @@ export default function PropsSpecialsPage({
                                                     ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
                                                     : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
                                                 }`}
-                                                title={inSlip ? 'In Slip' : 'Add to Slip'}
+                                                title={inSlip ? 'Remove from bet slip' : 'Add to bet slip'}
                                               >
                                                 {inSlip ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
                                               </button>
@@ -1458,7 +1458,7 @@ export default function PropsSpecialsPage({
                                   inSlip ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-300 text-slate-700'
                                 }`}
                               >
-                                {inSlip ? 'In Slip' : '+ Add'}
+                                {inSlip ? '✓ Added' : '+ Add'}
                               </button>
                             )}
                           </div>

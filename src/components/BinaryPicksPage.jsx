@@ -1,3 +1,4 @@
+import WatchButton from './WatchButton';
 import React, { useState, useMemo } from 'react';
 import { MobileFoldCell, FoldSummary, FoldBadge, compactKickoff } from './MobileFold';
 import { 
@@ -28,7 +29,7 @@ import MobileViewSwitcher from './MobileViewSwitcher';
 import { useMobileViewMode } from '../utils/useMobileViewMode';
 import { safeParseFloat, safeToFixed } from '../utils/numberUtils';
 import { getMatchRiskProfile } from '../utils/riskUtils';
-import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey } from '../utils/dateUtils';
+import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey, formatFriendlyDateOption } from '../utils/dateUtils';
 import ConfidenceGauge from './ConfidenceGauge';
 import KellyTooltip from './KellyTooltip';
 import InfoTooltip from './InfoTooltip';
@@ -50,6 +51,7 @@ export default function BinaryPicksPage({
   const [selectedLeague, setSelectedLeague] = useState('All');
   const [selectedDate, setSelectedDate] = useState('All');
   const [convictionTier, setConvictionTier] = useState('ALL'); // 'ALL', 'ELITE', 'HIGH_VALUE'
+  const [minChance, setMinChance] = useState(0); // minimum chance the tip wins, in percent
   const [sortField, setSortField] = useState('conf');
   const [sortDirection, setSortDirection] = useState('desc'); // 'asc' | 'desc'
   const [sortBy, setSortBy] = useState('conf_desc');
@@ -213,12 +215,28 @@ export default function BinaryPicksPage({
 
     // Edge / Conviction Tier filter
     if (skipDimension !== 'conviction') {
-      if (convictionTier === 'ELITE' && (p.edge < 8 || p.confidence < 65)) return false;
+      if (convictionTier === 'ELITE' && p.edge < 8) return false;
       if (convictionTier === 'HIGH_VALUE' && p.edge < 5) return false;
     }
 
+    // Chance filter
+    if (skipDimension !== 'chance' && minChance > 0 && safeParseFloat(p.modelProb, 0) < minChance) return false;
+
     return true;
   };
+
+  // Chance options with counts, faceted like the others
+  const chanceOptions = useMemo(() => {
+    const pool = rawBinaryPicks.filter(p => checkPickPasses(p, 'chance'));
+    const n = (t) => pool.filter(p => safeParseFloat(p.modelProb, 0) >= t).length;
+    return [
+      { value: 0, label: `Any chance (${pool.length})` },
+      { value: 60, label: `60%+ (${n(60)})` },
+      { value: 70, label: `70%+ (${n(70)})` },
+      { value: 80, label: `80%+ (${n(80)})` }
+    ];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rawBinaryPicks, searchQuery, selectedLeague, selectedDate, convictionTier]);
 
   // Dynamic Faceted League Options
   const leagueOptions = useMemo(() => {
@@ -238,11 +256,11 @@ export default function BinaryPicksPage({
       { value: 'All', label: `All Leagues (${totalEligible})` },
       ...sortedLeagues.map(l => {
         const perf = leaguePerformance.find(lp => lp.league === l);
-        const perfStr = perf ? ` - ${perf.accuracy}% Acc` : '';
+        const perfStr = perf ? ` · ${Math.round(perf.accuracy)}% hit rate` : '';
         return { value: l, label: `${l} (${leagues[l]})${perfStr}` };
       })
     ];
-  }, [rawBinaryPicks, searchQuery, selectedDate, convictionTier, leaguePerformance]);
+  }, [rawBinaryPicks, searchQuery, selectedDate, convictionTier, leaguePerformance, minChance]);
 
   // Dynamic Faceted Date Options
   const dateOptions = useMemo(() => {
@@ -257,10 +275,10 @@ export default function BinaryPicksPage({
 
     const sortedKeys = Object.keys(dates).sort();
     return [
-      { value: 'All', label: `All Dates (${totalEligible})` },
-      ...sortedKeys.map(k => ({ value: k, label: `${k} (${dates[k]})` }))
+      { value: 'All', label: `All dates (${totalEligible})` },
+      ...sortedKeys.map(k => ({ value: k, label: formatFriendlyDateOption(k, dates[k], tzSettings) }))
     ];
-  }, [rawBinaryPicks, searchQuery, selectedLeague, convictionTier]);
+  }, [rawBinaryPicks, searchQuery, selectedLeague, convictionTier, minChance]);
 
   // Dynamic Faceted Conviction / Edge Tier Options
   const convictionOptions = useMemo(() => {
@@ -276,11 +294,11 @@ export default function BinaryPicksPage({
     });
 
     return [
-      { value: 'ALL', label: `All Value Bets (${all})` },
-      { value: 'ELITE', label: `Elite Value (Edge ≥8%) (${elite})` },
-      { value: 'HIGH_VALUE', label: `High Value (Edge ≥5%) (${highValue})` }
+      { value: 'ALL', label: `All tips (${all})` },
+      { value: 'ELITE', label: `Value 8%+ (${elite})` },
+      { value: 'HIGH_VALUE', label: `Value 5%+ (${highValue})` }
     ];
-  }, [rawBinaryPicks, searchQuery, selectedLeague, selectedDate]);
+  }, [rawBinaryPicks, searchQuery, selectedLeague, selectedDate, minChance]);
 
   // Filter and sort picks
   const binaryPicks = useMemo(() => {
@@ -323,7 +341,7 @@ export default function BinaryPicksPage({
       }
       return 0;
     });
-  }, [rawBinaryPicks, searchQuery, selectedLeague, selectedDate, convictionTier, sortField, sortDirection]);
+  }, [rawBinaryPicks, searchQuery, selectedLeague, selectedDate, convictionTier, sortField, sortDirection, minChance]);
 
   const binaryStats = useMemo(() => {
     if (!binaryPicks.length) {
@@ -399,10 +417,17 @@ export default function BinaryPicksPage({
             />
 
             <UniformDropdown
-              label="Edge Tier"
+              label="Value"
               value={convictionTier}
               onChange={setConvictionTier}
               options={convictionOptions}
+            />
+
+            <UniformDropdown
+              label="Chance"
+              value={minChance}
+              onChange={(v) => setMinChance(Number(v))}
+              options={chanceOptions}
             />
 
             <UniformDropdown
@@ -412,9 +437,9 @@ export default function BinaryPicksPage({
               options={[
                 { value: 'conf_desc', label: 'Most likely to win' },
                 { value: 'edge_desc', label: 'Best value' },
-                { value: 'time_asc', label: 'Earliest Kickoff' },
-                { value: 'time_desc', label: 'Latest Kickoff' },
-                { value: 'kelly_desc', label: 'Largest Kelly' }
+                { value: 'time_asc', label: 'Kick-off: soonest' },
+                { value: 'time_desc', label: 'Kick-off: latest' },
+                { value: 'kelly_desc', label: 'Biggest stake' }
               ]}
             />
           </div>
@@ -424,13 +449,14 @@ export default function BinaryPicksPage({
         <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
           <div className="flex items-center gap-2">
             <span>Showing <strong>{binaryPicks.length}</strong> value markets</span>
-            {(searchQuery || selectedLeague !== 'All' || selectedDate !== 'All' || convictionTier !== 'ALL') && (
+            {(searchQuery || selectedLeague !== 'All' || selectedDate !== 'All' || convictionTier !== 'ALL' || minChance > 0) && (
               <button
                 onClick={() => {
                   setSearchQuery('');
                   setSelectedLeague('All');
                   setSelectedDate('All');
                   setConvictionTier('ALL');
+                  setMinChance(0);
                 }}
                 className="text-indigo-600 hover:text-indigo-800 font-medium underline ml-1 cursor-pointer"
               >
@@ -785,6 +811,7 @@ export default function BinaryPicksPage({
                           </div>
 
                           <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                            <WatchButton matchId={p.match?.id ?? p.id} className="!w-6 !h-6" />
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(p.match); }}
@@ -815,7 +842,7 @@ export default function BinaryPicksPage({
                                   : 'bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700'
                               }`}
                             >
-                              {isSlipAdded ? 'Remove' : '+ Slip'}
+                              {isSlipAdded ? '✓ Added' : '+ Add'}
                             </button>
                           </div>
                         </div>
@@ -966,7 +993,8 @@ export default function BinaryPicksPage({
 
                       {/* Actions */}
                       <td className="hidden md:table-cell py-1 px-2 text-center whitespace-nowrap w-56">
-                        <div className="grid grid-cols-[98px_44px_58px] gap-1.5 items-center justify-center">
+                        <WatchButton matchId={p.match?.id ?? p.id} className="!w-6 !h-6 align-middle mr-1" />
+                          <div className="inline-grid align-middle grid-cols-[98px_44px_58px] gap-1.5 items-center justify-center">
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); onOpenWatchLive && onOpenWatchLive(p.match); }}
@@ -998,9 +1026,9 @@ export default function BinaryPicksPage({
                                 ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
                                 : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
                             }`}
-                            title={isSlipAdded ? 'Remove from Bet Slip' : 'Add to Bet Slip'}
+                            title={isSlipAdded ? 'Remove from bet slip' : 'Add to bet slip'}
                           >
-                            {isSlipAdded ? 'Remove' : '+ Slip'}
+                            {isSlipAdded ? '✓ Added' : '+ Add'}
                           </button>
                         </div>
                       </td>
