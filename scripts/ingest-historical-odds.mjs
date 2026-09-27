@@ -83,13 +83,48 @@ function parseCsv(text) {
 
 const num = (v) => { const x = parseFloat(v); return Number.isFinite(x) && x > 1.0 ? x : null; };
 
-// Prefer closing prices (market average → Pinnacle → Bet365), then pre-match average
-function pickOdds(row) {
-  const sets = [['AvgCH', 'AvgCD', 'AvgCA', 'AvgC'], ['PSCH', 'PSCD', 'PSCA', 'PSC'], ['B365CH', 'B365CD', 'B365CA', 'B365C'], ['AvgH', 'AvgD', 'AvgA', 'Avg'], ['B365H', 'B365D', 'B365A', 'B365']];
+const triple = (row, h, d, a, src) => (num(row[h]) && num(row[d]) && num(row[a]))
+  ? { h: num(row[h]), d: num(row[d]), a: num(row[a]), src }
+  : null;
+
+const firstOf = (row, sets) => {
   for (const [h, d, a, src] of sets) {
-    if (num(row[h]) && num(row[d]) && num(row[a])) return { h: num(row[h]), d: num(row[d]), a: num(row[a]), src };
+    const t = triple(row, h, d, a, src);
+    if (t) return t;
   }
   return null;
+};
+
+// Closing market average, falling back to Pinnacle then Bet365 closing.
+const closingAvg = (row) => firstOf(row, [
+  ['AvgCH', 'AvgCD', 'AvgCA', 'AvgC'], ['PSCH', 'PSCD', 'PSCA', 'PSC'], ['B365CH', 'B365CD', 'B365CA', 'B365C']
+]);
+
+// Pre-match ("opening") market average. football-data publishes the Avg* columns as the prices
+// available when the market opened, against the AvgC* closing columns. Keeping both is what makes a
+// point-in-time evaluation possible: a backtest that bets at closing prices is using information
+// from after the decision it claims to be testing, and it also flatters the model, because closing
+// prices are the sharpest of the week.
+const openingAvg = (row) => firstOf(row, [
+  ['AvgH', 'AvgD', 'AvgA', 'Avg'], ['B365H', 'B365D', 'B365A', 'B365'], ['BWH', 'BWD', 'BWA', 'BW']
+]);
+
+// Best price across all books surveyed, opening and closing. This is what a bettor who shops around
+// can actually take, so it is the honest basis for return on investment. The average price is
+// roughly 5% worse and is the right basis for measuring accuracy, not profit.
+const openingMax = (row) => triple(row, 'MaxH', 'MaxD', 'MaxA', 'Max');
+const closingMax = (row) => triple(row, 'MaxCH', 'MaxCD', 'MaxCA', 'MaxC');
+
+// Backwards-compatible: h/d/a stay the closing average that every existing script reads.
+function pickOdds(row) {
+  const close = closingAvg(row) || openingAvg(row);
+  if (!close) return null;
+  return {
+    ...close,
+    open: openingAvg(row),
+    openMax: openingMax(row),
+    closeMax: closingMax(row)
+  };
 }
 
 async function fetchCached(url, file) {
@@ -167,7 +202,14 @@ async function main() {
     coverage[m.league] = coverage[m.league] || { total: 0, matched: 0 };
     coverage[m.league].total++;
     if (best) {
-      out[m.id] = { h: best.odds.h, d: best.odds.d, a: best.odds.a, src: best.odds.src };
+      out[m.id] = {
+        h: best.odds.h, d: best.odds.d, a: best.odds.a, src: best.odds.src,
+        // Opening average, plus best-available prices at open and close. Null where the source did
+        // not publish that column for the fixture.
+        open: best.odds.open ? { h: best.odds.open.h, d: best.odds.open.d, a: best.odds.open.a, src: best.odds.open.src } : null,
+        openMax: best.odds.openMax ? { h: best.odds.openMax.h, d: best.odds.openMax.d, a: best.odds.openMax.a } : null,
+        closeMax: best.odds.closeMax ? { h: best.odds.closeMax.h, d: best.odds.closeMax.d, a: best.odds.closeMax.a } : null
+      };
       coverage[m.league].matched++;
       matched++;
     }

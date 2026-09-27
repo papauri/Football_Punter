@@ -3615,9 +3615,15 @@ class SoccerEngine {
       ? parseFloat((h2h.our1X2HitRate - h2h.bookmaker1X2HitRate).toFixed(1))
       : null;
 
-    // Closing-line value across every entry that has one. This is the headline for whether the model
-    // beats a soft line: consistently taking a better price than the market closes at is the
-    // standard evidence of an edge, and unlike ROI it does not need hundreds of fixtures to read.
+    // Closing-line value across every entry that has one: did the market move toward our pick after
+    // we committed to it? A useful diagnostic of timing, and it responds faster than ROI because it
+    // does not wait for results to average out.
+    //
+    // It is NOT proof of profit, and there is no sample size at which it becomes proof. It says
+    // nothing about the margin paid, so it can be positive while returns are negative. Measured over
+    // 3,579 historical picks in the rolling walk-forward, mean CLV was -0.07% with the close beaten
+    // 48.7% of the time — no timing edge — so treat a positive live reading as a reason to keep
+    // looking rather than an answer, and read it beside return at the price actually taken.
     const withClv = entries.filter(e => e.clv && Number.isFinite(e.clv.clvPricePct));
     const mean = (xs) => (xs.length ? parseFloat((xs.reduce((s, x) => s + x, 0) / xs.length).toFixed(2)) : null);
     const clvSummary = {
@@ -3631,11 +3637,29 @@ class SoccerEngine {
         ? parseFloat((withClv.filter(e => e.clv.beatTheClose).length / withClv.length * 100).toFixed(1))
         : null,
       avgHoursBeforeKickoff: mean(withClv.map(e => e.clv.hoursBeforeKickoff)),
-      reading: withClv.length < 30
-        ? `Only ${withClv.length} fixture${withClv.length === 1 ? '' : 's'} ${withClv.length === 1 ? 'has' : 'have'} a closing price yet. CLV reads meaningfully from about 30-50 onwards, far sooner than hit rate or ROI.`
-        : (mean(withClv.map(e => e.clv.clvPricePct)) > 0
-            ? 'Mean CLV is positive: the market has been moving toward our early picks, which is the signal to look for.'
-            : 'Mean CLV is negative: the market moves against our early picks, so the model is not beating even a soft line.')
+      // Reported with an interval, and deliberately without any "N picks proves it" threshold.
+      meanClvCi95: (() => {
+        const xs = withClv.map(e => e.clv.clvPricePct);
+        if (xs.length < 2) return null;
+        const m = xs.reduce((a, b) => a + b, 0) / xs.length;
+        const sd = Math.sqrt(xs.reduce((a, b) => a + (b - m) ** 2, 0) / (xs.length - 1));
+        const se = sd / Math.sqrt(xs.length);
+        return [parseFloat((m - 1.96 * se).toFixed(2)), parseFloat((m + 1.96 * se).toFixed(2))];
+      })(),
+      reading: (() => {
+        const xs = withClv.map(e => e.clv.clvPricePct);
+        if (!xs.length) return 'No picks have a closing price yet.';
+        const m = xs.reduce((a, b) => a + b, 0) / xs.length;
+        const sd = xs.length > 1 ? Math.sqrt(xs.reduce((a, b) => a + (b - m) ** 2, 0) / (xs.length - 1)) : 0;
+        const se = xs.length > 1 ? sd / Math.sqrt(xs.length) : Infinity;
+        const spansZero = !(m - 1.96 * se > 0 || m + 1.96 * se < 0);
+        if (spansZero) {
+          return `Mean CLV ${m.toFixed(2)}% on ${xs.length} pick${xs.length === 1 ? '' : 's'}, but the 95% interval still spans zero, so this is consistent with no timing edge. CLV never becomes proof of profit at any count — read it beside return at the price actually taken.`;
+        }
+        return m > 0
+          ? `Mean CLV ${m.toFixed(2)}% and the interval excludes zero: the market has been moving toward our picks. That is evidence of timing worth investigating, not a profit forecast — it says nothing about the margin paid.`
+          : `Mean CLV ${m.toFixed(2)}% and the interval excludes zero: the market moves against our picks, so they are being made at prices the market then improves on.`;
+      })()
     };
 
     return {

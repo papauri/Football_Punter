@@ -16,7 +16,11 @@
     "calibration:fit": "node scripts/fit-calibration.mjs",
     "backtest:honest": "node scripts/honest-backtest.mjs",
     "xg:ingest": "node scripts/ingest-understat-xg.mjs",
-    "xg:ablation": "node scripts/xg-ablation.mjs"
+    "xg:ablation": "node scripts/xg-ablation.mjs",
+    "walkforward": "node scripts/walk-forward.mjs",
+    "signal:probe": "node scripts/signal-probe.mjs",
+    "freeze": "node scripts/freeze-model.mjs",
+    "forward": "node scripts/forward-eval.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",

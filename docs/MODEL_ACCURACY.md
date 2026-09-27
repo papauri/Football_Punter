@@ -4,6 +4,13 @@ This document exists because the dashboard used to report numbers that were not 
 because the model was widely believed to analyse inputs it does not have. Both are covered below,
 with the commands to reproduce every figure.
 
+> **Read this first.** Every historical figure below is *development* output. The most recent 9,000
+> fixtures have been inspected and changed against repeatedly — strengths fitted, hyperparameters
+> chosen, xG accepted, two league bugs found, the walk-forward reviewed — so they can no longer serve
+> as a final exam. The model is now frozen (`npm run freeze`) and the only measurement that supports
+> a claim about future performance is `npm run forward`, which scores fixtures that did not exist when
+> the model was written. See **Retiring the historical window**.
+
 ## How to reproduce
 
 ```bash
@@ -14,6 +21,11 @@ npm run tune               # sweep fit and shaping parameters on a validation sp
 npm run odds:backtest      # model vs closing odds, including value-betting ROI
 npm run value:backtest     # does the smart-market EV filter improve returns?
 npm run verify             # regression checks, including an out-of-sample Brier floor
+npm run walkforward        # rolling refit, priced at OPENING odds — the realistic historical read
+npm run signal:probe       # does a candidate feature carry signal the market missed?
+npm run xg:ingest          # per-fixture expected goals from understat
+npm run freeze             # snapshot model + decision rules, start a forward exam
+npm run forward            # score ONLY post-freeze fixtures
 ```
 
 All of them hold back the most recent 9,000 fixtures and train on what came before, so no reported
@@ -198,6 +210,10 @@ not already priced, and season-level public statistics are not that. Realistical
 The model is a goals-and-prices model. Bookmakers have that plus everything below, which is why they
 are ahead. Ranked by expected value per unit of work:
 
+0. **Shop prices across bookmakers.** Worth about **3 points of ROI** — more than every modelling
+   change in this project combined, and the only intervention measured here that brings the published
+   picks within reach of break-even. The margin on the best available closing price is 0.47% against
+   5.54% on the market average. This is the highest-value work available and it is not modelling work.
 1. ~~**Historical xG**~~ — **done**, and worth about 0.0004 Brier and nothing on hit rate. See
    above. Its main value turned out to be sharper confident picks, not better picks overall.
 2. **Confirmed lineups plus player value or minutes-weighted availability.** The code path exists
@@ -216,16 +232,112 @@ Formations and referees are near the bottom, not the top. They are weak signals 
 and we have none. The belief that they are already being analysed is what made the model look better
 than it was.
 
-## Closing-line value: the metric that can actually settle this
+## The rolling walk-forward: the realistic historical read
+
+`npm run hitrate` and `npm run backtest:honest` fit the model once and score a long later period.
+That removes direct training-on-test leakage, but it does not describe a live model, which learns from
+every result as it arrives — and it priced every decision at **closing** odds, which are only known
+after the decision being tested and are the sharpest prices of the week.
+
+`npm run walkforward` fixes both. At each step boundary the engine is rebuilt from fixtures strictly
+before it — head-to-head index, league profiles, strengths and the calibration map — then scores only
+the next window. Decisions and returns use the **opening** price. Closing prices are used for one
+thing only: measuring closing-line value.
+
+Over 11 steps and 5,183 priced fixtures (45-day steps, Apr 2025 → Oct 2026):
+
+| | Result |
+|---|---|
+| Market 1X2 (opening, de-vigged) | 52.56% |
+| **Model only, no price supplied** | **50.16%**, gap **−2.39** pts, CI [−3.33, −1.45] |
+| What the app shows (blend) | 52.56%, gap 0.00, CI [−0.41, 0.41] |
+| Brier | model-only 0.2050, blend 0.1993, market 0.1948 |
+| ROI at market average price | **−4.15%**, CI [−5.00, −2.09] |
+| ROI at best available price | **−1.16%**, CI [−1.96, **+0.96**] |
+| Mean CLV | **−0.07%**, beat the close on 48.7% |
+
+Four things follow.
+
+**The closing-price target was unfairly hard.** Against opening prices the model-only gap is −2.39
+points, against closing prices it was −3.6. Roughly a point of the apparent deficit was an artefact of
+pricing decisions at a number that is not available when the decision is made.
+
+**The blend's 0.00 gap is not a success.** It is fed the price and therefore agrees with the market on
+98% of fixtures (116 disagreements in 5,183). It means adding our model to the price neither helps nor
+hurts — not that we match the market independently. The model-only row is the real comparison, and it
+is still behind.
+
+**Price shopping is worth about 3 points of ROI**, which is more than every modelling change in this
+project combined. At best available prices the interval now *includes zero*: the published picks are
+statistically indistinguishable from break-even. Measured margins: 5.54% on the closing average,
+**0.47% on the best available closing price**.
+
+**There is no timing edge.** Mean CLV is −0.07% and the model beat the closing price on 48.7% of picks
+— a coin flip. The earlier hope that the model might beat a soft line even if it cannot beat a closing
+one is **not supported by the data**.
+
+Step-to-step variation is large: the gap ranged [−1.84, +0.86] across steps and ROI@best ranged
+[−4.65, +5.00], sd 2.84 points. Any single window, including this one, is a weak estimate.
+
+## Testing candidate features before building them
+
+`npm run signal:probe` asks the prior question directly: for fixtures where the market's own
+probability is known, do outcomes deviate from it as a candidate feature varies? If the market has
+already priced a factor, every bucket sits on zero and no amount of modelling will help.
+
+Results across 17,503 priced fixtures:
+
+| Candidate | Verdict |
+|---|---|
+| Rest-day differential | One bucket significant: a home side 3+ days *less* rested beats the market's expectation by **+4.24** pts, CI [1.00, 7.47]. See below. |
+| Short rest (≤3 days), congestion | Same direction, not significant (+3.27, CI [−0.11, 6.66]) |
+| Promoted / new to league | Nothing. All four buckets flat |
+| Travel distance | **Not computable** — we hold no stadium coordinates |
+
+The rest-disadvantage signal is the only candidate that survived, and it was **not** built into the
+model, for three reasons. It was one significant result from fifteen buckets tested, which is roughly
+what chance produces. It covers 5.2% of fixtures, so a 4-point edge there is worth about **0.22
+points** overall against a 1.16-point gap to close. And it is decaying: by season the residual runs
++6.06, +8.52, +8.60, +2.59, +2.13 — consistently positive, which argues it is real, but fading in
+exactly the way an inefficiency does once the market notices. Worth a proper forward test; not worth
+shipping.
+
+The xG work is the cautionary precedent: a sound, well-established feature that delivered 0.1 points
+because the market already had it. Expect that outcome by default.
+
+## Retiring the historical window
+
+The 9,000-fixture holdout is now development data. It has been used to fit strengths, choose
+hyperparameters, accept xG, find two league bugs and review the walk-forward. Each step was
+reasonable; together they mean results on it measure how much the model has been shaped to fit it.
+
+`npm run freeze` records the model and its decision rules — hyperparameters, calibration provenance,
+staking and pricing rules, plus SHA-256 hashes of every file that decides a prediction.
+`npm run forward` then scores **only** fixtures kicking off after the freeze, and states plainly if a
+tracked file has changed since, because a mixed record measures neither model.
+
+Re-freezing after a change is legitimate — that is how the model improves — but it restarts the
+forward record from zero. Freezing, peeking, adjusting and re-freezing recreates the problem.
+
+## Closing-line value: a diagnostic, not proof
 
 Closing odds are the sharpest number in football betting, and we do not beat them. But an early or
 soft line is a different proposition — the same model aimed at a price the market has not finished
 arguing about.
 
-Closing-line value is how you tell whether that works. If we take a price and the market then moves
-toward our pick, we bought better than the eventual consensus. Doing that consistently is the
-standard evidence of a real edge, and unlike ROI it reads from a few dozen fixtures rather than
-several hundred, because it does not have to wait for results to average out.
+Closing-line value measures whether the market moved toward our pick after we committed to it. It is
+a useful diagnostic of timing, and it responds faster than ROI because it does not wait for results to
+average out.
+
+It is **not** proof of profit, and there is **no sample size at which it becomes proof**. An earlier
+version of this document claimed 30 to 50 fixtures would settle the question; that was wrong on two
+counts. CLV says nothing about the margin paid, so it can be positive while returns are negative — and
+the reverse. And a mean over a few dozen skewed observations carries an interval far too wide to
+conclude anything. Report it with an interval, alongside ROI at the price actually taken, and treat a
+positive reading as a reason to keep looking rather than an answer.
+
+For reference, the historical walk-forward found mean CLV of −0.07% with the close beaten on 48.7% of
+picks: no timing edge.
 
 The engine now records this automatically:
 
@@ -242,10 +354,10 @@ The engine now records this automatically:
 - **Summary.** `getPreKickoffLedgerSummary().closingLineValue` gives mean and median CLV, the share
   of picks that beat the close, and a plain-language reading. Below 30 fixtures it says so.
 
-**Nothing acts on this yet, deliberately.** We have no evidence the model beats an early line either,
-and `npm run value:backtest` shows that filtering on model edge against *closing* odds makes returns
-worse. So the measurement comes first. If mean CLV turns out positive over 30 to 50 fixtures, that is
-the point at which building a staking rule around it is justified — and not before.
+**Nothing acts on this, and the walk-forward explains why.** Measured over 3,579 historical picks,
+mean CLV was −0.07% and the close was beaten 48.7% of the time. The model has no timing edge against
+the opening-to-closing move, so a staking rule built on CLV would have nothing to stand on. The live
+tracking stays because the forward period is what matters now, and because CLV is cheap to record.
 
 ## Tracking whether an edge is real
 
