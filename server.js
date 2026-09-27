@@ -1,6 +1,7 @@
 import express from 'express';
 import { createServer as createHttpServer } from 'http';
 import fs from 'fs';
+import { execFile } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { engine } from './engine.js';
@@ -801,7 +802,7 @@ app.get('/api/state', (req, res) => {
         return res.status(400).json({ success: false, error: 'Query parameter "team" is required.' });
       }
       const coach = await engine.fetchDynamicTeamCoach(team, league);
-      res.json({ success: true, team, coach: coach || 'Head Coach' });
+      res.json({ success: true, team, coach: coach || null });
     } catch (error) {
       res.status(500).json({ success: false, error: error.message });
     }
@@ -848,49 +849,6 @@ app.get('/api/state', (req, res) => {
         propsSpecialsCache.set(cacheKey, { result, timestamp: now });
       }
 
-      res.json({ success: true, result });
-    } catch (error) {
-      res.status(500).json({ success: false, error: error.message });
-    }
-  });
-
-  app.post('/api/props-accumulator', async (req, res) => {
-    try {
-      const { legs = 3, forceRefresh = false, matches } = req.body || {};
-      const cacheKey = `props_acc_${legs}_${(matches || []).length}`;
-      const now = Date.now();
-
-      if (!forceRefresh && propsSpecialsCache.has(cacheKey)) {
-        const cached = propsSpecialsCache.get(cacheKey);
-        if (now - cached.timestamp < 10 * 60 * 1000) {
-          return res.json({ success: true, result: cached.result, cached: true });
-        }
-      }
-
-      if (!engine.matches || engine.matches.length === 0) {
-        try {
-          await engine.scrapeESPNData();
-        } catch (e) {
-          console.warn('[PropsAcca] Pre-scrape warning:', e.message);
-        }
-      }
-
-      const result = await engine.generateOptimalPropsAccumulator({ legs, matches });
-      if (result.success && result.slip) {
-        propsSpecialsCache.set(cacheKey, { result, timestamp: now });
-      }
-
-      res.json({ success: true, result });
-    } catch (error) {
-      console.error('[PropsAcca] Generation error:', error);
-      res.status(500).json({ success: false, error: error.message });
-    }
-  });
-
-  app.get('/api/props-accumulator', async (req, res) => {
-    try {
-      const legs = parseInt(req.query.legs || '3', 10);
-      const result = await engine.generateOptimalPropsAccumulator({ legs });
       res.json({ success: true, result });
     } catch (error) {
       res.status(500).json({ success: false, error: error.message });
@@ -1228,6 +1186,11 @@ app.get('/api/state', (req, res) => {
     setTimeout(() => {
       engine.startAutonomousAgent();
     }, 1000);
+    // Corners and cards ratings: pick up the weekend's results once a day.
+    const refreshMatchStats = () => execFile(process.execPath, [path.join(__dirname, 'scripts', 'fit-match-stats.mjs'), '--out', path.join(__dirname, 'data', 'match-stats.live.json')],
+      { timeout: 5 * 60 * 1000 }, (err) => { if (err) console.warn('[MatchStats] refresh failed:', err.message); });
+    setTimeout(refreshMatchStats, 60 * 1000);
+    setInterval(refreshMatchStats, 24 * 60 * 60 * 1000);
   });
 }
 

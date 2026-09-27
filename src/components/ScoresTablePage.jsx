@@ -44,7 +44,7 @@ export default function ScoresTablePage({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLeague, setSelectedLeague] = useState('All');
   const [selectedDate, setSelectedDate] = useState('All');
-  const [marketFilter, setMarketFilter] = useState('ALL'); // 'ALL', 'OVER_25', 'UNDER_25', 'BTTS_YES', 'HIGH_PROB'
+  const [marketFilter, setMarketFilter] = useState('ALL'); // 'ALL', 'OVER_25', 'UNDER_25', 'BTTS_YES', ...
   const [sortField, setSortField] = useState('time');
   const [sortDirection, setSortDirection] = useState('asc'); // 'asc' | 'desc'
   const [sortBy, setSortBy] = useState('time_asc');
@@ -158,8 +158,6 @@ export default function ScoresTablePage({
       if (marketFilter === 'BTTS_YES' && item.bttsYes < 50) return false;
       if (marketFilter === 'BTTS_YES_HIGH_CONF' && item.bttsYes < 60) return false;
       if (marketFilter === 'BTTS_NO_HIGH_CONF' && item.bttsYes > 40) return false;
-      if (marketFilter === 'HIGH_PROB' && item.topScoreProb < 14) return false;
-      if (marketFilter === 'EXACT_SCORE_HIGH_CONF' && item.topScoreProb < 16) return false;
     }
 
     return true;
@@ -217,8 +215,6 @@ export default function ScoresTablePage({
     let btts = 0;
     let bttsHigh = 0;
     let bttsNoHigh = 0;
-    let highProb = 0;
-    let exactScoreHigh = 0;
 
     rawScoresMatches.forEach(item => {
       if (!checkMatchPasses(item, 'market')) return;
@@ -230,8 +226,6 @@ export default function ScoresTablePage({
       if (item.bttsYes >= 50) btts++;
       if (item.bttsYes >= 60) bttsHigh++;
       if (item.bttsYes <= 40) bttsNoHigh++;
-      if (item.topScoreProb >= 14) highProb++;
-      if (item.topScoreProb >= 16) exactScoreHigh++;
     });
 
     return [
@@ -242,9 +236,7 @@ export default function ScoresTablePage({
       { value: 'UNDER_25_HIGH_CONF', label: `Under 2.5, 60%+ chance (${u25High})` },
       { value: 'BTTS_YES', label: `Leans both score (${btts})` },
       { value: 'BTTS_YES_HIGH_CONF', label: `Both score, 60%+ chance (${bttsHigh})` },
-      { value: 'BTTS_NO_HIGH_CONF', label: `Not both score, 60%+ chance (${bttsNoHigh})` },
-      { value: 'HIGH_PROB', label: `Likely score 14%+ (${highProb})` },
-      { value: 'EXACT_SCORE_HIGH_CONF', label: `Likely score 16%+ (${exactScoreHigh})` }
+      { value: 'BTTS_NO_HIGH_CONF', label: `Not both score, 60%+ chance (${bttsNoHigh})` }
     ];
   }, [rawScoresMatches, searchQuery, selectedLeague, selectedDate]);
 

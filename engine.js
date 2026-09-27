@@ -16,6 +16,8 @@ import { SOLID_LEAGUES, BLACKLISTED_LEAGUES, isLeagueBlacklisted, isLeagueSolid,
 import { fitTeamStrengths, matchScale } from './src/model/strengthFit.js';
 import { calibrateTriple } from './src/model/calibration.js';
 import { goalsProbabilities } from './src/model/goalsModel.js';
+import { getCurrentCoach, peekCoach } from './src/services/coaches.js';
+import { predictMatchStats, matchStatsSummary } from './src/services/matchStatsLookup.js';
 import { fairProbabilities } from './src/model/devig.js';
 
 const HYPERPARAMETERS_FILE = path.join(process.cwd(), 'hyperparameters.json');
@@ -325,42 +327,14 @@ class SoccerEngine {
     ];
 
     this.teamDb = this.initializeTeamDatabase();
-    this.customTeamManagers = {
-      'real madrid': 'Carlo Ancelotti',
-      'spain': 'Luis de la Fuente',
-      'france': 'Didier Deschamps',
-      'germany': 'Julian Nagelsmann',
-      'england': 'Thomas Tuchel',
-      'portugal': 'Roberto Martínez',
-      'netherlands': 'Ronald Koeman',
-      'italy': 'Luciano Spalletti',
-      'belgium': 'Domenico Tedesco',
-      'croatia': 'Zlatko Dalić',
-      'switzerland': 'Murat Yakin',
-      'austria': 'Ralf Rangnick',
-      'turkey': 'Vincenzo Montella',
-      'türkiye': 'Vincenzo Montella',
-      'norway': 'Ståle Solbakken',
-      'sweden': 'Jon Dahl Tomasson',
-      'denmark': 'Brian Riemer',
-      'scotland': 'Steve Clarke',
-      'poland': 'Michał Probierz',
-      'hungary': 'Marco Rossi',
-      'serbia': 'Dragan Stojković',
-      'ukraine': 'Serhiy Rebrov',
-      'czech republic': 'Ivan Hašek',
-      'czechia': 'Ivan Hašek',
-      'georgia': 'Willy Sagnol',
-      'romania': 'Mircea Lucescu',
-      'argentina': 'Lionel Scaloni',
-      'brazil': 'Dorival Júnior',
-      'uruguay': 'Marcelo Bielsa',
-      'colombia': 'Néstor Lorenzo',
-      'united states': 'Mauricio Pochettino',
-      'usa': 'Mauricio Pochettino',
-      'japan': 'Hajime Moriyasu',
-      'morocco': 'Walid Regragui'
-    };
+    // Managers you set yourself (POST /api/override-manager). Everything else comes from Wikidata
+    // via src/services/coaches.js; nothing is hard-coded, because hard-coded names go out of date.
+    this.customTeamManagers = (() => {
+      try {
+        const f = path.join(ENGINE_DIR, 'data', 'manager-overrides.json');
+        return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')) : {};
+      } catch { return {}; }
+    })();
 
     // Quantitative Hyperparameters (Calibrated from 4,303 Match Benchmark)
     const defaultHyperparameters = {
@@ -754,205 +728,11 @@ class SoccerEngine {
     };
   }
 
-  // Rich team context: recent news, rivalry narrative, locker room status, and motivational stakes
-  getTeamNarrative(teamName) {
-    const narratives = {
-      "Manchester City": {
-        news: "Guardiola rotating through a heavy UCL schedule, midfield controlling 65%+ possession with clinical box entries.",
-        rivalry: "Title race pressure is relentless; any dropped points give Arsenal and Liverpool an open door.",
-        motivation: "Chasing top spot with intense urgency."
-      },
-      "Liverpool": {
-        news: "Slot's high-intensity pressing and fluid counter-attacks are firing; lethal transition transitions from wide areas.",
-        rivalry: "Historic rivalry games demand maximum physical output to maintain the league summit.",
-        motivation: "Relentless title charge."
-      },
-      "Arsenal": {
-        news: "Arteta's structured low-block and set-piece mastery make them almost impossible to break down open-play.",
-        rivalry: "High-stakes London & Big-Six fixtures ignite fierce competitive desire after close title misses.",
-        motivation: "Desperate to turn dominance into trophies."
-      },
-      "Chelsea": {
-        news: "Maresca's young squad is showing explosive attacking bursts but occasional lapses in defensive transitions.",
-        rivalry: "Top-4 qualification clash; intense London derby friction with pride on the line.",
-        motivation: "Securing Champions League qualification."
-      },
-      "Real Madrid": {
-        news: "Mbappe and Vinicius Jr finding deadly chemistry; elite individual brilliance breaking stubborn low blocks.",
-        rivalry: "El Clasico / European legacy rivalry where defeat is never an option for the Bernabeu faithful.",
-        motivation: "Defending their domestic crown and European pedigree."
-      },
-      "Barcelona": {
-        news: "Flick's ultra-high defensive line and rapid vertical counter-press creating massive chance volume.",
-        rivalry: "Clashing directly against Madrid giants with fierce cultural and table supremacy at stake.",
-        motivation: "Proving their young generation can dominate Europe."
-      },
-      "Bayern Munich": {
-        news: "Kompany's aggressive suffocating front-foot press pinning opponents deep in their defensive third.",
-        rivalry: "Der Klassiker battles bring out ruthless finishing after reclaiming German supremacy.",
-        motivation: "Total domestic and continental redemption."
-      },
-      "Bayer Leverkusen": {
-        news: "Xabi Alonso's side retains uncanny late-game resilience and intricate wide overload combinations.",
-        rivalry: "Direct top-four and title contenders looking to disrupt their historic momentum.",
-        motivation: "Defending their elite reputation in Germany."
-      },
-      "Inter Milan": {
-        news: "Inzaghi's 3-5-2 system remains one of Europe's most cohesive units, dominating both boxes seamlessly.",
-        rivalry: "Derby d'Italia / Milanese clashes provide ferocious emotional energy and tactical discipline.",
-        motivation: "Securing back-to-back Scudettos."
-      },
-      "Juventus": {
-        news: "Motta's organized rebuild focuses on strict defensive compactness and patient midfield probing.",
-        rivalry: "Historic rivalry matchups ignite the Bianconeri fanbase aiming to knock rivals off their perch.",
-        motivation: "Reclaiming Italian football supremacy."
-      },
-      "Paris Saint-Germain": {
-        news: "Luis Enrique's youth-centric collective pressing dominating domestic fixtures with high possession.",
-        rivalry: "Le Classique and French prestige clashes carry heightened hostility and fan pressure.",
-        motivation: "Cementing uncontested Ligue 1 dominance."
-      },
-      "Blackburn Rovers": {
-        news: "Pushing hard in the playoff hunt with sharp counter-attacking efficiency and gritty away resilience.",
-        rivalry: "Every away fixture in the Championship grinder requires full combativeness to maintain playoff pace.",
-        motivation: "Promotion push motivation is peaking."
-      },
-      "Lincoln City": {
-        news: "Disciplined defensive shape at home, relying heavily on set-pieces and physical aerial duels.",
-        rivalry: "Underdog mentality facing higher-tier opposition provides huge cup/league motivation to punch above weight.",
-        motivation: "Proving they can disrupt bigger clubs at home."
-      },
-      "Portsmouth": {
-        news: "Fratton Park energy is electric, but defensive errors under high press have cost crucial late points.",
-        rivalry: "Relegation battle tension makes every point at home feel like a cup final.",
-        motivation: "Survival and club pride at all costs."
-      },
-      "Derby County": {
-        news: "Resilient defensive structure away from home, looking to punish transitional turnovers on the break.",
-        rivalry: "Mid-table momentum clash where winning creates daylight from the drop zone.",
-        motivation: "Solidifying Championship stability."
-      },
-      "Preston North End": {
-        news: "Organized low-block and stubborn physical play making Deepdale a notoriously difficult away trip.",
-        rivalry: "Close-proximity battles bring high physical tackles and cautious game management.",
-        motivation: "Breaking into the upper half of the table."
-      },
-      "Bristol City": {
-        news: "Fluid attacking moments in transition, but vulnerable when caught over-committing fullbacks forward.",
-        rivalry: "Evenly matched Championship clash with tactical chess match across midfield.",
-        motivation: "Pushing towards the top six playoff spots."
-      },
-      "Sheffield United": {
-        news: "Bramall Lane fortress in full effect with intense physical duels and relentless wing deliveries into the box.",
-        rivalry: "Promotion favorites under huge expectation to dominate home games against struggling opponents.",
-        motivation: "Direct promotion back to the Premier League."
-      },
-      "Bolton Wanderers": {
-        news: "Battling hard in tight games, relying on compact midfield lines and sudden set-piece opportunities.",
-        rivalry: "Testing themselves against powerhouse opposition brings extra underdog adrenaline.",
-        motivation: "Upsetting the odds and climbing up the ranks."
-      },
-      "Swansea City": {
-        news: "High possession football looking to break lines through midfield, but needing more killer instinct in the box.",
-        rivalry: "Tactical battle against direct physical styles tests their composure under pressure.",
-        motivation: "Climbing into the Championship playoff conversation."
-      },
-      "Watford": {
-        news: "Dangerous pace on the wings and clinical finishing when given space in transition.",
-        rivalry: "Traveling to Wales with high motivation to take points off direct rivals.",
-        motivation: "Closing the gap on the promotion places."
-      },
-      "West Ham United": {
-        news: "Looking to assert home authority with direct passing into wide forwards and strong presence on corners.",
-        rivalry: "Crucial league clash with fans demanding a commanding, proactive performance.",
-        motivation: "Re-establishing positive momentum in the league."
-      },
-      "Wolverhampton": {
-        news: "Fast breakaways led by dynamic wingers, but defensive lapses against set-pieces remain an issue.",
-        rivalry: "High-stakes battle where away points are critical to stave off relegation anxieties.",
-        motivation: "Fighting tooth and nail for every point."
-      },
-      "Spain": {
-        news: "De la Fuente's European champions playing fluid, aggressive 4-3-3 with Yamal and Williams stretching defenses.",
-        rivalry: "Heavyweight European rivalry; asserting their crown as the undisputed world standard.",
-        motivation: "Maintaining their flawless Nations League title defense."
-      },
-      "France": {
-        news: "Mbappé leading the line with rapid transition support; defensive double-pivot providing elite structural cover.",
-        rivalry: "Pride on the line against top European rivals; looking to banish Euro semifinal disappointment.",
-        motivation: "Chasing a third major final appearance in four years."
-      },
-      "Germany": {
-        news: "Nagelsmann's vertical play driven by Musiala and Wirtz, dominating possession with aggressive counter-pressing.",
-        rivalry: "Rebuilding national momentum on home soil following impressive Euro 2024 performances.",
-        motivation: "Proving their generational tactical transition is complete."
-      },
-      "England": {
-        news: "Generational attacking depth with Bellingham, Kane, and Saka creating continuous central and wide overload.",
-        rivalry: "Fierce international test where media pressure demands dominant attacking execution.",
-        motivation: "Securing immediate promotion back to Nations League League A."
-      },
-      "Portugal": {
-        news: "Roberto Martínez deploying dynamic wide wing-backs with Bruno Fernandes pulling the creative strings.",
-        rivalry: "Continental clash with high tactical stakes across midfield transition zones.",
-        motivation: "Adding another Nations League trophy to their 2019 triumph."
-      },
-      "Netherlands": {
-        news: "Koeman's direct, vertical 3-4-3 with Van Dijk marshalling the backline and Gakpo lethal from wide positions.",
-        rivalry: "Classic European clash demanding maximum physical intensity and spatial awareness.",
-        motivation: "Establishing their status among the top European tier."
-      },
-      "Italy": {
-        news: "Spalletti instilling high-energy positional play with dynamic full-backs and aggressive central midfield pressing.",
-        rivalry: "Historic Azzurri prestige on the line against elite continental opponents.",
-        motivation: "Reclaiming European heavyweight status after Euro 2024 transition."
-      },
-      "Belgium": {
-        news: "Tedesco's modern counter-pressing system leaning on explosive young wingers and direct channel running.",
-        rivalry: "Proving their new generation can compete with the world's best.",
-        motivation: "Silencing critics with statement Nations League victories."
-      },
-      "Croatia": {
-        news: "Modrić orchestrating veteran midfield control with legendary tournament game-management and mental resilience.",
-        rivalry: "Never count out the Vatreni in high-pressure international duels.",
-        motivation: "Aiming for another Nations League Final Four appearance."
-      },
-      "Turkey": {
-        news: "Montella's electric, high-tempo squad fueled by passionate pressing and Arda Güler's creative spark.",
-        rivalry: "Euro 2024 quarterfinal momentum carries into intense Nations League clashes.",
-        motivation: "Climbing into League A among Europe's elite."
-      },
-      "Türkiye": {
-        news: "Montella's electric, high-tempo squad fueled by passionate pressing and Arda Güler's creative spark.",
-        rivalry: "Euro 2024 quarterfinal momentum carries into intense Nations League clashes.",
-        motivation: "Climbing into League A among Europe's elite."
-      },
-      "Norway": {
-        news: "Erling Haaland's lethal penalty-box conversion powered by Martin Ødegaard's pinpoint through-balls.",
-        rivalry: "Striving to break their international tournament curse with decisive Nations League results.",
-        motivation: "Pushing for historic qualification to the top division."
-      },
-      "Argentina": {
-        news: "Scaloni's world champions playing seamless collective possession anchored by Lionel Messi's visionary playmaking.",
-        rivalry: "Defending their global crown and World Cup trophy with ruthless winning mentality.",
-        motivation: "Sustaining one of the greatest dynasties in international football history."
-      }
-    };
-
-    if (narratives[teamName]) return narratives[teamName];
-
-    for (const key of Object.keys(narratives)) {
-      if (teamName.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(teamName.toLowerCase())) {
-        return narratives[key];
-      }
-    }
-
-    // Default dynamic narrative
-    return {
-      news: `Squad is managing recent match fatigue and fine-tuning tactical discipline for this fixture.`,
-      rivalry: `Crucial league match where tactical execution and discipline in transition will decide the outcome.`,
-      motivation: `Highly motivated to secure maximum points and build league standing.`
-    };
+  // Team news. There is no news source wired in, so this returns nothing. It used to return a
+  // hand-written paragraph for ~36 teams (naming managers, several already out of date) and a stock
+  // sentence for everyone else, all presented to the user as news.
+  getTeamNarrative() {
+    return { news: '', rivalry: '', motivation: '' };
   }
   // Calculate tactical multiplier based on the Rock-Paper-Scissors dynamic
   // A team's attack gets boosted if their counter velocity exploits the opponent's high line
@@ -2721,8 +2501,8 @@ class SoccerEngine {
     const dcProbs = this.computeDixonColesProbabilities(homeName, awayName, { odds, league });
     const homeNarrative = this.getTeamNarrative(homeName);
     const awayNarrative = this.getTeamNarrative(awayName);
-    const newsImpact = `${homeName}: ${homeNarrative.news} | ${awayName}: ${awayNarrative.news}`;
-    const conclusion = `${homeName}: ${homeNarrative.news} (${homeNarrative.motivation}) vs ${awayName}: ${awayNarrative.news} (${awayNarrative.rivalry}). Form-adjusted probability stands at Home Win ${dcProbs.home.toFixed(1)}%, Draw ${dcProbs.draw.toFixed(1)}%, Away Win ${dcProbs.away.toFixed(1)}% (Projected: ${dcProbs.mostLikelyScore}).`;
+    const newsImpact = '';
+    const conclusion = `Chances: ${homeName} ${dcProbs.home.toFixed(1)}%, draw ${dcProbs.draw.toFixed(1)}%, ${awayName} ${dcProbs.away.toFixed(1)}%. Likely score ${dcProbs.mostLikelyScore}.`;
 
     const nowMs = Date.now();
     const kickoffMs = raw.timestamp ? Number(raw.timestamp) : (raw.utcDate ? new Date(raw.utcDate).getTime() : null);
@@ -3846,80 +3626,15 @@ class SoccerEngine {
     return baseline;
   }
 
-  async fetchDynamicTeamCoach(teamName, leagueCode = '') {
+  // Current head coach: a manual override (POST /api/override-manager) wins, then Wikidata.
+  // No names are hard-coded; see src/services/coaches.js for why the ESPN roster was dropped.
+  async fetchDynamicTeamCoach(teamName) {
     if (!teamName) return null;
-    const cleanName = String(teamName).toLowerCase().trim();
-    if (this.teamCoachCache && this.teamCoachCache.has(cleanName)) {
-      return this.teamCoachCache.get(cleanName);
-    }
-    if (!this.teamCoachCache) this.teamCoachCache = new Map();
-
-    try {
-      // Resolve league code dynamically from SOLID_LEAGUES / ESPN_LEAGUES
-      let espnLeague = 'eng.1';
-      const rawLeague = String(leagueCode || '').toLowerCase();
-      const foundLeague = ESPN_LEAGUES.find(l => 
-        (l.aliases && l.aliases.some(a => rawLeague.includes(a))) || 
-        l.code === rawLeague || 
-        l.name.toLowerCase() === rawLeague || 
-        rawLeague.includes(l.name.toLowerCase())
-      );
-
-      if (foundLeague) {
-        espnLeague = foundLeague.code;
-      } else if (rawLeague.includes('nation') || cleanName.includes('france') || cleanName.includes('spain') || cleanName.includes('germany') || cleanName.includes('england') || cleanName.includes('italy') || cleanName.includes('portugal') || cleanName.includes('netherlands') || cleanName.includes('belgium') || cleanName.includes('türkiye') || cleanName.includes('turkey')) {
-        espnLeague = 'uefa.nations';
-      } else if (rawLeague.includes('esp') || rawLeague.includes('laliga') || cleanName.includes('madrid') || cleanName.includes('barcelona')) {
-        espnLeague = 'esp.1';
-      } else if (rawLeague.includes('ita') || rawLeague.includes('serie') || cleanName.includes('inter') || cleanName.includes('milan') || cleanName.includes('juve')) {
-        espnLeague = 'ita.1';
-      } else if (rawLeague.includes('ger') || rawLeague.includes('bundes') || cleanName.includes('bayern') || cleanName.includes('dortmund')) {
-        espnLeague = 'ger.1';
-      } else if (rawLeague.includes('fra') || cleanName.includes('psg') || cleanName.includes('paris')) {
-        espnLeague = 'fra.1';
-      } else if (rawLeague.includes('uefa') || rawLeague.includes('champion')) {
-        espnLeague = 'uefa.champions';
-      } else if (rawLeague.includes('europa')) {
-        espnLeague = 'uefa.europa';
-      }
-
-      // 1. Fetch league teams directory dynamically to get real-time team ID
-      const teamsRes = await espnFetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${espnLeague}/teams`);
-      if (teamsRes.ok) {
-        const teamsData = await teamsRes.json();
-        const teams = teamsData?.sports?.[0]?.leagues?.[0]?.teams || [];
-        const matched = teams.find(t => {
-          const name = (t.team?.name || '').toLowerCase();
-          const disp = (t.team?.displayName || '').toLowerCase();
-          const short = (t.team?.shortDisplayName || '').toLowerCase();
-          return name.includes(cleanName) || cleanName.includes(name) || disp.includes(cleanName) || cleanName.includes(disp) || short.includes(cleanName);
-        });
-
-        if (matched?.team?.id) {
-          // 2. Fetch live team roster directly from ESPN to resolve active head coach dynamically
-          const rosterRes = await espnFetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${espnLeague}/teams/${matched.team.id}/roster`);
-          if (rosterRes.ok) {
-            const rosterData = await rosterRes.json();
-            const coachObj = rosterData?.coach?.[0] || rosterData?.coaches?.[0];
-            const coachName = coachObj?.fullName || coachObj?.name || coachObj?.displayName;
-            if (coachName) {
-              this.teamCoachCache.set(cleanName, coachName);
-              this.log('DynamicCoach', `Live manager confirmed dynamically for ${teamName}: ${coachName}`);
-              return coachName;
-            }
-          }
-        }
-      }
-    } catch (err) {
-      // Non-blocking: will fall back gracefully if network is unreachable
-    }
-
-    // Graceful fallback if dynamic live API is offline or rate-limited
-    if (this.customTeamManagers && this.customTeamManagers[cleanName]) {
-      return this.customTeamManagers[cleanName];
-    }
-
-    return null;
+    const override = this.customTeamManagers?.[String(teamName).toLowerCase().trim()];
+    if (override) return override;
+    const coach = await getCurrentCoach(teamName, ENGINE_DIR);
+    if (coach) this.log('DynamicCoach', `Current manager for ${teamName}: ${coach}`);
+    return coach;
   }
 
   async fetchMatchBoxScoreAndTimeline(eventId, leagueCodeInput, matchDetails = {}) {
@@ -4039,60 +3754,8 @@ class SoccerEngine {
       }
     }
 
-    // High-fidelity fallback / synthetic box score if real feed was missing or incomplete
-    if (!boxScore || !boxScore.home || !boxScore.away) {
-      const hRating = this.getTeamRating(homeTeamName);
-      const aRating = this.getTeamRating(awayTeamName);
-      const hPoss = Math.min(72, Math.max(30, Math.round(50 + (hRating.elo - aRating.elo) / 35)));
-      const aPoss = 100 - hPoss;
-      const hShots = Math.max(hG + 3, Math.round(hRating.attack * 5.5 + Math.random() * 4));
-      const aShots = Math.max(aG + 2, Math.round(aRating.attack * 4.8 + Math.random() * 3));
-      const hSOT = Math.max(hG, Math.round(hShots * 0.38));
-      const aSOT = Math.max(aG, Math.round(aShots * 0.36));
-
-      boxScore = {
-        home: {
-          possession: hPoss,
-          shots: hShots,
-          shotsOnTarget: hSOT,
-          corners: Math.max(2, Math.round(hShots * 0.45)),
-          fouls: Math.round(8 + Math.random() * 6),
-          yellowCards: Math.round(Math.random() * 3),
-          redCards: 0,
-          saves: Math.max(0, aSOT - aG),
-          passes: Math.round(hPoss * 8.5),
-          passPct: parseFloat((78 + (hPoss * 0.15)).toFixed(1)),
-          xG: parseFloat((Math.max(0.2, (hSOT * 0.31) + ((hShots - hSOT) * 0.05))).toFixed(2))
-        },
-        away: {
-          possession: aPoss,
-          shots: aShots,
-          shotsOnTarget: aSOT,
-          corners: Math.max(1, Math.round(aShots * 0.4)),
-          fouls: Math.round(9 + Math.random() * 6),
-          yellowCards: Math.round(1 + Math.random() * 3),
-          redCards: 0,
-          saves: Math.max(0, hSOT - hG),
-          passes: Math.round(aPoss * 8.5),
-          passPct: parseFloat((75 + (aPoss * 0.15)).toFixed(1)),
-          xG: parseFloat((Math.max(0.2, (aSOT * 0.31) + ((aShots - aSOT) * 0.05))).toFixed(2))
-        }
-      };
-
-      // Synthetic timeline from actual goals
-      if (hG > 0) {
-        for (let g = 0; g < hG; g++) {
-          const min = Math.round(15 + (g * 32) + Math.random() * 15);
-          timeline.push({ minute: `${min}'`, minuteNum: min, type: 'GOAL', team: homeTeamName, player: `${homeTeamName} Scorer`, text: `Goal scored by ${homeTeamName}` });
-        }
-      }
-      if (aG > 0) {
-        for (let g = 0; g < aG; g++) {
-          const min = Math.round(20 + (g * 30) + Math.random() * 15);
-          timeline.push({ minute: `${min}'`, minuteNum: min, type: 'GOAL', team: awayTeamName, player: `${awayTeamName} Scorer`, text: `Goal scored by ${awayTeamName}` });
-        }
-      }
-    }
+    // When ESPN has no box score the match simply has none. (This used to invent one, with random
+    // shots, corners and cards and made-up goal times, which then fed the team trend memory.)
 
     timeline.sort((a, b) => a.minuteNum - b.minuteNum);
     const result = { boxScore, timeline };
@@ -4138,7 +3801,6 @@ class SoccerEngine {
     // Tactical Registry for elite clubs & generic system synthesizer
     const CLUB_TACTICAL_REGISTRY = {
       'real madrid': {
-        manager: 'José Mourinho',
         system: '4-2-3-1 High-Octane Direct Verticality & Mid-Block Trap',
         inPossession: 'Rapid vertical direct transitions via Mbappé & Vinícius, dynamic central line-breaking distribution through Bellingham & Valverde, lethal box-crashing.',
         outOfPossession: 'Compact disciplined 4-4-2 / 4-2-3-1 mid-block pressing trap, ferocious second-ball recovery and suffocating central channel denial.',
@@ -4146,7 +3808,6 @@ class SoccerEngine {
         keyVulnerabilities: 'Vulnerability to sustained wide diagonal switching against rigid mid-blocks.'
       },
       'atlético madrid': {
-        manager: 'Diego Simeone',
         system: '5-3-2 / 3-5-2 High-Intensity Transition Block',
         inPossession: 'Dynamic wing-back verticality (Grimaldo/Llorente), rapid central link-up play (Griezmann/David/Alvarez), aggressive second-ball claiming.',
         outOfPossession: 'Compact low-to-mid block with ferocious pressing traps in wide channels, smothering penalty-box entries.',
@@ -4154,7 +3815,6 @@ class SoccerEngine {
         keyVulnerabilities: 'Occasional offensive stagnation against rigid five-at-the-back blocks when chasing deficits.'
       },
       'barcelona': {
-        manager: 'Hansi Flick',
         system: '4-2-3-1 Aggressive High-Line Press',
         inPossession: 'Extreme width from Yamal and Raphinha, Lewandowski central focal point, vertical progressive passing through double pivots.',
         outOfPossession: 'Ultra-high defensive line with coordinated offside trap; highly aggressive counter-pressing.',
@@ -4162,7 +3822,6 @@ class SoccerEngine {
         keyVulnerabilities: 'Vulnerability in vast green space behind the center-backs against pace.'
       },
       'manchester city': {
-        manager: 'Pep Guardiola',
         system: '3-2-4-1 Inverted Box Midfield',
         inPossession: 'Total territorial possession, central numerical overload, half-space cutbacks for Haaland.',
         outOfPossession: 'Immediate 5-second counter-press with high rest-defense line.',
@@ -4170,7 +3829,6 @@ class SoccerEngine {
         keyVulnerabilities: 'Susceptibility to direct counter-attacks launched over the high defensive line.'
       },
       'arsenal': {
-        manager: 'Mikel Arteta',
         system: '4-3-3 Suffocating Positional Press',
         inPossession: 'Right-flank isolation for Saka, inverted full-back distribution, set-piece dominance (Gabriel/Saliba).',
         outOfPossession: 'Impenetrable mid-to-low block, elite rest-defense spacing.',
@@ -4178,7 +3836,6 @@ class SoccerEngine {
         keyVulnerabilities: 'Over-reliance on wing isolation against compact five-man low-blocks.'
       },
       'liverpool': {
-        manager: 'Arne Slot',
         system: '4-2-3-1 Controlled High-Tempo Verticality',
         inPossession: 'Rapid wing progression (Salah/Díaz), dynamic double-pivot distribution, sharp counter-pressing triggers.',
         outOfPossession: 'Synchronized pressing traps in middle third, aggressive center-back stepping.',
@@ -4186,7 +3843,6 @@ class SoccerEngine {
         keyVulnerabilities: 'Open transitional corridors when dual pivots push into final third.'
       },
       'bayern munich': {
-        manager: 'Vincent Kompany',
         system: '4-2-3-1 Relentless High Press',
         inPossession: 'High shot volume, Harry Kane false-nine link-up, inverted winger combinations.',
         outOfPossession: 'Extreme front-foot counter-press; high defensive line risk.',
@@ -4194,7 +3850,6 @@ class SoccerEngine {
         keyVulnerabilities: 'Direct vertical counter-attacks behind expansive full-backs.'
       },
       'inter milan': {
-        manager: 'Simone Inzaghi',
         system: '3-5-2 Synchronized Rotational Block',
         inPossession: 'Dual-striker interplay (Lautaro/Thuram), wing-back cross-field switches (Dimarco).',
         outOfPossession: 'Compact 5-man low block with ruthless transition triggers.',
@@ -4202,7 +3857,6 @@ class SoccerEngine {
         keyVulnerabilities: 'Fatigue deceleration when defending consecutive wave attacks.'
       },
       'psg': {
-        manager: 'Luis Enrique',
         system: '4-3-3 Positional Possession Carousel',
         inPossession: 'High circulation tempo, 1v1 isolation on flanks, fluid midfield triangles.',
         outOfPossession: 'Aggressive front-third press, vulnerable in deep transition.',
@@ -4223,7 +3877,7 @@ class SoccerEngine {
             const base = CLUB_TACTICAL_REGISTRY[key.toLowerCase()] || {};
             return {
               club: team,
-              manager: liveCoach || mgr,
+              manager: mgr || liveCoach,
               system: base.system || '4-2-3-1 High-Intensity Transition Block',
               inPossession: base.inPossession || 'Rapid vertical transitions and decisive half-space penetration.',
               outOfPossession: base.outOfPossession || 'Compact disciplined mid-block pressing trap and space denial.',
@@ -4238,7 +3892,7 @@ class SoccerEngine {
           return { 
             ...prof, 
             club: team,
-            manager: liveCoach || prof.manager 
+            manager: liveCoach || peekCoach(team, ENGINE_DIR) || null
           };
         }
       }
@@ -4246,7 +3900,7 @@ class SoccerEngine {
       const isCounterBased = (stats.possession || 50) <= 45;
       return {
         club: team,
-        manager: liveCoach || (isHome ? 'Home Tactician' : 'Visiting Strategist'),
+        manager: liveCoach || peekCoach(team, ENGINE_DIR) || null,
         system: isPossessionHeavy ? '4-3-3 Positional Overload System' : isCounterBased ? '5-3-2 Direct Counter & Transition Low-Block' : '4-2-3-1 Balanced Mid-Block Structure',
         inPossession: isPossessionHeavy ? `Structured buildup with wide overloads (${stats.possession}% possession), circulating patiently to create penetration angles.` : `Direct vertical transitions, targeting rapid outlet runners into vacated space behind opponent defensive lines.`,
         outOfPossession: isPossessionHeavy ? `Aggressive counter-pressing in the middle third to prevent transitional outlets.` : `Disciplined, compact low-to-mid defensive block denying central passing lanes.`,
@@ -4257,6 +3911,8 @@ class SoccerEngine {
 
     const homeProf = getProfile(homeTeam, true, hStats);
     const awayProf = getProfile(awayTeam, false, aStats);
+    // Manager names come from Wikidata or a manual override; unknown stays unknown rather than invented.
+    const mgrName = (prof) => prof.manager || `${prof.club}'s manager`;
 
     // Extract goals & red cards from timeline
     const goalEvents = timeline.filter(t => t.type === 'GOAL');
@@ -4273,8 +3929,8 @@ class SoccerEngine {
       });
       turningPoints.push({
         minute: "Tactical Setup",
-        title: `Managerial Mismatch: ${homeProf.manager} vs ${awayProf.manager}`,
-        description: `${homeProf.manager} (${homeProf.system}) faces ${awayProf.manager} (${awayProf.system}). Our super model gives ${predWinnerTeam} a rest-defense recovery edge of +14%.`,
+        title: `Managers: ${mgrName(homeProf)} vs ${mgrName(awayProf)}`,
+        description: `${mgrName(homeProf)} (${homeTeam}) faces ${mgrName(awayProf)} (${awayTeam}).`,
         tacticalImpact: `Minimizes opponent counter-attacking avenues and locks down transition threat.`
       });
       turningPoints.push({
@@ -4317,7 +3973,7 @@ class SoccerEngine {
     // Build Executive Verdict (Short, punchy, compact story)
     let executiveVerdict = '';
     if (isPreMatch) {
-      executiveVerdict = `Super Model Pre-Match Intelligence: ${predWinnerTeam} commands a decisive tactical edge over ${predOpponentTeam}. With ${homeProf.manager} squaring off against ${awayProf.manager}, our calibrated models project an outright ${predScore} victory (${predConfidence}% model confidence). Key edge: ${predWinnerTeam}'s rapid transition verticality and high-conversion half-space overloads will systematically puncture ${predOpponentTeam}'s rest-defense.`;
+      executiveVerdict = `Super Model Pre-Match Intelligence: ${predWinnerTeam} commands a decisive tactical edge over ${predOpponentTeam}. With ${mgrName(homeProf)} squaring off against ${mgrName(awayProf)}, our calibrated models project an outright ${predScore} victory (${predConfidence}% model confidence). Key edge: ${predWinnerTeam}'s rapid transition verticality and high-conversion half-space overloads will systematically puncture ${predOpponentTeam}'s rest-defense.`;
     } else if (actualWinner === 'DRAW') {
       executiveVerdict = `Tactical Stalemate Verdict: ${homeTeam} and ${awayTeam} neutralized each other in an intense tactical duel that finished ${actualScore} (xG: ${hStats.xG} vs ${aStats.xG}). Both sides prioritized structural rest-defense over offensive transition, resulting in low-quality perimeter efforts and a mutual inability to puncture central defensive lines. Tactical parity accurately mirrored the pitch dynamic.`;
     } else {
@@ -6170,8 +5826,8 @@ class SoccerEngine {
 
             const homeNarrative = this.getTeamNarrative(homeName);
             const awayNarrative = this.getTeamNarrative(awayName);
-            const newsImpact = `${homeName}: ${homeNarrative.news} | ${awayName}: ${awayNarrative.news}`;
-            const conclusion = `${homeName}: ${homeNarrative.news} (${homeNarrative.motivation}) vs ${awayName}: ${awayNarrative.news} (${awayNarrative.rivalry}). Form-adjusted probability stands at Home Win ${dcProbs.home.toFixed(1)}%, Draw ${dcProbs.draw.toFixed(1)}%, Away Win ${dcProbs.away.toFixed(1)}% (Projected: ${dcProbs.mostLikelyScore}).`;
+            const newsImpact = '';
+            const conclusion = `Chances: ${homeName} ${dcProbs.home.toFixed(1)}%, draw ${dcProbs.draw.toFixed(1)}%, ${awayName} ${dcProbs.away.toFixed(1)}%. Likely score ${dcProbs.mostLikelyScore}.`;
 
             newUpcoming.push({
               id: ev.id || `ESPN_UP_${home.team.id}_${away.team.id}`,
@@ -8139,12 +7795,13 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
 
   // -------------------------------------------------------------
   // PROPS & SPECIALS ANALYTICS ENGINE (VERY HIGH ACHIEVEMENT HITS)
-  // Poisson-grounded Corners, Offsides, Cards & First-Half Specials
+  // Corners, cards and both teams to score
   // -------------------------------------------------------------
   async runPropsSpecialsDeepAnalysis(options = {}) {
-    this.log('PropsSpecials', 'Initiating Poisson-modeled Props & Specials deep analysis (High-Achievement Hits)...');
-    
-    // Auto-load matches if currently empty
+    // Corners and cards come from the match-statistics model (src/model/matchStats.js), built from
+    // real corners and cards in the 14 main European leagues and scored on seasons it never saw.
+    // Both-teams-to-score comes from the fitted goals model. Fixtures outside those leagues get no
+    // corners or cards figures rather than a guess.
     if (options.matches && Array.isArray(options.matches) && options.matches.length > 0) {
       if (!this.matches || this.matches.length === 0) {
         this.matches = options.matches;
@@ -8160,725 +7817,127 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
       }
     }
 
-    // Check upcoming unstarted matches, falling back to all active matches or options
     const upcoming = (this.matches || []).filter(m => !m.finished && !m.started);
     let candidatePool = upcoming.length > 0 ? upcoming : (this.matches || []);
-
     if (candidatePool.length === 0 && options.matches && options.matches.length > 0) {
       candidatePool = options.matches;
     }
 
+    const summary = matchStatsSummary(ENGINE_DIR);
+    const recentEvaluations = (summary?.recent || []).map((r, i) => ({
+      matchId: `stats_${r.date}_${i}`,
+      home: r.home,
+      away: r.away,
+      league: r.league,
+      date: r.date,
+      dateIso: r.date,
+      market: r.market,
+      propPick: r.pick,
+      isHit: r.hit,
+      actualResult: r.result,
+      odds: (100 / r.chance).toFixed(2),
+      hitRateRef: `${r.chance}%`
+    }));
+    const topPick = summary?.heldOut?.topPick;
+    const trackRecord = {
+      overallAccuracy: topPick ? `${topPick.hit}%` : null,
+      totalEvaluated: topPick?.picks || 0,
+      ratingsAsOf: summary?.lastMatch || null
+    };
+
     if (candidatePool.length === 0) {
-      candidatePool = (this.historicalMatches || []).concat(this.yesterdayMatches || []).slice(0, 15);
-    }
-    
-    if (candidatePool.length === 0) {
-      return { status: 'NO_GAMES', message: 'No fixtures available to analyze for props.', insights: [], recentEvaluations: [] };
+      return { status: 'NO_GAMES', message: 'No fixtures available to analyze for props.', insights: [], recentEvaluations, ...trackRecord };
     }
 
-    const maxAnalyze = Math.min(candidatePool.length, options.limit || 12);
-    const targets = candidatePool.slice(0, maxAnalyze);
-    let insights = [];
+    // Scan a wider pool than we show: only fixtures in the covered leagues have corners and cards.
+    const maxAnalyze = options.limit || 12;
+    const insights = [];
 
-    // Helper functions for Poisson & Props calculations
-    const fact = (n) => {
-      let r = 1;
-      for (let i = 2; i <= n; i++) r *= i;
-      return r;
-    };
-    const pPmf = (k, lambda) => {
-      if (lambda <= 0) return k === 0 ? 1 : 0;
-      return (Math.pow(lambda, k) * Math.exp(-lambda)) / fact(k);
-    };
-    const pCdf = (k, lambda) => {
-      let s = 0;
-      for (let i = 0; i <= k; i++) s += pPmf(i, lambda);
-      return Math.min(1, Math.max(0, s));
-    };
-    const pOver = (line, lambda) => {
-      const k = Math.floor(line);
-      return Math.max(0.01, Math.min(0.99, 1 - pCdf(k, lambda)));
-    };
-    const pUnder = (line, lambda) => {
-      const k = Math.floor(line);
-      return Math.max(0.01, Math.min(0.99, pCdf(k, lambda)));
-    };
+    const tierOf = (pct) => pct >= 80 ? ['ELITE_ANCHOR', '80%+ likely']
+      : pct >= 75 ? ['HIGH_CONVICTION', '75%+ likely']
+        : pct >= 65 ? ['SOLID_PLAY', '65%+ likely']
+          : ['VALUE_PLAY', '58%+ likely'];
 
-    const isDerby = (h, a) => {
-      const strH = (h || '').toLowerCase();
-      const strA = (a || '').toLowerCase();
-      const rivals = [
-        ['arsenal', 'tottenham'], ['liverpool', 'everton'], ['manchester united', 'manchester city'],
-        ['manchester united', 'liverpool'], ['chelsea', 'tottenham'], ['real madrid', 'barcelona'],
-        ['real madrid', 'atletico'], ['barcelona', 'espanyol'], ['sevilla', 'betis'],
-        ['inter', 'milan'], ['roma', 'lazio'], ['juventus', 'inter'], ['juventus', 'torino'],
-        ['dortmund', 'schalke'], ['bayern', 'dortmund'], ['celtic', 'rangers'], ['boca', 'river'],
-        ['galatasaray', 'fenerbahce'], ['benfica', 'sporting'], ['ajax', 'feyenoord']
-      ];
-      for (const [r1, r2] of rivals) {
-        if ((strH.includes(r1) && strA.includes(r2)) || (strH.includes(r2) && strA.includes(r1))) return true;
-      }
-      return false;
-    };
+    for (const match of candidatePool.slice(0, Math.max(maxAnalyze * 4, 40))) {
+      if (insights.length >= maxAnalyze) break;
+      const stats = predictMatchStats(ENGINE_DIR, match.home, match.away);
 
-    const analysisPromises = targets.map(async (match) => {
-      const homeStats = this.getTeamRating(match.home);
-      const awayStats = this.getTeamRating(match.away);
-      const leagueName = match.league || match.competition || '';
-      const leagueLower = leagueName.toLowerCase();
-
-      // 1. League Baseline Corner & Card Metrics
-      let baseCornersTotal = 9.8;
-      let baseCornersHome = 5.4;
-      let baseCornersAway = 4.4;
-      let baseLeagueCards = 4.1;
-
-      if (leagueLower.includes('premier')) {
-        baseCornersTotal = 10.45; baseCornersHome = 5.8; baseCornersAway = 4.65; baseLeagueCards = 3.9;
-      } else if (leagueLower.includes('bundesliga')) {
-        baseCornersTotal = 10.0; baseCornersHome = 5.5; baseCornersAway = 4.5; baseLeagueCards = 3.8;
-      } else if (leagueLower.includes('la liga') || leagueLower.includes('laliga')) {
-        baseCornersTotal = 9.35; baseCornersHome = 5.15; baseCornersAway = 4.2; baseLeagueCards = 4.9;
-      } else if (leagueLower.includes('serie a')) {
-        baseCornersTotal = 9.6; baseCornersHome = 5.3; baseCornersAway = 4.3; baseLeagueCards = 4.7;
-      } else if (leagueLower.includes('ligue 1')) {
-        baseCornersTotal = 9.3; baseCornersHome = 5.1; baseCornersAway = 4.2; baseLeagueCards = 4.0;
-      } else if (leagueLower.includes('championship')) {
-        baseCornersTotal = 10.2; baseCornersHome = 5.6; baseCornersAway = 4.6; baseLeagueCards = 4.1;
-      } else if (leagueLower.includes('mls')) {
-        baseCornersTotal = 9.8; baseCornersHome = 5.4; baseCornersAway = 4.4; baseLeagueCards = 4.2;
-      }
-
-      // 2. Lineup and Formation Data
-      let lineupConfirmed = false;
-      let homeFormation = '4-3-3';
-      let awayFormation = '4-2-3-1';
-      let lineupContextStr = "Using tactical base formation estimates.";
-
+      let btts = null;
       try {
-        const lineupPromise = this.fetchMatchLineup(match.id);
-        const lineupRes = await Promise.race([
-          lineupPromise,
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Lineup fetch timeout')), 3500))
-        ]);
+        const dc = this.computeDixonColesProbabilities(match.home, match.away, { league: match.league });
+        if (dc?.scoreModel?.btts) btts = { yes: dc.scoreModel.btts.yes / 100, xg: dc.scoreModel.expectedGoals };
+      } catch { /* no goals figures for this fixture */ }
 
-        if (lineupRes && lineupRes.success && lineupRes.status === 'CONFIRMED') {
-          homeFormation = lineupRes.formations?.home || homeFormation;
-          awayFormation = lineupRes.formations?.away || awayFormation;
-          lineupConfirmed = true;
-          lineupContextStr = `STARTING XI CONFIRMED! Home: ${homeFormation}, Away: ${awayFormation}.`;
+      if (!stats && !btts) continue;
+
+      const candidateList = [];
+      if (stats) {
+        for (const p of stats.picks) {
+          const noun = p.market === 'CORNERS' ? 'corners' : 'cards';
+          const side = p.side === 'OVER' ? 'Over' : 'Under';
+          candidateList.push({
+            id: `${match.id}-${p.market}-${p.side}-${p.line}`,
+            market: p.market,
+            type: `TOTAL_${p.market}_${p.side}_${String(p.line).replace('.', '_')}`,
+            label: `${side} ${p.line} total ${noun}`,
+            line: p.line,
+            side: p.side,
+            prob: p.prob,
+            expected: Number(p.expected.toFixed(1)),
+            safetyMargin: (p.side === 'OVER' ? p.expected - p.line : p.line - p.expected).toFixed(1),
+            rationale: `About ${p.expected.toFixed(1)} ${noun} expected, from both teams' recent ${noun} for and against.`
+          });
         }
-      } catch (err) {
-        // Fallback to defaults
+      }
+      if (btts) {
+        const yes = Math.max(0.02, Math.min(0.98, btts.yes));
+        const xg = btts.xg ? ` (expected goals ${btts.xg.home} - ${btts.xg.away})` : '';
+        candidateList.push(
+          { id: `${match.id}-BTTS-YES`, market: 'BTTS', type: 'BTTS_YES', label: 'Both teams to score - Yes', line: 0.5, side: 'YES', prob: yes, expected: btts.xg ? `xG ${btts.xg.home} - ${btts.xg.away}` : '', safetyMargin: '', rationale: `Both sides likely to score${xg}.` },
+          { id: `${match.id}-BTTS-NO`, market: 'BTTS', type: 'BTTS_NO', label: 'Both teams to score - No', line: 0.5, side: 'NO', prob: 1 - yes, expected: btts.xg ? `xG ${btts.xg.home} - ${btts.xg.away}` : '', safetyMargin: '', rationale: `At least one side likely to be kept out${xg}.` }
+        );
       }
 
-      // Tactical Formation Adjustments (Wing width enhances corners)
-      let homeWidthMod = 1.0;
-      let awayWidthMod = 1.0;
-      if (homeFormation.includes('4-3-3') || homeFormation.includes('3-4-3')) homeWidthMod += 0.08;
-      if (awayFormation.includes('4-3-3') || awayFormation.includes('3-4-3')) awayWidthMod += 0.08;
-      if (homeFormation.includes('5-') || homeFormation.includes('3-5-2')) awayWidthMod += 0.06;
-      if (awayFormation.includes('5-') || awayFormation.includes('3-5-2')) homeWidthMod += 0.06;
-
-      // Elo / Power Superiority Modifier
-      const eloDiff = (homeStats.elo || 1500) - (awayStats.elo || 1500);
-      const homeDominance = Math.max(0.85, Math.min(1.25, 1.0 + (eloDiff / 800)));
-      const awayDominance = Math.max(0.75, Math.min(1.15, 1.0 - (eloDiff / 1000)));
-
-      // 3. Expected Corners Calculation (Deterministic Poisson Lambdas)
-      const lambdaH = Math.max(2.6, Math.min(8.5, baseCornersHome * (homeStats.attack / 1.1) * homeDominance * homeWidthMod));
-      const lambdaA = Math.max(1.8, Math.min(7.2, baseCornersAway * (awayStats.attack / 1.1) * awayDominance * awayWidthMod));
-      const lambdaC = Number((lambdaH + lambdaA).toFixed(2));
-
-      // 4. Referee & Card Calculation
-      const refProfile = this.getRefereeProfile(match.referee, match.league);
-      const matchIsDerby = isDerby(match.home, match.away);
-      const derbyMultiplier = matchIsDerby ? 1.28 : 1.0;
-      const refStrictnessMultiplier = Math.max(0.8, Math.min(1.35, refProfile.strictness / 6.0));
-
-      const lambdaK = Number((baseLeagueCards * refStrictnessMultiplier * derbyMultiplier).toFixed(2));
-      const redCardProb = Math.min(0.40, (refProfile.redAvg || 0.16) * (matchIsDerby ? 1.8 : 1.0));
-
-      // 5. Expected Offsides & First Half Dynamics & BTTS
-      const homeOffsides = Number((1.4 * ((homeStats.counterVelocity || 5) / 5)).toFixed(1));
-      const awayOffsides = Number((1.5 * ((awayStats.counterVelocity || 5) / 5)).toFixed(1));
-      const lambdaGoals = (homeStats.attack * 0.9 + awayStats.attack * 0.7);
-      const lambdaFHGoals = lambdaGoals * 0.44;
-      const lambdaFHCorners = lambdaC * 0.46;
-
-      // Extract Dixon-Coles bivariate Poisson scoreline matrix / team expected goals for BTTS
-      let bttsYesProb = 0.52;
-      let bttsNoProb = 0.48;
-      let xGHomeVal = Number((homeStats.attack * 1.25).toFixed(2));
-      let xGAwayVal = Number((awayStats.attack * 0.95).toFixed(2));
-
-      try {
-        const dcProbs = this.computeDixonColesProbabilities(match.home, match.away, { league: match.league });
-        if (dcProbs?.scoreModel?.btts) {
-          bttsYesProb = Math.max(0.05, Math.min(0.95, dcProbs.scoreModel.btts.yes / 100));
-          bttsNoProb = Math.max(0.05, Math.min(0.95, dcProbs.scoreModel.btts.no / 100));
-          if (dcProbs.scoreModel.expectedGoals) {
-            xGHomeVal = dcProbs.scoreModel.expectedGoals.home;
-            xGAwayVal = dcProbs.scoreModel.expectedGoals.away;
-          }
-        }
-      } catch (err) {
-        const pHScored = 1 - Math.exp(-xGHomeVal);
-        const pAScored = 1 - Math.exp(-xGAwayVal);
-        bttsYesProb = Math.max(0.05, Math.min(0.95, pHScored * pAScored));
-        bttsNoProb = Math.max(0.05, Math.min(0.95, 1 - bttsYesProb));
-      }
-
-      // 6. Generate High-Achievement Candidate Props
-      const candidateList = [
-        // CORNER MARKETS
-        {
-          id: `${match.id}-CORNER-O75`,
-          market: 'CORNERS',
-          type: 'TOTAL_CORNERS_OVER_7_5',
-          label: 'Over 7.5 Total Match Corners',
-          line: 7.5,
-          side: 'OVER',
-          prob: pOver(7.5, lambdaC),
-          expected: lambdaC,
-          safetyMargin: (lambdaC - 7.5).toFixed(1),
-          rationale: `Combined expected corners (${lambdaC}) provides a +${(lambdaC - 7.5).toFixed(1)} cushion over the 7.5 anchor line.`
-        },
-        {
-          id: `${match.id}-CORNER-O85`,
-          market: 'CORNERS',
-          type: 'TOTAL_CORNERS_OVER_8_5',
-          label: 'Over 8.5 Total Match Corners',
-          line: 8.5,
-          side: 'OVER',
-          prob: pOver(8.5, lambdaC),
-          expected: lambdaC,
-          safetyMargin: (lambdaC - 8.5).toFixed(1),
-          rationale: `Attacking wing tempo models ${lambdaC} total corners, beating the 8.5 threshold.`
-        },
-        {
-          id: `${match.id}-CORNER-U125`,
-          market: 'CORNERS',
-          type: 'TOTAL_CORNERS_UNDER_12_5',
-          label: 'Under 12.5 Total Match Corners',
-          line: 12.5,
-          side: 'UNDER',
-          prob: pUnder(12.5, lambdaC),
-          expected: lambdaC,
-          safetyMargin: (12.5 - lambdaC).toFixed(1),
-          rationale: `Controlled tactical flow caps corner output below the safe 12.5 ceiling.`
-        },
-        {
-          id: `${match.id}-CORNER-H35`,
-          market: 'CORNERS',
-          type: 'HOME_CORNERS_OVER_3_5',
-          label: `${match.home} Over 3.5 Team Corners`,
-          line: 3.5,
-          side: 'OVER',
-          prob: pOver(3.5, lambdaH),
-          expected: lambdaH,
-          safetyMargin: (lambdaH - 3.5).toFixed(1),
-          rationale: `${match.home} home attacking index projects ${lambdaH.toFixed(1)} corners vs 3.5 line.`
-        },
-        {
-          id: `${match.id}-CORNER-A25`,
-          market: 'CORNERS',
-          type: 'AWAY_CORNERS_OVER_2_5',
-          label: `${match.away} Over 2.5 Team Corners`,
-          line: 2.5,
-          side: 'OVER',
-          prob: pOver(2.5, lambdaA),
-          expected: lambdaA,
-          safetyMargin: (lambdaA - 2.5).toFixed(1),
-          rationale: `${match.away} away counter threat generates consistent set pieces (${lambdaA.toFixed(1)} expected).`
-        },
-        {
-          id: `${match.id}-CORNER-BT25`,
-          market: 'CORNERS',
-          type: 'BOTH_TEAMS_OVER_2_5_CORNERS',
-          label: 'Both Teams Over 2.5 Corners',
-          line: 2.5,
-          side: 'BOTH',
-          prob: pOver(2.5, lambdaH) * pOver(2.5, lambdaA),
-          expected: lambdaC,
-          safetyMargin: Math.min(lambdaH - 2.5, lambdaA - 2.5).toFixed(1),
-          rationale: `Both sides possess wing-oriented transition models (Home: ${lambdaH.toFixed(1)}, Away: ${lambdaA.toFixed(1)}).`
-        },
-
-        // CARDS & DISCIPLINE MARKETS
-        {
-          id: `${match.id}-CARD-O25`,
-          market: 'CARDS',
-          type: 'MATCH_CARDS_OVER_2_5',
-          label: 'Over 2.5 Total Match Cards',
-          line: 2.5,
-          side: 'OVER',
-          prob: pOver(2.5, lambdaK),
-          expected: lambdaK,
-          safetyMargin: (lambdaK - 2.5).toFixed(1),
-          rationale: `${refProfile.name} strictness (${refProfile.strictness}/10) & foul threshold projects ${lambdaK} total bookings.`
-        },
-        {
-          id: `${match.id}-CARD-O35`,
-          market: 'CARDS',
-          type: 'MATCH_CARDS_OVER_3_5',
-          label: 'Over 3.5 Total Match Cards',
-          line: 3.5,
-          side: 'OVER',
-          prob: pOver(3.5, lambdaK),
-          expected: lambdaK,
-          safetyMargin: (lambdaK - 3.5).toFixed(1),
-          rationale: `High friction encounter + strict referee (${refProfile.name}) elevates card rate.`
-        },
-        {
-          id: `${match.id}-CARD-U65`,
-          market: 'CARDS',
-          type: 'MATCH_CARDS_UNDER_6_5',
-          label: 'Under 6.5 Total Match Cards',
-          line: 6.5,
-          side: 'UNDER',
-          prob: pUnder(6.5, lambdaK),
-          expected: lambdaK,
-          safetyMargin: (6.5 - lambdaK).toFixed(1),
-          rationale: `Discipline limits and foul rate indicate an extremely low probability of exceeding 6 cards.`
-        },
-        {
-          id: `${match.id}-CARD-BT1`,
-          market: 'CARDS',
-          type: 'BOTH_TEAMS_TO_RECEIVE_CARD',
-          label: 'Both Teams To Receive 1+ Card',
-          line: 1.0,
-          side: 'BOTH',
-          prob: (1 - Math.exp(-lambdaK * 0.52)) * (1 - Math.exp(-lambdaK * 0.48)),
-          expected: lambdaK,
-          safetyMargin: '1+ each',
-          rationale: `Balanced tactical contest where both teams commit tactical fouls during counters.`
-        },
-
-        // BTTS (BOTH TEAMS TO SCORE) MARKETS
-        {
-          id: `${match.id}-BTTS-YES`,
-          market: 'BTTS',
-          type: 'BTTS_YES',
-          label: 'Both Teams To Score - YES',
-          line: 0.5,
-          side: 'YES',
-          prob: bttsYesProb,
-          expected: `xG: ${xGHomeVal} - ${xGAwayVal}`,
-          safetyMargin: `+${Math.max(0, ((bttsYesProb - 0.5) * 100)).toFixed(0)}% edge`,
-          rationale: `Both ${match.home} (xG: ${xGHomeVal}) and ${match.away} (xG: ${xGAwayVal}) project high mutual goal probability.`
-        },
-        {
-          id: `${match.id}-BTTS-NO`,
-          market: 'BTTS',
-          type: 'BTTS_NO',
-          label: 'Both Teams To Score - NO',
-          line: 0.5,
-          side: 'NO',
-          prob: bttsNoProb,
-          expected: `Shutout probability ${(bttsNoProb * 100).toFixed(1)}%`,
-          safetyMargin: `+${Math.max(0, ((bttsNoProb - 0.5) * 100)).toFixed(0)}% edge`,
-          rationale: `Defensive containment or single-sided attacking dominance projects at least one clean sheet.`
-        },
-
-        // FIRST HALF & SPECIALS
-        {
-          id: `${match.id}-FH-GOAL-O05`,
-          market: 'SPECIALS',
-          type: 'FH_GOALS_OVER_0_5',
-          label: 'First Half Over 0.5 Goals',
-          line: 0.5,
-          side: 'OVER',
-          prob: 1 - Math.exp(-lambdaFHGoals),
-          expected: lambdaFHGoals.toFixed(2),
-          safetyMargin: `+${(lambdaFHGoals - 0.5).toFixed(2)} xG`,
-          rationale: `Early attacking urgency models ${(lambdaFHGoals).toFixed(2)} first-half xG.`
-        },
-        {
-          id: `${match.id}-FH-CORNER-O25`,
-          market: 'SPECIALS',
-          type: 'FH_CORNERS_OVER_2_5',
-          label: 'First Half Over 2.5 Corners',
-          line: 2.5,
-          side: 'OVER',
-          prob: pOver(2.5, lambdaFHCorners),
-          expected: lambdaFHCorners.toFixed(1),
-          safetyMargin: `+${(lambdaFHCorners - 2.5).toFixed(1)} corners`,
-          rationale: `First 45-minute set-piece pace models ${lambdaFHCorners.toFixed(1)} early corners.`
-        }
-      ];
-
-      // Filter and score props that achieve high hit rate thresholds (>= 58% so high-probability BTTS and value specials are captured)
       const structuredProps = candidateList
         .filter(c => c.prob >= 0.58)
         .map(c => {
           const hitPct = Number((c.prob * 100).toFixed(1));
-          let tier = 'VALUE_PLAY';
-          let tierLabel = 'Value Plus (58%+ Hit Rate)';
-          if (hitPct >= 80.0) {
-            tier = 'ELITE_ANCHOR';
-            tierLabel = 'Elite Anchor (80%+ Hit Rate)';
-          } else if (hitPct >= 75.0) {
-            tier = 'HIGH_CONVICTION';
-            tierLabel = 'High Conviction (75%+ Hit Rate)';
-          } else if (hitPct >= 65.0) {
-            tier = 'SOLID_PLAY';
-            tierLabel = 'Solid Play (65%+ Hit Rate)';
-          }
-
-          // Calibrate realistic bookmaker odds with standard vigorish
+          const [tier, tierLabel] = tierOf(hitPct);
+          // No bookmaker prices corners or cards for us, so the price shown is the fair one: a
+          // bet is only worth taking when the bookmaker offers more than this.
           const fairOdds = Number((1 / c.prob).toFixed(2));
-          const estOdds = Number(Math.max(1.18, fairOdds * 0.94).toFixed(2));
-          const edgePct = Number(((c.prob - (1 / estOdds)) * 100).toFixed(1));
-
-          // LiveScore Bet Ireland (IE) Live Market Benchmark
-          let livescoreBetOdds = estOdds;
-          if (c.type === 'TOTAL_CORNERS_OVER_7_5') livescoreBetOdds = Number((Math.max(1.30, Math.min(1.42, fairOdds * 1.05))).toFixed(2));
-          else if (c.type === 'TOTAL_CORNERS_OVER_8_5') livescoreBetOdds = Number((Math.max(1.44, Math.min(1.62, fairOdds * 1.04))).toFixed(2));
-          else if (c.type === 'TOTAL_CORNERS_UNDER_12_5') livescoreBetOdds = Number((Math.max(1.22, Math.min(1.30, fairOdds * 0.98))).toFixed(2));
-          else if (c.type === 'MATCH_CARDS_OVER_2_5') livescoreBetOdds = Number((Math.max(1.35, Math.min(1.52, fairOdds * 1.06))).toFixed(2));
-          else if (c.type === 'MATCH_CARDS_OVER_3_5') livescoreBetOdds = Number((Math.max(1.62, Math.min(1.92, fairOdds * 1.05))).toFixed(2));
-          else if (c.type === 'FH_GOALS_OVER_0_5') livescoreBetOdds = Number((Math.max(1.32, Math.min(1.46, fairOdds * 1.04))).toFixed(2));
-          else if (c.type === 'BOTH_TEAMS_TO_RECEIVE_CARD') livescoreBetOdds = Number((Math.max(1.40, Math.min(1.58, fairOdds * 1.05))).toFixed(2));
-          else if (c.type === 'BTTS_YES') livescoreBetOdds = Number((Math.max(1.48, Math.min(2.15, fairOdds * 1.04))).toFixed(2));
-          else if (c.type === 'BTTS_NO') livescoreBetOdds = Number((Math.max(1.52, Math.min(2.20, fairOdds * 1.04))).toFixed(2));
-          else livescoreBetOdds = Number((Math.max(1.24, fairOdds * 1.02)).toFixed(2));
-
-          const livescoreBetEV = Number((((c.prob * livescoreBetOdds) - 1) * 100).toFixed(1));
-          const livescoreBetEdge = Number(((c.prob - (1 / livescoreBetOdds)) * 100).toFixed(1));
-
-          return {
-            ...c,
-            hitProbability: hitPct,
-            confidenceTier: tier,
-            tierLabel,
-            fairOdds,
-            estOdds,
-            edge: edgePct > 0 ? `+${edgePct}%` : '0%',
-            livescoreBet: {
-              bookmaker: 'LiveScore Bet (IE)',
-              odds: livescoreBetOdds,
-              evPercent: livescoreBetEV,
-              isPositiveEV: livescoreBetEV > 0,
-              edgePercent: livescoreBetEdge,
-              deeplink: 'https://www.livescorebet.com/ie/sports/football',
-              badge: `LiveScore Bet: ${livescoreBetOdds} (${livescoreBetEV > 0 ? '+' : ''}${livescoreBetEV}% EV)`
-            },
-            actionable: true
-          };
+          return { ...c, hitProbability: hitPct, confidenceTier: tier, tierLabel, fairOdds, estOdds: fairOdds, actionable: true };
         })
         .sort((a, b) => b.hitProbability - a.hitProbability);
 
-      // Context data for the UI card
-      const scrapedData = {
-        referee: refProfile.name,
-        refereeCardAvg: refProfile.cardAvg.toFixed(2),
-        refereeFoulsAvg: refProfile.foulsAvg.toFixed(1),
-        refereeStrictness: refProfile.strictness,
-        homeCornersAvg: lambdaH.toFixed(1),
-        awayCornersAvg: lambdaA.toFixed(1),
-        totalExpectedCorners: lambdaC.toFixed(1),
-        totalExpectedCards: lambdaK.toFixed(1),
-        homeOffsidesAvg: homeOffsides.toFixed(1),
-        awayOffsidesAvg: awayOffsides.toFixed(1),
-        h2hRedCards: matchIsDerby ? 2 : 0,
-        historicalHitRate: `${structuredProps[0]?.hitProbability || 81.5}% (Top Anchor Rate)`,
-        propConfidence: structuredProps[0]?.hitProbability || 80.0,
-        lineupConfirmed,
-        homeFormation,
-        awayFormation,
-        isDerby: matchIsDerby,
-        redCardRisk: `${(redCardProb * 100).toFixed(0)}%`
-      };
+      if (structuredProps.length === 0) continue;
 
-      // Generate AI Synthesis / Markdown summary
-      let aiAnalysisText = null;
-      if (getGemini()) {
-        const topPicksStr = structuredProps.slice(0, 3).map(p => `- **${p.label}** (${p.hitProbability}% probability, ~${p.estOdds} odds): ${p.rationale}`).join('\n');
-        const prompt = `You are an elite quantitative soccer Props & Specials sports model. 
-Match: ${match.home} vs ${match.away} (${match.league})
-Tactical Context: ${lineupContextStr}
-Expected Corners: Home ${scrapedData.homeCornersAvg}, Away ${scrapedData.awayCornersAvg}, Total ${scrapedData.totalExpectedCorners}.
-Referee: ${refProfile.name} (Strictness: ${refProfile.strictness}/10, Cards/G: ${scrapedData.refereeCardAvg}). Derby match: ${matchIsDerby ? 'YES (High Friction)' : 'NO'}.
-Top Model Calculated Props:
-${topPicksStr}
-
-Output a high-conviction 2-3 bullet analytical recommendation emphasizing why these specific props hit with high consistency. Keep it concise, professional, and clear.`;
-
-        try {
-          const aiPromise = callGemini(prompt, "You are a specialized props and specials analytics model. Provide concise, high-hit-rate betting advice.");
-          aiAnalysisText = await Promise.race([
-            aiPromise,
-            new Promise((_, reject) => setTimeout(() => reject(new Error('AI timeout')), 6500))
-          ]);
-        } catch (e) {
-          // Fallback to formatted heuristic output
-        }
-      }
-
-      if (!aiAnalysisText) {
-        const topPicks = structuredProps.slice(0, 3);
-        aiAnalysisText = topPicks.map(p => `• **${p.label}** (${p.hitProbability}% Hit Rate, Est. Odds: ${p.estOdds}): ${p.rationale}`).join('\n\n');
-      }
-
-      return {
+      insights.push({
         matchId: match.id,
         home: match.home,
         away: match.away,
         league: match.league,
         date: match.dateIso || match.date || match.utcDate,
         time: match.time,
-        scrapedContext: scrapedData,
-        structuredProps,
-        refereeDetails: refProfile,
-        recommendations: aiAnalysisText
-      };
-    });
-
-    const results = await Promise.allSettled(analysisPromises);
-    for (const r of results) {
-      if (r.status === 'fulfilled' && r.value) {
-        insights.push(r.value);
-      }
-    }
-
-    // Historical evaluated props for verified accuracy tracking (84.6% benchmark)
-    const completed = (this.matches || []).concat(this.historicalMatches || []).concat(this.yesterdayMatches || [])
-      .filter(m => m.isCompleted || m.finished || m.status === 'FT' || m.actualWinner);
-    
-    const pastTargets = completed.length >= 6 ? completed.slice(0, 14) : (this.matches || []).slice(0, 14);
-    const recentEvaluations = [];
-
-    const evaluatedAnchors = [
-      { prop: "Over 7.5 Match Corners", odds: 1.32, isHit: true, actualResult: "Covered (9 Corners)", market: "CORNERS", hitRateRef: "84.5%" },
-      { prop: "Over 8.5 Match Corners", odds: 1.48, isHit: false, actualResult: "Missed (7 Corners Total)", market: "CORNERS", hitRateRef: "76.8%" },
-      { prop: "Both Teams To Score - YES", odds: 1.72, isHit: true, actualResult: "Covered (Both Scored 2-1)", market: "BTTS", hitRateRef: "82.1%" },
-      { prop: "Over 2.5 Match Cards", odds: 1.38, isHit: true, actualResult: "Covered (4 Cards)", market: "CARDS", hitRateRef: "85.3%" },
-      { prop: "Both Teams To Receive 1+ Card", odds: 1.45, isHit: false, actualResult: "Missed (Away 0 Cards)", market: "CARDS", hitRateRef: "78.2%" },
-      { prop: "Home Team Over 3.5 Corners", odds: 1.40, isHit: true, actualResult: "Covered (5 Corners)", market: "CORNERS", hitRateRef: "83.0%" },
-      { prop: "Both Teams To Score - NO", odds: 1.85, isHit: true, actualResult: "Covered (Clean Sheet 2-0)", market: "BTTS", hitRateRef: "77.5%" },
-      { prop: "First Half Over 0.5 Goals", odds: 1.36, isHit: false, actualResult: "Missed (0-0 at HT)", market: "SPECIALS", hitRateRef: "80.4%" },
-      { prop: "Under 12.5 Total Corners", odds: 1.26, isHit: true, actualResult: "Covered (8 Corners)", market: "CORNERS", hitRateRef: "88.2%" },
-      { prop: "First Half Over 0.5 Goals", odds: 1.34, isHit: true, actualResult: "Covered (1st Half Goal)", market: "SPECIALS", hitRateRef: "86.0%" },
-      { prop: "Under 6.5 Match Cards", odds: 1.22, isHit: true, actualResult: "Covered (3 Cards)", market: "CARDS", hitRateRef: "89.1%" },
-      { prop: "Over 3.5 Match Cards", odds: 1.62, isHit: false, actualResult: "Missed (2 Cards Total)", market: "CARDS", hitRateRef: "73.5%" },
-      { prop: "Over 8.5 Total Match Corners", odds: 1.48, isHit: true, actualResult: "Covered (11 Corners)", market: "CORNERS", hitRateRef: "81.5%" },
-      { prop: "Away Team Over 2.5 Corners", odds: 1.44, isHit: true, actualResult: "Covered (4 Corners)", market: "CORNERS", hitRateRef: "83.4%" }
-    ];
-
-    pastTargets.forEach((m, idx) => {
-      const anchor = evaluatedAnchors[idx % evaluatedAnchors.length];
-      const matchTime = m.time || (m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }) : '19:45');
-      recentEvaluations.push({
-        matchId: m.id || `eval_${idx}`,
-        home: m.home,
-        away: m.away,
-        league: m.league,
-        date: m.dateIso || m.date || m.utcDate,
-        dateIso: m.dateIso || m.date,
-        utcDate: m.utcDate || m.dateIso,
-        timestamp: m.timestamp || (m.utcDate ? new Date(m.utcDate).getTime() : Date.now()),
-        time: matchTime,
-        market: anchor.market,
-        propPick: anchor.prop,
-        isHit: anchor.isHit,
-        actualResult: anchor.actualResult,
-        odds: anchor.odds.toFixed(2),
-        hitRateRef: anchor.hitRateRef || "84.5%"
+        scrapedContext: {
+          homeCornersAvg: stats ? stats.homeCorners.toFixed(1) : null,
+          awayCornersAvg: stats ? stats.awayCorners.toFixed(1) : null,
+          totalExpectedCorners: stats ? (stats.homeCorners + stats.awayCorners).toFixed(1) : null,
+          totalExpectedCards: stats ? (stats.homeCards + stats.awayCards).toFixed(1) : null,
+          cornersAndCardsCovered: Boolean(stats),
+          propConfidence: structuredProps[0].hitProbability
+        },
+        structuredProps
       });
-    });
-
-    const hitsCount = recentEvaluations.filter(e => e.isHit).length;
-    const overallAccuracy = recentEvaluations.length > 0 
-      ? `${((hitsCount / recentEvaluations.length) * 100).toFixed(1)}%`
-      : (this.trainingStats?.accuracy ? `${this.trainingStats.accuracy}%` : '57.2%');
+    }
 
     return {
       status: 'SUCCESS',
       insights,
       recentEvaluations,
-      overallAccuracy,
-      totalEvaluated: 184,
-      totalAnchorsFound: insights.reduce((acc, ins) => acc + (ins.structuredProps?.filter(p => p.confidenceTier === 'ELITE_ANCHOR').length || 0), 0),
-      message: `Completed deep props analysis for ${insights.length} matches with high-achievement Poisson modeling.`
-    };
-  }
-
-  // -------------------------------------------------------------
-  // AUTOMATED PROPS ACCUMULATOR GENERATOR (LIVESCORE BET IRELAND)
-  // -------------------------------------------------------------
-  async generateOptimalPropsAccumulator(options = {}) {
-    this.log('PropsAccumulator', 'Constructing optimal anti-fragile Props Accumulator with LiveScore Bet Ireland comparator...');
-    const analysis = await this.runPropsSpecialsDeepAnalysis(options);
-    const insights = analysis.insights || [];
-
-    if (insights.length === 0) {
-      return {
-        success: false,
-        message: 'No active matches available to construct props accumulator.',
-        slip: null
-      };
-    }
-
-    // Collect all qualifying Elite Anchor & High Conviction props from all matches
-    const allCandidateProps = [];
-    for (const ins of insights) {
-      const props = ins.structuredProps || [];
-      for (const p of props) {
-        if (p.hitProbability >= 74.0) {
-          allCandidateProps.push({
-            ...p,
-            matchId: ins.matchId,
-            home: ins.home,
-            away: ins.away,
-            league: ins.league,
-            kickoff: ins.time,
-            date: ins.date,
-            referee: ins.scrapedContext?.referee,
-            isDerby: ins.scrapedContext?.isDerby
-          });
-        }
-      }
-    }
-
-    // Sort by highest hit probability & positive EV
-    allCandidateProps.sort((a, b) => {
-      const scoreA = (a.hitProbability * 1.2) + (a.livescoreBet?.evPercent || 0);
-      const scoreB = (b.hitProbability * 1.2) + (b.livescoreBet?.evPercent || 0);
-      return scoreB - scoreA;
-    });
-
-    // Select uncorrelated props from DISTINCT fixtures
-    const targetLegCount = options.legs || 3;
-    const selectedLegs = [];
-    const usedMatches = new Set();
-    const usedMarkets = new Set();
-
-    // Pass 1: Maximum diversity (distinct match AND distinct market type)
-    for (const prop of allCandidateProps) {
-      if (selectedLegs.length >= targetLegCount) break;
-      if (usedMatches.has(prop.matchId)) continue;
-      if (usedMarkets.has(prop.market) && selectedLegs.length < 2 && allCandidateProps.some(o => !usedMatches.has(o.matchId) && !usedMarkets.has(o.market))) {
-        continue;
-      }
-      selectedLegs.push(prop);
-      usedMatches.add(prop.matchId);
-      usedMarkets.add(prop.market);
-    }
-
-    // Pass 2: Fill remaining slots from any distinct matches
-    if (selectedLegs.length < targetLegCount) {
-      for (const prop of allCandidateProps) {
-        if (selectedLegs.length >= targetLegCount) break;
-        if (!usedMatches.has(prop.matchId)) {
-          selectedLegs.push(prop);
-          usedMatches.add(prop.matchId);
-        }
-      }
-    }
-
-    if (selectedLegs.length === 0) {
-      return {
-        success: false,
-        message: 'No candidate props met the >=74% confidence threshold.',
-        slip: null
-      };
-    }
-
-    // Parlay Mathematical Calculations
-    const combinedOdds = parseFloat(selectedLegs.reduce((acc, l) => acc * (l.livescoreBet?.odds || l.estOdds || 1.32), 1).toFixed(2));
-    const jointProbability = parseFloat(selectedLegs.reduce((acc, l) => acc * (l.prob || 0.8), 1).toFixed(4));
-    const jointProbabilityPercent = parseFloat((jointProbability * 100).toFixed(1));
-    const parlayEV = parseFloat((((jointProbability * combinedOdds) - 1) * 100).toFixed(1));
-    const avgLegHitRate = parseFloat((selectedLegs.reduce((sum, l) => sum + l.hitProbability, 0) / selectedLegs.length).toFixed(1));
-
-    const recommendedStakeEuro = 25.0;
-    const potentialReturn = parseFloat((recommendedStakeEuro * combinedOdds).toFixed(2));
-    const netProfit = parseFloat((potentialReturn - recommendedStakeEuro).toFixed(2));
-
-    // Clipboard-ready quick-bet string
-    const copyableLines = [
-      `🎯 PROPS ACCUMULATOR (${selectedLegs.length} Legs @ ${combinedOdds}x on LiveScore Bet IE)`,
-      ...selectedLegs.map((l, i) => `${i + 1}. ${l.home} vs ${l.away} -> ${l.label} (Odds: ~${l.livescoreBet?.odds || l.estOdds} | P: ${l.hitProbability}%)`),
-      `📊 Combined Odds: ${combinedOdds} | Model Win Prob: ${jointProbabilityPercent}% | EV: ${parlayEV > 0 ? '+' : ''}${parlayEV}%`,
-      `💰 Stake €${recommendedStakeEuro.toFixed(2)} -> Returns €${potentialReturn.toFixed(2)}`
-    ];
-    const copyableText = copyableLines.join('\n');
-
-    // AI Anti-Fragility & Correlation Critique
-    let aiCritique = null;
-    try {
-      const gemini = getGemini();
-      if (gemini) {
-        const legSummary = selectedLegs.map((l, i) => `Leg ${i + 1}: ${l.home} vs ${l.away} (${l.league}) -> Pick: "${l.label}" @ ${l.livescoreBet?.odds || l.estOdds} on LiveScore Bet (Hit Rate: ${l.hitProbability}%, Reason: ${l.rationale})`).join('\n');
-        const prompt = `You are a sports betting quantitative risk auditor. Analyze this ${selectedLegs.length}-leg football props parlay tailored for LiveScore Bet Ireland:
-${legSummary}
-Combined Odds: ${combinedOdds} | Joint Model Probability: ${jointProbabilityPercent}% | Expected Value: +${parlayEV}% EV.
-
-Provide a crisp 3-bullet assessment:
-1. Anti-Fragility: Explain how cross-match independence guards against single-match referee or red-card variance.
-2. Market Edge: Why LiveScore Bet Ireland pricing provides positive expected value (+${parlayEV}% EV) against the Poisson tail.
-3. Execution: Specific Kelly stake advice and risk control.`;
-        const response = await gemini.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: prompt
-        });
-        aiCritique = response?.text ? response.text.trim() : null;
-      }
-    } catch (aiErr) {
-      // Fallback critique below
-    }
-
-    if (!aiCritique) {
-      aiCritique = `• **Anti-Fragile Cross-Match Shield**: Each leg is drawn from a separate match (${selectedLegs.map(l => l.home.split(' ')[0]).join(', ')}), strictly preventing correlation risk where a single red card or defensive shutout spoils the entire ticket.\n• **LiveScore Bet Ireland Value Edge**: With an average leg empirical hit probability of ${avgLegHitRate}%, the parlay yields an estimated +${parlayEV}% Expected Value against standard bookmaker overround.\n• **Execution & Staking**: Optimal quarter-Kelly stake of €${recommendedStakeEuro.toFixed(2)} (2.5 units) to return €${potentialReturn.toFixed(2)} (+€${netProfit.toFixed(2)} profit).`;
-    }
-
-    const slip = {
-      id: `props-slip-${Date.now()}`,
-      title: `⚡ Safe ${selectedLegs.length}-Leg Props Acca (${combinedOdds}x)`,
-      bookmaker: 'LiveScore Bet Ireland',
-      bookmakerUrl: 'https://www.livescorebet.com/ie/sports/football',
-      combinedOdds,
-      jointProbability: jointProbabilityPercent,
-      expectedValue: parlayEV,
-      isPositiveEV: parlayEV > 0,
-      avgLegHitRate,
-      legsCount: selectedLegs.length,
-      legs: selectedLegs.map((l, idx) => ({
-        legNum: idx + 1,
-        matchId: l.matchId,
-        fixture: `${l.home} vs ${l.away}`,
-        home: l.home,
-        away: l.away,
-        league: l.league,
-        kickoff: l.kickoff || l.date,
-        date: l.date,
-        time: l.time || l.kickoff,
-        market: l.market,
-        pick: l.label,
-        hitProbability: l.hitProbability,
-        odds: l.livescoreBet?.odds || l.estOdds,
-        fairOdds: l.fairOdds,
-        bookmaker: 'LiveScore Bet IE',
-        edge: l.livescoreBet?.edgePercent || l.edge,
-        evPercent: l.livescoreBet?.evPercent || 0,
-        rationale: l.rationale,
-        tier: l.confidenceTier
-      })),
-      staking: {
-        suggestedStake: recommendedStakeEuro,
-        potentialReturn,
-        netProfit,
-        units: '2.5u'
-      },
-      aiCritique,
-      copyableText,
-      generatedAt: new Date().toLocaleTimeString()
-    };
-
-    return {
-      success: true,
-      slip
+      ...trackRecord,
+      totalAnchorsFound: insights.reduce((acc, ins) => acc + ins.structuredProps.filter(p => p.confidenceTier === 'ELITE_ANCHOR').length, 0),
+      message: `Corners, cards and both-teams-to-score for ${insights.length} matches.`
     };
   }
 
@@ -11138,6 +10197,11 @@ Output format: {"home": 45.5, "draw": 25.5, "away": 29.0, "reason": "Home team r
     const key = String(team).toLowerCase().trim();
     if (!this.customTeamManagers) this.customTeamManagers = {};
     this.customTeamManagers[key] = String(manager).trim();
+    try {
+      fs.writeFileSync(path.join(ENGINE_DIR, 'data', 'manager-overrides.json'), JSON.stringify(this.customTeamManagers, null, 2));
+    } catch (e) {
+      this.log('TacticalRegistry', `Could not save manager override: ${e.message}`);
+    }
     this.log('TacticalRegistry', `Manager for ${team} manually updated to ${manager}.`);
     return true;
   }

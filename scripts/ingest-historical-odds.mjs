@@ -6,6 +6,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { similarity } from '../src/model/teamNames.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CACHE_DIR = path.join(ROOT, 'data', 'odds_cache');
@@ -26,43 +27,6 @@ const EXTRA_LEAGUES = {
   AUT: ['Austrian Bundesliga'], IRL: ['Irish Premier Division']
 };
 const SEASONS = ['2021', '2122', '2223', '2324', '2425', '2526', '2627'];
-
-const STOP = new Set(['fc', 'cf', 'ac', 'sc', 'afc', 'cd', 'ud', 'sd', 'rc', 'club', 'de', 'the', 'fk', 'sk', 'if', 'bk', 'as', 'ss', 'us', 'vfl', 'vfb', 'tsg', 'sv', 'fsv', '1', 'calcio', 'football', 'town', 'city', 'united', 'utd']);
-const ALIASES = {
-  'man united': 'manchester united', 'man utd': 'manchester united', 'man city': 'manchester city',
-  "nott'm forest": 'nottingham forest', 'spurs': 'tottenham hotspur', 'wolves': 'wolverhampton wanderers',
-  'sheffield weds': 'sheffield wednesday', 'ath madrid': 'atletico madrid', 'ath bilbao': 'athletic club',
-  'betis': 'real betis', 'sociedad': 'real sociedad', 'inter': 'internazionale', 'milan': 'ac milan',
-  'paris sg': 'paris saint germain', "m'gladbach": 'borussia monchengladbach', 'ein frankfurt': 'eintracht frankfurt',
-  'fc koln': 'koln', 'st pauli': 'st pauli', 'leverkusen': 'bayer leverkusen', 'dortmund': 'borussia dortmund',
-  'sp lisbon': 'sporting cp', 'sp braga': 'braga', 'vitoria': 'vitoria guimaraes', 'psv eindhoven': 'psv',
-  'espanol': 'espanyol', 'vallecano': 'rayo vallecano', 'celta': 'celta vigo', 'la coruna': 'deportivo la coruna'
-};
-
-function normalizeTeam(name) {
-  let s = String(name || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
-  if (ALIASES[s]) s = ALIASES[s];
-  return s.replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(t => t && !STOP.has(t)).join(' ');
-}
-
-function bigrams(s) {
-  const out = new Map();
-  const t = s.replace(/\s+/g, '');
-  for (let i = 0; i < t.length - 1; i++) out.set(t.slice(i, i + 2), (out.get(t.slice(i, i + 2)) || 0) + 1);
-  return out;
-}
-
-function similarity(a, b) {
-  const x = normalizeTeam(a), y = normalizeTeam(b);
-  if (!x || !y) return 0;
-  if (x === y) return 1;
-  if (x.includes(y) || y.includes(x)) return 0.9;
-  const bx = bigrams(x), by = bigrams(y);
-  let overlap = 0, total = 0;
-  for (const [k, v] of bx) { overlap += Math.min(v, by.get(k) || 0); total += v; }
-  for (const v of by.values()) total += v;
-  return total ? (2 * overlap) / total : 0;
-}
 
 function parseDate(d) {
   const [dd, mm, yy] = String(d).split('/').map(Number);

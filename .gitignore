@@ -6,3 +6,5 @@ fixtures_cache.json.tmp
 fixtures_cache.json.bak
 data/odds_cache/
 data/understat_cache/
+data/coach-cache.json
+data/match-stats.live.json

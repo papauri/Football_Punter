@@ -5,12 +5,10 @@ import { MobileFoldCell, MobileFoldBlock, FoldSummary, FoldBadge, compactKickoff
 import { 
   Target, AlertCircle, RefreshCw, ChevronRight, Activity, Zap, 
   ShieldCheck, TrendingUp, SlidersHorizontal, Search, Check, Plus, 
-  Flame, Flag, Award, Sparkles, ChevronDown, ChevronUp, Clock,
-  ExternalLink, Copy, CheckCircle2
+  Flag, Award, Sparkles, ChevronDown, ChevronUp, Clock,
+  Copy, CheckCircle2
 } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
 import { formatRelativeDayTime, formatSafeDateTime } from '../utils/dateUtils';
-import { safeParseFloat } from '../utils/numberUtils';
 import UniformDropdown from './UniformDropdown';
 
 export default function PropsSpecialsPage({
@@ -36,7 +34,6 @@ export default function PropsSpecialsPage({
   const [selectedLeague, setSelectedLeague] = useState('All');
   const [minHitRate, setMinHitRate] = useState(60); // 60, 70, 75, 80
   const [searchQuery, setSearchQuery] = useState('');
-  const [onlyDerbies, setOnlyDerbies] = useState(false);
   const [expandedInsights, setExpandedInsights] = useState(new Set());
   const [expandedEvalId, setExpandedEvalId] = useState(null);
 
@@ -55,7 +52,7 @@ export default function PropsSpecialsPage({
   // Reset pagination when match prop filters change
   useEffect(() => {
     setPropsPage(1);
-  }, [selectedLeague, searchQuery, onlyDerbies, selectedCategory, minHitRate]);
+  }, [selectedLeague, searchQuery, selectedCategory, minHitRate]);
 
   // Reset eval pagination when eval filters change
   useEffect(() => {
@@ -167,22 +164,16 @@ export default function PropsSpecialsPage({
         return false;
       }
 
-      // Derby filter
-      if (onlyDerbies && !insight.scrapedContext?.isDerby) {
-        return false;
-      }
-
-      // Search query: match team names, league, referee, or prop labels
+      // Search query: match team names, league, or prop labels
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const home = (insight.home || '').toLowerCase();
         const away = (insight.away || '').toLowerCase();
         const league = (insight.league || '').toLowerCase();
-        const referee = (insight.scrapedContext?.referee || '').toLowerCase();
         const hasMatchingProp = (insight.structuredProps || []).some(p => 
           (p.label || '').toLowerCase().includes(q) || (p.market || '').toLowerCase().includes(q)
         );
-        if (!home.includes(q) && !away.includes(q) && !league.includes(q) && !referee.includes(q) && !hasMatchingProp) {
+        if (!home.includes(q) && !away.includes(q) && !league.includes(q) && !hasMatchingProp) {
           return false;
         }
       }
@@ -198,7 +189,7 @@ export default function PropsSpecialsPage({
       }
       return true;
     });
-  }, [data, selectedLeague, searchQuery, onlyDerbies, selectedCategory, minHitRate]);
+  }, [data, selectedLeague, searchQuery, selectedCategory, minHitRate]);
 
   // Pagination for Match Prop Analysis
   const propsTotalPages = Math.max(1, Math.ceil(filteredInsights.length / propsPageSize));
@@ -321,12 +312,12 @@ export default function PropsSpecialsPage({
         item.match,
         item.prop.label,
         `Props: ${item.prop.market}`,
-        item.prop.livescoreBet?.odds || item.prop.estOdds,
+        item.prop.fairOdds,
         item.prop.hitProbability,
         'props-slip'
       );
     });
-    setLoadedNotice(`Loaded top ${available.length} elite anchor props into dedicated Props Slip (LiveScore Bet)!`);
+    setLoadedNotice(`Added ${available.length} tips to your corners & cards slip.`);
     setTimeout(() => setLoadedNotice(null), 4000);
   };
 
@@ -341,7 +332,7 @@ export default function PropsSpecialsPage({
         <div className="flex flex-wrap items-center justify-between gap-2.5">
           <div>
             <h1 className="text-sm font-bold text-slate-900">Corners &amp; cards</h1>
-            <p className="text-[11px] text-slate-500">Tips on corners, cards and other match specials.</p>
+            <p className="text-[11px] text-slate-500">Corners, cards and both teams to score. Corners and cards cover the top 14 European leagues.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {propsSlipPicks.length > 0 && (
@@ -374,10 +365,10 @@ export default function PropsSpecialsPage({
         </div>
         <div className="grid grid-cols-2 gap-2.5">
           <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200/70">
-            <div className="text-[11px] text-slate-500">Hit rate so far</div>
+            <div className="text-[11px] text-slate-500" title="How often the strongest corners or cards tip came in, on past matches the model had not seen">Past hit rate, strongest tip</div>
             <div className="text-base font-bold text-slate-900">
-              {data?.overallAccuracy || (data?.recentEvaluations?.length ? `${((data.recentEvaluations.filter(e => e.isHit).length / data.recentEvaluations.length) * 100).toFixed(1)}%` : '—')}
-              {data?.totalEvaluated ? <span className="text-[11px] font-normal text-slate-500 ml-1">({data.totalEvaluated} tips checked)</span> : null}
+              {data?.overallAccuracy || '—'}
+              {data?.totalEvaluated ? <span className="text-[11px] font-normal text-slate-500 ml-1">({data.totalEvaluated.toLocaleString()} matches)</span> : null}
             </div>
           </div>
           <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200/70">
@@ -442,7 +433,6 @@ export default function PropsSpecialsPage({
                 { value: 'BTTS', label: 'Both teams score' },
                 { value: 'CORNERS', label: 'Corners' },
                 { value: 'CARDS', label: 'Cards' },
-                { value: 'SPECIALS', label: 'First half & specials' },
               ]}
             />
 
@@ -465,35 +455,12 @@ export default function PropsSpecialsPage({
               ]}
             />
 
-            {/* Derby Checkbox Button */}
-            <button
-              type="button"
-              onClick={() => setOnlyDerbies(!onlyDerbies)}
-              className={`h-8 px-2.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs ${
-                onlyDerbies
-                  ? 'bg-amber-50 text-amber-900 border-amber-400 font-bold'
-                  : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
-              }`}
-              title="Show only derby and high-intensity rivalry matches"
-            >
-              <span className={`w-3.5 h-3.5 rounded flex items-center justify-center border text-[9px] ${
-                onlyDerbies ? 'bg-amber-600 text-white border-amber-600 font-bold' : 'border-slate-400 bg-white'
-              }`}>
-                {onlyDerbies ? '✓' : ''}
-              </span>
-              <span className="flex items-center gap-1">
-                <Flame className="w-3.5 h-3.5 text-amber-500" />
-                Derbies only
-              </span>
-            </button>
-
-            {(selectedLeague !== 'All' || searchQuery || selectedCategory !== 'ALL' || onlyDerbies || minHitRate !== 60) && (
+            {(selectedLeague !== 'All' || searchQuery || selectedCategory !== 'ALL' || minHitRate !== 60) && (
               <button
                 onClick={() => {
                   setSelectedLeague('All');
                   setSearchQuery('');
                   setSelectedCategory('ALL');
-                  setOnlyDerbies(false);
                   setMinHitRate(60);
                 }}
                 className="h-8 px-2.5 rounded-lg text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 font-semibold cursor-pointer transition-colors"
@@ -529,11 +496,11 @@ export default function PropsSpecialsPage({
                 <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
                   <span>Past tips</span>
                   <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
-                    Hit rate: {data.overallAccuracy || (data.recentEvaluations?.length ? `${((data.recentEvaluations.filter(e => e.isHit).length / data.recentEvaluations.length) * 100).toFixed(1)}%` : '84.5%')}
+                    Hit rate: {data.overallAccuracy || '—'}
                   </span>
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  How earlier corners and cards tips turned out
+                  The strongest tip for each of the latest matches{data.ratingsAsOf ? ` (up to ${data.ratingsAsOf})` : ''}, made before kick-off
                 </p>
               </div>
             </div>
@@ -607,7 +574,7 @@ export default function PropsSpecialsPage({
                     <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
-                      placeholder="Filter audited..."
+                      placeholder="Search past tips..."
                       value={evalSearch}
                       onChange={(e) => setEvalSearch(e.target.value)}
                       className="w-full pl-7 pr-6 py-1 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
@@ -625,8 +592,6 @@ export default function PropsSpecialsPage({
                       { value: 'ALL', label: 'All Markets' },
                       { value: 'CORNERS', label: 'Corners' },
                       { value: 'CARDS', label: 'Cards' },
-                      { value: 'BTTS', label: 'BTTS' },
-                      { value: 'SPECIALS', label: 'Specials' },
                     ]}
                   />
 
@@ -646,7 +611,7 @@ export default function PropsSpecialsPage({
                         setEvalSearch('');
                       }}
                       className="h-8 px-2 rounded-lg text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-200 font-semibold cursor-pointer"
-                      title="Reset audited filters"
+                      title="Reset filters"
                     >
                       Reset
                     </button>
@@ -669,9 +634,9 @@ export default function PropsSpecialsPage({
                         <th className="py-1 px-1.5 w-7 text-center"></th>
                         <th className="py-1 px-2 w-20 text-center">Outcome</th>
                         <th className="py-1 px-2 min-w-[170px]">Fixture</th>
-                        <th className="py-1 px-2 w-28 text-center">Date &amp; Kickoff</th>
+                        <th className="py-1 px-2 w-28 text-center">Date</th>
                         <th className="py-1 px-2 min-w-[180px]">Tip</th>
-                        <th className="py-1 px-2 w-20 text-center">Odds</th>
+                        <th className="py-1 px-2 w-20 text-center">Fair price</th>
                         <th className="py-1 px-2 min-w-[170px]">What happened</th>
                         <th className="py-1 px-2 w-24 text-center">Our chance</th>
                       </tr>
@@ -695,13 +660,13 @@ export default function PropsSpecialsPage({
                                 expanded={isExpanded}
                                 summary={
                               <FoldSummary
-                                lead={formatSafeDateTime(ev, null, tzSettings).time}
+                                lead={ev.date ? ev.date.slice(5) : ''}
                                 home={ev.home}
                                 away={ev.away}
                                 meta={[ev.league, ev.propPick].filter(Boolean).join(' · ')}
                                 expanded={isExpanded}
                                 badges={<>
-                                  <FoldBadge tone={ev.isHit ? 'good' : 'bad'}>{ev.isHit ? 'HIT' : 'MISS'}</FoldBadge>
+                                  <FoldBadge tone={ev.isHit ? 'good' : 'bad'}>{ev.isHit ? 'Won' : 'Lost'}</FoldBadge>
                                   {Number(ev.odds) > 1 && <FoldBadge tone="neutral" mono>@{Number(ev.odds).toFixed(2)}</FoldBadge>}
                                 </>}
                               />
@@ -710,7 +675,7 @@ export default function PropsSpecialsPage({
                                 <div className="flex justify-between items-start mb-1.5">
                                   <div className="flex items-center gap-1.5 flex-wrap">
                                     <span className="font-semibold text-slate-700 font-mono text-[10px]">
-                                      {formatSafeDateTime(ev, null, tzSettings).time} ({formatSafeDateTime(ev, null, tzSettings).day})
+                                      {ev.date}
                                     </span>
                                     {ev.league && (
                                       <span className="text-[9.5px] text-slate-400 bg-slate-100 px-1 rounded border border-slate-200">
@@ -721,7 +686,7 @@ export default function PropsSpecialsPage({
                                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold border flex items-center gap-1 ${
                                     ev.isHit ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-rose-100 text-rose-800 border-rose-300'
                                   }`}>
-                                    {ev.isHit ? '✅ HIT' : '❌ MISSED'}
+                                    {ev.isHit ? 'Won' : 'Lost'}
                                   </span>
                                 </div>
 
@@ -744,7 +709,7 @@ export default function PropsSpecialsPage({
                                 </div>
 
                                 <div className="flex items-center justify-between pt-1 text-[10px] text-slate-500">
-                                  <span>Hit Rate Ref: <strong className="font-mono text-slate-700">{ev.hitRateRef || '84.5%'}</strong></span>
+                                  <span>Chance given: <strong className="font-mono text-slate-700">{ev.hitRateRef || '—'}</strong></span>
                                   <span className="text-indigo-600 font-semibold flex items-center gap-0.5">
                                     {isExpanded ? 'Hide' : 'Details'}
                                     {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -755,9 +720,8 @@ export default function PropsSpecialsPage({
                                   <div className={`mt-2 pt-2 border-t text-[10px] space-y-1 p-2.5 rounded ${
                                     ev.isHit ? 'bg-emerald-50/60 border-emerald-200' : 'bg-rose-50/60 border-rose-200'
                                   }`}>
-                                    <div>Audited Whistle Outcome: <strong>{ev.actualResult}</strong></div>
-                                    <div>Historical Calibration: <strong>{ev.hitRateRef || '84.5%'} line coverage</strong></div>
-                                    <div>Evaluation Status: <strong className={ev.isHit ? 'text-emerald-700' : 'text-rose-700'}>{ev.isHit ? 'Line Cleared Successfully' : 'Missed Line Coverage'}</strong></div>
+                                    <div>Result: <strong>{ev.actualResult}</strong></div>
+                                    <div>Fair price: <strong>{ev.odds}</strong></div>
                                   </div>
                                 )}
                               </MobileFoldCell>
@@ -774,7 +738,7 @@ export default function PropsSpecialsPage({
                                     ? 'bg-emerald-100 text-emerald-800 border-emerald-300' 
                                     : 'bg-rose-100 text-rose-800 border-rose-300'
                                 }`}>
-                                  {ev.isHit ? '✅ HIT' : '❌ MISSED'}
+                                  {ev.isHit ? 'Won' : 'Lost'}
                                 </span>
                               </td>
 
@@ -786,12 +750,7 @@ export default function PropsSpecialsPage({
 
                               {/* Date & Kickoff */}
                               <td className="hidden md:table-cell py-1.5 px-2 text-center whitespace-nowrap">
-                                <div className="font-semibold text-slate-800 font-mono text-[11px]">
-                                  {formatSafeDateTime(ev, null, tzSettings).time}
-                                </div>
-                                <div className="text-[10px] text-slate-500 font-medium">
-                                  {formatSafeDateTime(ev, null, tzSettings).day}, {formatSafeDateTime(ev, null, tzSettings).date}
-                                </div>
+                                <div className="font-semibold text-slate-800 font-mono text-[11px]">{ev.date}</div>
                               </td>
 
                               {/* Audited Prop Line */}
@@ -815,7 +774,7 @@ export default function PropsSpecialsPage({
 
                               {/* Expected Hit */}
                               <td className="hidden md:table-cell py-1.5 px-2 text-center font-mono text-slate-600 font-semibold text-[11px]">
-                                {ev.hitRateRef || '84.5%'}
+                                {ev.hitRateRef || '—'}
                               </td>
                             </tr>
 
@@ -828,20 +787,15 @@ export default function PropsSpecialsPage({
                                   }`}>
                                     <div className="flex items-center gap-2 flex-wrap">
                                       <span className={`font-bold ${ev.isHit ? 'text-emerald-900' : 'text-rose-900'}`}>
-                                        {ev.isHit ? '✅ Line Covered:' : '❌ Missed Target Line:'}
+                                        {ev.isHit ? 'Won:' : 'Lost:'}
                                       </span>
                                       <span className="font-semibold text-slate-800">{ev.propPick}</span>
                                       <span className="text-slate-400">&bull;</span>
-                                      <span className="text-slate-600">Whistle Outcome: <strong>{ev.actualResult}</strong></span>
+                                      <span className="text-slate-600">Result: <strong>{ev.actualResult}</strong></span>
                                     </div>
                                     <div className="font-mono text-xs">
-                                      <span className="text-slate-500">Historical Model Rate: </span>
-                                      <strong className="text-slate-800">{ev.hitRateRef || '84.5%'}</strong>
-                                      <span className="mx-1.5 text-slate-300">|</span>
-                                      <span className="text-slate-500">Audit Status: </span>
-                                      <strong className={ev.isHit ? 'text-emerald-700' : 'text-rose-700'}>
-                                        {ev.isHit ? 'Model Cleared' : 'Missed Coverage'}
-                                      </strong>
+                                      <span className="text-slate-500">Chance given: </span>
+                                      <strong className="text-slate-800">{ev.hitRateRef || '—'}</strong>
                                     </div>
                                   </div>
                                 </td>
@@ -861,7 +815,7 @@ export default function PropsSpecialsPage({
                   <span className="text-slate-500 font-medium">
                     Showing <strong className="text-slate-700">{(evalPage - 1) * evalPageSize + 1}</strong> to{' '}
                     <strong className="text-slate-700">{Math.min(evalPage * evalPageSize, filteredEvaluations.length)}</strong> of{' '}
-                    <strong className="text-slate-700">{filteredEvaluations.length}</strong> audited picks
+                    <strong className="text-slate-700">{filteredEvaluations.length}</strong> past tips
                   </span>
                   <div className="flex items-center gap-1.5">
                     <button
@@ -903,10 +857,7 @@ export default function PropsSpecialsPage({
       {loading && !data && (
         <div className="p-12 text-center bg-white rounded-xl border border-slate-200 flex flex-col items-center justify-center">
           <RefreshCw className="w-8 h-8 text-indigo-600 animate-spin mb-3" />
-          <h3 className="text-base font-bold text-slate-800">Running Poisson Quantitative Simulation...</h3>
-          <p className="text-xs text-slate-500 mt-1 max-w-md">
-            Calculating expected corner frequencies, disciplinary referee strictness, and tactical formation margins.
-          </p>
+          <h3 className="text-base font-bold text-slate-800">Loading tips...</h3>
         </div>
       )}
 
@@ -927,13 +878,10 @@ export default function PropsSpecialsPage({
           <div className="flex items-center gap-2">
             <Target className="w-4 h-4 text-indigo-600" />
             <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
-              <span>Match-by-Match Prop Analysis &amp; Anchor Lines</span>
-              <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
-                Anchor Lines
-              </span>
+              <span>Upcoming matches</span>
             </h2>
             <span className="text-[10.5px] px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 font-semibold">
-              {filteredInsights.length} Fixtures
+              {filteredInsights.length} matches
             </span>
           </div>
 
@@ -958,13 +906,13 @@ export default function PropsSpecialsPage({
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
                   <th className="py-1 px-1.5 w-7 text-center"></th>
-                  <th className="py-1 px-2 w-32 text-center">Kickoff / League</th>
-                  <th className="py-1 px-2 min-w-[180px]">Match Fixture</th>
-                  <th className="py-1 px-2 w-36 text-center">Referee &amp; Strictness</th>
-                  <th className="py-1 px-2 w-28 text-center">Corner Outlook</th>
-                  <th className="py-1 px-2 min-w-[210px]">Top Calibrated Prop</th>
-                  <th className="py-1 px-2 w-28 text-center">LiveScore Bet IE</th>
-                  <th className="py-1 px-2 w-24 text-center">Actions</th>
+                  <th className="py-1 px-2 w-32 text-center">Kickoff</th>
+                  <th className="py-1 px-2 min-w-[180px]">Match</th>
+                  <th className="py-1 px-2 w-24 text-center">Corners</th>
+                  <th className="py-1 px-2 w-24 text-center">Cards</th>
+                  <th className="py-1 px-2 min-w-[210px]">Best tip</th>
+                  <th className="py-1 px-2 w-24 text-center" title="Only bet if the bookmaker pays more than this">Fair price</th>
+                  <th className="py-1 px-2 w-24 text-center"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -982,7 +930,6 @@ export default function PropsSpecialsPage({
                   };
 
                   const isExpanded = expandedInsights.has(insight.matchId);
-                  const refDetails = insight.refereeDetails || {};
                   const context = insight.scrapedContext || {};
                   const structuredProps = (insight.structuredProps || []).filter(p => {
                     if (selectedCategory !== 'ALL' && p.market !== selectedCategory) return false;
@@ -995,13 +942,6 @@ export default function PropsSpecialsPage({
                   const topPropInSlip = topProp ? isPropInSlip(insight.matchId, topProp.label) : false;
                   const isElite = topProp?.confidenceTier === 'ELITE_ANCHOR';
                   const isHigh = topProp?.confidenceTier === 'HIGH_CONVICTION';
-
-                  const strictVal = safeParseFloat(refDetails.strictness || context.refereeStrictness, 6.0);
-                  const strictClass = strictVal >= 7.5
-                    ? 'bg-rose-100 text-rose-800 border-rose-200'
-                    : strictVal >= 6.0
-                    ? 'bg-amber-100 text-amber-800 border-amber-200'
-                    : 'bg-emerald-100 text-emerald-800 border-emerald-200';
 
                   return (
                     <React.Fragment key={insight.matchId}>
@@ -1030,16 +970,6 @@ export default function PropsSpecialsPage({
                                 {insight.league}
                               </span>
                             )}
-                            {context.isDerby && (
-                              <span className="text-[9px] font-bold text-amber-800 bg-amber-100 px-1 rounded border border-amber-200 flex items-center gap-0.5">
-                                <Flame className="w-2.5 h-2.5 text-amber-600" /> Derby
-                              </span>
-                            )}
-                            {context.lineupConfirmed && (
-                              <span className="text-[9px] font-bold text-emerald-800 bg-emerald-100 px-1 rounded border border-emerald-200" title="Starting XI Verified">
-                                XI
-                              </span>
-                            )}
                           </div>
                         </td>
 
@@ -1056,34 +986,17 @@ export default function PropsSpecialsPage({
                               }}
                               className="text-[10px] text-indigo-600 hover:text-indigo-800 font-semibold inline-flex items-center gap-0.5 mt-0.5"
                             >
-                              Deep Dive <ChevronRight className="w-2.5 h-2.5" />
+                              Match details <ChevronRight className="w-2.5 h-2.5" />
                             </button>
                           )}
                         </td>
 
-                        {/* 4. Referee & Strictness */}
-                        <td className="py-2 px-2 text-center whitespace-nowrap">
-                          <div className="font-semibold text-slate-800 text-[11px] truncate max-w-[120px] mx-auto">
-                            {context.referee || 'Appointed Official'}
-                          </div>
-                          <div className="flex items-center justify-center gap-1.5 mt-0.5">
-                            <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${strictClass}`}>
-                              {strictVal.toFixed(1)}/10
-                            </span>
-                            <span className="text-[10px] text-slate-500">
-                              {context.refereeCardAvg || '4.2'} cards/g
-                            </span>
-                          </div>
+                        {/* 4-5. What the model expects */}
+                        <td className="py-2 px-2 text-center whitespace-nowrap font-mono text-xs font-bold text-slate-900">
+                          {context.totalExpectedCorners ?? '—'}
                         </td>
-
-                        {/* 5. Corner Outlook */}
-                        <td className="py-2 px-2 text-center whitespace-nowrap">
-                          <div className="font-bold text-slate-900 font-mono text-xs">
-                            {context.totalExpectedCorners || '9.8'} Corners
-                          </div>
-                          <div className="text-[10px] text-slate-500">
-                            Red Risk: <strong className={context.isDerby ? 'text-amber-700' : 'text-slate-600'}>{context.redCardRisk || '16%'}</strong>
-                          </div>
+                        <td className="py-2 px-2 text-center whitespace-nowrap font-mono text-xs font-bold text-slate-900">
+                          {context.totalExpectedCards ?? '—'}
                         </td>
 
                         {/* 6. Top Calibrated Prop */}
@@ -1114,33 +1027,9 @@ export default function PropsSpecialsPage({
                           )}
                         </td>
 
-                        {/* 7. LiveScore Bet IE */}
-                        <td className="py-2 px-2 text-center whitespace-nowrap">
-                          {topProp ? (
-                            <div>
-                              <div className="flex items-center justify-center gap-1">
-                                <span className="font-mono font-bold text-xs text-amber-900 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
-                                  {topProp.livescoreBet?.odds || topProp.estOdds}x
-                                </span>
-                                {(topProp.livescoreBet?.evPercent || 0) > 0 && (
-                                  <span className="text-[9.5px] font-bold px-1 rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                    +{topProp.livescoreBet.evPercent}%
-                                  </span>
-                                )}
-                              </div>
-                              <a
-                                href={topProp.livescoreBet?.deepLink || 'https://www.livescorebet.com/ie/sports/football'}
-                                target="_blank"
-                                rel="noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className="text-[9.5px] text-indigo-600 hover:text-indigo-800 font-semibold inline-flex items-center gap-0.5 mt-0.5 hover:underline"
-                              >
-                                Live Odds <ExternalLink className="w-2 h-2" />
-                              </a>
-                            </div>
-                          ) : (
-                            <span className="text-slate-400">—</span>
-                          )}
+                        {/* 7. Fair price */}
+                        <td className="py-2 px-2 text-center whitespace-nowrap font-mono font-bold text-xs text-slate-800">
+                          {topProp ? topProp.fairOdds : '—'}
                         </td>
 
                         {/* 8. Actions */}
@@ -1153,7 +1042,7 @@ export default function PropsSpecialsPage({
                                   originalMatch,
                                   topProp.label,
                                   `Props: ${topProp.market}`,
-                                  topProp.livescoreBet?.odds || topProp.estOdds,
+                                  topProp.fairOdds,
                                   topProp.hitProbability,
                                   'props-slip'
                                 );
@@ -1186,15 +1075,15 @@ export default function PropsSpecialsPage({
                         <tr className="hidden md:table-row bg-slate-50/90 border-b border-slate-200">
                           <td colSpan={8} className="p-4">
                             <div className="space-y-4">
-                              {/* All Calibrated Props Grid */}
+                              {/* All tips */}
                               <div>
                                 <div className="flex items-center justify-between text-xs mb-2">
                                   <span className="font-bold text-slate-800 flex items-center gap-1.5">
                                     <Award className="w-3.5 h-3.5 text-emerald-600" />
-                                    All Calibrated Props for {insight.home} vs {insight.away}:
+                                    All tips for {insight.home} vs {insight.away}
                                   </span>
                                   <span className="text-slate-500 font-mono text-[11px]">
-                                    {structuredProps.length} props evaluated
+                                    {structuredProps.length} tips
                                   </span>
                                 </div>
 
@@ -1231,7 +1120,7 @@ export default function PropsSpecialsPage({
                                                     : 'bg-amber-100 text-amber-800 border border-amber-200'
                                                 }`}>
                                                   {propElite ? <ShieldCheck className="w-2.5 h-2.5" /> : <Zap className="w-2.5 h-2.5" />}
-                                                  {prop.hitProbability}% Hit Rate
+                                                  {prop.hitProbability}% likely
                                                 </span>
                                                 <span className="text-[9.5px] font-semibold text-slate-500 uppercase tracking-wider">
                                                   {prop.market}
@@ -1248,7 +1137,7 @@ export default function PropsSpecialsPage({
                                                   originalMatch,
                                                   prop.label,
                                                   `Props: ${prop.market}`,
-                                                  prop.livescoreBet?.odds || prop.estOdds,
+                                                  prop.fairOdds,
                                                   prop.hitProbability,
                                                   'props-slip'
                                                 )}
@@ -1266,13 +1155,10 @@ export default function PropsSpecialsPage({
 
                                           <div className="flex items-center justify-between text-[10.5px] text-slate-600 pt-1.5 border-t border-slate-100">
                                             <div>
-                                              Odds: <strong className="font-mono text-slate-800">{prop.livescoreBet?.odds || prop.estOdds}x</strong>
-                                              {(prop.livescoreBet?.evPercent || 0) > 0 && (
-                                                <span className="ml-1 text-emerald-700 font-bold">+{prop.livescoreBet.evPercent}% EV</span>
-                                              )}
+                                              Fair price: <strong className="font-mono text-slate-800">{prop.fairOdds}</strong>
                                             </div>
                                             <div className="text-slate-500">
-                                              Cushion: <strong className="text-slate-800">{prop.safetyMargin}</strong>
+                                              Expected: <strong className="text-slate-800">{prop.expected}</strong>
                                             </div>
                                           </div>
                                           {prop.rationale && (
@@ -1287,41 +1173,6 @@ export default function PropsSpecialsPage({
                                 )}
                               </div>
 
-                              {/* AI Breakdown & Referee Forensics */}
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-slate-200">
-                                <div className="bg-white rounded-lg border border-slate-200 p-3 text-xs">
-                                  <div className="font-bold text-slate-800 flex items-center gap-1.5 mb-2">
-                                    <Activity className="w-3.5 h-3.5 text-indigo-600" />
-                                    Referee &amp; Disciplinary Context
-                                  </div>
-                                  <div className="grid grid-cols-3 gap-2 text-center text-[11px] bg-slate-50 p-2 rounded border border-slate-100">
-                                    <div>
-                                      <div className="text-[10px] text-slate-500">Official</div>
-                                      <div className="font-bold text-slate-800">{context.referee || 'Appointed'}</div>
-                                    </div>
-                                    <div>
-                                      <div className="text-[10px] text-slate-500">Strictness</div>
-                                      <div className="font-bold text-slate-800">{strictVal.toFixed(1)}/10</div>
-                                    </div>
-                                    <div>
-                                      <div className="text-[10px] text-slate-500">Avg Cards</div>
-                                      <div className="font-bold text-slate-800">{context.refereeCardAvg || '4.2'}</div>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {insight.recommendations && (
-                                  <div className="bg-white rounded-lg border border-slate-200 p-3 text-xs">
-                                    <div className="font-bold text-slate-800 flex items-center gap-1.5 mb-1.5">
-                                      <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-                                      Tactical Recommendations
-                                    </div>
-                                    <div className="markdown-body text-slate-700 text-[11px] leading-relaxed max-h-36 overflow-y-auto pr-1">
-                                      <ReactMarkdown>{insight.recommendations}</ReactMarkdown>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
                             </div>
                           </td>
                         </tr>
@@ -1347,7 +1198,6 @@ export default function PropsSpecialsPage({
               };
 
               const isExpanded = expandedInsights.has(insight.matchId);
-              const refDetails = insight.refereeDetails || {};
               const context = insight.scrapedContext || {};
               const structuredProps = (insight.structuredProps || []).filter(p => {
                 if (selectedCategory !== 'ALL' && p.market !== selectedCategory) return false;
@@ -1383,11 +1233,6 @@ export default function PropsSpecialsPage({
                       <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">
                         {insight.league}
                       </span>
-                      {context.isDerby && (
-                        <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200 flex items-center gap-0.5">
-                          <Flame className="w-2.5 h-2.5 text-amber-600" /> Derby
-                        </span>
-                      )}
                     </div>
                     <span className="text-[10px] text-slate-500 font-mono">
                       {formatSafeDateTime(insight, null, tzSettings).time}
@@ -1403,7 +1248,7 @@ export default function PropsSpecialsPage({
                         onClick={() => onOpenDeepResearch(originalMatch)}
                         className="text-[10px] text-indigo-600 font-semibold flex items-center gap-0.5"
                       >
-                        Deep Dive <ChevronRight className="w-3 h-3" />
+                        Match details <ChevronRight className="w-3 h-3" />
                       </button>
                     )}
                   </div>
@@ -1414,11 +1259,11 @@ export default function PropsSpecialsPage({
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-slate-900">{structuredProps[0].label}</span>
                         <span className="font-mono font-bold text-amber-900 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200 text-[10px]">
-                          {structuredProps[0].livescoreBet?.odds || structuredProps[0].estOdds}x
+                          {structuredProps[0].fairOdds}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-[10px] text-slate-500">
-                        <span>Hit Rate: <strong className="text-emerald-700">{structuredProps[0].hitProbability}%</strong></span>
+                        <span>Chance: <strong className="text-emerald-700">{structuredProps[0].hitProbability}%</strong></span>
                         <span>Safety: <strong className="text-slate-700">{structuredProps[0].safetyMargin}</strong></span>
                       </div>
                     </div>
@@ -1441,7 +1286,7 @@ export default function PropsSpecialsPage({
                             <div>
                               <div className="font-bold text-slate-900 text-[11px]">{prop.label}</div>
                               <div className="text-[10px] text-slate-500 font-mono">
-                                {prop.hitProbability}% Hit Rate &bull; {prop.livescoreBet?.odds || prop.estOdds}x
+                                {prop.hitProbability}% likely &bull; fair price {prop.fairOdds}
                               </div>
                             </div>
                             {onAddToSlip && (
@@ -1450,7 +1295,7 @@ export default function PropsSpecialsPage({
                                   originalMatch,
                                   prop.label,
                                   `Props: ${prop.market}`,
-                                  prop.livescoreBet?.odds || prop.estOdds,
+                                  prop.fairOdds,
                                   prop.hitProbability,
                                   'props-slip'
                                 )}

@@ -244,9 +244,9 @@ export default function DeepResearchPage({
   const forensics = researchData?.lossForensics;
   const boxScore = researchData?.boxScore;
 
-  // Real Madrid Coach verification
-  const homeManager = systemicClash?.homeDetails?.manager || (activeMatch?.home?.toLowerCase().includes('real madrid') ? 'José Mourinho' : 'Head Coach');
-  const awayManager = systemicClash?.awayDetails?.manager || (activeMatch?.away?.toLowerCase().includes('real madrid') ? 'José Mourinho' : 'Head Coach');
+  // Managers come from the server (Wikidata, or an override set below); never guessed here.
+  const homeManager = systemicClash?.homeDetails?.manager || 'Not known';
+  const awayManager = systemicClash?.awayDetails?.manager || 'Not known';
 
   // Predicted pick & confidence
   const predWinnerSide = activeMatch?.predictedWinner === 'AWAY' || activeMatch?.pick === 'AWAY' || activeMatch?.pick === '2' ? 'AWAY' : 'HOME';
@@ -646,12 +646,7 @@ export default function DeepResearchPage({
                 <label className="block font-bold text-slate-700 mb-1">Select Club:</label>
                 <UniformDropdown
                   value={targetTeamToEdit}
-                  onChange={(team) => {
-                    setTargetTeamToEdit(team);
-                    if (team.toLowerCase().includes('real madrid')) {
-                      setNewManagerName('José Mourinho');
-                    }
-                  }}
+                  onChange={(team) => setTargetTeamToEdit(team)}
                   className="w-full"
                   options={[
                     { value: activeMatch?.home, label: `${activeMatch?.home} (Home)` },
@@ -671,7 +666,7 @@ export default function DeepResearchPage({
                   type="text"
                   value={newManagerName}
                   onChange={(e) => setNewManagerName(e.target.value)}
-                  placeholder="e.g. José Mourinho"
+                  placeholder="Manager's full name"
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-800"
                 />
                 <p className="text-[10px] text-slate-500 mt-1">

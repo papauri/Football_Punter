@@ -652,3 +652,52 @@ npm run goals:fit -- --train /tmp/goals-early.json --test /tmp/goals-recent.json
 
 The shipped `data/goals-model.json` is refitted on both windows together; the table above is the
 held-out score. Any later walk-forward run over those windows is therefore in-sample for goals.
+
+## Corners and cards
+
+These used to be guesses: fixed league averages typed into the code, multiplied by a referee
+"strictness" from a hand-written table, a flat +28% for a list of derbies, and a formation bonus.
+None of it had been checked against a real result, and the page's "recent results" list assigned
+made-up hits and misses to real past matches.
+
+They now come from `src/model/matchStats.js`, built from the corners and cards football-data.co.uk
+records for every match in the 14 main European leagues (29,891 matches since 2020-21). Each league
+keeps its average home and away corners and cards; each team keeps how far above or below that it
+runs, for and against, updated a little after every match. The model replays every match in date
+order, so every figure below was made before kick-off. Scored on 2024-25 onwards (10,345 matches):
+
+| Line | Always pick the common side | Model | Brier (model vs one rate for all leagues) | When the model is 60%+ sure |
+|---|---|---|---|---|
+| Corners 8.5 | 62.2% | 62.2% | 0.2309 vs 0.2351 | 5,667 games, 67.5% |
+| Corners 9.5 | 50.7% | 55.5% | 0.2463 vs 0.2500 | 2,366 games, 59.9% |
+| Corners 10.5 | 60.8% | 60.8% | 0.2345 vs 0.2384 | 5,824 games, 65.8% |
+| Cards 3.5 | 60.9% | 63.2% | 0.2257 vs 0.2381 | 6,056 games, **69.1%** |
+| Cards 4.5 | 56.7% | 61.5% | 0.2313 vs 0.2455 | 5,602 games, **67.0%** |
+
+The chances shown are honest: grouped by the chance given, picks shown at 60–65% came in 63%, at
+70–75% 73%, at 80–85% 82%. The strongest tip per match came in 83% of the time, but those are the
+safe lines (over 7.5 corners, over 2.5 cards) and pay little. Cards carry more signal than corners.
+
+Tested and left out: referees (named in the English and Scottish files) made no difference out of
+sample once each team's own record was known. Only fixtures where both teams play in one of the 14
+leagues get corners and cards figures; cup ties between leagues and other leagues get none.
+
+`npm run stats:fit` rebuilds `data/match-stats.json` and prints the table above. The server also
+refreshes the ratings once a day into `data/match-stats.live.json` (not in git).
+
+## Exact score
+
+Scored on 14,700 walk-forward fixtures, the most likely score was right 12.2% of the time. Always
+guessing 1-1 was right 11.7%; the model picks 1-1 in 71% of games. The top three scores together
+covered 30.5%, against 29.7% for always 1-1, 1-0, 0-1. Scaling expected goals down to match the
+real average improved the probabilities slightly but not the hit rate, so the engine is unchanged.
+The shown percentage is roughly honest from 9% to 14%, but games shown at 16% or more came in only
+about 5% of the time, so the "likely score 14%+ / 16%+" filters were removed.
+
+## Managers
+
+Managers were hard-coded (several were out of date), and the ESPN lookup meant to replace them
+read a field ESPN does not send. They now come from Wikidata's current head coach for each club or
+national team (`src/services/coaches.js`), cached for a week. A manager set on the Match research
+page overrides it and is kept in `data/manager-overrides.json`. The invented team news for about 36
+clubs was removed.
