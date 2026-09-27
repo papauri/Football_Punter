@@ -111,6 +111,22 @@ for (const priorGames of [2, 4, 8, 12, 20]) {
 const bestPrior = best.settings.strengthPriorGames ?? 8;
 engine.applyFittedTeamStrengths({ halfLifeDays: bestHalfLife, priorGames: bestPrior });
 
+// How much of the fitted response should come from expected goals rather than goals scored. Only
+// the top-five-league fixtures have xG, so this trades finishing noise for chance quality on roughly
+// a third of the corpus and leaves the rest as it was.
+const xgAvailable = Object.keys(engine.loadHistoricalXg() || {}).length;
+console.log(`\nSTRENGTH FIT — expected-goals weight (xG available for ${xgAvailable} fixtures)`);
+if (xgAvailable > 500) {
+  for (const xgWeight of [0, 0.25, 0.5, 0.75, 1.0]) {
+    engine.applyFittedTeamStrengths({ halfLifeDays: bestHalfLife, priorGames: bestPrior, xgWeight });
+    consider(`xgWeight=${xgWeight}`, { strengthHalfLifeDays: bestHalfLife, strengthPriorGames: bestPrior, xgWeight }, evaluate());
+  }
+} else {
+  console.log('  skipped — run npm run xg:ingest first');
+}
+const bestXgWeight = best.settings.xgWeight ?? 0;
+engine.applyFittedTeamStrengths({ halfLifeDays: bestHalfLife, priorGames: bestPrior, xgWeight: bestXgWeight });
+
 // ---- 2. Shaping parameters ---------------------------------------------------------------------
 console.log('\nSHAPE — Dixon-Coles low-score correction rho');
 for (const dixonColesRho of [-0.25, -0.174, -0.10, -0.05, 0]) {
@@ -118,6 +134,7 @@ for (const dixonColesRho of [-0.25, -0.174, -0.10, -0.05, 0]) {
   consider(`rho=${dixonColesRho}`, { ...best.settings, dixonColesRho }, evaluate());
 }
 hp.dixonColesRho = best.settings.dixonColesRho ?? baselineHp.dixonColesRho;
+hp.xgWeight = bestXgWeight;
 
 console.log('\nSHAPE — softmax temperature (>1 flattens, <1 sharpens)');
 for (const temperature of [1.0, 1.15, 1.3, 1.45, 1.6]) {

@@ -17,6 +17,13 @@
 // This is the standard approach for this likelihood and converges in a few dozen passes.
 
 const DEFAULTS = {
+  // How much of the fitted response comes from expected goals rather than goals actually scored.
+  // Goals are a noisy record of how a side played: finishing swings hard over a handful of shots, so
+  // even 20 games of goal record carries a lot of luck. xG measures chances created and conceded and
+  // is far steadier, which makes it the better basis for a strength estimate. 0 ignores xG entirely;
+  // 1 fits on xG alone. Fixtures with no xG always fall back to goals, so leagues understat does not
+  // cover are unaffected. Tuned by scripts/tune-model.mjs.
+  xgWeight: 0,
   // Exponential time decay. halfLifeDays is the more legible knob; xi is derived from it.
   halfLifeDays: 240,
   // Shrinkage toward the league average, in "phantom games" of evidence. Keeps a side with three
@@ -36,16 +43,20 @@ const winnerOf = (h, a) => (h > a ? 'HOME' : a > h ? 'AWAY' : 'DRAW');
 /**
  * Fit per-team attack/defence multipliers and per-league baselines from played matches.
  *
- * @param {Array} matches  played fixtures: { home, away, homeScore, awayScore, league, timestamp }
- * @param {Object} [options] see DEFAULTS
+ * @param {Array} matches  played fixtures: { home, away, homeScore, awayScore, league, timestamp, id }
+ * @param {Object} [options] see DEFAULTS. options.xgByFixtureId maps fixture id to
+ *   { xgHome, xgAway } and is blended into the response by options.xgWeight.
  * @returns {{teams: Object, leagues: Object, meta: Object}}
  */
 export function fitTeamStrengths(matches, options = {}) {
   const cfg = { ...DEFAULTS, ...options };
   const xi = Math.log(2) / Math.max(1, cfg.halfLifeDays);
+  const xgWeight = Math.max(0, Math.min(1, cfg.xgWeight || 0));
+  const xgByFixtureId = options.xgByFixtureId || {};
 
   const games = [];
   let latest = 0;
+  let xgUsed = 0;
   for (const m of matches || []) {
     if (!m || !m.home || !m.away) continue;
     const hg = typeof m.homeScore === 'number' ? m.homeScore : m.goals?.home;
@@ -53,7 +64,16 @@ export function fitTeamStrengths(matches, options = {}) {
     if (typeof hg !== 'number' || typeof ag !== 'number') continue;
     const ts = m.timestamp || (m.date ? new Date(m.date).getTime() : 0);
     if (ts > latest) latest = ts;
-    games.push({ home: m.home, away: m.away, hg, ag, league: m.league || 'Unknown', ts });
+
+    // Blend expected goals into the response where we have them. The scoreline is kept as hg/ag for
+    // reporting; respH/respA are what the fit is actually driven by.
+    const xg = xgWeight > 0 && m.id != null ? xgByFixtureId[m.id] : null;
+    const hasXg = xg && Number.isFinite(xg.xgHome) && Number.isFinite(xg.xgAway);
+    const respH = hasXg ? (1 - xgWeight) * hg + xgWeight * xg.xgHome : hg;
+    const respA = hasXg ? (1 - xgWeight) * ag + xgWeight * xg.xgAway : ag;
+    if (hasXg) xgUsed++;
+
+    games.push({ home: m.home, away: m.away, hg, ag, respH, respA, league: m.league || 'Unknown', ts });
   }
   if (!games.length) {
     return { teams: {}, leagues: {}, meta: { matches: 0, teams: 0, fitted: false } };
@@ -84,9 +104,9 @@ export function fitTeamStrengths(matches, options = {}) {
     const h = touchTeam(g.home), a = touchTeam(g.away), L = touchLeague(g.league);
     h.wGames += g.w; a.wGames += g.w;
     h.games++; a.games++;
-    h.scored += g.w * g.hg; h.conceded += g.w * g.ag;
-    a.scored += g.w * g.ag; a.conceded += g.w * g.hg;
-    L.w += g.w; L.homeGoals += g.w * g.hg; L.awayGoals += g.w * g.ag;
+    h.scored += g.w * g.respH; h.conceded += g.w * g.respA;
+    a.scored += g.w * g.respA; a.conceded += g.w * g.respH;
+    L.w += g.w; L.homeGoals += g.w * g.respH; L.awayGoals += g.w * g.respA;
   }
 
   // League baseline = weighted mean goals per team per game; home advantage = home/away goal ratio.
@@ -118,10 +138,10 @@ export function fitTeamStrengths(matches, options = {}) {
       const L = leagues.get(g.league);
       const h = teams.get(g.home), a = teams.get(g.away);
       // home attack faces away defence, with the venue factor
-      attackNum.set(g.home, (attackNum.get(g.home) || 0) + g.w * g.hg);
+      attackNum.set(g.home, (attackNum.get(g.home) || 0) + g.w * g.respH);
       attackDen.set(g.home, (attackDen.get(g.home) || 0) + g.w * L.base * a.defence * L.homeAdv);
       // away attack faces home defence, no venue factor
-      attackNum.set(g.away, (attackNum.get(g.away) || 0) + g.w * g.ag);
+      attackNum.set(g.away, (attackNum.get(g.away) || 0) + g.w * g.respA);
       attackDen.set(g.away, (attackDen.get(g.away) || 0) + g.w * L.base * h.defence);
     }
     for (const [name, t] of teams) {
@@ -136,10 +156,10 @@ export function fitTeamStrengths(matches, options = {}) {
       const L = leagues.get(g.league);
       const h = teams.get(g.home), a = teams.get(g.away);
       // home defence concedes to away attack
-      defNum.set(g.home, (defNum.get(g.home) || 0) + g.w * g.ag);
+      defNum.set(g.home, (defNum.get(g.home) || 0) + g.w * g.respA);
       defDen.set(g.home, (defDen.get(g.home) || 0) + g.w * L.base * a.attack);
       // away defence concedes to home attack, with the venue factor
-      defNum.set(g.away, (defNum.get(g.away) || 0) + g.w * g.hg);
+      defNum.set(g.away, (defNum.get(g.away) || 0) + g.w * g.respH);
       defDen.set(g.away, (defDen.get(g.away) || 0) + g.w * L.base * h.attack * L.homeAdv);
     }
     for (const [name, t] of teams) {
@@ -190,6 +210,9 @@ export function fitTeamStrengths(matches, options = {}) {
       teams: teams.size,
       halfLifeDays: cfg.halfLifeDays,
       priorGames: cfg.priorGames,
+      xgWeight,
+      fixturesWithXg: xgUsed,
+      xgCoverage: games.length ? parseFloat((xgUsed / games.length).toFixed(4)) : 0,
       iterations: iterationsRun,
       converged: delta <= cfg.tolerance,
       finalDelta: delta,

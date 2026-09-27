@@ -8,6 +8,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { GoogleGenAI } from '@google/genai';
 import { fetchUnderstatData } from './understat_scraper.js';
 import { AISwarmOrchestrator, InPlayTacticalAdvisoryAgent } from './multiAgentSwarm.js';
@@ -16,6 +17,10 @@ import { fitTeamStrengths, matchScale } from './src/model/strengthFit.js';
 import { calibrateTriple } from './src/model/calibration.js';
 
 const HYPERPARAMETERS_FILE = path.join(process.cwd(), 'hyperparameters.json');
+// The repository root, independent of the working directory. Backtest scripts chdir into a temporary
+// directory holding a restricted training_data.json so the engine trains on a subset; reference data
+// that is keyed by fixture id and must not be restricted is resolved from here instead of cwd.
+const ENGINE_DIR = path.dirname(fileURLToPath(import.meta.url));
 
 export function stripDiacritics(str) {
   if (!str || typeof str !== 'string') return '';
@@ -4676,6 +4681,39 @@ class SoccerEngine {
     });
   }
 
+  // Per-fixture expected goals, ingested by scripts/ingest-understat-xg.mjs. Cached after the first
+  // read: the file is a few megabytes and the fit is called repeatedly during tuning.
+  loadHistoricalXg() {
+    if (this._historicalXg !== undefined) return this._historicalXg;
+    try {
+      // Resolved from the repository, not the working directory: this is a reference table keyed by
+      // fixture id, and only fixtures present in the loaded corpus are ever looked up, so a
+      // restricted training slice still cannot see the xG of fixtures held back from it.
+      const filePath = path.join(ENGINE_DIR, 'data', 'historical_xg.json');
+      if (!fs.existsSync(filePath)) {
+        this._historicalXg = {};
+        this.historicalXgMeta = { available: false, reason: 'data/historical_xg.json not present — run npm run xg:ingest' };
+        return this._historicalXg;
+      }
+      const loaded = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      this._historicalXg = loaded?.xg || {};
+      this.historicalXgMeta = {
+        available: true,
+        matched: loaded?.matched ?? Object.keys(this._historicalXg).length,
+        leagues: loaded?.leagues || [],
+        seasons: loaded?.seasons || null,
+        generatedAt: loaded?.generatedAt || null
+      };
+      this.log('TrainingEngine', `Loaded expected goals for ${this.historicalXgMeta.matched} fixtures (${(loaded?.leagues || []).join(', ')}).`);
+      return this._historicalXg;
+    } catch (e) {
+      this._historicalXg = {};
+      this.historicalXgMeta = { available: false, reason: e.message };
+      this.log('TrainingEngine', `Could not load expected goals, fitting on goals only: ${e.message}`);
+      return this._historicalXg;
+    }
+  }
+
   // Fit attack/defence jointly across the loaded corpus and write the result into teamDb.
   // Replaces per-team raw goals-per-game, which rewarded an easy schedule and had no way to tell a
   // good attack from a weak set of opponents.
@@ -4704,6 +4742,10 @@ class SoccerEngine {
       const fit = fitTeamStrengths(corpus, {
         halfLifeDays: this.hyperparameters?.strengthHalfLifeDays ?? 240,
         priorGames: this.hyperparameters?.strengthPriorGames ?? 8,
+        // Expected goals where we have them. Only the fixtures in the loaded corpus contribute, so a
+        // backtest that holds fixtures back never sees their xG either.
+        xgWeight: this.hyperparameters?.xgWeight ?? 0,
+        xgByFixtureId: this.loadHistoricalXg(),
         ...options
       });
       if (!fit.meta.fitted) return null;
@@ -4734,7 +4776,7 @@ class SoccerEngine {
         this.fittedStrengths = fit;
         this.fittedLeagueBaselines = fit.leagues;
       }
-      this.log('TrainingEngine', `Fitted opponent-adjusted strengths for ${applied} teams from ${fit.meta.matches} matches (half-life ${fit.meta.halfLifeDays}d, prior ${fit.meta.priorGames} games, converged=${fit.meta.converged}).`);
+      this.log('TrainingEngine', `Fitted opponent-adjusted strengths for ${applied} teams from ${fit.meta.matches} matches (half-life ${fit.meta.halfLifeDays}d, prior ${fit.meta.priorGames} games, xG weight ${fit.meta.xgWeight} on ${(fit.meta.xgCoverage * 100).toFixed(0)}% of fixtures, converged=${fit.meta.converged}).`);
       return fit;
     } catch (e) {
       this.log('TrainingEngine', `Strength fit failed, keeping previous ratings: ${e.message}`);

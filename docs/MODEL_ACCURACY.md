@@ -31,7 +31,7 @@ figure has seen the results it is judged on.
 | Head-to-head record | **Used, small weight** | Weight 0.08, chosen on a validation split. |
 | Bookmaker odds | **Used when available** | Domestic leagues only; the blend leans on it heavily. |
 | **Player-level data** | **Not available** | No shot, minutes, injury or transfer data anywhere in the corpus. |
-| **Expected goals (xG)** | **Not available** | `xGForm` is derived from goals, not from shots. `understat_scraper.js` can fetch live top-5-league xG but nothing historical, so no xG effect can be fitted or tested. |
+| **Expected goals (xG)** | **Used, top 5 leagues** | Per-fixture xG ingested from understat for 9,061 fixtures (100% coverage of EPL, LaLiga, Serie A, Bundesliga, Ligue 1). Fitted as the strength response. Measured gain is small — see below. |
 | **Formations** | **Not available** | Scraped for display on the lineups page; never reaches the probability model. |
 | **Referees** | **Not available** | See below. |
 | **Lineups** | **Partly available, rarely informative** | See below. |
@@ -154,18 +154,57 @@ evaluation scripts report on. `npm run hitrate` checks for overlap and warns lou
 seen its test window. For live use, refit with `--reserve 0` to bring the map up to the latest
 results; the evaluation scripts will then warn, correctly, that their figures are flattered.
 
+## Expected goals: what it actually bought
+
+`npm run xg:ingest` pulls per-fixture xG from understat for the top five leagues (9,061 fixtures,
+100% coverage of each) and `xgWeight` blends it into the strength fit in place of goals scored.
+Goals are a noisy record of how a side played; xG measures chances and is far steadier.
+
+On the validation window it looked worth roughly a point of hit rate. **It did not replicate on the
+holdout.** `npm run xg:ablation -- --window holdout`, on the 2,157 xG-league fixtures with odds:
+
+| | Goals only | xG (weight 1) |
+|---|---|---|
+| 1X2 hit rate | 50.7% | **50.8%** |
+| Brier | 0.1994 | **0.1990** |
+| Picks at ≥60%, hit rate | 414 @ 73.4% | **361 @ 75.3%** |
+| Gap to bookmaker | −3.3 | **−3.2** |
+
+So: a real but tiny Brier improvement, no meaningful hit-rate improvement, and a genuine gain in
+discrimination at the top end — confident picks land 2 points more often, on 13% fewer picks. The
+control group (leagues with no xG) is unchanged to 4 decimal places, which confirms the plumbing is
+doing what it claims and nothing else.
+
+It is shipped because it is a small improvement in the right direction and costs nothing at predict
+time. It is **not** the breakthrough, and it does not put us ahead of the market.
+
+### Why adding public data does not close the gap
+
+This is the important lesson from the xG work. Bookmakers already use xG — and shot quality models
+better than understat's, plus injuries, lineups, transfers and money flow. Public data is not an
+edge, it is table stakes: by the time a signal is on a public website it is in the closing price.
+
+The gap is not a missing feature that can be bolted on. Closing it needs information the market has
+not already priced, and season-level public statistics are not that. Realistically:
+
+- Beating the **closing** line consistently is a research programme, not a feature.
+- Beating an **early or soft** line is a different and much more achievable goal: the same model,
+  aimed at prices posted before the market has settled, and at bookmakers slower to move.
+- Shopping the best available price across books recovers more than any model change measured here,
+  because most of the loss is margin, not prediction error.
+
 ## What would actually close the gap
 
 The model is a goals-and-prices model. Bookmakers have that plus everything below, which is why they
 are ahead. Ranked by expected value per unit of work:
 
-1. **Historical xG (shots)**, so attack and defence are fitted on chances rather than finishing
-   luck. The single largest available gain — finishing is noisy, chance creation much less so.
-   `understat_scraper.js` is the starting point but only reaches current top-5-league team totals;
-   per-fixture history is what is needed.
+1. ~~**Historical xG**~~ — **done**, and worth about 0.0004 Brier and nothing on hit rate. See
+   above. Its main value turned out to be sharper confident picks, not better picks overall.
 2. **Confirmed lineups plus player value or minutes-weighted availability.** The code path exists
-   and does nothing without real absence data. A missing first-choice keeper or striker is worth
-   real probability; "100% strength, projected" is worth none.
+   and does nothing without real absence data. Temper expectations: xG is generally a stronger
+   signal than lineup absence, and xG moved the hit rate by 0.1 points, so this is unlikely to
+   close a 3-point gap on its own. understat's per-match endpoints do carry historical rosters, so
+   it is buildable — roughly 14,000 requests for the top five leagues.
 3. **Rest days and travel**, computable from the fixture list we already hold. Cheapest real feature
    available — no new data source needed.
 4. **Odds coverage for cups and internationals**, both to blend against and to know whether we are

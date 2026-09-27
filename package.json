@@ -14,7 +14,9 @@
     "hitrate": "node scripts/hitrate-vs-book.mjs",
     "tune": "node scripts/tune-model.mjs",
     "calibration:fit": "node scripts/fit-calibration.mjs",
-    "backtest:honest": "node scripts/honest-backtest.mjs"
+    "backtest:honest": "node scripts/honest-backtest.mjs",
+    "xg:ingest": "node scripts/ingest-understat-xg.mjs",
+    "xg:ablation": "node scripts/xg-ablation.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",

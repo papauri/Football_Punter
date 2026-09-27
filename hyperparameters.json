@@ -46,5 +46,6 @@
   ],
   "strengthHalfLifeDays": 730,
   "strengthPriorGames": 12,
-  "noPriceEntropySurcharge": 6.0
+  "noPriceEntropySurcharge": 6.0,
+  "xgWeight": 1.0
 }
