@@ -1,5 +1,5 @@
 // Rolling walk-forward evaluation: the closest thing to running the live app over history.
-// Usage: npm run walkforward [-- --from 2025-04-01 --to 2026-10-01 --stepdays 30]
+// Usage: npm run walkforward [-- --from 2025-04-01 --to 2026-10-01 --stepdays 30 --calibrate]
 //
 // WHY THIS EXISTS, AND WHAT WAS WRONG WITH THE OLDER SCRIPTS
 //
@@ -17,8 +17,9 @@
 //
 // This script fixes both:
 //   * Refits at every step. At each boundary T the engine is rebuilt from fixtures strictly before T
-//     — head-to-head index, league profiles, team strengths and the calibration map — then scores
-//     only the fixtures in [T, T+step). Nothing from the step window, or after it, is visible.
+//     — head-to-head index, league profiles and team strengths — then scores only the fixtures in
+//     [T, T+step). Nothing from the step window, or after it, is visible. Probabilities are left
+//     uncalibrated by default; see the note on CALIBRATE below for why.
 //   * Prices at OPENING odds. Decisions and returns use the price available when the market opened.
 //     Closing prices are used for one purpose only: measuring closing-line value, which is what they
 //     are legitimately good for.
@@ -39,6 +40,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { fitCalibration } from '../src/model/calibration.js';
 import { devigPower } from '../src/model/devig.js';
+import { bootstrapRoi as sharedBootstrap } from '../src/model/bootstrap.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 process.chdir(ROOT);
@@ -51,7 +53,15 @@ const arg = (n, d) => {
 const FROM = arg('from', '2025-04-01');
 const TO = arg('to', '2026-10-01');
 const STEP_DAYS = parseInt(arg('stepdays', '30'), 10);
-const CALIBRATE = !process.argv.includes('--no-calibrate');
+// Calibration is OFF by default. It was on until a paired comparison showed it made every measure
+// worse — model-only Brier 0.2056 against 0.2002 uncalibrated, blend 0.2000 against 0.1956, and ROI at
+// best price about half a point lower. The per-step map cannot be fitted cleanly inside one process:
+// the engine is a stateful singleton, so head-to-head records and Elo from later in the history reach
+// the fixtures the map is fitted on, and the map learns to over-correct. The shipped map is fitted
+// offline with a genuinely separate engine (scripts/fit-calibration.mjs) and is roughly neutral on the
+// holdout (Brier -0.0002), so uncalibrated walk-forward figures are representative of the live app.
+// --calibrate turns the per-step map back on, for reproducing that comparison.
+const CALIBRATE = process.argv.includes('--calibrate');
 
 const DAY = 86400000;
 const corpus = JSON.parse(fs.readFileSync('training_data.json', 'utf8'))
@@ -304,19 +314,10 @@ const roiMax = (acc.returnedMax - acc.stakedMax) / acc.stakedMax * 100;
 // normal-approximation standard error understates the interval. Bootstrap instead: resample the
 // per-bet returns with replacement and read the 2.5th and 97.5th percentiles.
 function bootstrapRoi(returns, resamples = 2000) {
-  if (!returns.length) return null;
-  const n = returns.length;
-  const rois = new Float64Array(resamples);
-  // Deterministic seed, so a rerun on unchanged data reports the same interval.
-  let seed = 20260927;
-  const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
-  for (let r = 0; r < resamples; r++) {
-    let sum = 0;
-    for (let i = 0; i < n; i++) sum += returns[(rnd() * n) | 0];
-    rois[r] = (sum - n) / n * 100;
-  }
-  const sorted = Array.from(rois).sort((a, b) => a - b);
-  return { lo: sorted[Math.floor(resamples * 0.025)], hi: sorted[Math.floor(resamples * 0.975)] };
+  // src/model/bootstrap.js: a correct 32-bit generator. The inline one this replaced cycled every
+  // 10,466 draws, so its intervals were not valid.
+  const r = sharedBootstrap(returns, { resamples });
+  return r ? { lo: r.lo, hi: r.hi } : null;
 }
 const ciAvg = bootstrapRoi(acc.betReturnsAvg);
 const ciMax = bootstrapRoi(acc.betReturnsMax);

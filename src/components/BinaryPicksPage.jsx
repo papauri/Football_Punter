@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { MobileFoldCell, FoldSummary, FoldBadge, compactKickoff } from './MobileFold';
 import { 
   Scale, 
   Search, 
@@ -43,6 +44,8 @@ export default function BinaryPicksPage({
   tzSettings = {},
   onSelectMarketMode
 }) {
+  // Shared with every list page: Cards or 1-Row Table on phones, remembered across pages.
+  const [mobileViewMode] = useMobileViewMode();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLeague, setSelectedLeague] = useState('All');
   const [selectedDate, setSelectedDate] = useState('All');
@@ -575,8 +578,9 @@ export default function BinaryPicksPage({
           </button>
         </div>
 
+        {!collapsedBinary && <MobileViewSwitcher label="Display" className="m-2" />}
         {!collapsedBinary && (
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="block md:table w-full text-left border-collapse text-xs">
           <thead className="hidden md:table-header-group">
             <tr className="bg-slate-50/80 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
               {/* Expand Toggle */}
@@ -781,7 +785,24 @@ export default function BinaryPicksPage({
                       onClick={() => toggleExpand(pickKey)}
                     >
                       {/* ================= MOBILE COMPACT CARD VIEW ================= */}
-                      <td className="md:hidden p-3 block">
+                      <MobileFoldCell
+                        mode={mobileViewMode}
+                        expanded={isExpanded}
+                        summary={
+                              <FoldSummary
+                                lead={compactKickoff(p.time)}
+                                home={p.home}
+                                away={p.away}
+                                live={p.isLive}
+                                meta={`${p.league || 'Soccer'} · ${p.market}`}
+                                expanded={isExpanded}
+                                badges={<>
+                                  <FoldBadge tone="info" mono>@{safeToFixed(p.marketOdds, 2)}</FoldBadge>
+                                  <FoldBadge tone={p.edge >= 3 ? 'good' : 'neutral'} mono title="Model edge over the implied price">+{safeToFixed(p.edge, 1)}%</FoldBadge>
+                                </>}
+                              />
+                        }
+                      >
                         <div className="flex justify-between items-start mb-1.5">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <span className="font-semibold text-slate-700 font-mono text-[10px] flex items-center gap-1">
@@ -899,7 +920,7 @@ export default function BinaryPicksPage({
                             </div>
                           </div>
                         )}
-                      </td>
+                      </MobileFoldCell>
 
                       {/* ================= DESKTOP 1-ROW TABLE VIEW ================= */}
                       {/* Dropdown Chevron */}

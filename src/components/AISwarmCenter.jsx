@@ -1,4 +1,7 @@
 import React, { useState, useMemo } from 'react';
+import MobileViewSwitcher from './MobileViewSwitcher';
+import { useMobileViewMode } from '../utils/useMobileViewMode';
+import { MobileFoldCell, FoldSummary, FoldBadge, compactKickoff } from './MobileFold';
 import { 
   Bot, 
   Sparkles, 
@@ -41,6 +44,8 @@ export default function AISwarmCenter({
 }) {
   const timezoneCtx = useTimezone ? useTimezone() : null;
   const tzSettings = tzSettingsProp || timezoneCtx?.tzSettings || {};
+  // Shared with every list page: Cards or 1-Row Table on phones, remembered across pages.
+  const [mobileViewMode] = useMobileViewMode();
   const [isTriggering, setIsTriggering] = useState(false);
   const [filterType, setFilterType] = useState('ALL'); // 'ALL' | 'UNANIMOUS' | 'TRAPS'
   const [searchQuery, setSearchQuery] = useState('');
@@ -650,7 +655,8 @@ export default function AISwarmCenter({
 
           {/* Top Value Picks Interactive Table */}
           <div className="bg-white border border-slate-200 rounded-lg overflow-x-auto shadow-2xs">
-            <table className="w-full text-left border-collapse text-xs">
+            <MobileViewSwitcher label="Display" className="m-2" />
+            <table className="block md:table w-full text-left border-collapse text-xs">
               <thead className="hidden md:table-header-group">
                 <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
                   <th className="py-1 px-1.5 w-6 text-center"></th>
@@ -778,7 +784,23 @@ export default function AISwarmCenter({
                           onClick={() => toggleTvExpand(leg.id || idx)}
                         >
                           {/* ================= MOBILE COMPACT VIEW ================= */}
-                          <td className="md:hidden p-3 block">
+                          <MobileFoldCell
+                            mode={mobileViewMode}
+                            expanded={isExpanded}
+                            summary={
+                              <FoldSummary
+                                lead={`#${idx + 1}`}
+                                home={leg.home}
+                                away={leg.away}
+                                meta={`${compactKickoff(leg.formattedDayTime)} · ${leg.league || 'Soccer'}`}
+                                expanded={isExpanded}
+                                badges={<>
+                                  <FoldBadge tone="accent">{isHome ? 'HOME' : isAway ? 'AWAY' : 'DRAW'}</FoldBadge>
+                                  <FoldBadge tone="good" mono title="Consensus score">{leg.swarmScoreNum ?? ''}</FoldBadge>
+                                </>}
+                              />
+                            }
+                          >
                             <div className="flex items-center justify-between mb-1.5">
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className="w-5 h-5 rounded-full bg-slate-900 text-white font-mono font-bold text-[10px] inline-flex items-center justify-center shrink-0">
@@ -850,7 +872,7 @@ export default function AISwarmCenter({
                                 </div>
                               </div>
                             )}
-                          </td>
+                          </MobileFoldCell>
 
                           {/* ================= DESKTOP 1-ROW VIEW ================= */}
                           {/* Chevron */}
@@ -1224,7 +1246,8 @@ export default function AISwarmCenter({
 
         {/* Match-by-Match Swarm Consensus Explorer Table */}
         <div className="bg-white border border-slate-200 rounded-lg overflow-x-auto shadow-2xs">
-          <table className="w-full text-left border-collapse text-xs">
+          <MobileViewSwitcher label="Display" className="m-2" />
+          <table className="block md:table w-full text-left border-collapse text-xs">
             <thead className="hidden md:table-header-group">
               <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
                 <th className="py-1 px-1.5 w-8 text-center">
@@ -1284,7 +1307,25 @@ export default function AISwarmCenter({
                       <tr className={`flex flex-col md:table-row hover:bg-indigo-50/20 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'} md:h-10 ${isExpanded ? 'bg-indigo-50/20' : ''}`}>
                         
                         {/* ================= MOBILE COMPACT VIEW ================= */}
-                        <td className="md:hidden p-3 block">
+                        <MobileFoldCell
+                          mode={mobileViewMode}
+                          expanded={isExpanded}
+                            onToggle={() => setExpandedDebateId(isExpanded ? null : m.id)}
+                          summary={
+                              <FoldSummary
+                                lead={compactKickoff(formatRelativeDayTime(m, tzSettings))}
+                                home={m.home}
+                                away={m.away}
+                                live={m.isLive}
+                                meta={m.league}
+                                expanded={isExpanded}
+                                badges={<>
+                                  <FoldBadge tone={isTrap ? 'bad' : 'accent'}>{isTrap ? 'TRAP' : pickValue}</FoldBadge>
+                                  <FoldBadge tone={isUnanimous ? 'good' : isTrap ? 'bad' : 'neutral'} mono title="Consensus score">{swarmData?.swarmScore ?? swarmData?.aiSwarmScore ?? swarmData?.imperialSwarmScore ?? ''}</FoldBadge>
+                                </>}
+                              />
+                          }
+                        >
                           <div className="flex items-center justify-between mb-1.5">
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <span className={`inline-block px-2 py-0.5 rounded font-black font-mono text-[11px] border ${
@@ -1394,7 +1435,7 @@ export default function AISwarmCenter({
                               </div>
                             </div>
                           )}
-                        </td>
+                        </MobileFoldCell>
 
                         {/* ================= DESKTOP 1-ROW VIEW ================= */}
                         {/* Index */}

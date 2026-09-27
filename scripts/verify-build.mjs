@@ -101,11 +101,20 @@ const corpus = JSON.parse(fs.readFileSync(new URL('../training_data.json', impor
 const training = corpus.slice(-9000);
 const trainDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fp-verify-'));
 fs.writeFileSync(path.join(trainDir, 'training_data.json'), JSON.stringify(corpus.slice(0, -9000)));
+// The engine resolves data/calibration.json from the working directory. Without this copy, verify
+// silently measured the UNCALIBRATED model while the app ships the calibrated one. The shipped map is
+// fitted with --reserve 9000, so it has not seen the 9,000 fixtures tested here.
+const calibrationFile = new URL('../data/calibration.json', import.meta.url);
+if (fs.existsSync(calibrationFile)) {
+  fs.mkdirSync(path.join(trainDir, 'data'), { recursive: true });
+  fs.copyFileSync(calibrationFile, path.join(trainDir, 'data', 'calibration.json'));
+}
 const repoCwd = process.cwd();
 process.chdir(trainDir);
 engine.loadTrainingDataFromDisk();
 process.chdir(repoCwd);
 fs.rmSync(trainDir, { recursive: true, force: true });
+results.push(`INFO  calibration map ${engine.probabilityCalibration?.points?.length ? `applied (${engine.probabilityCalibration.points.length} points, fitted through ${String(engine.probabilityCalibration.meta?.fitWindowEnd || '?').slice(0, 10)})` : 'NOT applied — probabilities below are raw'}`);
 results.push(`INFO  trained on ${corpus.length - training.length} fixtures before ${new Date(training[0].timestamp).toISOString().slice(0, 10)}, testing on ${training.length} later fixtures`);
 
 let brierSum = 0, correct = 0, badSums = 0, n = 0;

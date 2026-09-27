@@ -29,7 +29,7 @@ const DEFAULTS = {
   // Shrinkage toward the league average, in "phantom games" of evidence. Keeps a side with three
   // matches from being handed an extreme rating.
   priorGames: 8,
-  iterations: 60,
+  iterations: 300,
   tolerance: 1e-5,
   // Guard rails on the final multipliers, matching the ranges engine.js previously clamped to.
   minAttack: 0.45,
@@ -109,12 +109,18 @@ export function fitTeamStrengths(matches, options = {}) {
     L.w += g.w; L.homeGoals += g.w * g.respH; L.awayGoals += g.w * g.respA;
   }
 
-  // League baseline = weighted mean goals per team per game; home advantage = home/away goal ratio.
+  // Starting values only; both are re-estimated inside the loop below. base is the AWAY scoring rate,
+  // because the model applies it as the away rate and multiplies home advantage on top:
+  //   home goals ~ base * homeAdv * attack[home] * defence[away]
+  //   away goals ~ base *           attack[away] * defence[home]
+  // An earlier version set base to the average of home and away goals and never updated it. That
+  // inflated both expected rates by about (1 + homeAdv) / 2, the mean-one normalisation then fought the
+  // data every pass, and on clean synthetic data the loop oscillated rather than converging.
   for (const L of leagues.values()) {
     const home = L.homeGoals / Math.max(1e-9, L.w);
     const away = L.awayGoals / Math.max(1e-9, L.w);
-    L.base = Math.max(0.4, Math.min(2.6, (home + away) / 2));
-    L.homeAdv = Math.max(1.0, Math.min(1.7, away > 0.05 ? home / away : 1.25));
+    L.base = clamp(away, 0.3, 3.0);
+    L.homeAdv = clamp(away > 0.05 ? home / away : 1.25, 0.9, 1.8);
   }
 
   // ---- iterate --------------------------------------------------------------------------------
@@ -131,6 +137,8 @@ export function fitTeamStrengths(matches, options = {}) {
     // still report a constant non-zero delta and the loop could never report convergence.
     const before = new Map();
     for (const [name, t] of teams) before.set(name, [t.attack, t.defence]);
+    const leagueBefore = new Map();
+    for (const [name, L] of leagues) leagueBefore.set(name, [L.base, L.homeAdv]);
 
     // attack
     const attackNum = new Map(), attackDen = new Map();
@@ -173,10 +181,34 @@ export function fitTeamStrengths(matches, options = {}) {
     normaliseToMeanOne(teams, 'attack');
     normaliseToMeanOne(teams, 'defence');
 
+    // Re-estimate each league's base rate and home advantage given the current team strengths. This
+    // is what makes the whole loop a coordinate ascent on one likelihood: every parameter takes its
+    // closed-form best value given the others. The normalisation above rescales every league's
+    // expected goals, and this step absorbs that into each league's base, so the two never fight.
+    const lg = new Map();
+    for (const g of games) {
+      const h = teams.get(g.home), a = teams.get(g.away);
+      const acc = lg.get(g.league) || { awayNum: 0, awayDen: 0, homeNum: 0, homeDen: 0 };
+      acc.awayNum += g.w * g.respA;
+      acc.awayDen += g.w * a.attack * h.defence;
+      acc.homeNum += g.w * g.respH;
+      acc.homeDen += g.w * h.attack * a.defence;
+      lg.set(g.league, acc);
+    }
+    for (const [name, acc] of lg) {
+      const L = leagues.get(name);
+      L.base = clamp(acc.awayNum / Math.max(1e-9, acc.awayDen), 0.3, 3.0);
+      L.homeAdv = clamp(acc.homeNum / Math.max(1e-9, L.base * acc.homeDen), 0.9, 1.8);
+    }
+
     delta = 0;
     for (const [name, t] of teams) {
       const [a0, d0] = before.get(name);
       delta = Math.max(delta, Math.abs(t.attack - a0), Math.abs(t.defence - d0));
+    }
+    for (const [name, L] of leagues) {
+      const [b0, h0] = leagueBefore.get(name);
+      delta = Math.max(delta, Math.abs(L.base - b0), Math.abs(L.homeAdv - h0));
     }
   }
 

@@ -983,6 +983,11 @@ export default function Dashboard() {
                       body: JSON.stringify(config)
                     });
                     const data = await res.json();
+                    // A frozen model refuses setting changes. Say why, rather than letting the
+                    // refetch below silently put the old values back.
+                    if (data && data.frozen) {
+                      window.alert(data.error || 'The model is frozen for a forward exam, so settings are read-only.');
+                    }
                     if (data && data.state) {
                       setState(data.state);
                     }

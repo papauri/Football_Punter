@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import MobileViewSwitcher from './MobileViewSwitcher';
+import { useMobileViewMode } from '../utils/useMobileViewMode';
+import { MobileFoldCell, FoldSummary, FoldBadge, compactKickoff } from './MobileFold';
 import { 
   Zap, 
   Trophy, 
@@ -41,6 +44,8 @@ export default function AllDayWinnerPage({
   onLoadPicksToSlip,
   onNavigateToSlip
 }) {
+  // Shared with every list page: Cards or 1-Row Table on phones, remembered across pages.
+  const [mobileViewMode] = useMobileViewMode();
   const [legCount, setLegCount] = useState(8);
   const [minConfidence, setMinConfidence] = useState(60);
   const [stake, setStake] = useState(20);
@@ -870,7 +875,8 @@ export default function AllDayWinnerPage({
             <>
               {/* High-Density Data Table */}
               <div className="overflow-hidden">
-                <table className="w-full text-left border-collapse text-xs">
+                <MobileViewSwitcher label="Display" className="m-2" />
+                <table className="block md:table w-full text-left border-collapse text-xs">
                   <thead className="hidden md:table-header-group">
                     <tr className="bg-slate-50/80 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
                       {/* Expand Toggle */}
@@ -959,7 +965,28 @@ export default function AllDayWinnerPage({
                             onClick={() => toggleExpand(legKey)}
                           >
                             {/* ================= MOBILE COMPACT VIEW ================= */}
-                            <td className="md:hidden p-3 block">
+                            <MobileFoldCell
+                              mode={mobileViewMode}
+                              expanded={isExpanded}
+                              summary={
+                              <FoldSummary
+                                lead={leg.isFinished ? 'FT' : leg.isLive ? (leg.liveStatus || 'LIVE') : compactKickoff(leg.kickoffTime)}
+                                home={leg.home}
+                                away={leg.away}
+                                live={leg.isLive}
+                                meta={leg.league}
+                                expanded={isExpanded}
+                                badges={<>
+                                  <FoldBadge tone="accent">{isHomePick ? 'HOME' : 'AWAY'}</FoldBadge>
+                                  {leg.isFinished
+                                    ? <FoldBadge tone={leg.isHit ? 'good' : 'bad'} mono>{leg.actualScore || (leg.isHit ? 'HIT' : 'MISS')}</FoldBadge>
+                                    : leg.isLive
+                                      ? <FoldBadge tone="live" mono>{leg.liveScore || 'LIVE'}</FoldBadge>
+                                      : <FoldBadge tone="info" mono>@{safeToFixed(leg.odds, 2)}</FoldBadge>}
+                                </>}
+                              />
+                              }
+                            >
                               <div className="flex items-center justify-between mb-1.5">
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                   <span className="w-5 h-5 rounded-full bg-slate-900 text-white font-mono font-bold text-[10px] inline-flex items-center justify-center shrink-0">
@@ -1074,7 +1101,7 @@ export default function AllDayWinnerPage({
                                   </div>
                                 </div>
                               )}
-                            </td>
+                            </MobileFoldCell>
 
                             {/* ================= DESKTOP 1-ROW VIEW ================= */}
                             {/* Dropdown Chevron */}

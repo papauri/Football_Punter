@@ -12,7 +12,7 @@ import { fileURLToPath } from 'url';
 import { GoogleGenAI } from '@google/genai';
 import { fetchUnderstatData } from './understat_scraper.js';
 import { AISwarmOrchestrator, InPlayTacticalAdvisoryAgent } from './multiAgentSwarm.js';
-import { SOLID_LEAGUES, BLACKLISTED_LEAGUES, isLeagueBlacklisted, isLeagueSolid, isCupCompetition } from './src/utils/leagueUtils.js';
+import { SOLID_LEAGUES, BLACKLISTED_LEAGUES, isLeagueBlacklisted, isLeagueSolid, isCupCompetition, LEAGUE_PREDICTABILITY_TIERS, getLeaguePredictabilityTier } from './src/utils/leagueUtils.js';
 import { fitTeamStrengths, matchScale } from './src/model/strengthFit.js';
 import { calibrateTriple } from './src/model/calibration.js';
 import { fairProbabilities } from './src/model/devig.js';
@@ -117,153 +117,14 @@ export const ESPN_LEAGUES = SOLID_LEAGUES;
 // -------------------------------------------------------------
 // LEAGUE PREDICTABILITY TIERS (Calibrated from 4,303 Match Benchmark)
 // -------------------------------------------------------------
-export const LEAGUE_PREDICTABILITY_TIERS = {
-  // Tier 1: High Predictability (Empirical Conviction Hit Rate: 63%–71%)
-  // High tactical structure, Poisson/Elo variance tightly clustered, high conversion on favorites
-  TIER_1: {
-    tier: 1,
-    tierName: 'TIER_1_HIGH',
-    label: 'Tier 1: High Predictability',
-    badge: '⭐ Tier 1 (High Edge)',
-    badgeShort: 'Tier 1',
-    color: 'emerald',
-    expectedHighConvictionWinRate: '64%–71%',
-    drawNoBetRecommendation: 'Standard',
-    description: 'High-edge structured competition with minimal volatility and top Poisson fidelity.',
-    leagues: [
-      'Italian Serie A', 'Serie A', 'ita.1',
-      'Spanish La Liga', 'LaLiga', 'La Liga', 'esp.1',
-      'Dutch Eredivisie', 'Eredivisie', 'ned.1',
-      'Scottish Premiership', 'sco.1',
-      'German Bundesliga', 'Bundesliga', 'ger.1',
-      'UEFA Champions League', 'Champions League', 'uefa.champions',
-      'DFL-Supercup', 'ger.super_cup',
-      'FA Community Shield', 'eng.charity',
-      'UEFA Super Cup', 'uefa.super_cup',
-      'CONMEBOL Recopa', 'conmebol.recopa',
-      'UEFA European Championship', 'uefa.euro',
-      'UEFA European Championship Qualifying', 'uefa.euroq',
-      'FIFA World Cup', 'fifa.world',
-      'Concacaf Champions Cup', 'concacaf.champions',
-      'CAF Champions League', 'caf.champions',
-      'Copa Libertadores', 'conmebol.libertadores',
-      'AFC Champions League', 'afc.champions',
-      'English FA Cup', 'FA Cup', 'eng.fa',
-      'English Carabao Cup', 'Carabao Cup', 'eng.league_cup',
-      'DFB-Pokal', 'ger.dfb_pokal',
-      'Copa del Rey', 'esp.copa_del_rey',
-      'Coppa Italia', 'ita.coppa_italia',
-      'Coupe de France', 'fra.coupe_de_france',
-      'KNVB Beker', 'ned.cup',
-      'Czech First League', 'cze.1',
-      'Greek Super League', 'gre.1',
-      'Austrian Bundesliga', 'aut.1',
-      'Romanian Liga 1', 'rou.1',
-      'Cypriot First Division', 'cyp.1',
-      'Israeli Premier League', 'isr.1',
-      "English Women's Super League", 'eng.w.1',
-      'Spanish Liga F', 'esp.w.1',
-      'French Première Ligue', 'fra.w.1'
-    ]
-  },
-  // Tier 2: Standard Predictability (Empirical Conviction Hit Rate: 55%–62%)
-  TIER_2: {
-    tier: 2,
-    tierName: 'TIER_2_STANDARD',
-    label: 'Tier 2: Standard Edge',
-    badge: 'Tier 2 (Standard)',
-    badgeShort: 'Tier 2',
-    color: 'blue',
-    expectedHighConvictionWinRate: '55%–62%',
-    drawNoBetRecommendation: 'Advised when Draw >= 24%',
-    description: 'Balanced competitive tier. Solid models with standard draw rates.',
-    leagues: [
-      'English Premier League', 'Premier League', 'eng.1',
-      'French Ligue 1', 'Ligue 1', 'fra.1',
-      'Portuguese Primeira Liga', 'Primeira Liga', 'por.1',
-      'Belgian Pro League', 'bel.1',
-      'Turkish Super Lig', 'tur.1',
-      'Danish Superliga', 'den.1',
-      'Swiss Super League', 'sui.1',
-      'Saudi Pro League', 'ksa.1',
-      'MLS', 'Major League Soccer', 'usa.1',
-      'Norwegian Eliteserien', 'nor.1',
-      'Swedish Allsvenskan', 'swe.1',
-      'UEFA Europa League', 'uefa.europa',
-      'UEFA Conference League', 'uefa.europa.conf',
-      'UEFA Nations League', 'uefa.nations',
-      'Copa Sudamericana', 'conmebol.sudamericana',
-      'Eerste Divisie', 'ned.2',
-      'A-League', 'aus.1',
-      'Irish Premier Division', 'League of Ireland Premier Division', 'irl.1',
-      'English League One', 'League One', 'eng.3',
-      'English League Two', 'League Two', 'eng.4',
-      'Scottish Championship', 'sco.2',
-      'Russian Premier League', 'rus.1',
-      'Chinese Super League', 'chn.1',
-      'Indian Super League', 'ind.1',
-      'South African Premiership', 'rsa.1',
-      'U.S. Open Cup', 'usa.open',
-      'Northern Irish Premiership', 'nir.1',
-      'Welsh Premier League', 'Cymru Premier', 'wal.1',
-      'Finnish Veikkausliiga', 'fin.1',
-      'Thai League 1', 'tha.1',
-      'Malaysian Super League', 'mys.1',
-      'NWSL', 'usa.nwsl',
-      'Argentine Liga Profesional', 'arg.1',
-      'Categoría Primera A', 'col.1',
-      'Uruguayan Primera División', 'uru.1',
-      'LigaPro Ecuador', 'ecu.1'
-    ]
-  },
-  // Tier 3: High Parity / Volatile (Empirical Conviction Hit Rate: <55%)
-  // High attrition, elevated stalemate frequency, squad rotation, or promotion dogfights
-  TIER_3: {
-    tier: 3,
-    tierName: 'TIER_3_VOLATILE',
-    label: 'Tier 3: High Parity / Volatile',
-    badge: '⚠️ Tier 3 (Volatile / High Parity)',
-    badgeShort: 'Tier 3',
-    color: 'amber',
-    expectedHighConvictionWinRate: '<52%',
-    drawNoBetRecommendation: 'Mandatory on Contested Games',
-    description: 'High variance & high parity. Draw-No-Bet or Double Chance mandatory to insulate bankroll.',
-    leagues: [
-      'English Championship', 'Championship', 'eng.2',
-      'Spanish LaLiga 2', 'LaLiga 2', 'esp.2',
-      'German 2. Bundesliga', '2. Bundesliga', 'ger.2',
-      'Brasileirão', 'bra.1',
-      'Brasileirão Série B', 'bra.2',
-      'Liga MX', 'mex.1',
-      'Mexican Liga de Expansión MX', 'mex.2',
-      'Japanese J1 League', 'jpn.1',
-      'Italian Serie B', 'Serie B', 'ita.2',
-      'French Ligue 2', 'Ligue 2', 'fra.2',
-      'Paraguayan Primera División', 'par.1',
-      'Bolivian Liga Profesional', 'bol.1',
-      'Peruvian Liga 1', 'per.1',
-      'Venezuelan Primera División', 'ven.1',
-      'Argentine Primera Nacional', 'arg.2',
-      'EFL Trophy', 'eng.trophy'
-    ]
-  }
-};
-
-export function getLeaguePredictabilityTier(leagueName = '') {
-  if (!leagueName) return LEAGUE_PREDICTABILITY_TIERS.TIER_2;
-  const l = String(leagueName).toLowerCase().trim();
-  
-  for (const tierKey of ['TIER_1', 'TIER_3']) {
-    const tierObj = LEAGUE_PREDICTABILITY_TIERS[tierKey];
-    for (const pattern of tierObj.leagues) {
-      const p = pattern.toLowerCase();
-      if (l === p || l.includes(p) || p.includes(l)) {
-        return tierObj;
-      }
-    }
-  }
-  return LEAGUE_PREDICTABILITY_TIERS.TIER_2;
-}
+// League tiers come from src/utils/leagueUtils.js, the one table maintained alongside the blacklist.
+// The engine used to carry its own copy, which had drifted badly from the shared one — it disagreed on
+// more than 30 leagues, rated English Women's Super League and Israeli Premier League as "Tier 1 High
+// Edge", and, because it matched substrings in both directions, graded the Championship Tier 1 (it is
+// a substring of "UEFA European Championship") and the Premier League Tier 3 (a substring of "Welsh
+// Premier League"). The engine attaches its tier to every match and the UI prefers that over its own
+// lookup, so those were the badges users saw.
+export { LEAGUE_PREDICTABILITY_TIERS, getLeaguePredictabilityTier };
 
 // Helper: Factorial for Poisson distribution computation
 function factorial(n) {
@@ -3293,8 +3154,17 @@ class SoccerEngine {
       const id = String(m.id);
       const series = this.oddsHistory.get(id) || [];
       const last = series[series.length - 1];
-      const unchanged = last && last.home === odds.home && last.draw === odds.draw && last.away === odds.away;
-      if (unchanged) continue;
+      const unchanged = last && last.home === odds.home && last.draw === odds.draw && last.away === odds.away
+        && (last.provider ?? null) === (odds.provider ?? null);
+      if (unchanged) {
+        // Not stored again, but the fact that it was still on offer IS recorded. Without this a line
+        // that settled hours before kickoff and never moved kept the timestamp of its first sighting,
+        // and the closing-line check then rejected it as "not a close" — systematically discarding
+        // exactly the fixtures where the line did not move, and biasing CLV toward moved lines.
+        last.lastSeenAt = new Date(now).toISOString();
+        last.lastSeenMinutesBeforeKickoff = Math.round(msToKickoff / 60000);
+        continue;
+      }
 
       series.push({
         at: new Date(now).toISOString(),
@@ -3415,23 +3285,37 @@ class SoccerEngine {
       return { usable: false, reason: `market ${market} cannot be priced from a 1X2 quote`, market };
     }
 
-    // The closing line must be an observation near kickoff. Collection stopping early is common and
-    // must not be silently treated as a close.
-    const closing = series[series.length - 1];
-    const closeMinutes = Number(closing.minutesBeforeKickoff);
+    // The close is the latest quote from the SAME provider as the early one. Taking simply the last
+    // observation would let a provider switch (ESPN rotates between books) either reject a valid pair
+    // or, worse, compare two different bookmakers.
+    const earlyProviderForClose = (early.quotedPrice || early.priceTaken)?.provider ?? null;
+    const sameProvider = earlyProviderForClose
+      ? series.filter(o => (o.provider ?? null) === earlyProviderForClose)
+      : series;
+    if (!sameProvider.length) {
+      return {
+        usable: false,
+        reason: `no closing quote from the early quote's provider (${earlyProviderForClose})`,
+        market, observations: series.length
+      };
+    }
+    const closing = sameProvider[sameProvider.length - 1];
+    // A quote counts as closing if it was still on offer near kickoff. lastSeen* records that it was
+    // re-observed unchanged; fall back to when it first appeared.
+    const closeMinutes = Number(closing.lastSeenMinutesBeforeKickoff ?? closing.minutesBeforeKickoff);
     if (!Number.isFinite(closeMinutes) || closeMinutes > closeWindowMinutes) {
       return {
         usable: false,
-        reason: `last observation is ${Number.isFinite(closeMinutes) ? `${closeMinutes} min` : 'an unknown time'} before kickoff, outside the ${closeWindowMinutes} min window`,
+        reason: `latest ${earlyProviderForClose ? `${earlyProviderForClose} ` : ''}quote was last seen ${Number.isFinite(closeMinutes) ? `${closeMinutes} min` : 'at an unknown time'} before kickoff, outside the ${closeWindowMinutes} min closing window`,
         market, observations: series.length
       };
     }
 
     // Hold the provider constant. A quote from one book against a close from another measures the
     // spread between books.
-    const earlyProvider = (early.quotedPrice || early.priceTaken)?.provider ?? null;
+    const earlyProvider = earlyProviderForClose;
     const closeProvider = closing.provider ?? null;
-    if (earlyProvider && closeProvider && earlyProvider !== closeProvider) {
+    if (earlyProvider !== closeProvider) {
       return {
         usable: false,
         reason: `provider changed between observations (${earlyProvider} to ${closeProvider}); not a like-for-like comparison`,
@@ -3464,7 +3348,7 @@ class SoccerEngine {
       quotedPrice: parseFloat(quotedPrice.toFixed(4)),
       closingPrice: parseFloat(closingPrice.toFixed(4)),
       executable: 'unknown',
-      closingObservedAt: closing.at,
+      closingObservedAt: closing.lastSeenAt || closing.at,
       closingMinutesBeforeKickoff: closeMinutes,
       observations: series.length,
       clvPricePct: parseFloat(((quotedPrice / closingPrice - 1) * 100).toFixed(2)),
@@ -3642,7 +3526,6 @@ class SoccerEngine {
     const fair = this.devig(h, d, a);
     if (!fair) return null;
     const implied = [fair.HOME, fair.DRAW, fair.AWAY];
-    const overround = 1 + fair.overround / 100;
     const marketFav = implied[0] >= implied[2] ? 'HOME' : 'AWAY';
     const marketPick = ['HOME', 'DRAW', 'AWAY'][implied.indexOf(Math.max(...implied))];
 
@@ -3657,7 +3540,11 @@ class SoccerEngine {
 
     return {
       provider: o.provider || null,
+      // The price advertised at snapshot time. Observed, not confirmed available or placed; kept under
+      // priceTaken too so existing ledger readers keep working.
+      quotedPrice: { home: h, draw: d, away: a },
       priceTaken: { home: h, draw: d, away: a },
+      executable: 'unknown',
       overround: parseFloat(fair.overround.toFixed(2)),
       devigMethod: fair.method,
       impliedProb: {
@@ -5044,6 +4931,29 @@ class SoccerEngine {
       awayRedCards: options.awayRedCards || 0,
       lockedPick: options.lockedPick || match.predictedWinner || match.binaryModel?.pick
     });
+  }
+
+  // Is the model frozen for a forward exam? (scripts/freeze-model.mjs writes data/model-freeze.json.)
+  //
+  // The engine tunes itself: every five minutes runTrainingCycle nudges homeAdvantage and the draw
+  // setting in memory, and the autonomous patch and self-patch routines rewrite hyperparameters.json
+  // on disk. None of that was ever measured, and it is incompatible with a forward exam — a model that
+  // keeps changing cannot be evaluated as one model. It had already happened in this repository: the
+  // hyperparameters committed alongside the first honest backtest had been nudged by a background
+  // cycle away from the values that were chosen and reported.
+  //
+  // So while a freeze file exists, all self-modification is off. Deleting the file (or re-freezing
+  // after a deliberate change) is the way to change the model.
+  isModelFrozen() {
+    const now = Date.now();
+    if (this._frozenCheckedAt && now - this._frozenCheckedAt < 60000) return this._frozen;
+    this._frozenCheckedAt = now;
+    try {
+      this._frozen = fs.existsSync(path.join(ENGINE_DIR, 'data', 'model-freeze.json'));
+    } catch (_) {
+      this._frozen = false;
+    }
+    return this._frozen;
   }
 
   // Per-fixture expected goals, ingested by scripts/ingest-understat-xg.mjs. Cached after the first
@@ -6710,15 +6620,18 @@ class SoccerEngine {
       const effectiveStableCorrect = activeSampleCount > 0 ? activeStableCorrect : stableCorrect;
       const stableAcc = effectiveStableTotal > 0 ? (effectiveStableCorrect / effectiveStableTotal) * 100 : accuracy;
 
-      // Online gradient adaptation for Dixon-Coles parameters
-      const lr = 0.01;
-      this.hyperparameters.homeAdvantage = Math.max(1.08, Math.min(1.32, this.hyperparameters.homeAdvantage + lr * (homeResidualSum / (effectiveN || 1))));
-      
-      // Calibrate Dixon-Coles Rho (low-score dependency)
-      if (drawHits / (totalDraw || 1) < 0.8) {
-        this.hyperparameters.drawEquilibriumDelta = Math.min(13.0, this.hyperparameters.drawEquilibriumDelta + 0.1);
-      } else {
-        this.hyperparameters.drawEquilibriumDelta = Math.max(9.5, this.hyperparameters.drawEquilibriumDelta - 0.1);
+      // Online gradient adaptation for Dixon-Coles parameters — suspended while the model is frozen,
+      // because it changes the model under evaluation every five minutes.
+      if (!this.isModelFrozen()) {
+        const lr = 0.01;
+        this.hyperparameters.homeAdvantage = Math.max(1.08, Math.min(1.32, this.hyperparameters.homeAdvantage + lr * (homeResidualSum / (effectiveN || 1))));
+
+        // Calibrate Dixon-Coles Rho (low-score dependency)
+        if (drawHits / (totalDraw || 1) < 0.8) {
+          this.hyperparameters.drawEquilibriumDelta = Math.min(13.0, this.hyperparameters.drawEquilibriumDelta + 0.1);
+        } else {
+          this.hyperparameters.drawEquilibriumDelta = Math.max(9.5, this.hyperparameters.drawEquilibriumDelta - 0.1);
+        }
       }
 
       const leaguePerformance = Object.entries(leagueStats)
@@ -7972,6 +7885,7 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
   // ATOMIC COMMIT: APPLY AUTONOMOUS PATCH
   // -------------------------------------------------------------
   applyAutonomousPatch(patch) {
+    if (this.isModelFrozen()) return { ...patch, skipped: true, reason: 'model frozen' };
     const homeObj = this.getTeamRating(patch.homeTeam);
     const awayObj = this.getTeamRating(patch.awayTeam);
 
@@ -9058,6 +8972,17 @@ Provide a crisp 3-bullet assessment:
   // COMPREHENSIVE AUTONOMOUS MISS PATCHING PIPELINE
   // -------------------------------------------------------------
   async runAutonomousMissPatching(options = {}) {
+    if (this.isModelFrozen()) {
+      const msg = 'Model is frozen for a forward exam (data/model-freeze.json); autonomous patching is suspended so the evaluated model does not change.';
+      this.log('AutonomousPatch', msg);
+      return {
+        success: false, frozen: true, summary: msg,
+        missesScrutinized: 0, patchesApplied: 0, aiPatchesApplied: 0,
+        hasAiActive: Boolean(this.hasActiveAiKey?.() || process.env.GEMINI_API_KEY),
+        ignoredMisses: [], appliedPatches: [],
+        telemetry: this.patchTelemetry, governorState: this.patchGovernorState
+      };
+    }
     const maxMatches = options.maxMatches || options.maxMisses || 6;
     this.log('AutonomousPatch', `Initiating autonomous miss analysis & patch cycle (Cap: ${maxMatches})...`);
 
@@ -9407,6 +9332,11 @@ Provide a crisp 3-bullet assessment:
   // DEEP MULTI-DIMENSIONAL RETRAINING & SOURCE CODE SELF-PATCH ENGINE
   // -------------------------------------------------------------
   async runDeepOptimizationAndSelfPatch() {
+    if (this.isModelFrozen()) {
+      const msg = 'Model is frozen for a forward exam (data/model-freeze.json); self-patching of hyperparameters is suspended.';
+      this.log('SelfPatchEngine', msg);
+      return { success: false, frozen: true, report: { message: msg }, trainingStats: this.trainingStats, hyperparameters: this.hyperparameters };
+    }
     this.log('SelfPatchEngine', 'Initiating Sequential Deep Retraining & Self-Patching Sequence...');
 
     // 1. Ingest full multi-month ESPN historical fixture corpus
@@ -9946,6 +9876,11 @@ Provide a crisp 3-bullet assessment:
   }
 
   async setTuningConfig(config) {
+    if (this.isModelFrozen()) {
+      const msg = 'Model is frozen for a forward exam; settings are read-only. Delete data/model-freeze.json (or re-freeze after the change) to modify them.';
+      this.log('Tuning', msg);
+      return { success: false, frozen: true, error: msg, hyperparameters: this.hyperparameters };
+    }
     this.hyperparameters = { ...this.hyperparameters, ...config };
     
     // Convert disabledLeagues string to array if necessary, or ensure it's saved correctly

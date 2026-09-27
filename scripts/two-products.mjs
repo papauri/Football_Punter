@@ -22,6 +22,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { bootstrapRoi as sharedBootstrap } from '../src/model/bootstrap.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 process.chdir(ROOT);
@@ -60,17 +61,9 @@ const f = (x, d = 2) => (x == null || Number.isNaN(x) ? '-' : Number(x).toFixed(
 
 // Bootstrap, because per-bet returns are skewed and a normal interval is falsely tight.
 function boot(xs, resamples = 2000) {
-  if (xs.length < 2) return null;
-  let seed = 20260927;
-  const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
-  const out = new Float64Array(resamples);
-  for (let k = 0; k < resamples; k++) {
-    let sum = 0;
-    for (let i = 0; i < xs.length; i++) sum += xs[(rnd() * xs.length) | 0];
-    out[k] = (sum - xs.length) / xs.length * 100;
-  }
-  const s = Array.from(out).sort((a, b) => a - b);
-  return { lo: s[Math.floor(resamples * 0.025)], hi: s[Math.floor(resamples * 0.975)] };
+  // src/model/bootstrap.js — see the note there on why the previous inline generator was invalid.
+  const r = sharedBootstrap(xs, { resamples });
+  return r ? { lo: r.lo, hi: r.hi } : null;
 }
 
 // ---- assemble the evaluation set ---------------------------------------------------------------
@@ -245,7 +238,9 @@ for (const [label, get] of priceVariants) {
   for (const r of rows) {
     const q = get(r);
     if (!q) continue;
-    const fav = argmax(r.fairClose.p);
+    // The favourite as that price saw it. Choosing it from the closing line and then pricing it at
+    // open would use information that did not yet exist when the opening price was on offer.
+    const fav = argmax(q.map(x => 1 / x));
     returns.push(OUT[fav] === r.actual ? q[fav] : 0);
   }
   if (returns.length < 100) continue;

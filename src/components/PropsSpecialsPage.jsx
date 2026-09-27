@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import MobileViewSwitcher from './MobileViewSwitcher';
+import { useMobileViewMode } from '../utils/useMobileViewMode';
+import { MobileFoldCell, MobileFoldBlock, FoldSummary, FoldBadge, compactKickoff } from './MobileFold';
 import { 
   Target, AlertCircle, RefreshCw, ChevronRight, Activity, Zap, 
   ShieldCheck, TrendingUp, SlidersHorizontal, Search, Check, Plus, 
@@ -25,6 +28,8 @@ export default function PropsSpecialsPage({
   onUpdateBetSlips,
   onNavigate
 }) {
+  // Shared with every list page: Cards or 1-Row Table on phones, remembered across pages.
+  const [mobileViewMode] = useMobileViewMode();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
@@ -785,7 +790,8 @@ export default function PropsSpecialsPage({
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs">
+                  <MobileViewSwitcher label="Display" className="m-2" />
+                  <table className="block md:table w-full text-left border-collapse text-xs">
                     <thead className="hidden md:table-header-group">
                       <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
                         <th className="py-1 px-1.5 w-7 text-center"></th>
@@ -812,7 +818,23 @@ export default function PropsSpecialsPage({
                               onClick={() => toggleEvalExpand(evalKey)}
                             >
                               {/* ================= MOBILE COMPACT VIEW ================= */}
-                              <td className="md:hidden p-3 block">
+                              <MobileFoldCell
+                                mode={mobileViewMode}
+                                expanded={isExpanded}
+                                summary={
+                              <FoldSummary
+                                lead={formatSafeDateTime(ev, null, tzSettings).time}
+                                home={ev.home}
+                                away={ev.away}
+                                meta={[ev.league, ev.propPick].filter(Boolean).join(' · ')}
+                                expanded={isExpanded}
+                                badges={<>
+                                  <FoldBadge tone={ev.isHit ? 'good' : 'bad'}>{ev.isHit ? 'HIT' : 'MISS'}</FoldBadge>
+                                  {Number(ev.odds) > 1 && <FoldBadge tone="neutral" mono>@{Number(ev.odds).toFixed(2)}</FoldBadge>}
+                                </>}
+                              />
+                                }
+                              >
                                 <div className="flex justify-between items-start mb-1.5">
                                   <div className="flex items-center gap-1.5 flex-wrap">
                                     <span className="font-semibold text-slate-700 font-mono text-[10px]">
@@ -866,7 +888,7 @@ export default function PropsSpecialsPage({
                                     <div>Evaluation Status: <strong className={ev.isHit ? 'text-emerald-700' : 'text-rose-700'}>{ev.isHit ? 'Line Cleared Successfully' : 'Missed Line Coverage'}</strong></div>
                                   </div>
                                 )}
-                              </td>
+                              </MobileFoldCell>
 
                               {/* ================= DESKTOP 1-ROW VIEW ================= */}
                               <td className="hidden md:table-cell py-1.5 px-1.5 text-center text-slate-400">
@@ -1440,6 +1462,7 @@ export default function PropsSpecialsPage({
           </div>
 
           {/* ================= MOBILE CARDS VIEW ================= */}
+          <MobileViewSwitcher label="Display" className="m-2" />
           <div className="md:hidden divide-y divide-slate-100">
             {paginatedInsights.map((insight) => {
               const originalMatch = matches.find(m => m.id === insight.matchId) || {
@@ -1461,7 +1484,28 @@ export default function PropsSpecialsPage({
               });
 
               return (
-                <div key={insight.matchId} className="p-3 bg-white">
+                <MobileFoldBlock
+                  key={insight.matchId}
+                  mode={mobileViewMode}
+                  bare
+                  summary={(open) => {
+                    const top = structuredProps[0] || (insight.structuredProps && insight.structuredProps[0]);
+                    return (
+                      <FoldSummary
+                        lead={compactKickoff(formatRelativeDayTime(originalMatch, tzSettings))}
+                        home={insight.home}
+                        away={insight.away}
+                        meta={[insight.league, top?.label].filter(Boolean).join(' · ')}
+                        expanded={open}
+                        badges={top ? <>
+                          <FoldBadge tone={top.hitProbability >= 80 ? 'good' : 'info'} mono title="Estimated hit probability">{Math.round(top.hitProbability)}%</FoldBadge>
+                          {Number(top.estOdds) > 1 && <FoldBadge tone="neutral" mono>@{Number(top.estOdds).toFixed(2)}</FoldBadge>}
+                        </> : null}
+                      />
+                    );
+                  }}
+                >
+                  <div className="p-3 bg-white">
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">
@@ -1551,6 +1595,7 @@ export default function PropsSpecialsPage({
                     </div>
                   )}
                 </div>
+                </MobileFoldBlock>
               );
             })}
           </div>

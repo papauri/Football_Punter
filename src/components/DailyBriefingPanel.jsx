@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import MobileViewSwitcher from './MobileViewSwitcher';
+import { useMobileViewMode } from '../utils/useMobileViewMode';
+import { MobileFoldCell, FoldSummary, FoldBadge, compactKickoff } from './MobileFold';
 import {
   Zap, Clock, Lock, CheckCircle2, ChevronDown, ChevronUp,
   Target, Award, Shield, Plus, Check, Globe, Play, Brain
@@ -55,6 +58,8 @@ export default function DailyBriefingPanel({
   accaMatchIds = new Set(),
   bankrollEuro = 1000
 }) {
+  // Shared with every list page: Cards or 1-Row Table on phones, remembered across pages.
+  const [mobileViewMode] = useMobileViewMode();
   const [collapsed, setCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'bet' | 'watch'
   const [expandedMatchId, setExpandedMatchId] = useState(null);
@@ -310,7 +315,8 @@ export default function DailyBriefingPanel({
 
           {/* Table — Aligned with Top Value Picks Table Design */}
           <div className="w-full overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+            <MobileViewSwitcher label="Display" className="m-2" />
+            <table className="block md:table w-full text-left border-collapse text-xs">
               <thead className="hidden md:table-header-group">
                 <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
                   <th className="py-1 px-1.5 w-7 text-center"></th>
@@ -358,7 +364,28 @@ export default function DailyBriefingPanel({
                           onClick={() => toggleExpand(matchKey)}
                         >
                           {/* ================= MOBILE COMPACT CARD VIEW ================= */}
-                          <td className="md:hidden p-3 block">
+                          <MobileFoldCell
+                            mode={mobileViewMode}
+                            expanded={isExpanded}
+                            summary={
+                              <FoldSummary
+                                lead={compactKickoff(kickoffStr)}
+                                home={m.home}
+                                away={m.away}
+                                live={Boolean(m.isLive)}
+                                meta={smartMarketLabel}
+                                expanded={isExpanded}
+                                badges={<>
+                                  {isPass
+                                    ? <FoldBadge tone="warn">PASS</FoldBadge>
+                                    : isTrap
+                                      ? <FoldBadge tone="bad">TRAP</FoldBadge>
+                                      : <FoldBadge tone={isReadyToBet ? 'good' : 'info'} mono title="Model confidence">{Number.isFinite(Number(conf)) ? `${Math.round(Number(conf))}%` : ''}</FoldBadge>}
+                                  {Number(matchOdds) > 1 && <FoldBadge tone="neutral" mono>@{Number(matchOdds).toFixed(2)}</FoldBadge>}
+                                </>}
+                              />
+                            }
+                          >
                             <div className="flex justify-between items-start mb-1.5">
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className="w-5 h-5 rounded font-mono text-[10px] font-bold text-slate-600 bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200">
@@ -517,7 +544,7 @@ export default function DailyBriefingPanel({
                                 </div>
                               </div>
                             )}
-                          </td>
+                          </MobileFoldCell>
 
                           {/* ================= DESKTOP 1-ROW TABLE VIEW ================= */}
                           {/* Dropdown Chevron */}

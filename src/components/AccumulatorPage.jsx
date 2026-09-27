@@ -1,4 +1,7 @@
 import React, { useState, useMemo } from 'react';
+import MobileViewSwitcher from './MobileViewSwitcher';
+import { useMobileViewMode } from '../utils/useMobileViewMode';
+import { MobileFoldCell, FoldSummary, FoldBadge, compactKickoff } from './MobileFold';
 import { 
   ListChecks, 
   Copy, 
@@ -101,6 +104,8 @@ export default function AccumulatorPage({
   onAddPick,
   aiSwarm = null
 }) {
+  // Shared with every list page: Cards or 1-Row Table on phones, remembered across pages.
+  const [mobileViewMode] = useMobileViewMode();
   const [copiedSlip, setCopiedSlip] = useState(false);
   const [bankroll, setBankroll] = useState(1000);
   const [kellyMultiplier, setKellyMultiplier] = useState(0.25); // Quarter Kelly
@@ -1675,7 +1680,8 @@ export default function AccumulatorPage({
               </div>
             ) : (
               <div className="overflow-hidden">
-                <table className="w-full text-left border-collapse text-xs">
+                <MobileViewSwitcher label="Display" className="m-2" />
+                <table className="block md:table w-full text-left border-collapse text-xs">
                   <thead className="hidden md:table-header-group">
                     <tr className="bg-slate-50/80 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
                       <th className="py-1 px-1 w-6 text-center"></th>
@@ -1706,7 +1712,23 @@ export default function AccumulatorPage({
                             onClick={() => toggleLegExpand(legKey)}
                           >
                             {/* ================= MOBILE COMPACT VIEW ================= */}
-                            <td className="md:hidden p-3 block">
+                            <MobileFoldCell
+                              mode={mobileViewMode}
+                              expanded={isExpanded}
+                              summary={
+                              <FoldSummary
+                                lead={`#${leg.legNum}`}
+                                home={leg.home}
+                                away={leg.away}
+                                meta={`${compactKickoff(leg.time)} · ${String(leg.market || '').replace(/\s*\(.*?\)\s*/g, ' ').trim()}`}
+                                expanded={isExpanded}
+                                badges={<>
+                                  <FoldBadge tone={b.type === 'danger' ? 'bad' : b.type === 'warning' ? 'warn' : b.type === 'protected' ? 'good' : 'info'} title={b.title || b.label}>{String(b.label || '').split(/\s*[/(]\s*/)[0].trim()}</FoldBadge>
+                                  <FoldBadge tone="neutral" mono>@{safeToFixed(leg.odds, 2)}</FoldBadge>
+                                </>}
+                              />
+                              }
+                            >
                           <div className="flex items-center justify-between mb-1.5">
                             <div className="flex items-center gap-1.5">
                               <span className="font-bold text-slate-400 font-mono text-[10px] bg-slate-100 px-1.5 py-0.5 rounded">
@@ -1804,7 +1826,7 @@ export default function AccumulatorPage({
                               <div>Expected Value: <strong className={leg.status.ev > 0 ? 'text-emerald-700' : 'text-slate-600'}>{leg.status.ev > 0 ? '+' : ''}{safeToFixed(leg.status.ev * 100, 1)}% EV</strong></div>
                             </div>
                           )}
-                        </td>
+                        </MobileFoldCell>
 
                         {/* ================= DESKTOP 1-ROW VIEW ================= */}
                         {/* Dropdown Chevron */}

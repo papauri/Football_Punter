@@ -1112,6 +1112,10 @@ app.get('/api/state', (req, res) => {
   app.post('/api/tuning-config', async (req, res) => {
     try {
       const config = await engine.setTuningConfig(req.body);
+      // A frozen model refuses changes; say so rather than reporting a save that did not happen.
+      if (config && config.frozen) {
+        return res.status(409).json({ success: false, frozen: true, error: config.error });
+      }
       res.json({ success: true, config, state: engine.getState() });
     } catch (err) {
       res.status(500).json({ success: false, error: err.message });

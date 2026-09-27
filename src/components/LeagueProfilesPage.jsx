@@ -256,7 +256,7 @@ export default function LeagueProfilesPage({
       {/* Compact League Table */}
       <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="block md:table w-full text-left border-collapse text-xs">
             <thead className="hidden md:table-header-group">
               <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
                 <th className="py-1 px-1 w-6 text-center"></th>

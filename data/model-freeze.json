@@ -1,23 +1,23 @@
 {
-  "frozenAt": "2026-09-27T13:02:33.721Z",
-  "evaluateFixturesFrom": "2026-09-27T13:02:33.721Z",
+  "frozenAt": "2026-09-27T15:11:24.392Z",
+  "evaluateFixturesFrom": "2026-09-27T15:11:24.393Z",
   "supersedes": {
-    "frozenAt": "2026-09-27T12:42:37.741Z",
-    "generation": 2
+    "frozenAt": "2026-09-27T13:02:33.721Z",
+    "generation": 3
   },
-  "generation": 3,
-  "note": "Adds multi-book odds, power de-vig correction, strict CLV checks. Both products measured as failing.",
+  "generation": 4,
+  "note": "Review fixes: converging strength fit, exact league tiers, same-provider CLV, corrected bootstrap. Freeze now suspends self-tuning.",
   "trainedThrough": {
     "lastResultInCorpus": "2026-09-25",
     "corpusFixtures": 23455
   },
   "hashes": {
-    "engine.js": "c55b499c7241614f",
-    "src/model/strengthFit.js": "13b2d558e335d9c3",
-    "src/model/calibration.js": "4254568f491c968e",
-    "src/utils/leagueUtils.js": "1893aa64db4b116b",
+    "engine.js": "e99050fc9fbaa181",
+    "src/model/strengthFit.js": "f596114f8e6238f6",
+    "src/model/calibration.js": "a68f18d40e1fa6c9",
+    "src/utils/leagueUtils.js": "677030294cf9e174",
     "hyperparameters.json": "980309e7033f9dc1",
-    "data/calibration.json": "2cf511b65bd4720c"
+    "data/calibration.json": "678b48636b9d3fa9"
   },
   "hyperparameters": {
     "homeAdvantage": 1.2969359387468389,
@@ -71,7 +71,7 @@
     "xgWeight": 1
   },
   "calibration": {
-    "fittedAt": "2026-09-27T11:35:57.691Z",
+    "fittedAt": "2026-09-27T14:42:57.206Z",
     "fitWindowEnd": "2025-04-17T19:00:00.000Z",
     "samples": 9000,
     "reservedMatches": 9000
@@ -119,36 +119,36 @@
       },
       "pooled": {
         "fixtures": 5183,
-        "modelHitRate": 52.57572834265869,
+        "modelHitRate": 52.537140652131974,
         "marketHitRate": 52.55643449739533,
-        "gap": 0.019293845263360986,
+        "gap": -0.019293845263360986,
         "gapSe": 0.19770308249970284,
         "gapCi": [
-          -0.36820419643605656,
-          0.4067918869627785
+          -0.4067918869627785,
+          0.36820419643605656
         ],
-        "modelOnlyHitRate": 50.16399768473857,
-        "modelOnlyGap": -2.392436812656763,
+        "modelOnlyHitRate": 50.10611614894849,
+        "modelOnlyGap": -2.450318348446846,
         "modelOnlyGapCi": [
-          -3.334046043297624,
-          -1.4508275820159018
+          -3.391167910363283,
+          -1.5094687865304088
         ],
-        "modelOnlyBrier": 0.20502451919737602,
+        "modelOnlyBrier": 0.20023295771898053,
         "roiAtAverageCi": [
-          -5.39508087900094,
-          -2.3930918165203297
+          -5.409552414534141,
+          -1.9156198854658877
         ],
         "roiAtBestCi": [
-          -2.501786559424805,
-          0.6517871480623038
+          -2.4161974014275787,
+          1.1891688762126567
         ],
-        "modelBrier": 0.2000054790661779,
+        "modelBrier": 0.19559205934395818,
         "marketBrier": 0.19466528886671186,
-        "bets": 3576,
-        "roiAtAverage": -4.172934596536881,
-        "roiAtBest": -1.180802926608504,
-        "meanClv": -0.0870739019790412,
-        "beatCloseRate": 48.57382550335571
+        "bets": 3414,
+        "roiAtAverage": -3.607736695356145,
+        "roiAtBest": -0.5571892837611716,
+        "meanClv": -0.12421657226199544,
+        "beatCloseRate": 48.799062683069714
       }
     }
   }

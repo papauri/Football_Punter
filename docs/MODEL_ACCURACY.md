@@ -11,6 +11,57 @@ with the commands to reproduce every figure.
 > a claim about future performance is `npm run forward`, which scores fixtures that did not exist when
 > the model was written. See **Retiring the historical window**.
 
+## Corrections from the review of 27 September 2026
+
+A line-by-line review of everything added in this pass found the following. Each is fixed in code,
+and every figure below has been re-measured after the fixes. Where a number changed, the old one is
+noted so nothing is silently rewritten.
+
+1. **Every ROI confidence interval previously reported was invalid.** The bootstrap used an inline
+   generator, `seed * 1103515245 + 12345`, whose product exceeds 2^53 in JavaScript, so it cycled
+   every 10,466 draws while each bootstrap needed 7.1 million. The resamples were near-copies of one
+   another; intervals were neither centred nor the right width. Among the casualties: the claim that
+   ROI at best price had an interval "including zero". `src/model/bootstrap.js` now uses mulberry32
+   and was checked against a simulation with known ROI.
+2. **"Where the money actually is" used the closing line to pick the favourite, then priced it at
+   open.** That is hindsight. Choosing the favourite from the price being tested, best-of-books at
+   open moves from −0.31% to **−2.10%**, and Pinnacle at open from −1.28% to **−3.19%**.
+3. **The engine rewrites its own hyperparameters.** A five-minute training cycle nudges home
+   advantage and the draw setting, and two "autonomous patch" routines rewrite `hyperparameters.json`.
+   A background cycle had done exactly that before the first honest-backtest commit: the shipped
+   values were home advantage **1.297** and Dixon-Coles rho **−0.13**, not the 1.30 and −0.05 that
+   were chosen and stated. Every figure in this document was measured with the shipped values, so the
+   figures stand; the stated settings were wrong. All self-modification is now suspended while
+   `data/model-freeze.json` exists, and the settings API refuses changes with a clear message.
+4. **The strength fit did not converge.** League base rates were set once, from the average of home
+   and away goals, and applied as the away rate, so both expected rates were inflated by about
+   (1 + home advantage) / 2 and the normalisation fought the data every pass. On synthetic data with
+   known strengths it oscillated. It is now a coordinate ascent that re-estimates each league's base
+   and home advantage inside the loop: it converges in four passes on synthetic data and recovers true
+   attack strengths better (r = 0.902 against 0.871). On real fixtures it is predictively neutral —
+   paired differences in hit rate and Brier sit inside their intervals, and only 10 of 3,000 validation
+   picks change — so it was kept because it is the correct estimator, not because it scores better.
+5. **League tiers had two disagreeing sources.** The engine carried a private copy of the tier table
+   that disagreed with `src/utils/leagueUtils.js` on over 30 leagues and matched substrings in both
+   directions, so the Championship (a substring of "UEFA European Championship") was badged Tier 1
+   and the Premier League (a substring of "Welsh Premier League") Tier 3. The engine attaches its tier
+   to every match and the UI prefers it, so those were the badges users saw. `isLeagueSolid` had the
+   same flaw: Austrian Bundesliga was treated as the German one, CAF and AFC Champions League as the
+   UEFA one. One table now, exact matching only.
+6. **Closing-line value discarded stable lines.** An unchanged price was never re-recorded, so a line
+   that settled hours before kickoff kept its first timestamp and failed the "near kickoff" check —
+   systematically dropping the fixtures where CLV is near zero. Re-sightings now refresh the
+   timestamp, and the close is the latest quote from the same provider.
+7. **`npm run verify` measured the uncalibrated model.** It built its engine without the calibration
+   map. The calibration table quoted from it earlier described the raw model, not the shipped one.
+8. **Calibration is roughly neutral, not a fix.** Paired on the 9,000-fixture holdout, the shipped map
+   improves Brier by 0.0002 (95% CI just excludes zero) and log-loss not significantly. Inside the
+   walk-forward, a map refitted per step made everything worse, because the stateful engine lets later
+   fixtures reach the data the map is fitted on; the walk-forward now runs uncalibrated by default.
+9. **Mobile tables were clipped on phones.** List tables kept table layout below `md`, so rows grew to
+   fit their full unwrapped text and the right-hand badges were cut off — on the existing Fixtures and
+   Goals & Totals lists as well as new ones. They are now block-level on phones.
+
 ## How to reproduce
 
 ```bash
@@ -137,9 +188,9 @@ showed confident figures even with no backtest present.
 
 | Bucket | Previously claimed | Measured out of sample |
 |---|---|---|
-| Raw 1X2 | 56.85% | **49.06%** |
-| High conviction ≥65% | 77.2% | **74.13%** (n=630) |
-| Elite conviction ≥72% | 82.5% | **79.28%** (n=304) |
+| Raw 1X2 | 56.85% | **48.88%** |
+| High conviction ≥65% | 77.2% | **73.30%** (n=693) |
+| Elite conviction ≥72% | 82.5% | **76.26%** (n=278) |
 | Double chance | 81.42% | **73.24%** |
 
 All fabricated fallbacks are gone. With no backtest on disk the panel now says so, and a file from
@@ -153,11 +204,27 @@ of the remaining headroom, fitted in-sample. The ≥72% bucket claimed 76.8% and
 Confidence is now the calibrated probability of the pick and nothing else. The boost is still
 reported as `calibration.predictabilityBoostDiagnostic` but no longer moves the number. A monotonic
 isotonic map (`src/model/calibration.js`), fitted out of sample by `npm run calibration:fit`, maps
-stated probability onto observed rate; mean calibration error is about 1.1pp at fit time.
+stated probability onto observed rate; mean calibration error is about 1.3pp at fit time.
 
-The model now leans slightly *under*confident at the top of the range (73.6% claimed vs 78.7%
-actual, per `npm run verify`), because the map is fitted on an earlier window than it is measured
-on. Understating is the safer direction, but it is still miscalibration — refit periodically.
+Measured on the 9,000 later fixtures with the shipped map applied (`npm run verify`):
+
+| Stated favourite probability | Fixtures | Claimed | Actual |
+|---|---|---|---|
+| 40–49% | 5,581 | 44.3% | 44.2% |
+| 50–59% | 1,278 | 54.1% | **57.8%** |
+| 60–69% | 786 | 64.5% | **67.9%** |
+| 70–79% | 283 | 74.2% | 74.9% |
+| 80–89% | 64 | 82.1% | 78.1% |
+
+Well calibrated below 50% and above 70%, but **understated by about 3.5 points in the 50–70% band**,
+which is where most confident picks sit. The map is fitted on an earlier window than it is measured on,
+and the relationship has drifted. Understating is the safer direction, but it is still miscalibration —
+refit periodically. The 80–89% row rests on 64 fixtures and is within noise.
+
+A correction to an earlier version of this section: it quoted "73.6% claimed vs 78.7% actual" as the
+shipped model's calibration. That came from `npm run verify`, which at the time built its engine in a
+temporary directory without the calibration map and so was measuring the *raw* model. It now copies
+the map in and prints whether it was applied.
 
 ### Calibration and evaluation
 
@@ -244,40 +311,49 @@ before it — head-to-head index, league profiles, strengths and the calibration
 the next window. Decisions and returns use the **opening** price. Closing prices are used for one
 thing only: measuring closing-line value.
 
-Over 11 steps and 5,183 priced fixtures (45-day steps, Apr 2025 → Oct 2026):
+Over 11 steps and 5,183 priced fixtures (45-day steps, Apr 2025 → Oct 2026), uncalibrated, with
+bootstrap intervals from the corrected generator:
 
 | | Result |
 |---|---|
 | Market 1X2 (opening, de-vigged) | 52.56% |
-| **Model only, no price supplied** | **50.16%**, gap **−2.39** pts, CI [−3.33, −1.45] |
-| What the app shows (blend) | 52.56%, gap 0.00, CI [−0.41, 0.41] |
-| Brier | model-only 0.2050, blend 0.1993, market 0.1948 |
-| ROI at market average price | **−4.15%**, CI [−5.00, −2.09] |
-| ROI at best available price | **−1.16%**, CI [−1.96, **+0.96**] |
-| Mean CLV | **−0.07%**, beat the close on 48.7% |
+| **Model only, no price supplied** | **50.11%**, gap **−2.45** pts, CI [−3.39, −1.51] |
+| What the app shows (blend) | 52.54%, gap −0.02, CI [−0.41, +0.37] |
+| Brier | model-only 0.2002, blend 0.1956, market 0.1947 |
+| ROI at market average price | **−3.61%**, CI [−5.41, −1.92] |
+| ROI at best available price | **−0.56%**, CI [−2.42, **+1.19**] |
+| Mean CLV | **−0.12%**, beat the close on 48.8% |
 
 Four things follow.
 
-**The closing-price target was unfairly hard.** Against opening prices the model-only gap is −2.39
-points, against closing prices it was −3.6. Roughly a point of the apparent deficit was an artefact of
+**The closing-price target was unfairly hard.** Against opening prices the model-only gap is −2.45
+points; against closing prices it was about −3.5. Roughly a point of the apparent deficit came from
 pricing decisions at a number that is not available when the decision is made.
 
-**The blend's 0.00 gap is not a success.** It is fed the price and therefore agrees with the market on
-98% of fixtures (116 disagreements in 5,183). It means adding our model to the price neither helps nor
-hurts — not that we match the market independently. The model-only row is the real comparison, and it
-is still behind.
+**The blend's near-zero gap is not a success.** It is fed the price and therefore agrees with the
+market on 98% of fixtures (105 disagreements in 5,183). Adding our model to the price neither helps
+nor hurts — that is not the same as matching the market independently. The model-only row is the real
+comparison, and it is behind beyond chance.
 
-**Price shopping is worth about 3 points of ROI**, which is more than every modelling change in this
-project combined. At best available prices the interval now *includes zero*: the published picks are
-statistically indistinguishable from break-even. Measured margins: 5.54% on the closing average,
-**0.47% on the best available closing price**.
+**Taking the best available price instead of the average is worth about three points of ROI** on the
+same bets: −3.61% becomes −0.56%. At the average price the loss is clearly real (the interval excludes
+zero); at the best price the interval includes zero, so the published picks are not distinguishable
+from break-even. This is a like-for-like comparison — identical bets, different prices — and it is
+still the largest effect measured in this project. Measured margins on historical closing prices: 5.54%
+on the market average, 1.86% on the best of the eight named books, and 0.47% on football-data's
+market-wide maximum.
 
-**There is no timing edge.** Mean CLV is −0.07% and the model beat the closing price on 48.7% of picks
-— a coin flip. The earlier hope that the model might beat a soft line even if it cannot beat a closing
-one is **not supported by the data**.
+**There is no timing edge.** Mean CLV is −0.12% and the model beat the closing price on 48.8% of picks
+— a coin flip. The hope that it might beat a soft line even if it cannot beat a closing one is **not
+supported by the data**.
 
-Step-to-step variation is large: the gap ranged [−1.84, +0.86] across steps and ROI@best ranged
-[−4.65, +5.00], sd 2.84 points. Any single window, including this one, is a weak estimate.
+By market, two groups show intervals above zero at best price: away wins (138 bets, +10.6%, CI [+0.9,
++20.4]) and home draw-no-bet (65 bets, +11.4%, CI [+0.6, +20.6]). Treat both as hypotheses for the
+forward exam, not findings: six markets were tested, the samples are small, this is a window the model
+was shaped against, and step-to-step ROI varies with a standard deviation of 3.9 points.
+
+Step-to-step variation is large: the gap ranged [−1.43, +0.86] across steps and ROI at best price
+[−5.46, +8.87]. Any single window, including this one, is a weak estimate.
 
 ## Testing candidate features before building them
 
@@ -335,11 +411,11 @@ It does not, and the reason turned out to be a flaw in the measurement rather th
 
 | Strategy | Bets | ROI | 95% CI | Mean EV vs closing fair |
 |---|---|---|---|---|
-| Model edge > 2% | 2,712 | −11.64% | [−19.01, −8.49] | **−5.92%** |
-| Model edge > 5% | 2,385 | −13.47% | [−20.14, −9.17] | −6.19% |
-| Model edge > 10% | 1,957 | −16.83% | [−25.61, −10.87] | −6.67% |
-| Model edge > 20% | 1,351 | −18.79% | [−24.37, −10.22] | **−7.43%** |
-| *Ceiling (cheats, uses the closing line)* | 1,293 | −1.00% | [−7.25, +5.00] | — |
+| Model edge > 2% | 2,679 | −12.50% | [−19.10, −5.61] | **−6.02%** |
+| Model edge > 5% | 2,347 | −14.23% | [−21.32, −6.57] | −6.33% |
+| Model edge > 10% | 1,910 | −16.26% | [−24.44, −7.90] | −6.59% |
+| Model edge > 20% | 1,338 | −19.74% | [−30.22, −7.95] | **−7.40%** |
+| *Ceiling (cheats, uses the closing line)* | 1,293 | −1.00% | [−8.97, +7.32] | — |
 
 Two things to read here. The **more edge the model claims, the worse the expected value** — its
 disagreement with the price is actively anti-informative, not merely uninformative. And even the
@@ -377,14 +453,19 @@ Backing the market favourite in every evaluated fixture, priced three ways:
 
 | Price | Bets | ROI | 95% CI |
 |---|---|---|---|
-| Best of books at open | 2,297 | **−0.31%** | [−4.98, +1.94] |
-| Pinnacle at open | 2,284 | −1.28% | [−4.42, +0.65] |
-| Pinnacle at close | 2,297 | −1.41% | [−6.06, +0.87] |
+| Best of books at open | 2,297 | **−2.10%** | [−6.07, +1.86] |
+| Pinnacle at open | 2,284 | −3.19% | [−7.24, +1.00] |
+| Pinnacle at close | 2,297 | −1.41% | [−5.51, +2.62] |
 
-The spread between those rows is pure price selection and owes nothing to the model. It remains the
-largest effect measured anywhere in this project — but note that even the best row is negative, and all
-three intervals contain zero. Price shopping closes most of the margin gap; it does not by itself
-produce a profit.
+Backing the favourite loses at every price, and the three rows are not distinguishable from one
+another: their intervals overlap almost entirely. An earlier version of this table showed best-of-books
+at open at −0.31% and called the spread "the largest effect in the project"; that row had chosen the
+favourite using the closing line, which would not have been known at the opening price.
+
+This table mixes two things — *which* bet is chosen and *what price* it is taken at — because the
+favourite can differ between prices. The clean measure of price shopping holds the bets fixed and
+varies only the price; that is the walk-forward's "ROI at market average" against "ROI at best
+available", reported above.
 
 ## Multi-book odds
 
@@ -450,7 +531,7 @@ the reverse. And a mean over a few dozen skewed observations carries an interval
 conclude anything. Report it with an interval, alongside ROI at the price actually taken, and treat a
 positive reading as a reason to keep looking rather than an answer.
 
-For reference, the historical walk-forward found mean CLV of −0.07% with the close beaten on 48.7% of
+For reference, the historical walk-forward found mean CLV of −0.12% with the close beaten on 48.8% of
 picks: no timing edge.
 
 The engine now records this automatically:
@@ -468,8 +549,8 @@ The engine now records this automatically:
 - **Summary.** `getPreKickoffLedgerSummary().closingLineValue` gives mean and median CLV, the share
   of picks that beat the close, and a plain-language reading. Below 30 fixtures it says so.
 
-**Nothing acts on this, and the walk-forward explains why.** Measured over 3,579 historical picks,
-mean CLV was −0.07% and the close was beaten 48.7% of the time. The model has no timing edge against
+**Nothing acts on this, and the walk-forward explains why.** Measured over 3,414 historical picks,
+mean CLV was −0.12% and the close was beaten 48.8% of the time. The model has no timing edge against
 the opening-to-closing move, so a staking rule built on CLV would have nothing to stand on. The live
 tracking stays because the forward period is what matters now, and because CLV is cheap to record.
 

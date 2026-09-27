@@ -17,6 +17,7 @@ import fs from 'fs';
 import crypto from 'crypto';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { bootstrapRoi as sharedBootstrap } from '../src/model/bootstrap.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 process.chdir(ROOT);
@@ -95,7 +96,7 @@ if (graded.length) {
   }
 }
 
-// ---- return at the price actually available ----------------------------------------------------
+// ---- return at the quoted price (observed pre-kickoff; availability and limits unknown) ----------------------------------------------------
 const dcPrice = (x, y) => 1 / (1 / x + 1 / y);
 const dnbPrice = (s, o) => (1 / s + 1 / o) / (1 / s);
 function settle(pick, p, actual) {
@@ -113,24 +114,16 @@ function settle(pick, p, actual) {
 const returns = [];
 for (const e of post) {
   const pick = e.smartMarket?.pick;
-  const price = e.market?.priceTaken || (e.inputs?.odds ? { home: e.inputs.odds.home, draw: e.inputs.odds.draw, away: e.inputs.odds.away } : null);
+  const price = e.market?.quotedPrice || e.market?.priceTaken || (e.inputs?.odds ? { home: e.inputs.odds.home, draw: e.inputs.odds.draw, away: e.inputs.odds.away } : null);
   if (!pick || pick === 'PASS' || !price?.home) continue;
   const r = settle(pick, price, e.actualWinner);
   if (r != null) returns.push({ pick, r });
 }
 
 function bootstrap(xs, resamples = 2000) {
-  if (!xs.length) return null;
-  let seed = 20260927;
-  const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
-  const out = [];
-  for (let k = 0; k < resamples; k++) {
-    let sum = 0;
-    for (let i = 0; i < xs.length; i++) sum += xs[(rnd() * xs.length) | 0];
-    out.push((sum - xs.length) / xs.length * 100);
-  }
-  out.sort((a, b) => a - b);
-  return { lo: out[Math.floor(resamples * 0.025)], hi: out[Math.floor(resamples * 0.975)] };
+  // src/model/bootstrap.js — see the note there on why the previous inline generator was invalid.
+  const r = sharedBootstrap(xs, { resamples });
+  return r ? { lo: r.lo, hi: r.hi } : null;
 }
 
 if (returns.length) {

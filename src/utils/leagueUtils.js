@@ -192,12 +192,16 @@ export function isLeagueSolid(leagueName) {
   if (!leagueName || typeof leagueName !== 'string') return false;
   if (isLeagueBlacklisted(leagueName)) return false;
   const clean = leagueName.toLowerCase().trim();
-  return SOLID_LEAGUES.some(sl => {
-    if (clean === sl.code.toLowerCase()) return true;
-    if (clean === sl.name.toLowerCase()) return true;
-    if (clean.includes(sl.name.toLowerCase())) return true;
-    return sl.aliases && sl.aliases.some(alias => clean === alias || clean.includes(alias));
-  });
+  // Exact match on code, name or a listed alias only. Substring matching used to be accepted too, and
+  // every league it caught in our corpus was a different competition: "Austrian Bundesliga" was
+  // treated as the German Bundesliga, "CAF Champions League" and "AFC Champions League" as the UEFA
+  // one, and "Chilean Primera División" as LaLiga via its alias. A league that needs another spelling
+  // gets an explicit alias, where the mapping is visible and deliberate.
+  return SOLID_LEAGUES.some(sl =>
+    clean === sl.code.toLowerCase() ||
+    clean === sl.name.toLowerCase() ||
+    Boolean(sl.aliases && sl.aliases.some(alias => clean === alias.toLowerCase()))
+  );
 }
 
 // -------------------------------------------------------------
@@ -298,12 +302,12 @@ export function getLeaguePredictabilityTier(leagueName = '') {
     return LEAGUE_PREDICTABILITY_TIERS.TIER_3;
   }
   const l = String(leagueName).toLowerCase().trim();
-  
-  for (const pattern of LEAGUE_PREDICTABILITY_TIERS.TIER_1.leagues) {
-    const p = pattern.toLowerCase();
-    if (l === p || l.includes(p)) {
-      return LEAGUE_PREDICTABILITY_TIERS.TIER_1;
-    }
+  // Exact membership only, for the same reason as isLeagueSolid: substring matching promoted
+  // "Austrian Bundesliga" to Tier 1 via "Bundesliga" and "CAF Champions League" via "Champions
+  // League". The Tier 1 list already spells out the variants it means ("German Bundesliga",
+  // "Italian Serie A", competition codes), so nothing legitimate depends on partial matches.
+  if (LEAGUE_PREDICTABILITY_TIERS.TIER_1.leagues.some(pattern => l === pattern.toLowerCase())) {
+    return LEAGUE_PREDICTABILITY_TIERS.TIER_1;
   }
   return LEAGUE_PREDICTABILITY_TIERS.TIER_2;
 }

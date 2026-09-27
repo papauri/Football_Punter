@@ -508,7 +508,7 @@ export default function ScoresTablePage({
 
         {!collapsedScores && (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+            <table className="block md:table w-full text-left border-collapse text-xs">
             <thead className="hidden md:table-header-group">
             <tr className="bg-slate-50/80 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
               {/* Expand Toggle */}

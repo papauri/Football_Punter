@@ -75,12 +75,14 @@ export function fitCalibration(samples, options = {}) {
     n: b.n
   }));
 
-  // Mean absolute calibration error before and after, for the record.
-  let errBefore = 0, errAfter = 0, total = 0;
+  // Mean absolute calibration error of the raw probabilities, measured on the fitting data. There is
+  // deliberately no "after" figure: on its own fitting data an isotonic map is calibrated by
+  // construction, so that number would always be zero and say nothing. Judge the corrected
+  // probabilities on held-out fixtures instead (npm run hitrate, npm run verify).
+  let errBefore = 0, total = 0;
   for (const b of pav) {
     const claimed = b.sumP / b.n, observed = b.sumY / b.n;
     errBefore += b.n * Math.abs(claimed - observed);
-    errAfter += b.n * Math.abs(observed - observed);
     total += b.n;
   }
 
@@ -90,8 +92,7 @@ export function fitCalibration(samples, options = {}) {
       fitted: true,
       samples: clean.length,
       blocks: points.length,
-      meanAbsCalibrationError: parseFloat((errBefore / Math.max(1, total)).toFixed(4)),
-      residualError: parseFloat((errAfter / Math.max(1, total)).toFixed(4))
+      meanAbsCalibrationError: parseFloat((errBefore / Math.max(1, total)).toFixed(4))
     }
   };
 }

@@ -1773,7 +1773,7 @@ export default function FixturesTablePage({
 
           {/* Council Selections Table with Sortable Column Headers */}
           <div className="overflow-hidden">
-            <table className="w-full text-left border-collapse text-xs">
+            <table className="block md:table w-full text-left border-collapse text-xs">
               <thead className="hidden md:table-header-group">
                 <tr className="bg-slate-50/80 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider h-8 select-none">
                   {/* Expand Toggle */}
@@ -2818,7 +2818,7 @@ export default function FixturesTablePage({
           </div>
 
           <div className="overflow-hidden">
-            <table className="w-full text-left border-collapse text-xs">
+            <table className="block md:table w-full text-left border-collapse text-xs">
               <thead className="hidden md:table-header-group">
                 <tr className="border-b border-slate-200 bg-slate-50/70 text-[10px] text-slate-500 uppercase tracking-wider font-bold h-8 select-none">
                   <th className="py-1 px-2.5">Date</th>
@@ -3009,7 +3009,7 @@ export default function FixturesTablePage({
 
         {/* Matches League Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="block md:table w-full text-left border-collapse text-xs">
             <thead className="hidden md:table-header-group">
               <tr className="bg-slate-50/80 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider select-none h-8">
                 {/* Time */}
