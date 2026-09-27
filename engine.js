@@ -15,6 +15,7 @@ import { AISwarmOrchestrator, InPlayTacticalAdvisoryAgent } from './multiAgentSw
 import { SOLID_LEAGUES, BLACKLISTED_LEAGUES, isLeagueBlacklisted, isLeagueSolid, isCupCompetition, LEAGUE_PREDICTABILITY_TIERS, getLeaguePredictabilityTier } from './src/utils/leagueUtils.js';
 import { fitTeamStrengths, matchScale } from './src/model/strengthFit.js';
 import { calibrateTriple } from './src/model/calibration.js';
+import { goalsProbabilities } from './src/model/goalsModel.js';
 import { fairProbabilities } from './src/model/devig.js';
 
 const HYPERPARAMETERS_FILE = path.join(process.cwd(), 'hyperparameters.json');
@@ -1874,9 +1875,9 @@ class SoccerEngine {
     const top3Coverage = parseFloat(topScorelines.slice(0, 3).reduce((acc, s) => acc + s.prob, 0).toFixed(1));
 
     // Over / Under Goal Totals
-    const pOver15 = (scorelineMatrix.filter(s => (s.homeGoals + s.awayGoals) > 1.5).reduce((acc, s) => acc + s.prob, 0) / matrixSum) * 100;
+    let pOver15 = (scorelineMatrix.filter(s => (s.homeGoals + s.awayGoals) > 1.5).reduce((acc, s) => acc + s.prob, 0) / matrixSum) * 100;
     const rawPOver25 = (scorelineMatrix.filter(s => (s.homeGoals + s.awayGoals) > 2.5).reduce((acc, s) => acc + s.prob, 0) / matrixSum) * 100;
-    const pOver35 = (scorelineMatrix.filter(s => (s.homeGoals + s.awayGoals) > 3.5).reduce((acc, s) => acc + s.prob, 0) / matrixSum) * 100;
+    let pOver35 = (scorelineMatrix.filter(s => (s.homeGoals + s.awayGoals) > 3.5).reduce((acc, s) => acc + s.prob, 0) / matrixSum) * 100;
 
     // Empirical Venue Prior Anchoring for Over/Under 2.5 (e.g. Seville slugfest vs Bernabeu)
     let finalPOver25 = rawPOver25;
@@ -1910,6 +1911,18 @@ class SoccerEngine {
       // Asymmetric league matchups: underdogs are shut out ~55% of the time
       const mismatchDampening = Math.min(12, Math.max(3, (xgGap - 0.7) * 9));
       pBttsYes = Math.max(18, pBttsYes - mismatchDampening);
+    }
+    // Replace the grid's goals figures with the fitted goals model when it is available. The grid
+    // expected ~3.2 goals a game against 2.8 scored, so its over and BTTS figures ran high, and the
+    // hand-set venue and mismatch adjustments above were never validated. The fitted model was
+    // scored on later fixtures it never saw: see data/goals-model.json (heldOut).
+    const fittedGoals = goalsProbabilities(lambda, mu, this.getGoalsModel());
+    if (fittedGoals) {
+      pOver15 = fittedGoals.o15;
+      finalPOver25 = fittedGoals.o25;
+      finalPUnder25 = 100 - fittedGoals.o25;
+      pOver35 = fittedGoals.o35;
+      pBttsYes = fittedGoals.btts;
     }
     const pBttsNo = Math.max(0, 100 - pBttsYes);
 
@@ -5107,6 +5120,20 @@ class SoccerEngine {
   // probabilities to match (in testing it stretched a raw 63.6% to 82.1%). The offline script gets
   // a clean split by loading a whole engine on earlier fixtures only, so the map reflects genuine
   // out-of-sample behaviour.
+  // Goals-market model (data/goals-model.json, fitted by scripts/fit-goals-model.mjs). Read once;
+  // without it the goals figures fall back to the raw scoreline grid, which overstates goals.
+  getGoalsModel() {
+    if (this._goalsModel !== undefined) return this._goalsModel;
+    try {
+      const filePath = path.join(ENGINE_DIR, 'data', 'goals-model.json');
+      this._goalsModel = fs.existsSync(filePath) ? JSON.parse(fs.readFileSync(filePath, 'utf8')) : null;
+    } catch (e) {
+      this.log('TrainingEngine', `Could not load goals model, using the raw scoreline grid: ${e.message}`);
+      this._goalsModel = null;
+    }
+    return this._goalsModel;
+  }
+
   loadProbabilityCalibration() {
     try {
       const filePath = path.join(process.cwd(), 'data', 'calibration.json');

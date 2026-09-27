@@ -151,12 +151,12 @@ export default function ScoresTablePage({
 
     // Market filter
     if (skipDimension !== 'market' && marketFilter !== 'ALL') {
-      if (marketFilter === 'OVER_25' && item.over25 < 58) return false;
-      if (marketFilter === 'OVER_25_HIGH_CONF' && item.over25 < 65) return false;
-      if (marketFilter === 'UNDER_25' && item.over25 > 45) return false;
-      if (marketFilter === 'UNDER_25_HIGH_CONF' && item.over25 > 35) return false;
-      if (marketFilter === 'BTTS_YES' && item.bttsYes < 55) return false;
-      if (marketFilter === 'BTTS_YES_HIGH_CONF' && item.bttsYes < 65) return false;
+      if (marketFilter === 'OVER_25' && item.over25 < 50) return false;
+      if (marketFilter === 'OVER_25_HIGH_CONF' && item.over25 < 60) return false;
+      if (marketFilter === 'UNDER_25' && item.over25 >= 50) return false;
+      if (marketFilter === 'UNDER_25_HIGH_CONF' && item.over25 > 40) return false;
+      if (marketFilter === 'BTTS_YES' && item.bttsYes < 50) return false;
+      if (marketFilter === 'BTTS_YES_HIGH_CONF' && item.bttsYes < 60) return false;
       if (marketFilter === 'BTTS_NO_HIGH_CONF' && item.bttsYes > 40) return false;
       if (marketFilter === 'HIGH_PROB' && item.topScoreProb < 14) return false;
       if (marketFilter === 'EXACT_SCORE_HIGH_CONF' && item.topScoreProb < 16) return false;
@@ -223,12 +223,12 @@ export default function ScoresTablePage({
     rawScoresMatches.forEach(item => {
       if (!checkMatchPasses(item, 'market')) return;
       all++;
-      if (item.over25 >= 58) o25++;
-      if (item.over25 >= 65) o25High++;
-      if (item.over25 <= 45) u25++;
-      if (item.over25 <= 35) u25High++;
-      if (item.bttsYes >= 55) btts++;
-      if (item.bttsYes >= 65) bttsHigh++;
+      if (item.over25 >= 50) o25++;
+      if (item.over25 >= 60) o25High++;
+      if (item.over25 < 50) u25++;
+      if (item.over25 <= 40) u25High++;
+      if (item.bttsYes >= 50) btts++;
+      if (item.bttsYes >= 60) bttsHigh++;
       if (item.bttsYes <= 40) bttsNoHigh++;
       if (item.topScoreProb >= 14) highProb++;
       if (item.topScoreProb >= 16) exactScoreHigh++;
@@ -236,12 +236,12 @@ export default function ScoresTablePage({
 
     return [
       { value: 'ALL', label: `All goals tips (${all})` },
-      { value: 'OVER_25', label: `Over 2.5 goals (${o25})` },
-      { value: 'OVER_25_HIGH_CONF', label: `Over 2.5, 65%+ chance (${o25High})` },
-      { value: 'UNDER_25', label: `Under 2.5 goals (${u25})` },
-      { value: 'UNDER_25_HIGH_CONF', label: `Under 2.5, 65%+ chance (${u25High})` },
-      { value: 'BTTS_YES', label: `Both teams score (${btts})` },
-      { value: 'BTTS_YES_HIGH_CONF', label: `Both score, 65%+ chance (${bttsHigh})` },
+      { value: 'OVER_25', label: `Leans over 2.5 (${o25})` },
+      { value: 'OVER_25_HIGH_CONF', label: `Over 2.5, 60%+ chance (${o25High})` },
+      { value: 'UNDER_25', label: `Leans under 2.5 (${u25})` },
+      { value: 'UNDER_25_HIGH_CONF', label: `Under 2.5, 60%+ chance (${u25High})` },
+      { value: 'BTTS_YES', label: `Leans both score (${btts})` },
+      { value: 'BTTS_YES_HIGH_CONF', label: `Both score, 60%+ chance (${bttsHigh})` },
       { value: 'BTTS_NO_HIGH_CONF', label: `Not both score, 60%+ chance (${bttsNoHigh})` },
       { value: 'HIGH_PROB', label: `Likely score 14%+ (${highProb})` },
       { value: 'EXACT_SCORE_HIGH_CONF', label: `Likely score 16%+ (${exactScoreHigh})` }

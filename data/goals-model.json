@@ -1,0 +1,69 @@
+{
+  "fittedAt": "2026-09-27T22:35:25.815Z",
+  "features": "lambda + mu - 3, |lambda - mu|, min(lambda, mu) - 1",
+  "weights": {
+    "o15": [
+      0.9374750860520027,
+      0.2346543962585965,
+      0.2580301503643347,
+      0.21844131688380236
+    ],
+    "o25": [
+      -0.07820627538703064,
+      0.32071629711056154,
+      0.19188659880063483,
+      0.04503722748018849
+    ],
+    "o35": [
+      -0.9556543228212658,
+      0.4546123352723822,
+      0.0739542428415588,
+      -0.04438150534522234
+    ],
+    "btts": [
+      0.18318701352878752,
+      0.18685016178643987,
+      -0.10658204173447032,
+      0.19184017040051382
+    ]
+  },
+  "samples": 14709,
+  "heldOut": {
+    "trainSamples": 9524,
+    "testSamples": 5185,
+    "markets": {
+      "o15": {
+        "alwaysPick": 77.1,
+        "hit": 77.1,
+        "brier": 0.175,
+        "brierBaseline": 0.1766,
+        "confidentPicks": 5185,
+        "confidentHit": 77.1
+      },
+      "o25": {
+        "alwaysPick": 53.5,
+        "hit": 53.6,
+        "brier": 0.2454,
+        "brierBaseline": 0.2488,
+        "confidentPicks": 891,
+        "confidentHit": 64.2
+      },
+      "o35": {
+        "alwaysPick": 69.7,
+        "hit": 69.8,
+        "brier": 0.2069,
+        "brierBaseline": 0.2113,
+        "confidentPicks": 4693,
+        "confidentHit": 71.4
+      },
+      "btts": {
+        "alwaysPick": 54.3,
+        "hit": 54,
+        "brier": 0.2474,
+        "brierBaseline": 0.2482,
+        "confidentPicks": 152,
+        "confidentHit": 64.5
+      }
+    }
+  }
+}

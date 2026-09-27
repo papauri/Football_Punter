@@ -619,3 +619,36 @@ month. At that pace the abandon check becomes possible after roughly 7 months (A
 (about 1.35), so each return varies less than a longshot's, but a real edge of +5% still needs about
 500 to 1,200 bets to show reliably. The forward test will mostly work as a kill switch; confirming
 an edge this size takes years at this pick rate.
+
+## Goals markets (over/under, both teams to score)
+
+Measured out of sample (walk-forward, 14,700 fixtures), the scoreline grid expected about 3.2 goals a
+game against 2.8 actually scored. Every over and BTTS figure ran high, and the goals tips hit no more
+often than always backing the more common outcome.
+
+The four goals figures now come from a small fitted model per market (`src/model/goalsModel.js`),
+using only the engine's expected goals for each side. Fitted on July 2022 – March 2025, scored on
+April 2025 onwards (5,185 fixtures it never saw):
+
+| Market | Always pick the common side | Model | Brier (model vs average) | When the model is 60%+ sure |
+|---|---|---|---|---|
+| Over 1.5 | 77.1% | 77.1% | 0.1750 vs 0.1766 | every game (always over) |
+| Over/under 2.5 | 53.5% | 53.6% | 0.2454 vs 0.2488 | 891 games, **64.2%** |
+| Over/under 3.5 | 69.7% | 69.8% | 0.2069 vs 0.2113 | 4,693 games, 71.4% |
+| Both teams score | 54.3% | 54.0% | 0.2474 vs 0.2482 | 152 games, **64.5%** |
+
+The probabilities are now honest (they beat guessing the average on every market), but across all
+games goal totals remain close to a coin flip. The useful tips are the confident ones: on the Goals
+page use the "60%+ chance" filters. Recent team form (goals for/against, over and BTTS rates, clean
+sheets) was tested as extra input and added less than 0.001 to the Brier score, so it is not used.
+
+Refit with:
+
+```bash
+npm run walkforward -- --from 2022-07-01 --to 2025-04-01 --goals-out /tmp/goals-early.json
+npm run walkforward -- --goals-out /tmp/goals-recent.json
+npm run goals:fit -- --train /tmp/goals-early.json --test /tmp/goals-recent.json
+```
+
+The shipped `data/goals-model.json` is refitted on both windows together; the table above is the
+held-out score. Any later walk-forward run over those windows is therefore in-sample for goals.

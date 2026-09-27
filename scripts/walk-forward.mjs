@@ -1,5 +1,5 @@
 // Rolling walk-forward evaluation: the closest thing to running the live app over history.
-// Usage: npm run walkforward [-- --from 2025-04-01 --to 2026-10-01 --stepdays 30 --calibrate --bets-out file.json]
+// Usage: npm run walkforward [-- --from 2025-04-01 --to 2026-10-01 --stepdays 30 --calibrate --bets-out file.json --goals-out file.json]
 //
 // WHY THIS EXISTS, AND WHAT WAS WRONG WITH THE OLDER SCRIPTS
 //
@@ -66,6 +66,10 @@ const CALIBRATE = process.argv.includes('--calibrate');
 // example one market) against a window it was not chosen on. See scripts/hypothesis-test.mjs.
 const BETS_OUT = arg('bets-out', null);
 const betLog = [];
+// --goals-out <file> writes each fixture's expected goals and final score, the input for
+// scripts/fit-goals-model.mjs.
+const GOALS_OUT = arg('goals-out', null);
+const goalsLog = [];
 
 const DAY = 86400000;
 const corpus = JSON.parse(fs.readFileSync('training_data.json', 'utf8'))
@@ -224,6 +228,7 @@ for (let boundary = fromTs; boundary < toTs; boundary += STEP_DAYS * DAY) {
     if (!soloRight && marketRight) s.soloBookOnly++;
     s.soloBrier += sp.reduce((t, x, i) => t + (x - (OUT[i] === actual ? 1 : 0)) ** 2, 0) / 3;
 
+    if (GOALS_OUT) goalsLog.push({ id: m.id, date: day(m), league: m.league, lambda: p.lambda, mu: p.mu, hg: m.homeScore, ag: m.awayScore });
     s.n++;
     if (modelRight) s.modelHits++;
     if (marketRight) s.marketHits++;
@@ -386,6 +391,10 @@ fs.writeFileSync(path.join(ROOT, 'data', 'walk-forward-results.json'), JSON.stri
   caveat: 'Development measurement. This historical window has been inspected and changed against repeatedly; it is not an estimate of future performance.'
 }, null, 2));
 console.log('\nWritten to data/walk-forward-results.json');
+if (GOALS_OUT) {
+  fs.writeFileSync(path.resolve(GOALS_OUT), JSON.stringify({ window: { from: FROM, to: TO }, fixtures: goalsLog }));
+  console.log(`Goals records (${goalsLog.length}) written to ${GOALS_OUT}`);
+}
 if (BETS_OUT) {
   fs.writeFileSync(path.resolve(BETS_OUT), JSON.stringify({ window: { from: FROM, to: TO }, bets: betLog }));
   console.log(`Per-bet records (${betLog.length}) written to ${BETS_OUT}`);

@@ -22,7 +22,8 @@
     "freeze": "node scripts/freeze-model.mjs",
     "forward": "node scripts/forward-eval.mjs",
     "products": "node scripts/two-products.mjs",
-    "hypotheses": "node scripts/hypothesis-test.mjs"
+    "hypotheses": "node scripts/hypothesis-test.mjs",
+    "goals:fit": "node scripts/fit-goals-model.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",
