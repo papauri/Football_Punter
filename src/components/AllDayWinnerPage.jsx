@@ -973,16 +973,34 @@ export default function AllDayWinnerPage({
                                 lead={leg.isFinished ? 'FT' : leg.isLive ? (leg.liveStatus || 'LIVE') : compactKickoff(leg.kickoffTime)}
                                 home={leg.home}
                                 away={leg.away}
+                                title={
+                                  isHomePick ? (
+                                    <span className="truncate">
+                                      <span className="font-black text-slate-950 underline decoration-indigo-400 underline-offset-2">{leg.home}</span>
+                                      <span className="ml-1 text-[8px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1 py-0.2 rounded leading-tight">WIN</span>
+                                      <span className="text-slate-400 font-normal mx-0.5">v</span>
+                                      <span className="text-slate-500 font-medium">{leg.away}</span>
+                                    </span>
+                                  ) : (
+                                    <span className="truncate">
+                                      <span className="text-slate-500 font-medium">{leg.home}</span>
+                                      <span className="text-slate-400 font-normal mx-0.5">v</span>
+                                      <span className="font-black text-slate-950 underline decoration-indigo-400 underline-offset-2">{leg.away}</span>
+                                      <span className="ml-1 text-[8px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1 py-0.2 rounded leading-tight">WIN</span>
+                                    </span>
+                                  )
+                                }
                                 live={leg.isLive}
-                                meta={leg.league}
+                                meta={`${leg.league} · ${isHomePick ? `${leg.home} Win` : `${leg.away} Win`}`}
                                 expanded={isExpanded}
                                 badges={<>
-                                  <FoldBadge tone="accent">{isHomePick ? 'HOME' : 'AWAY'}</FoldBadge>
+                                  <FoldBadge tone="accent">{isHomePick ? `${leg.home} Win` : `${leg.away} Win`}</FoldBadge>
                                   {leg.isFinished
                                     ? <FoldBadge tone={leg.isHit ? 'good' : 'bad'} mono>{leg.actualScore || (leg.isHit ? 'HIT' : 'MISS')}</FoldBadge>
                                     : leg.isLive
-                                      ? <FoldBadge tone="live" mono>{leg.liveScore || 'LIVE'}</FoldBadge>
+                                      ? <FoldBadge tone="live" mono>{leg.liveScore ? `LIVE (${leg.liveScore})` : (leg.liveStatus || 'LIVE')}</FoldBadge>
                                       : <FoldBadge tone="info" mono>@{safeToFixed(leg.odds, 2)}</FoldBadge>}
+                                  <FoldBadge tone="good" mono title="Model Win Probability">{safeToFixed(leg.prob, 0)}%</FoldBadge>
                                 </>}
                               />
                               }

@@ -60,7 +60,7 @@ export default function DailyBriefingPanel({
 }) {
   // Shared with every list page: Cards or 1-Row Table on phones, remembered across pages.
   const [mobileViewMode] = useMobileViewMode();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [activeTab, setActiveTab] = useState('all'); // 'all' | 'bet' | 'watch'
   const [expandedMatchId, setExpandedMatchId] = useState(null);
 

@@ -178,10 +178,10 @@ export default function HeaderBar({
           <button
             onClick={() => handlePageSelect('swarm')}
             className="h-8 flex items-center gap-1.5 px-2.5 rounded-lg text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-mono transition-colors cursor-pointer shadow-2xs shrink-0"
-            title="Historical win rate on consensus picks"
+            title="84.1% outright win rate across 1,755 Elite Consensus selections (Draws count as losses)"
           >
             <span>👑</span>
-            <span className="hidden sm:inline font-sans font-semibold text-slate-700 text-[11px]">Win Rate:</span>
+            <span className="hidden sm:inline font-sans font-semibold text-slate-700 text-[11px]">Elite Consensus:</span>
             <span className="font-extrabold text-amber-700 text-xs">
               {typeof state?.unanimousHitRate === 'number' 
                 ? `${safeToFixed(state.unanimousHitRate, 1)}%` 

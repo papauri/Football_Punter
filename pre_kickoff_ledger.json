@@ -1,5 +1,377 @@
 [
   {
+    "id": "401861070",
+    "home": "Denmark",
+    "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/den.png",
+    "away": "Wales",
+    "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/wal.png",
+    "league": "UEFA Nations League",
+    "kickoffUtc": "2026-09-27T16:00Z",
+    "snapshotAt": "2026-09-27T15:18:32.616Z",
+    "minutesBeforeKickoff": 41,
+    "predictedWinner": "HOME",
+    "predictedScore": "2-1",
+    "prob": {
+      "home": "55.9",
+      "draw": "22.7",
+      "away": "21.5"
+    },
+    "confidence": "55.9",
+    "smartMarket": {
+      "pick": "1X",
+      "label": "1X (Denmark/Draw)"
+    },
+    "inputs": {
+      "odds": {
+        "provider": "DraftKings",
+        "home": 1.45,
+        "draw": 4.3,
+        "away": 6
+      },
+      "lineup": null,
+      "referee": null
+    },
+    "market": {
+      "provider": "DraftKings",
+      "quotedPrice": {
+        "home": 1.45,
+        "draw": 4.3,
+        "away": 6
+      },
+      "priceTaken": {
+        "home": 1.45,
+        "draw": 4.3,
+        "away": 6
+      },
+      "executable": "unknown",
+      "overround": 8.89,
+      "devigMethod": "power",
+      "impliedProb": {
+        "home": 66.3,
+        "draw": 19.9,
+        "away": 13.8
+      },
+      "marketPick": "HOME",
+      "marketFavourite": "HOME",
+      "ourPick": "HOME",
+      "agreesWithMarket": true,
+      "edgePoints": -10.4
+    },
+    "early": null,
+    "modelVersion": {
+      "temperature": 1.3,
+      "maxScorelineSim": 10
+    },
+    "isHit": null,
+    "resolvedAt": null
+  },
+  {
+    "id": "401861069",
+    "home": "Gibraltar",
+    "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/gib.png",
+    "away": "Andorra",
+    "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/and.png",
+    "league": "UEFA Nations League",
+    "kickoffUtc": "2026-09-27T16:00Z",
+    "snapshotAt": "2026-09-27T15:18:32.616Z",
+    "minutesBeforeKickoff": 41,
+    "predictedWinner": "AWAY",
+    "predictedScore": "0-1",
+    "prob": {
+      "home": "30.1",
+      "draw": "29.5",
+      "away": "40.5"
+    },
+    "confidence": "40.5",
+    "smartMarket": {
+      "pick": "X2",
+      "label": "X2 (Andorra or Draw)"
+    },
+    "inputs": {
+      "odds": {
+        "provider": "DraftKings",
+        "home": 3.5,
+        "draw": 2.75,
+        "away": 2.3
+      },
+      "lineup": null,
+      "referee": null
+    },
+    "market": {
+      "provider": "DraftKings",
+      "quotedPrice": {
+        "home": 3.5,
+        "draw": 2.75,
+        "away": 2.3
+      },
+      "priceTaken": {
+        "home": 3.5,
+        "draw": 2.75,
+        "away": 2.3
+      },
+      "executable": "unknown",
+      "overround": 8.41,
+      "devigMethod": "power",
+      "impliedProb": {
+        "home": 25.8,
+        "draw": 33.5,
+        "away": 40.7
+      },
+      "marketPick": "AWAY",
+      "marketFavourite": "AWAY",
+      "ourPick": "AWAY",
+      "agreesWithMarket": true,
+      "edgePoints": -0.2
+    },
+    "early": null,
+    "modelVersion": {
+      "temperature": 1.3,
+      "maxScorelineSim": 10
+    },
+    "isHit": null,
+    "resolvedAt": null
+  },
+  {
+    "id": "401861068",
+    "home": "Serbia",
+    "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/sba.png",
+    "away": "Netherlands",
+    "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/ned.png",
+    "league": "UEFA Nations League",
+    "kickoffUtc": "2026-09-27T16:00Z",
+    "snapshotAt": "2026-09-27T15:18:32.616Z",
+    "minutesBeforeKickoff": 41,
+    "predictedWinner": "AWAY",
+    "predictedScore": "1-2",
+    "prob": {
+      "home": "20.2",
+      "draw": "21.8",
+      "away": "58.0"
+    },
+    "confidence": "58.0",
+    "smartMarket": {
+      "pick": "X2",
+      "label": "X2 (Netherlands/Draw)"
+    },
+    "inputs": {
+      "odds": {
+        "provider": "DraftKings",
+        "home": 6.5,
+        "draw": 4.5,
+        "away": 1.41
+      },
+      "lineup": null,
+      "referee": null
+    },
+    "market": {
+      "provider": "DraftKings",
+      "quotedPrice": {
+        "home": 6.5,
+        "draw": 4.5,
+        "away": 1.41
+      },
+      "priceTaken": {
+        "home": 6.5,
+        "draw": 4.5,
+        "away": 1.41
+      },
+      "executable": "unknown",
+      "overround": 8.53,
+      "devigMethod": "power",
+      "impliedProb": {
+        "home": 12.6,
+        "draw": 19,
+        "away": 68.4
+      },
+      "marketPick": "AWAY",
+      "marketFavourite": "AWAY",
+      "ourPick": "AWAY",
+      "agreesWithMarket": true,
+      "edgePoints": -10.4
+    },
+    "early": null,
+    "modelVersion": {
+      "temperature": 1.3,
+      "maxScorelineSim": 10
+    },
+    "isHit": null,
+    "resolvedAt": null
+  },
+  {
+    "id": "401918762",
+    "home": "CP Talayuela",
+    "homeLogo": "https://ui-avatars.com/api/?name=CP%20Talayuela&background=334155&color=f8fafc",
+    "away": "Sporting de Alcázar",
+    "awayLogo": "https://ui-avatars.com/api/?name=Sporting%20de%20Alc%C3%A1zar&background=334155&color=f8fafc",
+    "league": "Copa del Rey",
+    "kickoffUtc": "2026-09-27T15:30Z",
+    "snapshotAt": "2026-09-27T15:18:32.616Z",
+    "minutesBeforeKickoff": 11,
+    "predictedWinner": "HOME",
+    "predictedScore": "1-0",
+    "prob": {
+      "home": "39.9",
+      "draw": "28.1",
+      "away": "32.0"
+    },
+    "confidence": "39.9",
+    "smartMarket": {
+      "pick": "1X",
+      "label": "1X (CP Talayuela or Draw)"
+    },
+    "inputs": {
+      "odds": null,
+      "lineup": null,
+      "referee": null
+    },
+    "market": null,
+    "early": null,
+    "modelVersion": {
+      "temperature": 1.3,
+      "maxScorelineSim": 10
+    },
+    "isHit": null,
+    "resolvedAt": null
+  },
+  {
+    "id": "401918766",
+    "home": "Maracena",
+    "homeLogo": "https://ui-avatars.com/api/?name=Maracena&background=334155&color=f8fafc",
+    "away": "Tavernes de la Valldigna",
+    "awayLogo": "https://ui-avatars.com/api/?name=Tavernes%20de%20la%20Valldigna&background=334155&color=f8fafc",
+    "league": "Copa del Rey",
+    "kickoffUtc": "2026-09-27T16:00Z",
+    "snapshotAt": "2026-09-27T15:18:32.616Z",
+    "minutesBeforeKickoff": 41,
+    "predictedWinner": "HOME",
+    "predictedScore": "1-0",
+    "prob": {
+      "home": "39.9",
+      "draw": "28.1",
+      "away": "32.0"
+    },
+    "confidence": "39.9",
+    "smartMarket": {
+      "pick": "1X",
+      "label": "1X (Maracena or Draw)"
+    },
+    "inputs": {
+      "odds": null,
+      "lineup": null,
+      "referee": null
+    },
+    "market": null,
+    "early": null,
+    "modelVersion": {
+      "temperature": 1.3,
+      "maxScorelineSim": 10
+    },
+    "isHit": null,
+    "resolvedAt": null
+  },
+  {
+    "id": "401916343",
+    "home": "Antofagasta",
+    "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/6071.png",
+    "away": "Deportes Iquique",
+    "awayLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/10142.png",
+    "league": "Copa Chile",
+    "kickoffUtc": "2026-09-27T15:30Z",
+    "snapshotAt": "2026-09-27T15:18:32.616Z",
+    "minutesBeforeKickoff": 11,
+    "predictedWinner": "HOME",
+    "predictedScore": "1-0",
+    "prob": {
+      "home": "39.9",
+      "draw": "28.1",
+      "away": "32.0"
+    },
+    "confidence": "39.9",
+    "smartMarket": {
+      "pick": "PASS",
+      "label": "Pass / League Blacklist"
+    },
+    "inputs": {
+      "odds": null,
+      "lineup": null,
+      "referee": null
+    },
+    "market": null,
+    "early": null,
+    "modelVersion": {
+      "temperature": 1.3,
+      "maxScorelineSim": 10
+    },
+    "isHit": null,
+    "resolvedAt": null
+  },
+  {
+    "id": "401861071",
+    "home": "Austria",
+    "homeLogo": "https://a.espncdn.com/i/teamlogos/countries/500/aut.png",
+    "away": "Kosovo",
+    "awayLogo": "https://a.espncdn.com/i/teamlogos/countries/500/kosovo.png",
+    "league": "UEFA Nations League",
+    "kickoffUtc": "2026-09-27T16:00Z",
+    "snapshotAt": "2026-09-27T15:18:32.615Z",
+    "minutesBeforeKickoff": 41,
+    "predictedWinner": "HOME",
+    "predictedScore": "2-1",
+    "prob": {
+      "home": "59.5",
+      "draw": "22.1",
+      "away": "18.4"
+    },
+    "confidence": "59.5",
+    "smartMarket": {
+      "pick": "1X",
+      "label": "1X (Austria/Draw)"
+    },
+    "inputs": {
+      "odds": {
+        "provider": "DraftKings",
+        "home": 1.51,
+        "draw": 4.2,
+        "away": 5.5
+      },
+      "lineup": null,
+      "referee": null
+    },
+    "market": {
+      "provider": "DraftKings",
+      "quotedPrice": {
+        "home": 1.51,
+        "draw": 4.2,
+        "away": 5.5
+      },
+      "priceTaken": {
+        "home": 1.51,
+        "draw": 4.2,
+        "away": 5.5
+      },
+      "executable": "unknown",
+      "overround": 8.22,
+      "devigMethod": "power",
+      "impliedProb": {
+        "home": 63.7,
+        "draw": 20.8,
+        "away": 15.5
+      },
+      "marketPick": "HOME",
+      "marketFavourite": "HOME",
+      "ourPick": "HOME",
+      "agreesWithMarket": true,
+      "edgePoints": -4.2
+    },
+    "early": null,
+    "modelVersion": {
+      "temperature": 1.3,
+      "maxScorelineSim": 10
+    },
+    "isHit": null,
+    "resolvedAt": null
+  },
+  {
     "id": "401916344",
     "home": "Ñublense",
     "homeLogo": "https://a.espncdn.com/i/teamlogos/soccer/500/7427.png",
@@ -85,7 +457,10 @@
     "actualWinner": "DRAW",
     "smartHit": null,
     "isPass": true,
-    "isPush": false
+    "isPush": false,
+    "hit1X2": false,
+    "marketHit1X2": null,
+    "beatTheMarket": null
   },
   {
     "id": "401861052",
@@ -128,7 +503,10 @@
     "actualWinner": "AWAY",
     "smartHit": false,
     "isPush": false,
-    "isPass": false
+    "isPass": false,
+    "hit1X2": false,
+    "marketHit1X2": null,
+    "beatTheMarket": null
   },
   {
     "id": "401861056",
@@ -171,7 +549,10 @@
     "actualWinner": "HOME",
     "smartHit": true,
     "isPush": false,
-    "isPass": false
+    "isPass": false,
+    "hit1X2": true,
+    "marketHit1X2": null,
+    "beatTheMarket": null
   },
   {
     "id": "401861055",
@@ -214,7 +595,10 @@
     "actualWinner": "DRAW",
     "smartHit": true,
     "isPush": false,
-    "isPass": false
+    "isPass": false,
+    "hit1X2": false,
+    "marketHit1X2": null,
+    "beatTheMarket": null
   },
   {
     "id": "401861051",
@@ -257,7 +641,10 @@
     "actualWinner": "HOME",
     "smartHit": true,
     "isPush": false,
-    "isPass": false
+    "isPass": false,
+    "hit1X2": true,
+    "marketHit1X2": null,
+    "beatTheMarket": null
   },
   {
     "id": "401861053",
@@ -300,7 +687,10 @@
     "actualWinner": "AWAY",
     "smartHit": true,
     "isPush": false,
-    "isPass": false
+    "isPass": false,
+    "hit1X2": true,
+    "marketHit1X2": null,
+    "beatTheMarket": null
   },
   {
     "id": "401861054",
@@ -343,7 +733,10 @@
     "actualWinner": "AWAY",
     "smartHit": null,
     "isPass": true,
-    "isPush": false
+    "isPush": false,
+    "hit1X2": false,
+    "marketHit1X2": null,
+    "beatTheMarket": null
   },
   {
     "id": "401861047",
@@ -373,6 +766,9 @@
     "actualWinner": "AWAY",
     "smartHit": null,
     "isPass": true,
-    "isPush": false
+    "isPush": false,
+    "hit1X2": false,
+    "marketHit1X2": null,
+    "beatTheMarket": null
   }
 ]

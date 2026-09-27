@@ -50,9 +50,9 @@ export default function BinaryPicksPage({
   const [selectedLeague, setSelectedLeague] = useState('All');
   const [selectedDate, setSelectedDate] = useState('All');
   const [convictionTier, setConvictionTier] = useState('ALL'); // 'ALL', 'ELITE', 'HIGH_VALUE'
-  const [sortField, setSortField] = useState('edge');
+  const [sortField, setSortField] = useState('conf');
   const [sortDirection, setSortDirection] = useState('desc'); // 'asc' | 'desc'
-  const [sortBy, setSortBy] = useState('edge_desc');
+  const [sortBy, setSortBy] = useState('conf_desc');
   const [expandedPickId, setExpandedPickId] = useState(null);
   const [collapsedBinary, setCollapsedBinary] = useState(false);
 
@@ -64,7 +64,8 @@ export default function BinaryPicksPage({
     if (sortField === field) {
       const nextDir = sortDirection === 'asc' ? 'desc' : 'asc';
       setSortDirection(nextDir);
-      if (field === 'edge') setSortBy(nextDir === 'desc' ? 'edge_desc' : 'custom');
+      if (field === 'conf') setSortBy(nextDir === 'desc' ? 'conf_desc' : 'custom');
+      else if (field === 'edge') setSortBy(nextDir === 'desc' ? 'edge_desc' : 'custom');
       else if (field === 'kelly') setSortBy(nextDir === 'desc' ? 'kelly_desc' : 'custom');
       else setSortBy('custom');
     } else {
@@ -72,7 +73,8 @@ export default function BinaryPicksPage({
       const defaultDesc = ['odds', 'prob', 'implied', 'edge', 'kelly', 'conf'].includes(field);
       const newDir = defaultDesc ? 'desc' : 'asc';
       setSortDirection(newDir);
-      if (field === 'edge') setSortBy(newDir === 'desc' ? 'edge_desc' : 'custom');
+      if (field === 'conf') setSortBy(newDir === 'desc' ? 'conf_desc' : 'custom');
+      else if (field === 'edge') setSortBy(newDir === 'desc' ? 'edge_desc' : 'custom');
       else if (field === 'kelly') setSortBy(newDir === 'desc' ? 'kelly_desc' : 'custom');
       else setSortBy('custom');
     }
@@ -358,12 +360,12 @@ export default function BinaryPicksPage({
       <div className="bg-white border border-slate-200 rounded-xl p-2.5 sm:p-3 shadow-xs flex flex-wrap items-center justify-between gap-2.5 text-xs">
         <div className="flex items-center gap-2 flex-wrap">
           <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <span>Value Bets &amp; Staking</span>
+            <span>High-Probability Value Markets</span>
             <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
-              1/4 Fractional Kelly
+              Max Hits &amp; 1/4 Kelly
             </span>
           </h2>
-          <InfoTooltip title="Value Bets & Staking" content="Strict mathematical edges against bookmaker implied probability based on Poisson probability and fractional Kelly staking." />
+          <InfoTooltip title="High-Probability Value Markets" content="Model selections prioritized by highest win probability to maximize winning tickets while identifying positive value margins." />
         </div>
 
         <div className="flex items-center gap-2">
@@ -508,10 +510,10 @@ export default function BinaryPicksPage({
               value={sortBy}
               onChange={handleDropdownSortChange}
               options={[
+                { value: 'conf_desc', label: 'Highest Win Chance (Max Hits)' },
+                { value: 'edge_desc', label: 'Highest Betting Edge' },
                 { value: 'time_asc', label: 'Earliest Kickoff' },
                 { value: 'time_desc', label: 'Latest Kickoff' },
-                { value: 'edge_desc', label: 'Highest Betting Edge' },
-                { value: 'conf_desc', label: 'Highest Model Confidence' },
                 { value: 'kelly_desc', label: 'Largest Kelly' }
               ]}
             />
@@ -793,10 +795,46 @@ export default function BinaryPicksPage({
                                 lead={compactKickoff(p.time)}
                                 home={p.home}
                                 away={p.away}
+                                title={(() => {
+                                  const isHomeSide = String(p.market || '').includes('Home') || String(p.market || '').startsWith('1');
+                                  const isAwaySide = String(p.market || '').includes('Away') || String(p.market || '').startsWith('2') || String(p.market || '').startsWith('X2');
+                                  if (isHomeSide) {
+                                    return (
+                                      <span className="truncate">
+                                        <span className="font-black text-slate-950 underline decoration-indigo-400 underline-offset-2">{p.home}</span>
+                                        <span className="ml-1 text-[8px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1 py-0.2 rounded leading-tight">
+                                          {String(p.market || '').includes('1X') ? '1X' : 'WIN'}
+                                        </span>
+                                        <span className="text-slate-400 font-normal mx-0.5">v</span>
+                                        <span className="text-slate-500 font-medium">{p.away}</span>
+                                      </span>
+                                    );
+                                  }
+                                  if (isAwaySide) {
+                                    return (
+                                      <span className="truncate">
+                                        <span className="text-slate-500 font-medium">{p.home}</span>
+                                        <span className="text-slate-400 font-normal mx-0.5">v</span>
+                                        <span className="font-black text-slate-950 underline decoration-indigo-400 underline-offset-2">{p.away}</span>
+                                        <span className="ml-1 text-[8px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1 py-0.2 rounded leading-tight">
+                                          {String(p.market || '').includes('X2') ? 'X2' : 'WIN'}
+                                        </span>
+                                      </span>
+                                    );
+                                  }
+                                  return (
+                                    <span className="truncate">
+                                      <span className="font-bold text-slate-900">{p.home}</span>
+                                      <span className="text-slate-400 font-normal mx-1">v</span>
+                                      <span className="font-bold text-slate-900">{p.away}</span>
+                                    </span>
+                                  );
+                                })()}
                                 live={p.isLive}
                                 meta={`${p.league || 'Soccer'} · ${p.market}`}
                                 expanded={isExpanded}
                                 badges={<>
+                                  <FoldBadge tone="accent" mono>{safeToFixed(p.modelProb, 0)}% Win</FoldBadge>
                                   <FoldBadge tone="info" mono>@{safeToFixed(p.marketOdds, 2)}</FoldBadge>
                                   <FoldBadge tone={p.edge >= 3 ? 'good' : 'neutral'} mono title="Model edge over the implied price">+{safeToFixed(p.edge, 1)}%</FoldBadge>
                                 </>}
