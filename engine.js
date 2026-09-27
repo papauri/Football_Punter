@@ -3122,6 +3122,14 @@ class SoccerEngine {
       : (entry.hit1X2 === false && entry.marketHit1X2 === true) ? false
       : null; // null when both were right or both wrong — no information either way
 
+    // Closing-line value, once the closing price is known. Independent of whether the pick won:
+    // a losing pick that beat the close is still evidence of an edge, and a winning pick that
+    // fought the market is not.
+    if (!entry.clv) {
+      const clv = this.computeClv(entry.id);
+      if (clv) entry.clv = clv;
+    }
+
     const smartHit = this.evaluateHit(entry, hG, aG);
     if (smartHit !== null) {
       entry.isHit = smartHit;
@@ -3189,8 +3197,190 @@ class SoccerEngine {
     }
   }
 
+  // ──────────────────────────────────────────────────────────────────────────
+  // EARLY PICKS AND CLOSING-LINE VALUE
+  //
+  // Backtesting says we do not beat closing odds: on the fixtures where our pick differs from the
+  // price, we are right 28.6% and the bookmaker 43.1%. Closing odds are the sharpest number in
+  // football betting, so that is a hard target. An early or soft line is a different proposition —
+  // the same model aimed at a price the market has not finished arguing about.
+  //
+  // Closing-line value is how you tell the difference. If we take a price and the market then moves
+  // toward our pick, we bought better than the eventual consensus, and consistently doing so is the
+  // standard evidence of a real edge. It also needs far fewer fixtures than ROI: at a 78% baseline
+  // ROI takes several hundred bets to say anything, while CLV shows up in dozens.
+  //
+  // So we record our opinion early, keep every odds observation until kickoff, and compare the price
+  // we took with the price the market closed at.
+  // ──────────────────────────────────────────────────────────────────────────
+
+  static get EARLY_PICK_WINDOW() {
+    // Early enough that the line is still soft, late enough that a prediction is meaningful.
+    return { minHours: 6, maxHours: 96 };
+  }
+
+  devig(h, d, a) {
+    const hh = Number(h), dd = Number(d), aa = Number(a);
+    if (!(hh > 1 && dd > 1 && aa > 1)) return null;
+    const inv = [1 / hh, 1 / dd, 1 / aa];
+    const book = inv[0] + inv[1] + inv[2];
+    return { HOME: inv[0] / book * 100, DRAW: inv[1] / book * 100, AWAY: inv[2] / book * 100, overround: (book - 1) * 100 };
+  }
+
+  oddsOf(m) {
+    const o = m?.odds;
+    if (!o) return null;
+    const h = Number(o.homeOdds ?? o.home), d = Number(o.drawOdds ?? o.draw), a = Number(o.awayOdds ?? o.away);
+    if (!(h > 1 && d > 1 && a > 1)) return null;
+    return { home: h, draw: d, away: a, provider: o.provider || null };
+  }
+
+  loadClvState() {
+    if (this.oddsHistory && this.earlyPicks) return;
+    this.oddsHistory = new Map();
+    this.earlyPicks = new Map();
+    for (const [file, target] of [['data/odds_history.json', 'oddsHistory'], ['data/early_picks.json', 'earlyPicks']]) {
+      try {
+        const p = path.join(process.cwd(), file);
+        if (!fs.existsSync(p)) continue;
+        const raw = JSON.parse(fs.readFileSync(p, 'utf8'));
+        for (const [k, v] of Object.entries(raw || {})) this[target].set(String(k), v);
+      } catch (e) {
+        this.log('ClvTracker', `Could not load ${file}: ${e.message}`);
+      }
+    }
+  }
+
+  saveClvState() {
+    try {
+      fs.mkdirSync(path.join(process.cwd(), 'data'), { recursive: true });
+      for (const [file, source] of [['data/odds_history.json', this.oddsHistory], ['data/early_picks.json', this.earlyPicks]]) {
+        fs.writeFileSync(path.join(process.cwd(), file), JSON.stringify(Object.fromEntries(source)));
+      }
+    } catch (e) {
+      this.log('ClvTracker', `Could not save CLV state: ${e.message}`);
+    }
+  }
+
+  // Append an odds observation per upcoming fixture, so the closing price is known later. Only a
+  // changed price is stored, and the series is capped, so the file stays small over a season.
+  recordOddsObservations() {
+    this.loadClvState();
+    const now = Date.now();
+    const MAX_OBSERVATIONS = 40;
+    let appended = 0;
+
+    for (const m of this.matches || []) {
+      if (!m?.timestamp || m.isCompleted || m.status === 'FT') continue;
+      const msToKickoff = m.timestamp - now;
+      if (msToKickoff < 0 || msToKickoff > 10 * 24 * 60 * 60 * 1000) continue;
+      const odds = this.oddsOf(m);
+      if (!odds) continue;
+
+      const id = String(m.id);
+      const series = this.oddsHistory.get(id) || [];
+      const last = series[series.length - 1];
+      const unchanged = last && last.home === odds.home && last.draw === odds.draw && last.away === odds.away;
+      if (unchanged) continue;
+
+      series.push({
+        at: new Date(now).toISOString(),
+        minutesBeforeKickoff: Math.round(msToKickoff / 60000),
+        ...odds
+      });
+      // Keep the opening price and the most recent ones; the middle of the series carries least.
+      if (series.length > MAX_OBSERVATIONS) series.splice(1, series.length - MAX_OBSERVATIONS);
+      this.oddsHistory.set(id, series);
+      appended++;
+    }
+    return appended;
+  }
+
+  // Freeze our opinion while the line is still soft. Recorded once per fixture, and never revised —
+  // a pick that can be edited after the fact proves nothing.
+  captureEarlyPicks() {
+    this.loadClvState();
+    const now = Date.now();
+    const { minHours, maxHours } = SoccerEngine.EARLY_PICK_WINDOW;
+    let captured = 0;
+
+    for (const m of this.matches || []) {
+      if (!m?.timestamp || m.isCompleted || m.status === 'FT') continue;
+      if (!m.hasPrediction && !m.predictedWinner) continue;
+      const id = String(m.id);
+      if (this.earlyPicks.has(id)) continue;
+
+      const hoursToKickoff = (m.timestamp - now) / 3600000;
+      if (hoursToKickoff < minHours || hoursToKickoff > maxHours) continue;
+
+      const odds = this.oddsOf(m);
+      if (!odds) continue; // with no price there is nothing to have beaten
+      const implied = this.devig(odds.home, odds.draw, odds.away);
+      const pick = String(m.predictedWinner?.pick || m.predictedWinner || '').toUpperCase()
+        .replace(/^1$/, 'HOME').replace(/^2$/, 'AWAY').replace(/^X$/, 'DRAW');
+
+      this.earlyPicks.set(id, {
+        at: new Date(now).toISOString(),
+        hoursBeforeKickoff: parseFloat(hoursToKickoff.toFixed(1)),
+        home: m.home,
+        away: m.away,
+        league: m.league,
+        kickoffUtc: new Date(m.timestamp).toISOString(),
+        pick: pick || null,
+        smartPick: m.smartMarket?.pick || null,
+        prob: m.prob ? { home: m.prob.home, draw: m.prob.draw, away: m.prob.away } : null,
+        priceTaken: odds,
+        impliedAtTake: implied ? { home: +implied.HOME.toFixed(1), draw: +implied.DRAW.toFixed(1), away: +implied.AWAY.toFixed(1) } : null
+      });
+      captured++;
+      this.log('ClvTracker', `Early pick recorded ${hoursToKickoff.toFixed(0)}h out: ${m.home} v ${m.away} — ${pick} at ${odds.home}/${odds.draw}/${odds.away}`);
+    }
+    if (captured) this.saveClvState();
+    return captured;
+  }
+
+  // Closing-line value for one fixture: the price we took against the price the market closed at.
+  // Positive means the market moved toward our pick after we committed to it.
+  computeClv(fixtureId) {
+    this.loadClvState();
+    const id = String(fixtureId);
+    const early = this.earlyPicks.get(id);
+    const series = this.oddsHistory.get(id) || [];
+    if (!early?.pick || !early.priceTaken || series.length === 0) return null;
+
+    const closing = series[series.length - 1];
+    const sideKey = early.pick === 'HOME' ? 'home' : early.pick === 'AWAY' ? 'away' : 'draw';
+    const taken = Number(early.priceTaken[sideKey]);
+    const close = Number(closing[sideKey]);
+    if (!(taken > 1 && close > 1)) return null;
+
+    const impliedTake = this.devig(early.priceTaken.home, early.priceTaken.draw, early.priceTaken.away);
+    const impliedClose = this.devig(closing.home, closing.draw, closing.away);
+
+    return {
+      pick: early.pick,
+      hoursBeforeKickoff: early.hoursBeforeKickoff,
+      priceTaken: taken,
+      closingPrice: close,
+      closingObservedAt: closing.at,
+      closingMinutesBeforeKickoff: closing.minutesBeforeKickoff,
+      observations: series.length,
+      // The headline number: how much better our price was than the close, as a percentage.
+      clvPricePct: parseFloat(((taken / close - 1) * 100).toFixed(2)),
+      // The same thing in probability points, which is easier to compare across price levels.
+      clvProbPoints: (impliedTake && impliedClose)
+        ? parseFloat((impliedClose[early.pick] - impliedTake[early.pick]).toFixed(2))
+        : null,
+      beatTheClose: taken > close
+    };
+  }
+
   snapshotDueMatches() {
     if (!this.preKickoffLedger) this.preKickoffLedger = new Map();
+    // Keep the price series and the early opinion current before freezing anything.
+    this.recordOddsObservations();
+    this.captureEarlyPicks();
+    this.saveClvState();
     const now = Date.now();
     const SIXTY_MIN_MS = 60 * 60 * 1000;
     let newSnapshots = 0;
@@ -3252,6 +3442,10 @@ class SoccerEngine {
         // backtesting the displayed pick matched the bookmaker's favourite on 96% of fixtures, and on
         // every single pick at 60%+ confidence.
         market: this.buildMarketComparison(m),
+        // Our opinion from while the line was still soft, plus the price available then. Closing-line
+        // value is computed against this at resolution: beating the close is the evidence that
+        // matters, and it shows up in dozens of fixtures rather than the several hundred ROI needs.
+        early: this.earlyPicks?.get(String(m.id)) || null,
         modelVersion: { temperature: this.hyperparameters.temperature, maxScorelineSim: this.hyperparameters.maxScorelineSim },
         isHit: null,       // resolved once FT — prediction fields are NEVER changed
         resolvedAt: null
@@ -3409,9 +3603,33 @@ class SoccerEngine {
       ? parseFloat((h2h.our1X2HitRate - h2h.bookmaker1X2HitRate).toFixed(1))
       : null;
 
+    // Closing-line value across every entry that has one. This is the headline for whether the model
+    // beats a soft line: consistently taking a better price than the market closes at is the
+    // standard evidence of an edge, and unlike ROI it does not need hundreds of fixtures to read.
+    const withClv = entries.filter(e => e.clv && Number.isFinite(e.clv.clvPricePct));
+    const mean = (xs) => (xs.length ? parseFloat((xs.reduce((s, x) => s + x, 0) / xs.length).toFixed(2)) : null);
+    const clvSummary = {
+      entries: withClv.length,
+      meanClvPricePct: mean(withClv.map(e => e.clv.clvPricePct)),
+      medianClvPricePct: withClv.length
+        ? parseFloat([...withClv.map(e => e.clv.clvPricePct)].sort((a, b) => a - b)[Math.floor(withClv.length / 2)].toFixed(2))
+        : null,
+      meanClvProbPoints: mean(withClv.filter(e => Number.isFinite(e.clv.clvProbPoints)).map(e => e.clv.clvProbPoints)),
+      beatTheCloseRate: withClv.length
+        ? parseFloat((withClv.filter(e => e.clv.beatTheClose).length / withClv.length * 100).toFixed(1))
+        : null,
+      avgHoursBeforeKickoff: mean(withClv.map(e => e.clv.hoursBeforeKickoff)),
+      reading: withClv.length < 30
+        ? `Only ${withClv.length} fixture${withClv.length === 1 ? '' : 's'} ${withClv.length === 1 ? 'has' : 'have'} a closing price yet. CLV reads meaningfully from about 30-50 onwards, far sooner than hit rate or ROI.`
+        : (mean(withClv.map(e => e.clv.clvPricePct)) > 0
+            ? 'Mean CLV is positive: the market has been moving toward our early picks, which is the signal to look for.'
+            : 'Mean CLV is negative: the market moves against our early picks, so the model is not beating even a soft line.')
+    };
+
     return {
       snapshots: entries.length,
       pending: entries.length - resolved.length,
+      closingLineValue: clvSummary,
       all: rate(resolved),
       actionable: rate(resolved.filter(e => !isPass(e))),
       confident60: rate(resolved.filter(e => !isPass(e) && favProb(e) >= 60)),

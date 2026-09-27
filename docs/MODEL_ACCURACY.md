@@ -216,6 +216,37 @@ Formations and referees are near the bottom, not the top. They are weak signals 
 and we have none. The belief that they are already being analysed is what made the model look better
 than it was.
 
+## Closing-line value: the metric that can actually settle this
+
+Closing odds are the sharpest number in football betting, and we do not beat them. But an early or
+soft line is a different proposition — the same model aimed at a price the market has not finished
+arguing about.
+
+Closing-line value is how you tell whether that works. If we take a price and the market then moves
+toward our pick, we bought better than the eventual consensus. Doing that consistently is the
+standard evidence of a real edge, and unlike ROI it reads from a few dozen fixtures rather than
+several hundred, because it does not have to wait for results to average out.
+
+The engine now records this automatically:
+
+- **Early picks.** Between 6 and 96 hours before kickoff, the first time a fixture has both a
+  prediction and a price, our opinion and that price are frozen to `data/early_picks.json`. Recorded
+  once and never revised — a pick that can be edited afterwards proves nothing.
+- **Odds history.** Every changed price for an upcoming fixture is appended to
+  `data/odds_history.json` until kickoff, so the closing price is known later. Unchanged prices are
+  not stored twice and the series is capped, so it stays small across a season.
+- **CLV at resolution.** Each ledger entry gains a `clv` block: the price taken, the closing price,
+  `clvPricePct` (how much better our price was), `clvProbPoints` (the same in probability points) and
+  `beatTheClose`. This is independent of whether the pick won — a losing pick that beat the close is
+  still evidence of an edge, and a winning pick that fought the market is not.
+- **Summary.** `getPreKickoffLedgerSummary().closingLineValue` gives mean and median CLV, the share
+  of picks that beat the close, and a plain-language reading. Below 30 fixtures it says so.
+
+**Nothing acts on this yet, deliberately.** We have no evidence the model beats an early line either,
+and `npm run value:backtest` shows that filtering on model edge against *closing* odds makes returns
+worse. So the measurement comes first. If mean CLV turns out positive over 30 to 50 fixtures, that is
+the point at which building a staking rule around it is justified — and not before.
+
 ## Tracking whether an edge is real
 
 The ledger (`pre_kickoff_ledger.json`) now records, per fixture:
