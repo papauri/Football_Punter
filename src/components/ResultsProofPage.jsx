@@ -25,6 +25,7 @@ import {
 import UniformDropdown from './UniformDropdown';
 import MobileViewSwitcher from './MobileViewSwitcher';
 import { useMobileViewMode } from '../utils/useMobileViewMode';
+import { compactKickoff } from './MobileFold';
 import BacktestAccuracyTrendChart from './BacktestAccuracyTrendChart';
 import { safeToFixed, formatScore, plainTipText } from '../utils/numberUtils';
 import { formatSafeDateTime, formatRelativeDayTime } from '../utils/dateUtils';
@@ -934,22 +935,49 @@ export default function ResultsProofPage({
                       {mobileViewMode === 'table' ? (
                         <td className="md:hidden px-2.5 py-2 block">
                           <div className="flex items-center justify-between gap-1.5 text-xs">
-                            {/* Left: Day/Time + Teams */}
+                            {/* Left: Day/Time + Teams with WINNER VISIBLY HIGHLIGHTED */}
                             <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                              <span className="font-mono text-[10px] text-slate-500 shrink-0 font-medium">
-                                {relativeText.split(' ')[0]}
+                              <span className="font-mono text-[10px] text-slate-600 shrink-0 font-semibold bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                                {compactKickoff(relativeText) || relativeText}
                               </span>
-                              <div className="font-bold text-slate-900 text-xs truncate">
-                                <span>{m.home}</span>
-                                <span className="text-slate-400 font-normal mx-1">v</span>
-                                <span>{m.away}</span>
+                              <div className="font-bold text-slate-900 text-xs truncate min-w-0 flex-1">
+                                {actualWinner === 'HOME' ? (
+                                  <span className="inline-flex items-center gap-1 truncate">
+                                    <span className="font-black text-slate-950 underline decoration-emerald-500 underline-offset-2">{m.home}</span>
+                                    <span className="text-[8px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1 py-0.2 rounded shrink-0">WON</span>
+                                    <span className="text-slate-400 font-normal mx-0.5">v</span>
+                                    <span className="text-slate-500 font-medium">{m.away}</span>
+                                  </span>
+                                ) : actualWinner === 'AWAY' ? (
+                                  <span className="inline-flex items-center gap-1 truncate">
+                                    <span className="text-slate-500 font-medium">{m.home}</span>
+                                    <span className="text-slate-400 font-normal mx-0.5">v</span>
+                                    <span className="font-black text-slate-950 underline decoration-emerald-500 underline-offset-2">{m.away}</span>
+                                    <span className="text-[8px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1 py-0.2 rounded shrink-0">WON</span>
+                                  </span>
+                                ) : actualWinner === 'DRAW' ? (
+                                  <span className="inline-flex items-center gap-1 truncate">
+                                    <span className="font-bold text-slate-800">{m.home}</span>
+                                    <span className="text-[8px] font-black text-amber-800 bg-amber-100 border border-amber-300 px-1 py-0.2 rounded shrink-0">DRAW</span>
+                                    <span className="font-bold text-slate-800">{m.away}</span>
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 truncate">
+                                    <span className="font-bold text-slate-900">{m.home}</span>
+                                    <span className="text-slate-400 font-normal mx-0.5">v</span>
+                                    <span className="font-bold text-slate-900">{m.away}</span>
+                                  </span>
+                                )}
                               </div>
                             </div>
 
                             {/* Right: Score, Pick / Pass Advisory badge, Status, Chevron */}
                             <div className="flex items-center gap-1.5 shrink-0">
-                              <span className="font-mono font-bold text-[11px] bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded border border-slate-200">
+                              <span className="font-mono font-black text-[11px] bg-slate-100 text-slate-900 px-1.5 py-0.5 rounded border border-slate-200">
                                 {actualScore}
+                              </span>
+                              <span className="text-[9.5px] font-medium text-slate-600 hidden xs:inline max-w-[80px] truncate" title={`Pick: ${m.smartMarket?.pickLabel || m.predictedWinner || 'Analyzed'}`}>
+                                {m.smartMarket?.pickLabel || m.predictedWinner || 'Pick'}
                               </span>
                               {isPass ? (
                                 <span className="font-bold text-[9.5px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-0.5">
@@ -964,7 +992,7 @@ export default function ResultsProofPage({
                                     ? 'bg-amber-100 text-amber-800 border-amber-300'
                                     : 'bg-rose-100 text-rose-800 border-rose-300'
                                 }`}>
-                                  {isHit ? 'HIT' : isPush ? 'PUSH' : 'MISS'}
+                                  {isHit ? '✓ HIT' : isPush ? 'PUSH' : 'MISS'}
                                 </span>
                               )}
                               <div className="text-slate-400">
@@ -1047,7 +1075,7 @@ export default function ResultsProofPage({
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="font-semibold text-slate-700 font-mono text-[10px] flex items-center gap-1">
                                 <Calendar className="w-2.5 h-2.5 text-indigo-600 shrink-0" />
-                                {relativeText}
+                                {compactKickoff(relativeText) || relativeText}
                               </span>
                               <span className="text-[9.5px] text-slate-400 bg-slate-100 px-1 rounded border border-slate-200">
                                 {m.league || 'Soccer'}
@@ -1062,14 +1090,34 @@ export default function ResultsProofPage({
                                 ? 'bg-amber-100 text-amber-900 border-amber-300'
                                 : 'bg-rose-100 text-rose-800 border-rose-300'
                             }`}>
-                              {isHit ? 'HIT' : isPush ? 'PUSH' : isPass ? 'PASS' : 'MISS'}
+                              {isHit ? '✓ HIT' : isPush ? 'PUSH' : isPass ? 'PASS' : 'MISS'}
                             </span>
                           </div>
 
-                          {/* Matchup */}
+                          {/* Matchup with Winner Visibly Highlighted */}
                           <div className="flex justify-between items-center mb-1.5">
-                            <div className="font-bold text-slate-900 text-xs truncate">
-                              {m.home} <span className="text-slate-400 font-normal">vs</span> {m.away}
+                            <div className="text-xs truncate min-w-0 flex-1 pr-2">
+                              {actualWinner === 'HOME' ? (
+                                <span className="inline-flex items-center gap-1 truncate">
+                                  <span className="font-black text-slate-950 underline decoration-emerald-500 underline-offset-2">{m.home}</span>
+                                  <span className="text-[8px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1 py-0.2 rounded shrink-0">WON</span>
+                                  <span className="text-slate-400 font-normal mx-0.5">vs</span>
+                                  <span className="text-slate-500 font-medium">{m.away}</span>
+                                </span>
+                              ) : actualWinner === 'AWAY' ? (
+                                <span className="inline-flex items-center gap-1 truncate">
+                                  <span className="text-slate-500 font-medium">{m.home}</span>
+                                  <span className="text-slate-400 font-normal mx-0.5">v</span>
+                                  <span className="font-black text-slate-950 underline decoration-emerald-500 underline-offset-2">{m.away}</span>
+                                  <span className="text-[8px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1 py-0.2 rounded shrink-0">WON</span>
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 truncate">
+                                  <span className="font-bold text-slate-800">{m.home}</span>
+                                  <span className="text-[8px] font-black text-amber-800 bg-amber-100 border border-amber-300 px-1 py-0.2 rounded shrink-0">DRAW</span>
+                                  <span className="font-bold text-slate-800">{m.away}</span>
+                                </span>
+                              )}
                             </div>
                             <div className="flex items-center gap-1 font-mono text-xs shrink-0">
                               <span className="font-black bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 text-slate-900">

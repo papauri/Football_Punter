@@ -1,3 +1,4 @@
+import { liveScoreText } from '../utils/matchStatus';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { 
   Search,
@@ -50,6 +51,7 @@ import KellyTooltip from './KellyTooltip';
 import InfoTooltip from './InfoTooltip';
 import MobileViewSwitcher from './MobileViewSwitcher';
 import { useMobileViewMode } from '../utils/useMobileViewMode';
+import { compactKickoff } from './MobileFold';
 import StrategyProofModal from './StrategyProofModal';
 
 // Helper to reliably extract match pick without gaps
@@ -107,7 +109,7 @@ export default function FixturesTablePage({
   const toggleCouncilExpand = (id) => {
     setExpandedCouncilId(prev => (prev === id ? null : id));
   };
-  const [collapsedCouncilAcca, setCollapsedCouncilAcca] = useState(false);
+  const [collapsedCouncilAcca, setCollapsedCouncilAcca] = useState(true);
   const [collapsedMatchPredictions, setCollapsedMatchPredictions] = useState(false);
   const [copiedAccaSlip, setCopiedAccaSlip] = useState(false);
   const [isAccaLoaded, setIsAccaLoaded] = useState(false);
@@ -1706,35 +1708,67 @@ export default function FixturesTablePage({
                         {mobileViewMode === 'table' ? (
                           <td className="md:hidden px-2.5 py-2 block">
                             <div className="flex items-center justify-between gap-1.5 text-xs">
-                              {/* Left: Kickoff / LIVE + Teams */}
+                              {/* Left: Kickoff / LIVE + Teams with WINNER VISIBLY HIGHLIGHTED */}
                               <div className="flex items-center gap-1.5 min-w-0 flex-1">
                                 {m.isLive ? (
-                                  <span className="px-1 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white animate-pulse shrink-0">
-                                    {m.liveMinute ? `${m.liveMinute}'` : 'LIVE'}
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8.5px] font-extrabold bg-rose-600 text-white animate-pulse shrink-0">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                                    <span>LIVE {m.liveMinute ? `${m.liveMinute}'` : ''}</span>
+                                    {liveScoreText(m) && <span className="font-mono font-bold">({liveScoreText(m)})</span>}
+                                  </span>
+                                ) : (m.isCompleted || m.status === 'FT' || m.status === 'FINISHED') ? (
+                                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-200 text-slate-800 shrink-0 font-mono">
+                                    FT {score !== '—' ? `(${score})` : ''}
                                   </span>
                                 ) : (
-                                  <span className="font-mono text-[10px] text-slate-500 shrink-0 font-medium">
-                                    {formatMatchKickoff(m).split(' ')[1] || formatMatchKickoff(m)}
+                                  <span className="font-mono text-[10px] text-slate-600 shrink-0 font-semibold bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                                    {compactKickoff(formatMatchKickoff(m)) || formatMatchKickoff(m)}
                                   </span>
                                 )}
-                                <div className="font-bold text-slate-900 text-xs truncate">
-                                  <span>{m.home}</span>
-                                  <span className="text-slate-400 font-normal mx-1">v</span>
-                                  <span>{m.away}</span>
+
+                                {/* Matchup: Who Wins Visibly Highlighted */}
+                                <div className="text-xs truncate min-w-0 flex-1">
+                                  {predictedWinner === 'HOME' ? (
+                                    <span className="inline-flex items-center gap-1">
+                                      <span className="font-black text-slate-950 underline decoration-indigo-400 underline-offset-2">{m.home}</span>
+                                      <span className="text-[8.5px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1 py-0.2 rounded leading-tight shrink-0">WIN</span>
+                                      <span className="text-slate-400 font-normal mx-0.5">v</span>
+                                      <span className="text-slate-500 font-medium">{m.away}</span>
+                                    </span>
+                                  ) : predictedWinner === 'AWAY' ? (
+                                    <span className="inline-flex items-center gap-1">
+                                      <span className="text-slate-500 font-medium">{m.home}</span>
+                                      <span className="text-slate-400 font-normal mx-0.5">v</span>
+                                      <span className="font-black text-slate-950 underline decoration-indigo-400 underline-offset-2">{m.away}</span>
+                                      <span className="text-[8.5px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1 py-0.2 rounded leading-tight shrink-0">WIN</span>
+                                    </span>
+                                  ) : predictedWinner === 'DRAW' ? (
+                                    <span className="inline-flex items-center gap-1">
+                                      <span className="font-bold text-slate-800">{m.home}</span>
+                                      <span className="text-[8.5px] font-black text-amber-800 bg-amber-100 border border-amber-300 px-1 py-0.2 rounded leading-tight shrink-0">DRAW</span>
+                                      <span className="font-bold text-slate-800">{m.away}</span>
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1">
+                                      <span className="font-bold text-slate-900">{m.home}</span>
+                                      <span className="text-slate-400 font-normal mx-0.5">v</span>
+                                      <span className="font-bold text-slate-900">{m.away}</span>
+                                    </span>
+                                  )}
+                                  {isUnanimous && (
+                                    <span className="ml-1 text-[8.5px] bg-amber-100 text-amber-900 border border-amber-300 px-1 rounded font-bold shrink-0 inline-block align-middle" title="One of our strongest tips">
+                                      👑
+                                    </span>
+                                  )}
                                 </div>
-                                {isUnanimous && (
-                                  <span className="text-[8.5px] bg-amber-100 text-amber-900 border border-amber-300 px-1 rounded font-bold shrink-0" title="6/6 Unanimous Consensus">
-                                    👑
-                                  </span>
-                                )}
                               </div>
 
                               {/* Right: Pick @ Odds, Conf, Chevron */}
                               <div className="flex items-center gap-1.5 shrink-0">
                                 <span className="font-mono font-bold text-[10.5px] bg-indigo-50 text-indigo-800 border border-indigo-200 px-1.5 py-0.5 rounded">
-                                  {smartMarketDisplay || predictedWinner} @{safeToFixed(matchOdds, 2)}
+                                  {smartMarketDisplay || (predictedWinner === 'HOME' ? `${m.home} Win` : predictedWinner === 'AWAY' ? `${m.away} Win` : 'Draw')} @{safeToFixed(matchOdds, 2)}
                                 </span>
-                                <span className="text-[10px] font-mono text-slate-600 font-semibold">
+                                <span className="text-[10px] font-mono text-emerald-700 font-bold bg-emerald-50 px-1 py-0.5 rounded border border-emerald-200" title="Model Win Probability">
                                   {safeToFixed(conf, 0)}%
                                 </span>
                                 <div className="text-slate-400">
@@ -1748,7 +1782,7 @@ export default function FixturesTablePage({
                             <div className="flex justify-between items-start mb-1.5">
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className="font-semibold text-slate-700 font-mono text-[10px]">
-                                  {formatMatchKickoff(m)}
+                                  {compactKickoff(formatMatchKickoff(m)) || formatMatchKickoff(m)}
                                 </span>
                                 {String(m.status || '').toLowerCase().includes('postpone') ? (
                                   <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[8.5px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
@@ -1764,8 +1798,12 @@ export default function FixturesTablePage({
                                   </span>
                                 ) : m.isLive ? (
                                   <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
-                                    LIVE {m.liveMinute ? `${m.liveMinute}'` : ''} {m.liveScore ? `(${m.liveScore.home}-${m.liveScore.away})` : ''}
+                                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+                                    LIVE {m.liveMinute ? `${m.liveMinute}'` : ''} {liveScoreText(m) ? `(${liveScoreText(m)})` : ''}
+                                  </span>
+                                ) : (m.isCompleted || m.status === 'FT' || m.status === 'FINISHED') ? (
+                                  <span className="px-1.5 py-0.2 rounded text-[8.5px] font-bold bg-slate-200 text-slate-800 font-mono">
+                                    FT ({score})
                                   </span>
                                 ) : countdown ? (
                                   <span className={`inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-bold border ${countdown.color}`}>
@@ -1782,7 +1820,10 @@ export default function FixturesTablePage({
                             <div className="flex justify-between items-center mb-1">
                               <div className="flex flex-col flex-1">
                                 <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className="font-bold text-slate-900 text-xs">{m.home}</span>
+                                  <span className={`text-xs ${predictedWinner === 'HOME' ? 'font-black text-slate-950 underline decoration-indigo-400 underline-offset-2' : 'font-semibold text-slate-700'}`}>{m.home}</span>
+                                  {predictedWinner === 'HOME' && (
+                                    <span className="text-[8.5px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1 py-0.2 rounded leading-tight">WIN</span>
+                                  )}
                                   {isUnanimous && (
                                     <span 
                                       className="text-[8.5px] bg-amber-100 text-amber-900 border border-amber-300 px-1 py-0.2 rounded font-bold shrink-0" 
@@ -1804,7 +1845,12 @@ export default function FixturesTablePage({
                                   <span className={`text-[8.5px] border px-1 rounded font-bold ${riskProfile.badgeClass}`} title={riskProfile.reason}>{riskProfile.badge}</span>
                                   {isDerivative && <span className="text-[8.5px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-1 rounded font-bold">🛡️ {m.smartMarket?.pick}</span>}
                                 </div>
-                                <span className="font-bold text-slate-900 text-xs">{m.away}</span>
+                                <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                                  <span className={`text-xs ${predictedWinner === 'AWAY' ? 'font-black text-slate-950 underline decoration-indigo-400 underline-offset-2' : 'font-semibold text-slate-700'}`}>{m.away}</span>
+                                  {predictedWinner === 'AWAY' && (
+                                    <span className="text-[8.5px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1 py-0.2 rounded leading-tight">WIN</span>
+                                  )}
+                                </div>
                               </div>
                               <div className="flex flex-col items-end">
                                 <span className="text-[8.5px] uppercase font-bold text-slate-400 mb-0.5">Top Pick</span>
@@ -1906,8 +1952,13 @@ export default function FixturesTablePage({
                         {/* Fixture / Teams */}
                         <td className="hidden md:table-cell py-1.5 px-2">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-semibold text-slate-900 truncate text-[11.5px] max-w-[155px]">
-                              {m.home} vs {m.away}
+                            <span className="truncate text-[11.5px] max-w-[170px]">
+                              <span className={predictedWinner === 'HOME' ? 'font-bold text-slate-900 underline decoration-indigo-400 underline-offset-2' : 'font-medium text-slate-600'}>{m.home}</span>
+                              {predictedWinner === 'HOME' && <span className="ml-1 text-[8px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1 py-0.2 rounded">WIN</span>}
+                              <span className="text-slate-400 mx-1">vs</span>
+                              <span className={predictedWinner === 'AWAY' ? 'font-bold text-slate-900 underline decoration-indigo-400 underline-offset-2' : 'font-medium text-slate-600'}>{m.away}</span>
+                              {predictedWinner === 'AWAY' && <span className="ml-1 text-[8px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1 py-0.2 rounded">WIN</span>}
+                              {predictedWinner === 'DRAW' && <span className="ml-1 text-[8px] font-bold text-amber-800 bg-amber-100 border border-amber-300 px-1 py-0.2 rounded">DRAW</span>}
                             </span>
                             {m.isLive && (
                               <button

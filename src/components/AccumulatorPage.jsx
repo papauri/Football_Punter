@@ -1685,6 +1685,43 @@ export default function AccumulatorPage({
                                 lead={`#${leg.legNum}`}
                                 home={leg.home}
                                 away={leg.away}
+                                title={(() => {
+                                  const p = String(leg.pick || '').toUpperCase();
+                                  const mkt = String(leg.market || '');
+                                  const isHome = p === 'HOME' || p === '1' || p === '1X' || mkt.includes('Home') || mkt.startsWith('1');
+                                  const isAway = p === 'AWAY' || p === '2' || p === 'X2' || mkt.includes('Away') || mkt.startsWith('2') || mkt.startsWith('X2');
+                                  if (isHome) {
+                                    return (
+                                      <span className="truncate">
+                                        <span className="font-black text-slate-950 underline decoration-indigo-400 underline-offset-2">{leg.home}</span>
+                                        <span className="ml-1 text-[8px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1 py-0.2 rounded leading-tight">
+                                          {p === '1X' ? '1X' : 'WIN'}
+                                        </span>
+                                        <span className="text-slate-400 font-normal mx-0.5">v</span>
+                                        <span className="text-slate-500 font-medium">{leg.away}</span>
+                                      </span>
+                                    );
+                                  }
+                                  if (isAway) {
+                                    return (
+                                      <span className="truncate">
+                                        <span className="text-slate-500 font-medium">{leg.home}</span>
+                                        <span className="text-slate-400 font-normal mx-0.5">v</span>
+                                        <span className="font-black text-slate-950 underline decoration-indigo-400 underline-offset-2">{leg.away}</span>
+                                        <span className="ml-1 text-[8px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1 py-0.2 rounded leading-tight">
+                                          {p === 'X2' ? 'X2' : 'WIN'}
+                                        </span>
+                                      </span>
+                                    );
+                                  }
+                                  return (
+                                    <span className="truncate">
+                                      <span className="font-bold text-slate-900">{leg.home}</span>
+                                      <span className="text-slate-400 font-normal mx-1">v</span>
+                                      <span className="font-bold text-slate-900">{leg.away}</span>
+                                    </span>
+                                  );
+                                })()}
                                 meta={`${compactKickoff(leg.time)} · ${String(leg.market || '').replace(/\s*\(.*?\)\s*/g, ' ').trim()}`}
                                 expanded={isExpanded}
                                 badges={<>

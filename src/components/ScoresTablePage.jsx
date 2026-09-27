@@ -1,3 +1,4 @@
+import { liveScoreText } from '../utils/matchStatus';
 import React, { useState, useMemo } from 'react';
 import { 
   Search, 
@@ -24,6 +25,7 @@ import UniformDropdown from './UniformDropdown';
 import MobileViewSwitcher from './MobileViewSwitcher';
 import { useMobileViewMode } from '../utils/useMobileViewMode';
 import InfoTooltip from './InfoTooltip';
+import { compactKickoff } from './MobileFold';
 import { safeParseFloat, safeToFixed } from '../utils/numberUtils';
 import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey } from '../utils/dateUtils';
 
@@ -690,25 +692,39 @@ export default function ScoresTablePage({
                             {/* Left: Day/Time/LIVE + Teams */}
                             <div className="flex items-center gap-1.5 min-w-0 flex-1">
                               {m.isLive ? (
-                                <span className="px-1 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white animate-pulse shrink-0">
-                                  {m.liveMinute ? `${m.liveMinute}'` : 'LIVE'}
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8.5px] font-extrabold bg-rose-600 text-white animate-pulse shrink-0">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                                  <span>LIVE {m.liveMinute ? `${m.liveMinute}'` : ''}</span>
+                                  {liveScoreText(m) && <span className="font-mono font-bold">({liveScoreText(m)})</span>}
                                 </span>
                               ) : (
-                                <span className="font-mono text-[10px] text-slate-500 shrink-0 font-medium">
-                                  {relativeText.split(' ')[0]}
+                                <span className="font-mono text-[10px] text-slate-600 shrink-0 font-semibold bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                                  {compactKickoff(relativeText) || relativeText}
                                 </span>
                               )}
-                              <div className="font-bold text-slate-900 text-xs truncate">
-                                <span>{m.home}</span>
-                                <span className="text-slate-400 font-normal mx-1">v</span>
-                                <span>{m.away}</span>
+                              <div className="font-bold text-slate-900 text-xs truncate min-w-0 flex-1">
+                                {(() => {
+                                  const topHomeGoals = topScores[0] ? parseInt(topScores[0].score.split('-')[0], 10) : null;
+                                  const topAwayGoals = topScores[0] ? parseInt(topScores[0].score.split('-')[1], 10) : null;
+                                  const isHomeFavored = topHomeGoals != null && topAwayGoals != null ? topHomeGoals > topAwayGoals : homeLambda > awayMu;
+                                  const isAwayFavored = topHomeGoals != null && topAwayGoals != null ? topAwayGoals > topHomeGoals : awayMu > homeLambda;
+                                  return (
+                                    <span className="inline-flex items-center gap-1 truncate">
+                                      <span className={isHomeFavored ? 'font-black text-slate-950 underline decoration-indigo-400 underline-offset-2' : 'font-medium text-slate-600'}>{m.home}</span>
+                                      {isHomeFavored && <span className="text-[8px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1 py-0.2 rounded shrink-0">WIN</span>}
+                                      <span className="text-slate-400 font-normal mx-0.5">v</span>
+                                      <span className={isAwayFavored ? 'font-black text-slate-950 underline decoration-indigo-400 underline-offset-2' : 'font-medium text-slate-600'}>{m.away}</span>
+                                      {isAwayFavored && <span className="text-[8px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1 py-0.2 rounded shrink-0">WIN</span>}
+                                    </span>
+                                  );
+                                })()}
                               </div>
                             </div>
 
                             {/* Right: Top Score, Best Value Pick, Chevron */}
                             <div className="flex items-center gap-1.5 shrink-0">
                               {topScores[0] && (
-                                <span className="font-mono font-bold text-[11px] bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded border border-slate-200">
+                                <span className="font-mono font-bold text-[11px] bg-indigo-50 text-indigo-900 px-1.5 py-0.5 rounded border border-indigo-200" title="Projected Most Likely Score">
                                   {topScores[0].score}
                                 </span>
                               )}
@@ -802,14 +818,18 @@ export default function ScoresTablePage({
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="font-semibold text-slate-700 font-mono text-[10px] flex items-center gap-1">
                                 <Calendar className="w-2.5 h-2.5 text-indigo-600 shrink-0" />
-                                {relativeText}
+                                {compactKickoff(relativeText) || relativeText}
                               </span>
-                              {m.isLive && (
-                                <span className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse">
-                                  <span className="w-1 h-1 rounded-full bg-white"></span>
-                                  LIVE {m.liveMinute ? `${m.liveMinute}'` : ''}
+                              {m.isLive ? (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[8.5px] font-extrabold bg-rose-600 text-white shadow-xs animate-pulse">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+                                  LIVE {m.liveMinute ? `${m.liveMinute}'` : ''} {liveScoreText(m) ? `(${liveScoreText(m)})` : ''}
                                 </span>
-                              )}
+                              ) : (m.isCompleted || m.status === 'FT' || m.status === 'FINISHED') ? (
+                                <span className="px-1.5 py-0.2 rounded text-[8.5px] font-bold bg-slate-200 text-slate-800 font-mono">
+                                  FT
+                                </span>
+                              ) : null}
                               <span className="text-[9.5px] text-slate-400 bg-slate-100 px-1 rounded border border-slate-200">
                                 {m.league || 'Soccer'}
                               </span>
@@ -819,12 +839,24 @@ export default function ScoresTablePage({
                             </span>
                           </div>
 
-                          {/* Teams & Score Projection */}
+                          {/* Teams & Score Projection with Favored Team Highlighted */}
                           <div className="flex justify-between items-center mb-2">
                             <div className="flex flex-col flex-1 min-w-0 pr-2">
-                              <div className="font-bold text-slate-900 text-xs truncate">
-                                {m.home} <span className="text-slate-400 font-normal">vs</span> {m.away}
-                              </div>
+                              {(() => {
+                                const topHomeGoals = topScores[0] ? parseInt(topScores[0].score.split('-')[0], 10) : null;
+                                const topAwayGoals = topScores[0] ? parseInt(topScores[0].score.split('-')[1], 10) : null;
+                                const isHomeFavored = topHomeGoals != null && topAwayGoals != null ? topHomeGoals > topAwayGoals : homeLambda > awayMu;
+                                const isAwayFavored = topHomeGoals != null && topAwayGoals != null ? topAwayGoals > topHomeGoals : awayMu > homeLambda;
+                                return (
+                                  <div className="text-xs truncate">
+                                    <span className={isHomeFavored ? 'font-black text-slate-950 underline decoration-indigo-400 underline-offset-2' : 'font-semibold text-slate-700'}>{m.home}</span>
+                                    {isHomeFavored && <span className="ml-1 text-[8px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1 py-0.2 rounded">WIN</span>}
+                                    <span className="text-slate-400 font-normal mx-1">vs</span>
+                                    <span className={isAwayFavored ? 'font-black text-slate-950 underline decoration-indigo-400 underline-offset-2' : 'font-semibold text-slate-700'}>{m.away}</span>
+                                    {isAwayFavored && <span className="ml-1 text-[8px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-1 py-0.2 rounded">WIN</span>}
+                                  </div>
+                                );
+                              })()}
                               <div className="text-[9.5px] text-slate-400 font-mono mt-0.5">
                                 xG: {homeLambda.toFixed(1)} - {awayMu.toFixed(1)} (Total: {totalXg})
                               </div>

@@ -7780,6 +7780,7 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
     // 3. Fast Validation Backtest against Benchmark Corpus Sample
     const valSample = (this.trainingSet && this.trainingSet.length > 0) ? this.trainingSet.slice(0, 30) : [];
     let baseBrierSum = 0;
+    let baseHits = 0;
     for (const m of valSample) {
       const dc = this.computeDixonColesProbabilities(m.home, m.away, { league: m.league });
       const hG = m.homeScore ?? m.goals?.home ?? 0;
@@ -7789,6 +7790,12 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
       const yD = actual === 'DRAW' ? 1 : 0;
       const yA = actual === 'AWAY' ? 1 : 0;
       baseBrierSum += Math.pow((dc.home / 100) - yH, 2) + Math.pow((dc.draw / 100) - yD, 2) + Math.pow((dc.away / 100) - yA, 2);
+      const sh = this.evaluateHit(dc, hG, aG);
+      if (sh === true || (sh === null && (dc.smartMarket?.marketType === 'DRAW_NO_BET' || dc.smartMarket?.pick === 'PASS'))) {
+        baseHits++;
+      } else if (sh === null && dc.predictedWinner === actual) {
+        baseHits++;
+      }
     }
     const baseBrier = valSample.length > 0 ? (baseBrierSum / valSample.length) : 0.582;
 
@@ -7814,8 +7821,9 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
     // Post-patch counterfactual probabilities for target fixture
     const postProb = this.computeDixonColesProbabilities(homeTeam, awayTeam, { league });
 
-    // Evaluate candidate Brier on validation sample
+    // Evaluate candidate Brier & hit rate on validation sample
     let candBrierSum = 0;
+    let candHits = 0;
     for (const m of valSample) {
       const dc = this.computeDixonColesProbabilities(m.home, m.away, { league: m.league });
       const hG = m.homeScore ?? m.goals?.home ?? 0;
@@ -7825,6 +7833,12 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
       const yD = actual === 'DRAW' ? 1 : 0;
       const yA = actual === 'AWAY' ? 1 : 0;
       candBrierSum += Math.pow((dc.home / 100) - yH, 2) + Math.pow((dc.draw / 100) - yD, 2) + Math.pow((dc.away / 100) - yA, 2);
+      const sh = this.evaluateHit(dc, hG, aG);
+      if (sh === true || (sh === null && (dc.smartMarket?.marketType === 'DRAW_NO_BET' || dc.smartMarket?.pick === 'PASS'))) {
+        candHits++;
+      } else if (sh === null && dc.predictedWinner === actual) {
+        candHits++;
+      }
     }
     const candBrier = valSample.length > 0 ? (candBrierSum / valSample.length) : (baseBrier - 0.003);
 
@@ -7838,7 +7852,8 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
     this.hyperparameters.drawEquilibriumDelta = originalDrawDelta;
 
     let validationStatus = 'VALIDATED_SAFE';
-    if (candBrier > baseBrier + 0.003) {
+    // If candHits dropped or Brier degraded significantly, damp deltas to preserve strike rate
+    if (candHits < baseHits || candBrier > baseBrier + 0.003) {
       validationStatus = 'DAMPED_TO_PRESERVE_CALIBRATION';
       clampedDeltas.deltaAttackHome *= 0.5;
       clampedDeltas.deltaDefenseHome *= 0.5;
@@ -9039,8 +9054,13 @@ Provide a crisp 3-bullet assessment:
           const hG = Number(m.goals.home);
           const aG = Number(m.goals.away);
           const actual = hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW';
-          const isHit = m.predictedWinner === actual;
-          if (!isHit && !misses.some(x => x.id === m.id || (x.home === m.home && x.away === m.away))) {
+          const smartHit = this.evaluateHit(m, hG, aG);
+          const isHit = m.isHit !== undefined && m.isHit !== null
+            ? m.isHit
+            : (smartHit !== null ? smartHit : (m.predictedWinner === actual));
+          const isPush = smartHit === null && (m.smartMarket?.pick?.includes('DNB') || m.smartMarket?.marketType === 'DRAW_NO_BET');
+          const isPass = m.smartMarket?.pick === 'PASS' || m.smartMarket?.marketType === 'PASS';
+          if (!isHit && !isPush && !isPass && !misses.some(x => x.id === m.id || (x.home === m.home && x.away === m.away))) {
             misses.push({
               ...m,
               actualWinner: actual,
@@ -9055,7 +9075,15 @@ Provide a crisp 3-bullet assessment:
     // 2. Historical & yesterday fixtures
     if (this.yesterdayMatches && this.yesterdayMatches.length > 0) {
       this.yesterdayMatches.forEach(m => {
-        if (!m.isHit && !misses.some(x => x.id === m.id || (x.home === m.home && x.away === m.away))) {
+        const hG = Number(m.goals?.home ?? m.homeScore ?? 0);
+        const aG = Number(m.goals?.away ?? m.awayScore ?? 0);
+        const smartHit = this.evaluateHit(m, hG, aG);
+        const isHit = m.isHit !== undefined && m.isHit !== null
+          ? m.isHit
+          : (smartHit !== null ? smartHit : (m.predictedWinner === m.actualWinner));
+        const isPush = smartHit === null && (m.smartMarket?.pick?.includes('DNB') || m.smartMarket?.marketType === 'DRAW_NO_BET');
+        const isPass = m.smartMarket?.pick === 'PASS' || m.smartMarket?.marketType === 'PASS';
+        if (!isHit && !isPush && !isPass && !misses.some(x => x.id === m.id || (x.home === m.home && x.away === m.away))) {
           misses.push({ ...m, source: 'Yesterday Verified Slate' });
         }
       });
@@ -9068,8 +9096,11 @@ Provide a crisp 3-bullet assessment:
         const hG = m.homeScore ?? m.goals?.home ?? 0;
         const aG = m.awayScore ?? m.goals?.away ?? 0;
         const actual = hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW';
-        const isHit = dc.predictedWinner === actual;
-        if (!isHit && !misses.some(x => x.id === m.id || (x.home === m.home && x.away === m.away))) {
+        const smartHit = this.evaluateHit(dc, hG, aG);
+        const isHit = smartHit !== null ? smartHit : (dc.predictedWinner === actual);
+        const isPush = smartHit === null && (dc.smartMarket?.pick?.includes('DNB') || dc.smartMarket?.marketType === 'DRAW_NO_BET');
+        const isPass = dc.smartMarket?.pick === 'PASS' || dc.smartMarket?.marketType === 'PASS';
+        if (!isHit && !isPush && !isPass && !misses.some(x => x.id === m.id || (x.home === m.home && x.away === m.away))) {
           misses.push({
             id: m.id,
             home: m.home,
