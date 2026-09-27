@@ -109,6 +109,37 @@ const openingAvg = (row) => firstOf(row, [
   ['AvgH', 'AvgD', 'AvgA', 'Avg'], ['B365H', 'B365D', 'B365A', 'B365'], ['BWH', 'BWD', 'BWA', 'BW']
 ]);
 
+// The individual books football-data surveys, at open and close. Keeping them separately is what
+// makes two things possible that an average cannot support:
+//   * a SHARP REFERENCE. Pinnacle (PS) is the standard benchmark for a fair price, because it runs on
+//     low margin and high limits and moves on money rather than on sentiment. Its de-vigged closing
+//     line is the closest thing to a true probability that is publicly available, and it is a far
+//     better yardstick than an average that includes soft books.
+//   * a SAME-PROVIDER comparison. Measuring closing-line value across different books measures the
+//     difference between those books, not the movement of the line.
+// BF is the Betfair exchange, whose prices are gross of commission — treated as a book here, but its
+// effective price is a few percent lower once commission is paid.
+const BOOKS = {
+  B365: ['B365H', 'B365D', 'B365A', 'B365CH', 'B365CD', 'B365CA'],
+  BW: ['BWH', 'BWD', 'BWA', 'BWCH', 'BWCD', 'BWCA'],
+  BF: ['BFH', 'BFD', 'BFA', 'BFCH', 'BFCD', 'BFCA'],
+  PS: ['PSH', 'PSD', 'PSA', 'PSCH', 'PSCD', 'PSCA'],
+  WH: ['WHH', 'WHD', 'WHA', 'WHCH', 'WHCD', 'WHCA'],
+  X1XB: ['1XBH', '1XBD', '1XBA', '1XBCH', '1XBCD', '1XBCA'],
+  VC: ['VCH', 'VCD', 'VCA', 'VCCH', 'VCCD', 'VCCA'],
+  IW: ['IWH', 'IWD', 'IWA', 'IWCH', 'IWCD', 'IWCA']
+};
+
+function perBook(row) {
+  const out = {};
+  for (const [name, [oh, od, oa, ch, cd, ca]] of Object.entries(BOOKS)) {
+    const o = (num(row[oh]) && num(row[od]) && num(row[oa])) ? [num(row[oh]), num(row[od]), num(row[oa])] : null;
+    const c = (num(row[ch]) && num(row[cd]) && num(row[ca])) ? [num(row[ch]), num(row[cd]), num(row[ca])] : null;
+    if (o || c) out[name] = { ...(o ? { o } : {}), ...(c ? { c } : {}) };
+  }
+  return Object.keys(out).length ? out : null;
+}
+
 // Best price across all books surveyed, opening and closing. This is what a bettor who shops around
 // can actually take, so it is the honest basis for return on investment. The average price is
 // roughly 5% worse and is the right basis for measuring accuracy, not profit.
@@ -123,7 +154,8 @@ function pickOdds(row) {
     ...close,
     open: openingAvg(row),
     openMax: openingMax(row),
-    closeMax: closingMax(row)
+    closeMax: closingMax(row),
+    books: perBook(row)
   };
 }
 
@@ -208,7 +240,9 @@ async function main() {
         // not publish that column for the fixture.
         open: best.odds.open ? { h: best.odds.open.h, d: best.odds.open.d, a: best.odds.open.a, src: best.odds.open.src } : null,
         openMax: best.odds.openMax ? { h: best.odds.openMax.h, d: best.odds.openMax.d, a: best.odds.openMax.a } : null,
-        closeMax: best.odds.closeMax ? { h: best.odds.closeMax.h, d: best.odds.closeMax.d, a: best.odds.closeMax.a } : null
+        closeMax: best.odds.closeMax ? { h: best.odds.closeMax.h, d: best.odds.closeMax.d, a: best.odds.closeMax.a } : null,
+        // Per-book quotes as compact [home, draw, away] arrays: o = opening, c = closing.
+        books: best.odds.books || null
       };
       coverage[m.league].matched++;
       matched++;

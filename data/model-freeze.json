@@ -1,18 +1,18 @@
 {
-  "frozenAt": "2026-09-27T12:42:37.741Z",
-  "evaluateFixturesFrom": "2026-09-27T12:42:37.742Z",
+  "frozenAt": "2026-09-27T13:02:33.721Z",
+  "evaluateFixturesFrom": "2026-09-27T13:02:33.721Z",
   "supersedes": {
-    "frozenAt": "2026-09-27T12:39:54.750Z",
-    "generation": 1
+    "frozenAt": "2026-09-27T12:42:37.741Z",
+    "generation": 2
   },
-  "generation": 2,
-  "note": "Baseline after opponent-adjusted strengths, xG, calibration, league-suppression fixes, and the walk-forward/forward-exam harness.",
+  "generation": 3,
+  "note": "Adds multi-book odds, power de-vig correction, strict CLV checks. Both products measured as failing.",
   "trainedThrough": {
     "lastResultInCorpus": "2026-09-25",
     "corpusFixtures": 23455
   },
   "hashes": {
-    "engine.js": "f0c5c016ef461668",
+    "engine.js": "c55b499c7241614f",
     "src/model/strengthFit.js": "13b2d558e335d9c3",
     "src/model/calibration.js": "4254568f491c968e",
     "src/utils/leagueUtils.js": "1893aa64db4b116b",
@@ -119,13 +119,13 @@
       },
       "pooled": {
         "fixtures": 5183,
-        "modelHitRate": 52.55643449739533,
+        "modelHitRate": 52.57572834265869,
         "marketHitRate": 52.55643449739533,
-        "gap": 0,
-        "gapSe": 0.2078010730131007,
+        "gap": 0.019293845263360986,
+        "gapSe": 0.19770308249970284,
         "gapCi": [
-          -0.40729010310567737,
-          0.40729010310567737
+          -0.36820419643605656,
+          0.4067918869627785
         ],
         "modelOnlyHitRate": 50.16399768473857,
         "modelOnlyGap": -2.392436812656763,
@@ -133,22 +133,22 @@
           -3.334046043297624,
           -1.4508275820159018
         ],
-        "modelOnlyBrier": 0.20502423815036336,
+        "modelOnlyBrier": 0.20502451919737602,
         "roiAtAverageCi": [
-          -5.002324990660519,
-          -2.089218939289707
+          -5.39508087900094,
+          -2.3930918165203297
         ],
         "roiAtBestCi": [
-          -1.9610097300990705,
-          0.9605603190333607
+          -2.501786559424805,
+          0.6517871480623038
         ],
-        "modelBrier": 0.19928058299569104,
-        "marketBrier": 0.19480544377402445,
-        "bets": 3579,
-        "roiAtAverage": -4.14974171264392,
-        "roiAtBest": -1.1560782071991453,
-        "meanClv": -0.06756315958113009,
-        "beatCloseRate": 48.728695166247554
+        "modelBrier": 0.2000054790661779,
+        "marketBrier": 0.19466528886671186,
+        "bets": 3576,
+        "roiAtAverage": -4.172934596536881,
+        "roiAtBest": -1.180802926608504,
+        "meanClv": -0.0870739019790412,
+        "beatCloseRate": 48.57382550335571
       }
     }
   }

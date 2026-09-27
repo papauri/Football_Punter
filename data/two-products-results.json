@@ -1,0 +1,77 @@
+{
+  "generatedAt": "2026-09-27T12:59:38.233Z",
+  "evaluated": 2297,
+  "yardstick": "Pinnacle de-vigged closing line",
+  "productA": {
+    "modelHitRate": 49.891162385720506,
+    "sharpHitRate": 53.33043099695255,
+    "gap": -3.4392686112320416,
+    "gapCi": [
+      -4.977553439248894,
+      -1.9009837832151895
+    ],
+    "modelBrier": 0.19979199390509364,
+    "sharpBrier": 0.19156647310513233
+  },
+  "productB": {
+    "opportunityOutcomePct": 18.763604701784935,
+    "strategies": [
+      {
+        "label": "model edge > 2%",
+        "bets": 2712,
+        "hitRate": 24.37315634218289,
+        "roi": -11.636799410029521,
+        "ci": {
+          "lo": -19.00700589970504,
+          "hi": -8.493362831858429
+        },
+        "meanEv": -5.924560824523235
+      },
+      {
+        "label": "model edge > 5%",
+        "bets": 2385,
+        "hitRate": 22.935010482180292,
+        "roi": -13.468343815513695,
+        "ci": {
+          "lo": -20.137106918239024,
+          "hi": -9.171488469601782
+        },
+        "meanEv": -6.1932384798277
+      },
+      {
+        "label": "model edge > 10%",
+        "bets": 1957,
+        "hitRate": 21.001532958610117,
+        "roi": -16.829841594277042,
+        "ci": {
+          "lo": -25.607051609606547,
+          "hi": -10.866121614716535
+        },
+        "meanEv": -6.666478780883575
+      },
+      {
+        "label": "model edge > 20%",
+        "bets": 1351,
+        "hitRate": 18.134715025906736,
+        "roi": -18.79126572908957,
+        "ci": {
+          "lo": -24.37453737971875,
+          "hi": -10.220577350111007
+        },
+        "meanEv": -7.43080063631143
+      }
+    ],
+    "ceiling": {
+      "label": "uses closing line",
+      "bets": 1293,
+      "hitRate": 37.58700696055685,
+      "roi": -1.0038669760246621,
+      "ci": {
+        "lo": -7.251353441608643,
+        "hi": 5.003093580819926
+      },
+      "meanEv": 7.677237595459896
+    }
+  },
+  "caveat": "Development window; the model has been shaped against these fixtures. Prices are observed quotes, not confirmed available bets."
+}

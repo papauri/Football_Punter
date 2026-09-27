@@ -305,6 +305,120 @@ shipping.
 The xG work is the cautionary precedent: a sound, well-established feature that delivered 0.1 points
 because the market already had it. Expect that outcome by default.
 
+## Two products, measured separately — and both fail
+
+"Beat the bookmakers" was conflating two different businesses. `npm run products` evaluates them
+apart, judged against **Pinnacle's de-vigged closing line** rather than an average of all books.
+Pinnacle runs at 3.1% margin against 6.2% for Bet365 and 7.1% for William Hill on our data, so its
+close is the best public estimate of a true probability.
+
+### Product A — forecasting
+
+Produce a 1X2 probability better than the closing consensus. On 2,297 unseen fixtures with a Pinnacle
+close and two or more books at open:
+
+| | |
+|---|---|
+| Our 1X2 hit rate | 49.89% |
+| Sharp closing line | **53.33%** |
+| Gap (paired, McNemar) | **−3.44** pts, CI [−4.98, −1.90] |
+| Brier | ours 0.1998, sharp close 0.1916 |
+
+**Product A does not work**, beyond chance.
+
+### Product B — early price
+
+Find an opening quote generous relative to where the line settles. This asks nothing of the forecast
+except that it points at the right fixtures, so it could in principle work while Product A fails.
+
+It does not, and the reason turned out to be a flaw in the measurement rather than the strategy.
+
+| Strategy | Bets | ROI | 95% CI | Mean EV vs closing fair |
+|---|---|---|---|---|
+| Model edge > 2% | 2,712 | −11.64% | [−19.01, −8.49] | **−5.92%** |
+| Model edge > 5% | 2,385 | −13.47% | [−20.14, −9.17] | −6.19% |
+| Model edge > 10% | 1,957 | −16.83% | [−25.61, −10.87] | −6.67% |
+| Model edge > 20% | 1,351 | −18.79% | [−24.37, −10.22] | **−7.43%** |
+| *Ceiling (cheats, uses the closing line)* | 1,293 | −1.00% | [−7.25, +5.00] | — |
+
+Two things to read here. The **more edge the model claims, the worse the expected value** — its
+disagreement with the price is actively anti-informative, not merely uninformative. And even the
+**ceiling**, selecting with hindsight exactly those outcomes that beat the closing fair line, returns
+−1.00% with an interval containing zero. There is no version of Product B that pays, so no selection
+rule could have rescued it.
+
+### The measurement bug that invented the opportunity
+
+The first run of this analysis reported that 20% of outcomes were priced 2%+ above the closing fair
+line at open — an apparently large opportunity. It was mostly an artefact of how prices were converted
+to probabilities.
+
+Dividing inverse odds by their sum assumes margin is spread in proportion to probability. Bookmakers
+load more onto longshots. Measured on 16,503 Pinnacle closing lines from our own data:
+
+| De-vigged bucket | Proportional says | Actually happens | Error | Power method error |
+|---|---|---|---|---|
+| 5–10% | 7.81% | 5.65% | **+2.16** | +1.26 |
+| 10–20% | 15.68% | 14.17% | +1.51 | +0.84 |
+| 20–35% | 27.20% | 26.86% | +0.35 | +0.14 |
+| 50–70% | 58.47% | 60.19% | −1.72 | −0.87 |
+| 70%+ | 77.56% | 80.99% | **−3.43** | −1.59 |
+
+So "the best price beats the fair probability" was largely picking longshots whose fair probability had
+been inflated by up to two points. `src/model/devig.js` now uses the **power method** — raise inverse
+odds to a power chosen so they sum to 1 — which halves the error with no fitted parameters and cannot
+reorder outcomes. Hit-rate comparisons elsewhere in this document are unaffected, because picking the
+highest probability is invariant to either transform; Brier scores and every expected-value figure are
+affected and now use the corrected method.
+
+### Where the money actually is
+
+Backing the market favourite in every evaluated fixture, priced three ways:
+
+| Price | Bets | ROI | 95% CI |
+|---|---|---|---|
+| Best of books at open | 2,297 | **−0.31%** | [−4.98, +1.94] |
+| Pinnacle at open | 2,284 | −1.28% | [−4.42, +0.65] |
+| Pinnacle at close | 2,297 | −1.41% | [−6.06, +0.87] |
+
+The spread between those rows is pure price selection and owes nothing to the model. It remains the
+largest effect measured anywhere in this project — but note that even the best row is negative, and all
+three intervals contain zero. Price shopping closes most of the margin gap; it does not by itself
+produce a profit.
+
+## Multi-book odds
+
+`src/services/oddsFeed.js` is a provider-agnostic feed returning per-book quotes, a best price and a
+sharp reference. It uses The Odds API when `ODDS_API_KEY` is set and otherwise reports
+`multiBookAvailable: false` rather than passing one book's quote off as a consensus — a single-provider
+quote comes back with `bookCount: 1` and an explicit caveat that its "fair" probability carries that
+book's bias.
+
+Historically, `npm run odds:ingest` now captures all eight books football-data.co.uk surveys, at both
+open and close: Bet365 (95% coverage), Pinnacle (80%), Bwin (79%), William Hill (58%), VC (47%),
+Interwetten (39%), Betfair and 1XBet (17%). Mean closing margin by book runs from Pinnacle's 3.14% to
+William Hill's 7.12%, and best-of-books at close is 1.86%.
+
+## Closing-line value: measured strictly, or not at all
+
+The earlier CLV figure was not a like-for-like comparison, in four separate ways. All are now checked,
+and any fixture failing a check is returned with `usable: false` and a reason rather than a number:
+
+- **Same market.** It compared the 1X2 `predictedWinner` even when the frozen pick was 1X, X2 or DNB,
+  so part of the "movement" was the difference between two markets. Both sides are now priced for the
+  market actually frozen, derived from the 1X2 quote by the same formula.
+- **A real close.** Its "close" was the last observation in the series, which can sit days before
+  kickoff if collection stopped. An observation now has to fall within `clvCloseWindowMinutes`
+  (default 180) of kickoff.
+- **Same provider.** The provider could differ between the early quote and the last, in which case the
+  number measured the gap between two bookmakers. A provider change now rejects the comparison.
+- **Not an executable price.** It called an observed quote `priceTaken`. It is now `quotedPrice` with
+  `executable: 'unknown'`: nothing we record establishes that a bet was available at it, that it would
+  have been accepted, or at what stake. Limits and account restriction are invisible to us.
+
+The ledger summary reports `attempted`, `usable`, `rejected` and a breakdown of rejection reasons, so
+a CLV headline cannot be read without its rejection rate.
+
 ## Retiring the historical window
 
 The 9,000-fixture holdout is now development data. It has been used to fit strengths, choose

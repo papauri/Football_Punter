@@ -20,7 +20,8 @@
     "walkforward": "node scripts/walk-forward.mjs",
     "signal:probe": "node scripts/signal-probe.mjs",
     "freeze": "node scripts/freeze-model.mjs",
-    "forward": "node scripts/forward-eval.mjs"
+    "forward": "node scripts/forward-eval.mjs",
+    "products": "node scripts/two-products.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",

@@ -15,6 +15,7 @@ import { AISwarmOrchestrator, InPlayTacticalAdvisoryAgent } from './multiAgentSw
 import { SOLID_LEAGUES, BLACKLISTED_LEAGUES, isLeagueBlacklisted, isLeagueSolid, isCupCompetition } from './src/utils/leagueUtils.js';
 import { fitTeamStrengths, matchScale } from './src/model/strengthFit.js';
 import { calibrateTriple } from './src/model/calibration.js';
+import { fairProbabilities } from './src/model/devig.js';
 
 const HYPERPARAMETERS_FILE = path.join(process.cwd(), 'hyperparameters.json');
 // The repository root, independent of the working directory. Backtest scripts chdir into a temporary
@@ -3231,12 +3232,12 @@ class SoccerEngine {
     return { minHours: 6, maxHours: 96 };
   }
 
+  // Fair probabilities from a price, using the power method. Dividing inverse odds by their sum —
+  // the obvious approach, and what this used to do — overstates longshots by up to 2 points and
+  // understates favourites by up to 3.4 on our own data, which is enough to manufacture a betting
+  // edge that does not exist. See src/model/devig.js for the measurements.
   devig(h, d, a) {
-    const hh = Number(h), dd = Number(d), aa = Number(a);
-    if (!(hh > 1 && dd > 1 && aa > 1)) return null;
-    const inv = [1 / hh, 1 / dd, 1 / aa];
-    const book = inv[0] + inv[1] + inv[2];
-    return { HOME: inv[0] / book * 100, DRAW: inv[1] / book * 100, AWAY: inv[2] / book * 100, overround: (book - 1) * 100 };
+    return fairProbabilities(h, d, a, 'power');
   }
 
   oddsOf(m) {
@@ -3341,7 +3342,11 @@ class SoccerEngine {
         pick: pick || null,
         smartPick: m.smartMarket?.pick || null,
         prob: m.prob ? { home: m.prob.home, draw: m.prob.draw, away: m.prob.away } : null,
+        // An observed quote, not a confirmed available bet. Kept under both names for one release so
+        // existing ledger entries keep working.
+        quotedPrice: odds,
         priceTaken: odds,
+        executable: 'unknown',
         impliedAtTake: implied ? { home: +implied.HOME.toFixed(1), draw: +implied.DRAW.toFixed(1), away: +implied.AWAY.toFixed(1) } : null
       });
       captured++;
@@ -3353,37 +3358,120 @@ class SoccerEngine {
 
   // Closing-line value for one fixture: the price we took against the price the market closed at.
   // Positive means the market moved toward our pick after we committed to it.
-  computeClv(fixtureId) {
+  // Prices for the markets we actually publish, derived from the 1X2 quote. Both sides of a CLV
+  // comparison must use the same derivation, or the difference measures the formula, not the line.
+  //   double chance: 1 / (1/p1 + 1/p2)
+  //   draw-no-bet:   stake returned on a draw, so the price is the side's share of the two non-draw
+  //                  inverse odds
+  priceForMarket(pick, quote) {
+    const h = Number(quote?.home), d = Number(quote?.draw), a = Number(quote?.away);
+    if (!(h > 1 && d > 1 && a > 1)) return null;
+    switch (String(pick || '').toUpperCase()) {
+      case 'HOME': case '1': return h;
+      case 'AWAY': case '2': return a;
+      case 'DRAW': case 'X': return d;
+      case '1X': return 1 / (1 / h + 1 / d);
+      case 'X2': return 1 / (1 / a + 1 / d);
+      case '12': return 1 / (1 / h + 1 / a);
+      case 'HOME_DNB': return (1 / h + 1 / a) / (1 / h);
+      case 'AWAY_DNB': return (1 / a + 1 / h) / (1 / a);
+      default: return null; // goals markets cannot be derived from a 1X2 quote
+    }
+  }
+
+  // Closing-line value for one fixture, measured strictly enough to be worth reading.
+  //
+  // An earlier version of this produced a number that looked like CLV but was not comparable:
+  //
+  //   * It compared the 1X2 predictedWinner even when the frozen pick was 1X, X2 or DNB, so the
+  //     "movement" was partly the difference between two different markets.
+  //   * Its "close" was simply the last observation in the series, which can sit hours or days before
+  //     kickoff if collection stopped early. A line that has not finished moving is not a close.
+  //   * The provider could differ between the early quote and the last one, in which case the number
+  //     measured the gap between two bookmakers rather than any movement.
+  //   * It called an observed quote priceTaken, implying a bet had been available at it.
+  //
+  // All four are addressed below, and anything that fails a check is returned with usable: false and
+  // a stated reason rather than a number. A smaller set of trustworthy comparisons beats a larger set
+  // of artefacts.
+  computeClv(fixtureId, options = {}) {
     this.loadClvState();
     const id = String(fixtureId);
     const early = this.earlyPicks.get(id);
     const series = this.oddsHistory.get(id) || [];
-    if (!early?.pick || !early.priceTaken || series.length === 0) return null;
+    // How close to kickoff an observation must be to count as the closing line.
+    const closeWindowMinutes = options.closeWindowMinutes ?? this.hyperparameters?.clvCloseWindowMinutes ?? 180;
 
+    if (!early || !series.length) return null;
+
+    // Compare the market that was actually frozen. Fall back to the 1X2 call only when no smart pick
+    // was recorded, and say which was used.
+    const market = early.smartPick && early.smartPick !== 'PASS' ? early.smartPick : early.pick;
+    const marketSource = early.smartPick && early.smartPick !== 'PASS' ? 'smartPick' : 'predictedWinner';
+    if (!market) return { usable: false, reason: 'no market recorded on the early pick' };
+
+    const quotedPrice = this.priceForMarket(market, early.quotedPrice || early.priceTaken);
+    if (quotedPrice == null) {
+      return { usable: false, reason: `market ${market} cannot be priced from a 1X2 quote`, market };
+    }
+
+    // The closing line must be an observation near kickoff. Collection stopping early is common and
+    // must not be silently treated as a close.
     const closing = series[series.length - 1];
-    const sideKey = early.pick === 'HOME' ? 'home' : early.pick === 'AWAY' ? 'away' : 'draw';
-    const taken = Number(early.priceTaken[sideKey]);
-    const close = Number(closing[sideKey]);
-    if (!(taken > 1 && close > 1)) return null;
+    const closeMinutes = Number(closing.minutesBeforeKickoff);
+    if (!Number.isFinite(closeMinutes) || closeMinutes > closeWindowMinutes) {
+      return {
+        usable: false,
+        reason: `last observation is ${Number.isFinite(closeMinutes) ? `${closeMinutes} min` : 'an unknown time'} before kickoff, outside the ${closeWindowMinutes} min window`,
+        market, observations: series.length
+      };
+    }
 
-    const impliedTake = this.devig(early.priceTaken.home, early.priceTaken.draw, early.priceTaken.away);
+    // Hold the provider constant. A quote from one book against a close from another measures the
+    // spread between books.
+    const earlyProvider = (early.quotedPrice || early.priceTaken)?.provider ?? null;
+    const closeProvider = closing.provider ?? null;
+    if (earlyProvider && closeProvider && earlyProvider !== closeProvider) {
+      return {
+        usable: false,
+        reason: `provider changed between observations (${earlyProvider} to ${closeProvider}); not a like-for-like comparison`,
+        market, earlyProvider, closeProvider
+      };
+    }
+
+    const closingPrice = this.priceForMarket(market, closing);
+    if (closingPrice == null) return { usable: false, reason: 'closing quote incomplete', market };
+
+    const impliedTake = this.devig(
+      (early.quotedPrice || early.priceTaken).home,
+      (early.quotedPrice || early.priceTaken).draw,
+      (early.quotedPrice || early.priceTaken).away
+    );
     const impliedClose = this.devig(closing.home, closing.draw, closing.away);
+    // Probability points only make sense for a single outcome, so they are reported for straight
+    // picks and left null for derived markets.
+    const straight = ['HOME', 'DRAW', 'AWAY'].includes(market);
 
     return {
-      pick: early.pick,
+      usable: true,
+      market,
+      marketSource,
+      provider: earlyProvider || closeProvider || null,
       hoursBeforeKickoff: early.hoursBeforeKickoff,
-      priceTaken: taken,
-      closingPrice: close,
+      // "Quoted", not "taken": this is a price we observed being advertised. Nothing here establishes
+      // that a bet was available at it, that it would have been accepted, or that it was placed.
+      // Limits, stake restrictions and account limitation are all invisible to us.
+      quotedPrice: parseFloat(quotedPrice.toFixed(4)),
+      closingPrice: parseFloat(closingPrice.toFixed(4)),
+      executable: 'unknown',
       closingObservedAt: closing.at,
-      closingMinutesBeforeKickoff: closing.minutesBeforeKickoff,
+      closingMinutesBeforeKickoff: closeMinutes,
       observations: series.length,
-      // The headline number: how much better our price was than the close, as a percentage.
-      clvPricePct: parseFloat(((taken / close - 1) * 100).toFixed(2)),
-      // The same thing in probability points, which is easier to compare across price levels.
-      clvProbPoints: (impliedTake && impliedClose)
-        ? parseFloat((impliedClose[early.pick] - impliedTake[early.pick]).toFixed(2))
+      clvPricePct: parseFloat(((quotedPrice / closingPrice - 1) * 100).toFixed(2)),
+      clvProbPoints: (straight && impliedTake && impliedClose)
+        ? parseFloat((impliedClose[market] - impliedTake[market]).toFixed(2))
         : null,
-      beatTheClose: taken > close
+      beatTheClose: quotedPrice > closingPrice
     };
   }
 
@@ -3551,9 +3639,10 @@ class SoccerEngine {
     const a = Number(o?.awayOdds ?? o?.away);
     if (!(h > 1 && d > 1 && a > 1)) return null;
 
-    const inv = [1 / h, 1 / d, 1 / a];
-    const overround = inv[0] + inv[1] + inv[2];
-    const implied = inv.map(x => (x / overround) * 100);
+    const fair = this.devig(h, d, a);
+    if (!fair) return null;
+    const implied = [fair.HOME, fair.DRAW, fair.AWAY];
+    const overround = 1 + fair.overround / 100;
     const marketFav = implied[0] >= implied[2] ? 'HOME' : 'AWAY';
     const marketPick = ['HOME', 'DRAW', 'AWAY'][implied.indexOf(Math.max(...implied))];
 
@@ -3569,7 +3658,8 @@ class SoccerEngine {
     return {
       provider: o.provider || null,
       priceTaken: { home: h, draw: d, away: a },
-      overround: parseFloat(((overround - 1) * 100).toFixed(2)),
+      overround: parseFloat(fair.overround.toFixed(2)),
+      devigMethod: fair.method,
       impliedProb: {
         home: parseFloat(implied[0].toFixed(1)),
         draw: parseFloat(implied[1].toFixed(1)),
@@ -3624,10 +3714,29 @@ class SoccerEngine {
     // 3,579 historical picks in the rolling walk-forward, mean CLV was -0.07% with the close beaten
     // 48.7% of the time — no timing edge — so treat a positive live reading as a reason to keep
     // looking rather than an answer, and read it beside return at the price actually taken.
-    const withClv = entries.filter(e => e.clv && Number.isFinite(e.clv.clvPricePct));
+    // Only comparisons that passed every check count. Rejected ones are counted and reported, because
+    // a CLV figure drawn from a filtered subset needs its rejection rate stated beside it.
+    const clvAttempted = entries.filter(e => e.clv);
+    const withClv = clvAttempted.filter(e => e.clv.usable === true && Number.isFinite(e.clv.clvPricePct));
+    const rejected = clvAttempted.filter(e => e.clv.usable === false);
+    const rejectionReasons = {};
+    for (const e of rejected) {
+      const key = String(e.clv.reason || 'unknown').replace(/\d+/g, 'N').slice(0, 80);
+      rejectionReasons[key] = (rejectionReasons[key] || 0) + 1;
+    }
     const mean = (xs) => (xs.length ? parseFloat((xs.reduce((s, x) => s + x, 0) / xs.length).toFixed(2)) : null);
     const clvSummary = {
       entries: withClv.length,
+      attempted: clvAttempted.length,
+      rejected: rejected.length,
+      rejectionReasons,
+      // What counts as measurable, so the headline cannot be read without its conditions.
+      conditions: [
+        'the market compared is the one the early pick actually froze (1X, X2 and DNB priced from the 1X2 quote)',
+        `the closing quote is an observation within ${this.hyperparameters?.clvCloseWindowMinutes ?? 180} minutes of kickoff`,
+        'the provider is the same on both sides of the comparison',
+        'prices are observed quotes; availability, limits and acceptance are unknown'
+      ],
       meanClvPricePct: mean(withClv.map(e => e.clv.clvPricePct)),
       medianClvPricePct: withClv.length
         ? parseFloat([...withClv.map(e => e.clv.clvPricePct)].sort((a, b) => a - b)[Math.floor(withClv.length / 2)].toFixed(2))
@@ -3637,6 +3746,8 @@ class SoccerEngine {
         ? parseFloat((withClv.filter(e => e.clv.beatTheClose).length / withClv.length * 100).toFixed(1))
         : null,
       avgHoursBeforeKickoff: mean(withClv.map(e => e.clv.hoursBeforeKickoff)),
+      marketsCompared: [...new Set(withClv.map(e => e.clv.market))],
+      providers: [...new Set(withClv.map(e => e.clv.provider).filter(Boolean))],
       // Reported with an interval, and deliberately without any "N picks proves it" threshold.
       meanClvCi95: (() => {
         const xs = withClv.map(e => e.clv.clvPricePct);

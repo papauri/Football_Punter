@@ -38,6 +38,7 @@ import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { fitCalibration } from '../src/model/calibration.js';
+import { devigPower } from '../src/model/devig.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 process.chdir(ROOT);
@@ -63,10 +64,11 @@ const OUT = ['HOME', 'DRAW', 'AWAY'];
 const argmax = v => v.indexOf(Math.max(...v));
 
 // ---- market helpers ----------------------------------------------------------------------------
+// Power de-vig: proportional scaling overstates longshots enough to distort both the market's Brier
+// score and any expected-value decision. See src/model/devig.js.
 const devig = (t) => {
-  const inv = [1 / t.h, 1 / t.d, 1 / t.a];
-  const book = inv[0] + inv[1] + inv[2];
-  return { probs: inv.map(x => x / book), overround: book - 1 };
+  const r = devigPower(t.h, t.d, t.a);
+  return r ? { probs: r.probs, overround: r.overround } : { probs: [0, 0, 0], overround: 0 };
 };
 
 // Derived prices for the markets the app actually publishes, from the 1X2 prices, keeping the book's
