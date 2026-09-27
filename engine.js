@@ -1600,7 +1600,15 @@ class SoccerEngine {
     const target = String(leagueName).toLowerCase().trim();
     return disabled.some(dl => {
       const d = String(dl).toLowerCase().trim();
-      return target === d || target.includes(d) || d.includes(target);
+      if (!d) return false;
+      // Exact, or the league name contains a disabled entry ("Italian Serie B" contains "Serie B").
+      //
+      // The reverse direction — a disabled ENTRY containing the league name — used to be accepted too,
+      // and silently switched off any league whose name is a substring of a longer disabled entry.
+      // "Israeli Premier League" contains "Premier League", so the English top flight, our
+      // best-priced and only fully xG-covered league, was disabled by an entry for a different
+      // country's league. 1,931 corpus fixtures published nothing because of it.
+      return target === d || target.includes(d);
     });
   }
 
@@ -2374,10 +2382,14 @@ class SoccerEngine {
     // NEW: Chaotic League Override (Shift from Winner to Goals/BTTS)
     const chaoticLeagues = ['MLS', 'Championship', 'Turkish Super Lig', 'Liga MX', 'Ligue 2', 'Serie B'];
     const underBiasLeagues = ['LaLiga 2'];
-    const isPassBlacklisted = Boolean(options.league && (
-      ['Scottish Premiership', 'Austrian Bundesliga'].some(bl => options.league.toLowerCase().includes(bl.toLowerCase())) ||
-      this.isLeagueDisabled(options.league)
-    ));
+    // Whether to publish a pick in a league is a configuration decision: hyperparameters
+    // disabledLeagues, plus BLACKLISTED_LEAGUES. It used to also consult a hardcoded pair here —
+    // Scottish Premiership and Austrian Bundesliga — which made the settings lie: both read as
+    // enabled everywhere in the app while every single fixture was forced to PASS (260 of 260 and
+    // 75 of 75 in the holdout). Scottish Premiership is in fact the best league we have against the
+    // price, the only one with a positive gap, so it was suppressing our strongest market. Any
+    // league we want switched off now goes in disabledLeagues, where it is visible and reviewable.
+    const isPassBlacklisted = Boolean(options.league && this.isLeagueDisabled(options.league));
     const isChaoticLeague = options.league && chaoticLeagues.includes(options.league);
     
     // High-Draw, Parity Shield & Entropy Floor Market Routing
