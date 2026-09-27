@@ -33,27 +33,12 @@ export default function BacktestAccuracyTrendChart({ data = [], metrics = null, 
   });
   const [viewPreset, setViewPreset] = useState('all'); // 'all', 'selective', 'focus'
 
-  // Default chronological cohort dataset across the 23,453 backtested records
-  const defaultTrend = [
-    { cohort: 1, period: '2021 Q3', sampleRange: '1 - 1,465', matches: 1465, raw1X2: 55.1, highConviction: 69.4, eliteConviction: 73.8, doubleChance: 79.2, dnbStrikeRate: 73.6, capitalProtection: 79.5 },
-    { cohort: 2, period: '2021 Q4', sampleRange: '1,466 - 2,931', matches: 1466, raw1X2: 55.8, highConviction: 70.1, eliteConviction: 74.2, doubleChance: 79.8, dnbStrikeRate: 74.1, capitalProtection: 80.1 },
-    { cohort: 3, period: '2022 Q1', sampleRange: '2,932 - 4,397', matches: 1466, raw1X2: 56.2, highConviction: 70.6, eliteConviction: 74.9, doubleChance: 80.4, dnbStrikeRate: 74.5, capitalProtection: 80.6 },
-    { cohort: 4, period: '2022 Q2', sampleRange: '4,398 - 5,863', matches: 1466, raw1X2: 56.0, highConviction: 71.0, eliteConviction: 75.1, doubleChance: 80.6, dnbStrikeRate: 74.8, capitalProtection: 80.8 },
-    { cohort: 5, period: '2022 Q3', sampleRange: '5,864 - 7,329', matches: 1466, raw1X2: 56.5, highConviction: 71.4, eliteConviction: 75.6, doubleChance: 81.0, dnbStrikeRate: 75.0, capitalProtection: 81.2 },
-    { cohort: 6, period: '2022 Q4', sampleRange: '7,330 - 8,795', matches: 1466, raw1X2: 56.4, highConviction: 71.6, eliteConviction: 75.8, doubleChance: 81.1, dnbStrikeRate: 75.1, capitalProtection: 81.2 },
-    { cohort: 7, period: '2023 Q1', sampleRange: '8,796 - 10,261', matches: 1466, raw1X2: 56.7, highConviction: 71.9, eliteConviction: 76.1, doubleChance: 81.3, dnbStrikeRate: 75.3, capitalProtection: 81.4 },
-    { cohort: 8, period: '2023 Q2', sampleRange: '10,262 - 11,727', matches: 1466, raw1X2: 56.8, highConviction: 72.1, eliteConviction: 76.2, doubleChance: 81.4, dnbStrikeRate: 75.3, capitalProtection: 81.5 },
-    { cohort: 9, period: '2023 Q3', sampleRange: '11,728 - 13,193', matches: 1466, raw1X2: 56.9, highConviction: 72.3, eliteConviction: 76.4, doubleChance: 81.5, dnbStrikeRate: 75.4, capitalProtection: 81.6 },
-    { cohort: 10, period: '2023 Q4', sampleRange: '13,194 - 14,659', matches: 1466, raw1X2: 57.1, highConviction: 72.6, eliteConviction: 76.8, doubleChance: 81.7, dnbStrikeRate: 75.6, capitalProtection: 81.8 },
-    { cohort: 11, period: '2024 Q1', sampleRange: '14,660 - 16,125', matches: 1466, raw1X2: 57.3, highConviction: 72.9, eliteConviction: 77.1, doubleChance: 81.9, dnbStrikeRate: 75.8, capitalProtection: 82.0 },
-    { cohort: 12, period: '2024 Q2', sampleRange: '16,126 - 17,591', matches: 1466, raw1X2: 57.5, highConviction: 73.2, eliteConviction: 77.4, doubleChance: 82.1, dnbStrikeRate: 76.1, capitalProtection: 82.2 },
-    { cohort: 13, period: '2024 Q3', sampleRange: '17,592 - 19,057', matches: 1466, raw1X2: 57.9, highConviction: 74.0, eliteConviction: 78.5, doubleChance: 82.3, dnbStrikeRate: 76.5, capitalProtection: 82.5 },
-    { cohort: 14, period: '2024 Q4', sampleRange: '19,058 - 20,523', matches: 1466, raw1X2: 58.2, highConviction: 75.4, eliteConviction: 80.1, doubleChance: 82.5, dnbStrikeRate: 76.8, capitalProtection: 82.6 },
-    { cohort: 15, period: '2025 Q1-Q2', sampleRange: '20,524 - 21,989', matches: 1466, raw1X2: 58.4, highConviction: 76.3, eliteConviction: 81.4, doubleChance: 82.6, dnbStrikeRate: 77.0, capitalProtection: 82.7 },
-    { cohort: 16, period: '2025 Q3-2026', sampleRange: '21,990 - 23,453', matches: 1464, raw1X2: 58.7, highConviction: 77.2, eliteConviction: 82.5, doubleChance: 82.9, dnbStrikeRate: 77.4, capitalProtection: 83.2 }
-  ];
-
-  const chartData = (data && data.length > 0) ? data : (metrics?.accuracyTrend || defaultTrend);
+  // Real cohorts only. This used to fall back to a hardcoded sixteen-quarter series climbing
+  // smoothly from 73.8% to 82.5% elite accuracy, which no code in the repository ever computed;
+  // with no backtest loaded the chart drew that invented curve as if it were measured. Cohorts now
+  // come from scripts/honest-backtest.mjs, which scores fixtures the model was not trained on.
+  const chartData = (data && data.length > 0) ? data : (metrics?.accuracyTrend || []);
+  const hasData = chartData.length > 0;
 
   const toggleSeries = (key) => {
     setActiveSeries(prev => ({ ...prev, [key]: !prev[key] }));
@@ -90,14 +75,22 @@ export default function BacktestAccuracyTrendChart({ data = [], metrics = null, 
               <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </span>
             <h3 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 leading-tight">
-              Multi-Season Accuracy Trend (23,453 Back-Tested Records)
+              Out-of-Sample Accuracy Trend{totalEvaluated ? ` (${totalEvaluated.toLocaleString()} Unseen Fixtures)` : ''}
             </h3>
-            <span className="px-1.5 sm:px-2 py-0.5 bg-indigo-100 text-indigo-800 text-[9.5px] sm:text-[10px] font-bold rounded-full uppercase tracking-wider shrink-0">
-              16 Cohorts
-            </span>
+            {hasData && (
+              <span className="px-1.5 sm:px-2 py-0.5 bg-indigo-100 text-indigo-800 text-[9.5px] sm:text-[10px] font-bold rounded-full uppercase tracking-wider shrink-0">
+                {chartData.length} Cohorts
+              </span>
+            )}
           </div>
           <p className="text-[11px] sm:text-xs text-slate-500 mt-1 max-w-2xl leading-normal">
-            Chronological performance trajectory across all 23,453 multi-season historical records (2021–2026). As team ratings and xG weights calibrate over time, elite consensus accuracy expands from <span className="font-semibold text-indigo-600">{firstCohort.eliteConviction}%</span> to <span className="font-semibold text-indigo-600">{latestCohort.eliteConviction}%</span> in out-of-sample holdout fixtures.
+            {hasData ? (
+              <>
+                Equal chronological cohorts across fixtures the model was never trained on, {firstCohort.period} to {latestCohort.period}. Elite consensus reads <span className="font-semibold text-indigo-600">{safeToFixed(firstCohort.eliteConviction, 1)}%</span> in the first cohort and <span className="font-semibold text-indigo-600">{safeToFixed(latestCohort.eliteConviction, 1)}%</span> in the last. Cohort samples are small, so read the swing between them as noise unless it is large.
+              </>
+            ) : (
+              <>No backtest loaded. Run <span className="font-mono font-semibold text-slate-700">npm run backtest:honest</span> to measure accuracy on fixtures the model has not seen.</>
+            )}
           </p>
         </div>
 
@@ -109,9 +102,11 @@ export default function BacktestAccuracyTrendChart({ data = [], metrics = null, 
               <span className="truncate">Elite Consensus</span>
             </div>
             <div className="text-sm sm:text-base font-black text-purple-800 font-mono mt-0.5">
-              {safeToFixed(latestCohort.eliteConviction || 82.5, 1)}%
+              {hasData ? `${safeToFixed(latestCohort.eliteConviction, 1)}%` : '--'}
             </div>
-            <div className="text-[8.5px] sm:text-[9px] text-purple-600/90 font-medium truncate">Recent 4.6k Holdout</div>
+            <div className="text-[8.5px] sm:text-[9px] text-purple-600/90 font-medium truncate">
+              {hasData ? `Latest cohort, n=${latestCohort.eliteConvictionSample ?? latestCohort.matches ?? 0}` : 'No data'}
+            </div>
           </div>
 
           <div className="bg-emerald-50/70 border border-emerald-200 rounded-lg p-1.5 sm:p-2.5 text-center min-w-0">

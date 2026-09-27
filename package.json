@@ -10,7 +10,11 @@
     "verify": "node scripts/verify-build.mjs",
     "odds:ingest": "node scripts/ingest-historical-odds.mjs",
     "odds:backtest": "node scripts/odds-backtest.mjs",
-    "value:backtest": "node scripts/value-filter-backtest.mjs"
+    "value:backtest": "node scripts/value-filter-backtest.mjs",
+    "hitrate": "node scripts/hitrate-vs-book.mjs",
+    "tune": "node scripts/tune-model.mjs",
+    "calibration:fit": "node scripts/fit-calibration.mjs",
+    "backtest:honest": "node scripts/honest-backtest.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",

@@ -12,6 +12,8 @@ import { GoogleGenAI } from '@google/genai';
 import { fetchUnderstatData } from './understat_scraper.js';
 import { AISwarmOrchestrator, InPlayTacticalAdvisoryAgent } from './multiAgentSwarm.js';
 import { SOLID_LEAGUES, BLACKLISTED_LEAGUES, isLeagueBlacklisted, isLeagueSolid, isCupCompetition } from './src/utils/leagueUtils.js';
+import { fitTeamStrengths, matchScale } from './src/model/strengthFit.js';
+import { calibrateTriple } from './src/model/calibration.js';
 
 const HYPERPARAMETERS_FILE = path.join(process.cwd(), 'hyperparameters.json');
 
@@ -1100,8 +1102,8 @@ class SoccerEngine {
     return Math.max(0.85, Math.min(1.25, multiplier));
   }
 
-  getTeamRating(teamName) {
-    if (!teamName) return { attack: 1.0, defense: 1.0, elo: 1500, xGForm: 1.0, lineHeight: 5, counterVelocity: 5, starDependency: 5 };
+  getTeamRating(teamName, leagueHint = '') {
+    if (!teamName) return { attack: 1.0, defense: 1.0, elo: 1500, xGForm: 1.0, lineHeight: 5, counterVelocity: 5, starDependency: 5, unrated: true };
     if (this.teamDb[teamName]) {
       return this.teamDb[teamName];
     }
@@ -1125,24 +1127,35 @@ class SoccerEngine {
       }
     }
 
-    // Dynamic hash generation with calibrated variance
-    const hash = (str) => {
-      let h = 0;
-      for (let i = 0; i < str.length; i++) h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
-      return Math.abs(h);
+    // Unknown team. This used to derive attack, defence and Elo from a hash of the club name,
+    // which produced a stable-looking rating carrying no information whatsoever — a spelling, not a
+    // strength. With nothing to go on, the honest rating is the league average, flagged as
+    // unrated so callers can suppress or discount a pick built on it.
+    const league = leagueHint || '';
+    const baseline = this.getLeagueStrengthBaseline(league);
+    const rating = {
+      attack: baseline.attack,
+      defense: baseline.defense,
+      elo: baseline.elo,
+      xGForm: parseFloat((baseline.attack * 0.95).toFixed(2)),
+      lineHeight: 5,
+      counterVelocity: 5,
+      starDependency: 5,
+      unrated: true
     };
-    const seed = hash(teamName);
-    const attack = 0.95 + ((seed % 45) / 100); // 0.95 to 1.40 (prevents artificial attack inflation)
-    const defense = 0.90 + (((seed >> 4) % 40) / 100); // 0.90 to 1.30
-    const elo = 1380 + (seed % 160); // 1380 to 1540 (realistic baseline for unranked/semi-pro clubs)
-    const xGForm = attack * 0.95;
-    const lineHeight = 3 + (seed % 5);
-    const counterVelocity = 3 + ((seed >> 3) % 5);
+    // Not cached: a later call may arrive with a league hint, or the team may by then have been
+    // fitted from freshly ingested results, and a cached placeholder would mask both.
+    return rating;
+  }
 
-    const starDependency = 4 + (seed % 3);
-
-    this.teamDb[teamName] = { attack, defense, elo, xGForm, lineHeight, counterVelocity, starDependency };
-    return this.teamDb[teamName];
+  // Average strength in a league, used when a team has never been seen. Falls back to the global
+  // mean of 1.0 (attack and defence are normalised to mean 1 by the strength fit).
+  getLeagueStrengthBaseline(leagueName = '') {
+    const tier = getLeaguePredictabilityTier?.(leagueName);
+    const profile = this.fittedLeagueBaselines?.[leagueName];
+    // A league we have fitted tells us its scoring level; strength multipliers still average 1.
+    const elo = tier?.tier === 1 ? 1620 : profile ? 1500 : 1440;
+    return { attack: 1.0, defense: 1.0, elo, baseGoals: profile?.baseGoals ?? null };
   }
 
   // -------------------------------------------------------------
@@ -1602,8 +1615,9 @@ class SoccerEngine {
     const entropyFloorThreshold = this.hyperparameters?.entropyFloorThreshold ?? 52.0;
     const highDrawFloor = this.hyperparameters?.highDrawFloor ?? (isParityLeague ? 25.0 : 26.0);
 
-    const home = { ...this.getTeamRating(homeTeam) };
-    const away = { ...this.getTeamRating(awayTeam) };
+    const leagueHint = options.league || options.competition || '';
+    const home = { ...this.getTeamRating(homeTeam, leagueHint) };
+    const away = { ...this.getTeamRating(awayTeam, leagueHint) };
     const rawEloEdge = home.elo - away.elo;
 
     // 0. Head-to-Head Tactical History Integration
@@ -1687,20 +1701,26 @@ class SoccerEngine {
       away.counterVelocity = Math.max(1, away.counterVelocity - 3);
     }
     
-    // Referee Profiling Asymmetry
-    let refereeMultiplierHome = 1.0;
-    let refereeMultiplierAway = 1.0;
-    if (options.referee) {
-      const ref = this.getRefereeProfile(options.referee);
-      // Strict referee (>6) penalizes high counter teams
-      if (ref.strictness > 6) {
-         refereeMultiplierHome -= (home.counterVelocity * 0.01); 
-         refereeMultiplierAway -= (away.counterVelocity * 0.01);
-      } else if (ref.strictness < 5) {
-         refereeMultiplierHome += (home.counterVelocity * 0.01);
-         refereeMultiplierAway += (away.counterVelocity * 0.01);
-      }
-    }
+    // Referee effect: disabled, because we have no referee data.
+    //
+    // This branch used to shift both teams' goal expectation by up to 10% using a "strictness"
+    // score from getRefereeProfile — a table of 19 hand-written entries with invented card and foul
+    // averages, falling back to a per-league guess for every other official. It multiplied that
+    // against counterVelocity, which for all but a few hardcoded clubs is the constant 5. So the
+    // adjustment was two invented numbers multiplied together, applied to the model's central
+    // estimate, and never validated against a single result: training_data.json carries no referee
+    // field, so its effect has never been measured and cannot be.
+    //
+    // It stays off until real referee data is ingested (appointment plus that official's own match
+    // history). At that point fit the effect the way team strengths are fitted, and only keep it if
+    // it earns its place on a validation split — see scripts/tune-model.mjs.
+    const refereeMultiplierHome = 1.0;
+    const refereeMultiplierAway = 1.0;
+    const refereeSignal = {
+      available: false,
+      reason: 'No referee data source. The previous adjustment used hand-invented strictness scores and was never validated.',
+      appointedReferee: options.referee || null
+    };
 
 
     // 1. Calculate Poisson Intensity Parameter lambda (Home expected goals)
@@ -1900,9 +1920,17 @@ class SoccerEngine {
       calAwayP = (calAwayP / totalRebal) * 100;
     }
 
-    const finalHomeP = calHomeP;
-    const finalDrawP = calDrawP;
-    const finalAwayP = calAwayP;
+    // Map the raw model probabilities onto observed strike rates. Applied here, before the pick,
+    // the double-chance and DNB derivations and the conviction thresholds, so every number
+    // downstream is the calibrated one rather than the raw model's optimism.
+    // skipCalibration is set while fitting the map itself, to avoid feeding it its own output.
+    const calibrated = options.skipCalibration
+      ? { home: calHomeP, draw: calDrawP, away: calAwayP }
+      : calibrateTriple({ home: calHomeP, draw: calDrawP, away: calAwayP }, this.probabilityCalibration);
+
+    const finalHomeP = calibrated.home;
+    const finalDrawP = calibrated.draw;
+    const finalAwayP = calibrated.away;
 
     // 7. Calibrated 3-Way Decision Threshold with Draw-Shielded Routing
     // Require draw to be the modal outcome or high-confidence stalemate (|probDiff| <= 1.8 & drawP >= 29.5%)
@@ -2107,7 +2135,14 @@ class SoccerEngine {
     let betValue = 0;
 
     // Strict Entropy Floor: Disqualify straight picks below 52% confidence (or 56% in parity leagues)
-    const activeEntropyFloor = isParityLeague ? Math.max(56.0, entropyFloorThreshold) : entropyFloorThreshold;
+    //
+    // A third raise applies where we hold no bookmaker price. Every cup and international competition
+    // is in that group — football-data.co.uk covers domestic leagues only — and measured on unseen
+    // fixtures the unaided model hits 40-56% there against the 54% it manages in leagues where a
+    // price exists to lean on. With nothing to sanity-check against, the bar has to be higher.
+    const hasMarketPrice = Boolean(options.odds && (options.odds.homeOdds || options.odds.home));
+    const noPriceSurcharge = hasMarketPrice ? 0 : (this.hyperparameters?.noPriceEntropySurcharge ?? 6.0);
+    const activeEntropyFloor = (isParityLeague ? Math.max(56.0, entropyFloorThreshold) : entropyFloorThreshold) + noPriceSurcharge;
     const passesEntropyFloor = Math.max(finalHomeP, finalAwayP) >= activeEntropyFloor;
 
     // Filter out high-entropy matches (draw-heavy or entirely unpredictable)
@@ -2549,18 +2584,27 @@ class SoccerEngine {
     }
     
     const currentMaxProb = Math.max(finalHomeP, finalDrawP, finalAwayP);
-    const finalConfidence = Math.min(99.9, currentMaxProb + ((100 - currentMaxProb) * (dynamicBoost / 100)));
+    // Confidence is the calibrated probability of the pick, and nothing else.
+    //
+    // It used to be that probability inflated by a per-team "predictability boost" of up to 25% of
+    // the remaining headroom. That boost is fitted from how often the model's own favourites came in
+    // across the training corpus, i.e. in-sample, so it rewarded the model for fixtures it had
+    // already seen and pushed stated confidence above anything the probabilities supported: the
+    // >=72% bucket claimed 76.8% and returned 67.8% out of sample. A confidence you cannot stake
+    // against is worse than no confidence at all, so the boost no longer moves this number. It is
+    // still reported below as a diagnostic.
+    const finalConfidence = Math.min(99.9, currentMaxProb);
 
-    
-    // Inject dynamic boost into binary model as well
-    if (typeof dynamicBoost !== 'undefined' && dynamicBoost !== 0) {
-        binaryConfidence = Math.min(99.9, binaryConfidence + ((100 - binaryConfidence) * (dynamicBoost / 100)));
-    }
     return {
       home: finalHomeP,
       draw: finalDrawP,
       away: finalAwayP,
       confidence: finalConfidence,
+      calibration: {
+        applied: Boolean(!options.skipCalibration && this.probabilityCalibration?.points?.length),
+        rawConfidence: parseFloat(Math.max(calHomeP, calDrawP, calAwayP).toFixed(1)),
+        predictabilityBoostDiagnostic: parseFloat(Number(dynamicBoost || 0).toFixed(2))
+      },
       predictedWinner: pick,
       binaryModel: {
         pick: binaryPick,
@@ -3060,6 +3104,19 @@ class SoccerEngine {
     const actualWinner = hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW';
     entry.actualWinner = actualWinner;
 
+    // Grade the straight 1X2 call and the bookmaker's favourite separately from the smart-market
+    // pick. They diverge constantly: a 1X pick on a drawn game counts as a hit while the headline
+    // prediction of HOME was wrong, so a ledger that stores only the smart result reads better than
+    // the model performs. Keeping the bookmaker's call beside ours turns the ledger into a running
+    // head-to-head instead of a scoreboard with no opponent.
+    const predicted1X2 = String(entry.predictedWinner?.pick || entry.predictedWinner || '').toUpperCase()
+      .replace(/^1$/, 'HOME').replace(/^2$/, 'AWAY').replace(/^X$/, 'DRAW');
+    entry.hit1X2 = predicted1X2 ? predicted1X2 === actualWinner : null;
+    entry.marketHit1X2 = entry.market?.marketPick ? entry.market.marketPick === actualWinner : null;
+    entry.beatTheMarket = (entry.hit1X2 === true && entry.marketHit1X2 === false) ? true
+      : (entry.hit1X2 === false && entry.marketHit1X2 === true) ? false
+      : null; // null when both were right or both wrong — no information either way
+
     const smartHit = this.evaluateHit(entry, hG, aG);
     if (smartHit !== null) {
       entry.isHit = smartHit;
@@ -3167,9 +3224,29 @@ class SoccerEngine {
             ? { provider: m.odds.provider || null, home: Number(m.odds.homeOdds ?? m.odds.home) || null, draw: Number(m.odds.drawOdds ?? m.odds.draw) || null, away: Number(m.odds.awayOdds ?? m.odds.away) || null }
             : null,
           lineup: m.lineupImpact
-            ? { status: m.lineupImpact.status, homeSquadStrength: m.lineupImpact.homeSquadStrength, awaySquadStrength: m.lineupImpact.awaySquadStrength, homeMissingStar: Boolean(m.lineupImpact.homeMissingStar), awayMissingStar: Boolean(m.lineupImpact.awayMissingStar), applied: Boolean(m.lineupAdjusted) }
-            : null
+            ? {
+                status: m.lineupImpact.status,
+                homeSquadStrength: m.lineupImpact.homeSquadStrength,
+                awaySquadStrength: m.lineupImpact.awaySquadStrength,
+                homeMissingStar: Boolean(m.lineupImpact.homeMissingStar),
+                awayMissingStar: Boolean(m.lineupImpact.awayMissingStar),
+                applied: Boolean(m.lineupAdjusted),
+                // applied only says the lineup code ran. With a projected XI it typically runs with
+                // both squads at full strength and no absentees, which moves nothing — so the two
+                // flags below record whether there was any real team news behind it.
+                confirmed: ['CONFIRMED', 'OFFICIAL', 'FINAL'].includes(String(m.lineupImpact.status || '').toUpperCase()),
+                movedTheModel: Boolean(m.lineupImpact.hasImpact)
+              }
+            : null,
+          // Referee is recorded for the future record only; it does not feed the model, because we
+          // have no referee data to fit an effect from.
+          referee: m.referee ? { appointed: m.referee, feedsModel: false } : null
         },
+        // The de-vigged bookmaker view at snapshot time, and whether we actually disagreed with it.
+        // Without this the ledger cannot tell a genuine edge from a restatement of the price: in
+        // backtesting the displayed pick matched the bookmaker's favourite on 96% of fixtures, and on
+        // every single pick at 60%+ confidence.
+        market: this.buildMarketComparison(m),
         modelVersion: { temperature: this.hyperparameters.temperature, maxScorelineSim: this.hyperparameters.maxScorelineSim },
         isHit: null,       // resolved once FT — prediction fields are NEVER changed
         resolvedAt: null
@@ -3254,6 +3331,50 @@ class SoccerEngine {
   }
 
   // Forward (genuinely out-of-sample) track record of frozen pre-kickoff predictions.
+  // De-vig the snapshot odds and record how our pick stood against the price. Returns null when no
+  // odds were available, which is itself worth knowing: cups and internationals usually have none.
+  buildMarketComparison(m) {
+    const o = m?.odds;
+    const h = Number(o?.homeOdds ?? o?.home);
+    const d = Number(o?.drawOdds ?? o?.draw);
+    const a = Number(o?.awayOdds ?? o?.away);
+    if (!(h > 1 && d > 1 && a > 1)) return null;
+
+    const inv = [1 / h, 1 / d, 1 / a];
+    const overround = inv[0] + inv[1] + inv[2];
+    const implied = inv.map(x => (x / overround) * 100);
+    const marketFav = implied[0] >= implied[2] ? 'HOME' : 'AWAY';
+    const marketPick = ['HOME', 'DRAW', 'AWAY'][implied.indexOf(Math.max(...implied))];
+
+    const ourPick = String(m.predictedWinner?.pick || m.predictedWinner || '').toUpperCase()
+      .replace(/^1$/, 'HOME').replace(/^2$/, 'AWAY').replace(/^X$/, 'DRAW');
+    const ourProbs = {
+      HOME: parseFloat(m.prob?.home) || 0,
+      DRAW: parseFloat(m.prob?.draw) || 0,
+      AWAY: parseFloat(m.prob?.away) || 0
+    };
+    const impliedByOutcome = { HOME: implied[0], DRAW: implied[1], AWAY: implied[2] };
+
+    return {
+      provider: o.provider || null,
+      priceTaken: { home: h, draw: d, away: a },
+      overround: parseFloat(((overround - 1) * 100).toFixed(2)),
+      impliedProb: {
+        home: parseFloat(implied[0].toFixed(1)),
+        draw: parseFloat(implied[1].toFixed(1)),
+        away: parseFloat(implied[2].toFixed(1))
+      },
+      marketPick,
+      marketFavourite: marketFav,
+      ourPick: ourPick || null,
+      agreesWithMarket: ourPick ? ourPick === marketPick : null,
+      // How far our probability for our own pick sits above the price's. Positive means we think the
+      // market is wrong; historically that is where the model has lost ground, so it is the number
+      // to watch rather than the raw hit rate.
+      edgePoints: ourPick ? parseFloat((ourProbs[ourPick] - impliedByOutcome[ourPick]).toFixed(1)) : null
+    };
+  }
+
   getPreKickoffLedgerSummary() {
     const entries = this.getPreKickoffLedger();
     const resolved = entries.filter(e => e.isHit === true || e.isHit === false);
@@ -3263,6 +3384,26 @@ class SoccerEngine {
       const hits = list.filter(e => e.isHit).length;
       return { count: list.length, hits, hitRate: list.length ? parseFloat((hits / list.length * 100).toFixed(1)) : null };
     };
+    // Head-to-head against the price, on the entries where both were graded. This is the only part
+    // of the summary that can show an edge: the hit-rate figures above are dominated by double
+    // chance and DNB, which land about 78% of the time at prices that need 75-83% to break even.
+    const graded1X2 = entries.filter(e => typeof e.hit1X2 === 'boolean' && typeof e.marketHit1X2 === 'boolean');
+    const disagreed = graded1X2.filter(e => e.market?.agreesWithMarket === false);
+    const h2h = {
+      comparableEntries: graded1X2.length,
+      our1X2HitRate: graded1X2.length ? parseFloat((graded1X2.filter(e => e.hit1X2).length / graded1X2.length * 100).toFixed(1)) : null,
+      bookmaker1X2HitRate: graded1X2.length ? parseFloat((graded1X2.filter(e => e.marketHit1X2).length / graded1X2.length * 100).toFixed(1)) : null,
+      weAgreedWithThePrice: graded1X2.length ? parseFloat((graded1X2.filter(e => e.market?.agreesWithMarket).length / graded1X2.length * 100).toFixed(1)) : null,
+      onDisagreements: {
+        count: disagreed.length,
+        weWereRight: disagreed.length ? parseFloat((disagreed.filter(e => e.hit1X2).length / disagreed.length * 100).toFixed(1)) : null,
+        bookmakerWasRight: disagreed.length ? parseFloat((disagreed.filter(e => e.marketHit1X2).length / disagreed.length * 100).toFixed(1)) : null
+      }
+    };
+    h2h.gapPoints = (h2h.our1X2HitRate !== null && h2h.bookmaker1X2HitRate !== null)
+      ? parseFloat((h2h.our1X2HitRate - h2h.bookmaker1X2HitRate).toFixed(1))
+      : null;
+
     return {
       snapshots: entries.length,
       pending: entries.length - resolved.length,
@@ -3271,7 +3412,14 @@ class SoccerEngine {
       confident60: rate(resolved.filter(e => !isPass(e) && favProb(e) >= 60)),
       withOdds: rate(resolved.filter(e => e.inputs?.odds)),
       withoutOdds: rate(resolved.filter(e => !e.inputs?.odds)),
-      withLineup: rate(resolved.filter(e => e.inputs?.lineup?.applied))
+      // A confirmed XI is the only lineup state that carries information; a projected one usually
+      // runs with both squads at full strength, so it is counted separately.
+      withConfirmedLineup: rate(resolved.filter(e => e.inputs?.lineup?.confirmed)),
+      withLineupThatMovedTheModel: rate(resolved.filter(e => e.inputs?.lineup?.movedTheModel)),
+      versusBookmaker: h2h,
+      caveat: graded1X2.length < 200
+        ? `Only ${graded1X2.length} entries can be compared with a price. At a ~78% baseline it takes several hundred before a few points of difference means anything — treat everything above as provisional.`
+        : null
     };
   }
 
@@ -4528,6 +4676,105 @@ class SoccerEngine {
     });
   }
 
+  // Fit attack/defence jointly across the loaded corpus and write the result into teamDb.
+  // Replaces per-team raw goals-per-game, which rewarded an easy schedule and had no way to tell a
+  // good attack from a weak set of opponents.
+  applyFittedTeamStrengths(options = {}) {
+    try {
+      const corpus = options.corpus || this.historicalMatches || [];
+      if (corpus.length < 200) {
+        this.log('TrainingEngine', `Skipped strength fit: only ${corpus.length} matches loaded (need 200+).`);
+        return null;
+      }
+
+      // Mean attack*defence under the pre-fit ratings, so the fit can be rescaled to the same
+      // lambda/mu range and the conviction/entropy thresholds stay valid.
+      // Captured once, from the pre-fit ratings. Re-deriving it on a refit would measure the
+      // previous fit instead, letting the scale drift a little further with every call.
+      if (this._strengthReferenceMean === undefined) {
+        let refSum = 0, refN = 0;
+        for (const name of Object.keys(this.teamDb)) {
+          const t = this.teamDb[name];
+          if (typeof t?.attack === 'number' && typeof t?.defense === 'number') { refSum += t.attack * t.defense; refN++; }
+        }
+        this._strengthReferenceMean = refN ? refSum / refN : null;
+      }
+      const referenceMean = this._strengthReferenceMean;
+
+      const fit = fitTeamStrengths(corpus, {
+        halfLifeDays: this.hyperparameters?.strengthHalfLifeDays ?? 240,
+        priorGames: this.hyperparameters?.strengthPriorGames ?? 8,
+        ...options
+      });
+      if (!fit.meta.fitted) return null;
+      if (referenceMean) matchScale(fit, referenceMean);
+
+      let applied = 0;
+      for (const [name, s] of Object.entries(fit.teams)) {
+        const stripped = stripDiacritics(name);
+        const key = this.teamDb[name] ? name : (this.teamDb[stripped] ? stripped : name);
+        const existing = this.teamDb[key] || {};
+        this.teamDb[key] = {
+          ...existing,
+          attack: s.attack,
+          defense: s.defense,
+          // xGForm previously tracked attack; keep that relationship rather than inventing a second
+          // signal, since we have no shot-level data to build a real xG form from.
+          xGForm: parseFloat((s.attack * 0.95).toFixed(2)),
+          elo: existing.elo ?? 1500,
+          lineHeight: existing.lineHeight ?? 5,
+          counterVelocity: existing.counterVelocity ?? 5,
+          starDependency: existing.starDependency ?? 5,
+          strengthFit: { games: s.games, weightedGames: s.weightedGames, goalsFor: s.goalsFor, goalsAgainst: s.goalsAgainst }
+        };
+        applied++;
+      }
+
+      if (!options.corpus) {
+        this.fittedStrengths = fit;
+        this.fittedLeagueBaselines = fit.leagues;
+      }
+      this.log('TrainingEngine', `Fitted opponent-adjusted strengths for ${applied} teams from ${fit.meta.matches} matches (half-life ${fit.meta.halfLifeDays}d, prior ${fit.meta.priorGames} games, converged=${fit.meta.converged}).`);
+      return fit;
+    } catch (e) {
+      this.log('TrainingEngine', `Strength fit failed, keeping previous ratings: ${e.message}`);
+      return null;
+    }
+  }
+
+  // Load the probability calibration map fitted by scripts/fit-calibration.mjs.
+  //
+  // Fitting deliberately does NOT happen here. A map fitted in-process would be built from
+  // predictions made by an engine whose head-to-head index, league profiles and predictability
+  // metrics were all derived from the full corpus, including the very fixtures being predicted.
+  // That leakage makes the model look sharper than it is, and the resulting map then inflates live
+  // probabilities to match (in testing it stretched a raw 63.6% to 82.1%). The offline script gets
+  // a clean split by loading a whole engine on earlier fixtures only, so the map reflects genuine
+  // out-of-sample behaviour.
+  loadProbabilityCalibration() {
+    try {
+      const filePath = path.join(process.cwd(), 'data', 'calibration.json');
+      if (!fs.existsSync(filePath)) {
+        this.probabilityCalibration = { points: [], meta: { fitted: false, reason: 'data/calibration.json not present — run npm run calibration:fit' } };
+        this.log('TrainingEngine', 'No calibration map found; probabilities are served raw. Run: npm run calibration:fit');
+        return this.probabilityCalibration;
+      }
+      const loaded = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      if (!Array.isArray(loaded?.points) || loaded.points.length < 2) {
+        this.probabilityCalibration = { points: [], meta: { fitted: false, reason: 'calibration file has too few points' } };
+        return this.probabilityCalibration;
+      }
+      this.probabilityCalibration = loaded;
+      const m = loaded.meta || {};
+      this.log('TrainingEngine', `Loaded probability calibration: ${loaded.points.length} points from ${m.samples ?? '?'} out-of-sample outcomes, fitted ${m.fittedAt || 'unknown'} through ${m.fitWindowEnd || 'unknown'}.`);
+      return this.probabilityCalibration;
+    } catch (e) {
+      this.log('TrainingEngine', `Could not load calibration map, serving raw probabilities: ${e.message}`);
+      this.probabilityCalibration = { points: [], meta: { fitted: false, reason: e.message } };
+      return this.probabilityCalibration;
+    }
+  }
+
   loadTrainingDataFromDisk() {
     try {
       const filePath = path.join(process.cwd(), 'training_data.json');
@@ -4740,6 +4987,16 @@ class SoccerEngine {
           }
         }
       });
+
+      // 2b. Replace the raw goals-per-game ratings above with an opponent-adjusted fit.
+      // Fitting from this.historicalMatches (not the full file) is deliberate: a backtest that
+      // loads a restricted corpus gets strengths fitted only on that corpus, so the evaluation
+      // cannot leak the fixtures it is about to score.
+      this.applyFittedTeamStrengths();
+
+      // 2c. Load the map from stated probability to observed strike rate, so displayed confidence
+      // is something you can stake against.
+      this.loadProbabilityCalibration();
 
       // 3. Pre-populate this.trainingSet with an active corpus of historical matches
       if (this.trainingSet.length === 0) {
@@ -10259,71 +10516,54 @@ Output format: {"home": 45.5, "draw": 25.5, "away": 29.0, "reason": "Home team r
       } catch (_) {}
     }
     const r = this.cached20kBacktestResults;
-    if (r && r.totalRecords) {
+
+    // Nothing measured means nothing to show. This used to fall back to a hardcoded 56.85% raw /
+    // 72.08% high conviction / 82.32% holdout, so the panel displayed confident figures even with
+    // no backtest on disk, and those constants outlived the model they were once measured from.
+    if (!r || !r.totalRecords) {
       return {
-        sampleSize: r.totalRecords,
-        rawBaselineAccuracy: r.fullCorpus?.raw1X2Accuracy || 56.85,
-        rawHits: r.fullCorpus?.rawHits || 13334,
-        totalEvaluated: r.totalRecords || 23453,
-        selectiveHighConvictionAccuracy: r.fullCorpus?.highConviction?.accuracy || 72.08,
-        selectiveHighConvictionHits: r.fullCorpus?.highConviction?.hits || 5728,
-        selectiveHighConvictionCount: r.fullCorpus?.highConviction?.count || 7947,
-        selectiveEliteConvictionAccuracy: r.fullCorpus?.eliteConviction?.accuracy || 76.32,
-        selectiveEliteConvictionHits: r.fullCorpus?.eliteConviction?.hits || 3839,
-        selectiveEliteConvictionCount: r.fullCorpus?.eliteConviction?.count || 5030,
-        drawNoBetStrikeRate: r.fullCorpus?.drawNoBet?.strikeRateExclPush || 75.34,
-        drawNoBetWon: r.fullCorpus?.drawNoBet?.won || 13312,
-        drawNoBetPush: r.fullCorpus?.drawNoBet?.push || 5784,
-        drawNoBetLost: r.fullCorpus?.drawNoBet?.lost || 4357,
-        drawNoBetCapitalProtection: r.fullCorpus?.drawNoBet?.capitalProtection || 81.42,
-        doubleChanceWinRate: r.fullCorpus?.doubleChance?.winRate || 81.42,
-        holdoutTestSet: r.holdoutTestSet || {
-          sampleSize: 4691,
-          rawAccuracy: 58.64,
-          highConvictionAccuracy: 77.08,
-          eliteConvictionAccuracy: 82.32,
-          dnbStrikeRate: 77.22,
-          doubleChanceWinRate: 82.75
-        },
-        draws: r.draws || { total: 5784, percentage: 24.66 },
-        prunedNoiseMatches: r.fullCorpus?.cleanLeaguesPruned?.prunedNoiseMatches || 3179,
-        prunedNoiseFixturesRatio: `${(r.fullCorpus?.cleanLeaguesPruned?.prunedNoiseMatches || 3179).toLocaleString()} erratic lower-tier noise fixtures pruned`,
-        elapsedSeconds: r.elapsedSeconds || '3.44',
-        timestamp: r.timestamp || new Date().toISOString(),
-        description: `Comprehensive empirical backtest across ${r.totalRecords.toLocaleString()} historical match records (2021–2026) demonstrating that selective conviction and DNB market routing elevate strike rate from 56.8% to 77%–83%.`
+        available: false,
+        reason: 'No backtest on disk. Run: npm run backtest:honest',
+        sampleSize: 0
       };
     }
 
+    // scripts/honest-backtest.mjs writes these keys at the top level, measured out of sample.
+    // Files written by the older in-process routine kept them under fullCorpus and were in-sample;
+    // they are read here so an old file still renders, but flagged so the panel can say so.
+    const inSample = !r.generatedBy && Boolean(r.fullCorpus);
+    const pick = (top, legacy) => (top !== undefined && top !== null ? top : legacy);
+
     return {
-      sampleSize: 23453,
-      rawBaselineAccuracy: 56.85,
-      rawHits: 13334,
-      totalEvaluated: 23453,
-      selectiveHighConvictionAccuracy: 72.08,
-      selectiveHighConvictionHits: 5728,
-      selectiveHighConvictionCount: 7947,
-      selectiveEliteConvictionAccuracy: 76.32,
-      selectiveEliteConvictionHits: 3839,
-      selectiveEliteConvictionCount: 5030,
-      drawNoBetStrikeRate: 75.34,
-      drawNoBetWon: 13312,
-      drawNoBetPush: 5784,
-      drawNoBetLost: 4357,
-      drawNoBetCapitalProtection: 81.42,
-      doubleChanceWinRate: 81.42,
-      holdoutTestSet: {
-        sampleSize: 4691,
-        rawAccuracy: 58.64,
-        highConvictionAccuracy: 77.08,
-        eliteConvictionAccuracy: 82.32,
-        dnbStrikeRate: 77.22,
-        doubleChanceWinRate: 82.75
-      },
-      draws: { total: 5784, percentage: 24.66 },
-      prunedNoiseMatches: 3179,
-      prunedNoiseFixturesRatio: '3,179 erratic lower-tier noise fixtures pruned',
-      elapsedSeconds: '3.44',
-      description: 'Comprehensive empirical backtest across 23,453 historical match records (2021–2026) demonstrating that selective conviction and DNB market routing elevate strike rate from 56.8% to 77%–83%.'
+      available: true,
+      inSample,
+      measuredOutOfSample: !inSample,
+      method: r.method || (inSample ? { summary: 'Legacy file: scored on the same fixtures it was trained on.' } : null),
+      generatedAt: r.generatedAt || null,
+      bookmakerBaseline: r.bookmakerBaseline || null,
+      sampleSize: r.totalRecords,
+      rawBaselineAccuracy: pick(r.rawBaselineAccuracy, r.fullCorpus?.raw1X2Accuracy),
+      rawHits: pick(r.rawHits, r.fullCorpus?.rawHits),
+      totalEvaluated: pick(r.totalEvaluated, r.totalRecords),
+      selectiveHighConvictionAccuracy: pick(r.selectiveHighConvictionAccuracy, r.fullCorpus?.highConviction?.accuracy),
+      selectiveHighConvictionHits: pick(r.selectiveHighConvictionHits, r.fullCorpus?.highConviction?.hits),
+      selectiveHighConvictionCount: pick(r.selectiveHighConvictionCount, r.fullCorpus?.highConviction?.count),
+      selectiveEliteConvictionAccuracy: pick(r.selectiveEliteConvictionAccuracy, r.fullCorpus?.eliteConviction?.accuracy),
+      selectiveEliteConvictionHits: pick(r.selectiveEliteConvictionHits, r.fullCorpus?.eliteConviction?.hits),
+      selectiveEliteConvictionCount: pick(r.selectiveEliteConvictionCount, r.fullCorpus?.eliteConviction?.count),
+      drawNoBetStrikeRate: pick(r.drawNoBetStrikeRate, r.fullCorpus?.drawNoBet?.strikeRateExclPush),
+      drawNoBetWon: pick(r.drawNoBetWon, r.fullCorpus?.drawNoBet?.won),
+      drawNoBetPush: pick(r.drawNoBetPush, r.fullCorpus?.drawNoBet?.push),
+      drawNoBetLost: pick(r.drawNoBetLost, r.fullCorpus?.drawNoBet?.lost),
+      drawNoBetCapitalProtection: pick(r.drawNoBetCapitalProtection, r.fullCorpus?.drawNoBet?.capitalProtection),
+      doubleChanceWinRate: pick(r.doubleChanceWinRate, r.fullCorpus?.doubleChance?.winRate),
+      holdoutTestSet: r.holdoutTestSet || null,
+      draws: r.draws || null,
+      accuracyTrend: Array.isArray(r.accuracyTrend) ? r.accuracyTrend : [],
+      brier: r.holdout?.brier ?? null,
+      elapsedSeconds: r.elapsedSeconds || null,
+      timestamp: r.generatedAt || r.timestamp || null,
+      description: r.description || null
     };
   }
 

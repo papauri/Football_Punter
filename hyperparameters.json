@@ -1,5 +1,5 @@
 {
-  "homeAdvantage": 1.1560951433980167,
+  "homeAdvantage": 1.2969359387468389,
   "homeEloBoost": 65,
   "entropyFloorThreshold": 52,
   "paritySafetyThreshold": 70,
@@ -10,15 +10,15 @@
   "homeGoalIntensity": 1.26,
   "awayGoalIntensity": 1.08,
   "goalOverdispersionR": 4.5,
-  "dixonColesRho": -0.174,
+  "dixonColesRho": -0.13,
   "temperature": 1.3,
   "maxScorelineSim": 10,
   "drawEquilibriumDelta": 13,
-  "h2hWeight": 0.16,
+  "h2hWeight": 0.08,
   "timeDecayXi": 0.007,
   "formWindowGames": 6,
-  "formDeltaWeight": 0.12,
-  "eloRatio": 0.5,
+  "formDeltaWeight": 0.06,
+  "eloRatio": 0.75,
   "dnbDrawThreshold": 24,
   "disabledLeagues": [
     "Chilean Primera División",
@@ -43,5 +43,8 @@
     "Czech First League",
     "Hungarian NB I",
     "Israeli Premier League"
-  ]
+  ],
+  "strengthHalfLifeDays": 730,
+  "strengthPriorGames": 12,
+  "noPriceEntropySurcharge": 6.0
 }

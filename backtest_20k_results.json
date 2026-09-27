@@ -1,69 +1,231 @@
 {
-  "totalRecords": 23453,
-  "elapsedSeconds": "3.44",
-  "draws": {
-    "total": 5784,
-    "percentage": 24.66
+  "generatedAt": "2026-09-27T09:42:45.186Z",
+  "generatedBy": "scripts/honest-backtest.mjs",
+  "method": {
+    "summary": "Engine trained on the oldest fixtures only, then scored fixtures it had never seen.",
+    "corpusMatches": 23455,
+    "trainMatches": 14455,
+    "holdoutMatches": 9000,
+    "trainRange": [
+      "2021-04-24T19:00Z",
+      "2025-04-17T19:00Z"
+    ],
+    "holdoutRange": [
+      "2025-04-18T00:30Z",
+      "2026-09-25"
+    ],
+    "oddsSuppliedToModel": false,
+    "calibrationFittedThrough": "2025-04-17T19:00:00.000Z",
+    "caveats": [
+      "Every figure below is out of sample for team strengths and for the calibration map.",
+      "Head-to-head records and league profiles are indexed from the loaded training corpus only.",
+      "Hit rate alone does not show an edge: double chance and DNB need roughly 75-83% to break even at typical prices. Read the bookmakerBaseline block."
+    ]
   },
-  "fullCorpus": {
-    "raw1X2Accuracy": 56.85,
-    "rawHits": 13334,
-    "totalEvaluated": 23453,
+  "elapsedSeconds": "15.42",
+  "totalRecords": 9000,
+  "draws": {
+    "total": 2176,
+    "percentage": 24.18
+  },
+  "holdout": {
+    "sampleSize": 9000,
+    "rawAccuracy": 49.06,
+    "rawHits": 4415,
+    "brier": 0.2052,
     "highConviction": {
       "threshold": ">=65%",
-      "accuracy": 72.08,
-      "hits": 5728,
-      "count": 7947
+      "count": 630,
+      "hits": 467,
+      "accuracy": 74.13
     },
     "eliteConviction": {
       "threshold": ">=72%",
-      "accuracy": 76.32,
-      "hits": 3839,
-      "count": 5030
+      "count": 304,
+      "hits": 241,
+      "accuracy": 79.28
     },
     "drawNoBet": {
-      "strikeRateExclPush": 75.34,
-      "won": 13312,
-      "push": 5784,
-      "lost": 4357,
-      "capitalProtection": 81.42
+      "won": 4416,
+      "push": 2176,
+      "lost": 2408,
+      "strikeRateExclPush": 64.71
     },
     "doubleChance": {
-      "winRate": 81.42,
-      "won": 19096,
-      "lost": 4357,
-      "count": 23453
-    },
-    "cleanLeaguesPruned": {
-      "accuracy": 56.85,
-      "cleanMatches": 23453,
-      "prunedNoiseMatches": 0
+      "won": 6592,
+      "lost": 2408,
+      "winRate": 73.24
     }
   },
-  "holdoutTestSet": {
-    "sampleSize": 4691,
-    "rawAccuracy": 58.64,
-    "highConvictionAccuracy": 77.08,
-    "eliteConvictionAccuracy": 82.32,
-    "dnbStrikeRate": 77.22,
-    "doubleChanceWinRate": 82.75
+  "holdoutAppAllowedLeagues": {
+    "sampleSize": 5538,
+    "rawAccuracy": 51.14,
+    "rawHits": 2832,
+    "brier": 0.2005,
+    "highConviction": {
+      "threshold": ">=65%",
+      "count": 568,
+      "hits": 422,
+      "accuracy": 74.3
+    },
+    "eliteConviction": {
+      "threshold": ">=72%",
+      "count": 277,
+      "hits": 219,
+      "accuracy": 79.06
+    },
+    "drawNoBet": {
+      "won": 2833,
+      "push": 1291,
+      "lost": 1414,
+      "strikeRateExclPush": 66.71
+    },
+    "doubleChance": {
+      "won": 4124,
+      "lost": 1414,
+      "winRate": 74.47
+    }
+  },
+  "bookmakerBaseline": {
+    "comparableFixtures": 7186,
+    "model1X2": 48.75,
+    "bookmaker1X2": 52.32,
+    "gap1X2": -3.57,
+    "modelDoubleChance": 74.02,
+    "bookmakerDoubleChance": 77.6,
+    "modelBrier": 0.2056,
+    "bookmakerBrier": 0.1955,
+    "note": "Closing odds from football-data.co.uk, vig removed. Domestic leagues only: no cup or international competition has odds coverage."
   },
   "accuracyTrend": [
-    { "cohort": 1, "period": "2021 Q3", "sampleRange": "1 - 1,465", "matches": 1465, "raw1X2": 55.1, "highConviction": 69.4, "eliteConviction": 73.8, "doubleChance": 79.2, "dnbStrikeRate": 73.6, "capitalProtection": 79.5 },
-    { "cohort": 2, "period": "2021 Q4", "sampleRange": "1,466 - 2,931", "matches": 1466, "raw1X2": 55.8, "highConviction": 70.1, "eliteConviction": 74.2, "doubleChance": 79.8, "dnbStrikeRate": 74.1, "capitalProtection": 80.1 },
-    { "cohort": 3, "period": "2022 Q1", "sampleRange": "2,932 - 4,397", "matches": 1466, "raw1X2": 56.2, "highConviction": 70.6, "eliteConviction": 74.9, "doubleChance": 80.4, "dnbStrikeRate": 74.5, "capitalProtection": 80.6 },
-    { "cohort": 4, "period": "2022 Q2", "sampleRange": "4,398 - 5,863", "matches": 1466, "raw1X2": 56.0, "highConviction": 71.0, "eliteConviction": 75.1, "doubleChance": 80.6, "dnbStrikeRate": 74.8, "capitalProtection": 80.8 },
-    { "cohort": 5, "period": "2022 Q3", "sampleRange": "5,864 - 7,329", "matches": 1466, "raw1X2": 56.5, "highConviction": 71.4, "eliteConviction": 75.6, "doubleChance": 81.0, "dnbStrikeRate": 75.0, "capitalProtection": 81.2 },
-    { "cohort": 6, "period": "2022 Q4", "sampleRange": "7,330 - 8,795", "matches": 1466, "raw1X2": 56.4, "highConviction": 71.6, "eliteConviction": 75.8, "doubleChance": 81.1, "dnbStrikeRate": 75.1, "capitalProtection": 81.2 },
-    { "cohort": 7, "period": "2023 Q1", "sampleRange": "8,796 - 10,261", "matches": 1466, "raw1X2": 56.7, "highConviction": 71.9, "eliteConviction": 76.1, "doubleChance": 81.3, "dnbStrikeRate": 75.3, "capitalProtection": 81.4 },
-    { "cohort": 8, "period": "2023 Q2", "sampleRange": "10,262 - 11,727", "matches": 1466, "raw1X2": 56.8, "highConviction": 72.1, "eliteConviction": 76.2, "doubleChance": 81.4, "dnbStrikeRate": 75.3, "capitalProtection": 81.5 },
-    { "cohort": 9, "period": "2023 Q3", "sampleRange": "11,728 - 13,193", "matches": 1466, "raw1X2": 56.9, "highConviction": 72.3, "eliteConviction": 76.4, "doubleChance": 81.5, "dnbStrikeRate": 75.4, "capitalProtection": 81.6 },
-    { "cohort": 10, "period": "2023 Q4", "sampleRange": "13,194 - 14,659", "matches": 1466, "raw1X2": 57.1, "highConviction": 72.6, "eliteConviction": 76.8, "doubleChance": 81.7, "dnbStrikeRate": 75.6, "capitalProtection": 81.8 },
-    { "cohort": 11, "period": "2024 Q1", "sampleRange": "14,660 - 16,125", "matches": 1466, "raw1X2": 57.3, "highConviction": 72.9, "eliteConviction": 77.1, "doubleChance": 81.9, "dnbStrikeRate": 75.8, "capitalProtection": 82.0 },
-    { "cohort": 12, "period": "2024 Q2", "sampleRange": "16,126 - 17,591", "matches": 1466, "raw1X2": 57.5, "highConviction": 73.2, "eliteConviction": 77.4, "doubleChance": 82.1, "dnbStrikeRate": 76.1, "capitalProtection": 82.2 },
-    { "cohort": 13, "period": "2024 Q3", "sampleRange": "17,592 - 19,057", "matches": 1466, "raw1X2": 57.9, "highConviction": 74.0, "eliteConviction": 78.5, "doubleChance": 82.3, "dnbStrikeRate": 76.5, "capitalProtection": 82.5 },
-    { "cohort": 14, "period": "2024 Q4", "sampleRange": "19,058 - 20,523", "matches": 1466, "raw1X2": 58.2, "highConviction": 75.4, "eliteConviction": 80.1, "doubleChance": 82.5, "dnbStrikeRate": 76.8, "capitalProtection": 82.6 },
-    { "cohort": 15, "period": "2025 Q1-Q2", "sampleRange": "20,524 - 21,989", "matches": 1466, "raw1X2": 58.4, "highConviction": 76.3, "eliteConviction": 81.4, "doubleChance": 82.6, "dnbStrikeRate": 77.0, "capitalProtection": 82.7 },
-    { "cohort": 16, "period": "2025 Q3-2026", "sampleRange": "21,990 - 23,453", "matches": 1464, "raw1X2": 58.7, "highConviction": 77.2, "eliteConviction": 82.5, "doubleChance": 82.9, "dnbStrikeRate": 77.4, "capitalProtection": 83.2 }
-  ]
+    {
+      "cohort": 1,
+      "period": "2025-04 .. 2025-08",
+      "matches": 1125,
+      "raw1X2": 49.6,
+      "highConviction": 76.62,
+      "highConvictionSample": 77,
+      "eliteConviction": 78.05,
+      "eliteConvictionSample": 41,
+      "doubleChance": 73.16,
+      "dnbStrikeRate": 64.88,
+      "bookmaker1X2": 54.27
+    },
+    {
+      "cohort": 2,
+      "period": "2025-08 .. 2025-09",
+      "matches": 1125,
+      "raw1X2": 48.18,
+      "highConviction": 79.21,
+      "highConvictionSample": 101,
+      "eliteConviction": 76.47,
+      "eliteConvictionSample": 51,
+      "doubleChance": 73.69,
+      "dnbStrikeRate": 64.68,
+      "bookmaker1X2": 50.56
+    },
+    {
+      "cohort": 3,
+      "period": "2025-10 .. 2025-11",
+      "matches": 1125,
+      "raw1X2": 50.67,
+      "highConviction": 71.88,
+      "highConvictionSample": 64,
+      "eliteConviction": 79.31,
+      "eliteConvictionSample": 29,
+      "doubleChance": 73.87,
+      "dnbStrikeRate": 65.97,
+      "bookmaker1X2": 53.05
+    },
+    {
+      "cohort": 4,
+      "period": "2025-11 .. 2026-01",
+      "matches": 1125,
+      "raw1X2": 49.69,
+      "highConviction": 73.27,
+      "highConvictionSample": 101,
+      "eliteConviction": 78.26,
+      "eliteConvictionSample": 46,
+      "doubleChance": 73.78,
+      "dnbStrikeRate": 65.46,
+      "bookmaker1X2": 51.29
+    },
+    {
+      "cohort": 5,
+      "period": "2026-01 .. 2026-03",
+      "matches": 1125,
+      "raw1X2": 50.93,
+      "highConviction": 77.55,
+      "highConvictionSample": 98,
+      "eliteConviction": 85.71,
+      "eliteConvictionSample": 42,
+      "doubleChance": 74.67,
+      "dnbStrikeRate": 66.78,
+      "bookmaker1X2": 53.86
+    },
+    {
+      "cohort": 6,
+      "period": "2026-03 .. 2026-04",
+      "matches": 1125,
+      "raw1X2": 47.91,
+      "highConviction": 71.88,
+      "highConvictionSample": 64,
+      "eliteConviction": 82.35,
+      "eliteConvictionSample": 34,
+      "doubleChance": 73.42,
+      "dnbStrikeRate": 64.32,
+      "bookmaker1X2": 52.77
+    },
+    {
+      "cohort": 7,
+      "period": "2026-04 .. 2026-08",
+      "matches": 1125,
+      "raw1X2": 45.78,
+      "highConviction": 66.04,
+      "highConvictionSample": 53,
+      "eliteConviction": 81.82,
+      "eliteConvictionSample": 22,
+      "doubleChance": 70.76,
+      "dnbStrikeRate": 61.07,
+      "bookmaker1X2": 51.04
+    },
+    {
+      "cohort": 8,
+      "period": "2026-08 .. 2026-09",
+      "matches": 1125,
+      "raw1X2": 49.69,
+      "highConviction": 70.83,
+      "highConvictionSample": 72,
+      "eliteConviction": 74.36,
+      "eliteConvictionSample": 39,
+      "doubleChance": 72.62,
+      "dnbStrikeRate": 64.48,
+      "bookmaker1X2": 51.36
+    }
+  ],
+  "sampleSize": 9000,
+  "rawBaselineAccuracy": 49.06,
+  "rawHits": 4415,
+  "totalEvaluated": 9000,
+  "selectiveHighConvictionAccuracy": 74.13,
+  "selectiveHighConvictionHits": 467,
+  "selectiveHighConvictionCount": 630,
+  "selectiveEliteConvictionAccuracy": 79.28,
+  "selectiveEliteConvictionHits": 241,
+  "selectiveEliteConvictionCount": 304,
+  "drawNoBetStrikeRate": 64.71,
+  "drawNoBetWon": 4416,
+  "drawNoBetPush": 2176,
+  "drawNoBetLost": 2408,
+  "drawNoBetCapitalProtection": 73.24,
+  "doubleChanceWinRate": 73.24,
+  "holdoutTestSet": {
+    "sampleSize": 9000,
+    "rawAccuracy": 49.06,
+    "highConvictionAccuracy": 74.13,
+    "eliteConvictionAccuracy": 79.28,
+    "dnbStrikeRate": 64.71,
+    "doubleChanceWinRate": 73.24
+  },
+  "description": "Out-of-sample backtest on 9,000 unseen fixtures. On the 7,186 with closing odds the model picks 48.75% of 1X2 results against the bookmaker's 52.32% (gap -3.57 points)."
 }
