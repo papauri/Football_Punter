@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
 import InfoTooltip from './InfoTooltip';
+import RiskBadgeWithAiHover from './RiskBadgeWithAiHover';
 import { safeParseFloat, safeToFixed } from '../utils/numberUtils';
 import { isTrapMatch, getMatchRiskProfile, isParityLeague } from '../utils/riskUtils';
 import { formatRelativeDayTime } from '../utils/dateUtils';
@@ -1721,8 +1722,11 @@ export default function AccumulatorPage({
                               <span className="font-bold text-slate-400 font-mono text-[10px] bg-slate-100 px-1.5 py-0.5 rounded">
                                 #{leg.legNum}
                               </span>
-                              <span 
-                                title={b.title}
+                              <RiskBadgeWithAiHover
+                                riskProfile={leg.status.riskProfile}
+                                match={leg.match || { home: leg.home, away: leg.away, league: leg.league, prob: { home: leg.prob } }}
+                                pick={leg.pick}
+                                badgeText={b.label}
                                 className={`inline-block px-1.5 py-0.2 rounded text-[9.5px] font-bold ${
                                   b.type === 'danger' ? 'bg-rose-100 text-rose-800 border border-rose-200' :
                                   b.type === 'warning' ? 'bg-amber-100 text-amber-900 border border-amber-200' :
@@ -1731,9 +1735,7 @@ export default function AccumulatorPage({
                                   b.type === 'positive-ev' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' :
                                   'bg-slate-100 text-slate-600 border border-slate-200'
                                 }`}
-                              >
-                                {b.label}
-                              </span>
+                              />
                             </div>
 
                             <button
@@ -1840,8 +1842,11 @@ export default function AccumulatorPage({
 
                         {/* Status */}
                         <td className="hidden md:table-cell py-1 px-2">
-                          <span 
-                            title={b.title}
+                          <RiskBadgeWithAiHover
+                            riskProfile={leg.status.riskProfile}
+                            match={leg.match || { home: leg.home, away: leg.away, league: leg.league, prob: { home: leg.prob } }}
+                            pick={leg.pick}
+                            badgeText={b.label}
                             className={`inline-block px-1.5 py-0.2 rounded text-[10px] font-bold ${
                               b.type === 'danger' ? 'bg-rose-100 text-rose-800 border border-rose-200' :
                               b.type === 'warning' ? 'bg-amber-100 text-amber-900 border border-amber-200' :
@@ -1850,9 +1855,7 @@ export default function AccumulatorPage({
                               b.type === 'positive-ev' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' :
                               'bg-slate-100 text-slate-600 border border-slate-200'
                             }`}
-                          >
-                            {b.label}
-                          </span>
+                          />
                         </td>
 
                         {/* Selection */}

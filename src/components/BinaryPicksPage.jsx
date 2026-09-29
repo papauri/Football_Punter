@@ -33,6 +33,7 @@ import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey, formatF
 import ConfidenceGauge from './ConfidenceGauge';
 import KellyTooltip from './KellyTooltip';
 import InfoTooltip from './InfoTooltip';
+import RiskBadgeWithAiHover from './RiskBadgeWithAiHover';
 
 export default function BinaryPicksPage({
   matches = [],
@@ -773,9 +774,12 @@ export default function BinaryPicksPage({
                             <span className="text-[9.5px] text-slate-400 bg-slate-100 px-1 rounded border border-slate-200">
                               {p.league || 'Soccer'}
                             </span>
-                            <span className={`text-[9px] font-bold px-1 rounded border ${p.riskProfile.badgeClass}`} title={p.riskProfile.reason}>
-                              {p.riskProfile.badge}
-                            </span>
+                            <RiskBadgeWithAiHover
+                              riskProfile={p.riskProfile}
+                              match={p}
+                              pick={p.pickTeam}
+                              className="text-[9px] font-bold px-1 rounded border"
+                            />
                           </div>
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                             isElite ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-indigo-50 text-indigo-700 border-indigo-200'
@@ -944,9 +948,12 @@ export default function BinaryPicksPage({
                         }`}>
                           {p.market}
                         </span>
-                        <span className={`ml-1 inline-block px-1.5 py-0.5 rounded text-[9.5px] font-bold border ${p.riskProfile.badgeClass}`} title={p.riskProfile.reason}>
-                          {p.riskProfile.badge}
-                        </span>
+                        <RiskBadgeWithAiHover
+                          riskProfile={p.riskProfile}
+                          match={p}
+                          pick={p.pickTeam}
+                          className="ml-1 inline-block px-1.5 py-0.5 rounded text-[9.5px] font-bold border"
+                        />
                       </td>
 
                       {/* Bookmaker Odds */}

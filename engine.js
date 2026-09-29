@@ -8750,8 +8750,10 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
                 predictedScore: dcProbs.mostLikelyScore,
                 isHit: isCompleted && hScore !== null && aScore !== null 
                   ? (() => {
+                      if (dcProbs.smartMarket?.pick === 'PASS' || dcProbs.smartMarket?.marketType?.includes('PASS')) return null;
                       const sh = this.evaluateHit(dcProbs, hScore, aScore);
                       if (sh !== null) return sh;
+                      if (dcProbs.smartMarket?.pick?.includes('DNB') && hScore === aScore) return null;
                       const act = hScore > aScore ? 'HOME' : aScore > hScore ? 'AWAY' : 'DRAW';
                       return dcProbs.predictedWinner ? dcProbs.predictedWinner === act : null;
                     })()

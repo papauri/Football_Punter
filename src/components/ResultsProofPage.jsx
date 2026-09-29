@@ -399,9 +399,6 @@ export default function ResultsProofPage({
       const hG = m.homeScore ?? m.goals?.home;
       const aG = m.awayScore ?? m.goals?.away;
       const actualWinner = m.actualWinner || (hG != null && aG != null ? (hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW') : 'DRAW');
-      const isHit = m.isHit === true;
-      const isMiss = m.isHit === false;
-      const isPush = m.isPush || (m.isHit === null && m.smartMarket?.pick?.includes('DNB') && actualWinner === 'DRAW');
       const isPass = Boolean(
         m.isPass === true || 
         m.smartMarket?.pick === 'PASS' || 
@@ -410,10 +407,13 @@ export default function ResultsProofPage({
         m.smartMarket?.marketType?.includes('PASS') ||
         (m.isHit === null && m.smartMarket?.pick === 'PASS')
       );
+      const isHit = !isPass && m.isHit === true;
+      const isPush = !isPass && Boolean(m.isPush || (m.isHit === null && m.smartMarket?.pick?.includes('DNB') && actualWinner === 'DRAW'));
+      const isMiss = !isPass && !isPush && (m.isHit === false);
 
       if (statusFilter === 'HITS' && !isHit) return false;
       if (statusFilter === 'MISSES' && !isMiss) return false;
-      if (statusFilter === 'PUSHES' && (!isPush || isPass)) return false;
+      if (statusFilter === 'PUSHES' && !isPush) return false;
       if (statusFilter === 'PASSES' && !isPass) return false;
 
       return true;
@@ -476,20 +476,23 @@ export default function ResultsProofPage({
       const hG = m.homeScore ?? m.goals?.home;
       const aG = m.awayScore ?? m.goals?.away;
       const actualWinner = m.actualWinner || (hG != null && aG != null ? (hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW') : 'DRAW');
-      if (m.isHit === true) {
-        hits++;
-      } else if (m.isHit === false) {
-        misses++;
-      } else if (m.isPush || (m.smartMarket?.pick?.includes('DNB') && actualWinner === 'DRAW')) {
-        pushes++;
-      } else if (
+      const isPass = Boolean(
         m.isPass === true || 
         m.smartMarket?.pick === 'PASS' || 
         String(m.smartMarket?.pick || '').toUpperCase() === 'PASS' ||
         m.smartMarket?.badge?.toLowerCase().includes('pass') ||
-        m.smartMarket?.marketType?.includes('PASS')
-      ) {
+        m.smartMarket?.marketType?.includes('PASS') ||
+        (m.isHit === null && m.smartMarket?.pick === 'PASS')
+      );
+
+      if (isPass) {
         passes++;
+      } else if (m.isHit === true) {
+        hits++;
+      } else if (m.isPush || (m.smartMarket?.pick?.includes('DNB') && actualWinner === 'DRAW')) {
+        pushes++;
+      } else if (m.isHit === false) {
+        misses++;
       } else {
         // Fallback to binary pick if isHit is completely undefined
         const binaryHit = m.predictedWinner ? actualWinner === m.predictedWinner : false;
@@ -906,11 +909,11 @@ export default function ResultsProofPage({
                 const hG = m.homeScore ?? m.goals?.home;
                 const aG = m.awayScore ?? m.goals?.away;
                 const actualWinner = m.actualWinner || (hG != null && aG != null ? (hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW') : 'DRAW');
-                const isHit = m.isHit === true;
-                const isMiss = m.isHit === false;
-                const isPush = m.isPush || (m.isHit === null && m.smartMarket?.pick?.includes('DNB') && actualWinner === 'DRAW');
                 const advisory = getMatchDecisionAdvisory(m);
                 const isPass = advisory.isPass;
+                const isHit = !isPass && m.isHit === true;
+                const isPush = !isPass && Boolean(m.isPush || (m.isHit === null && m.smartMarket?.pick?.includes('DNB') && actualWinner === 'DRAW'));
+                const isMiss = !isPass && !isPush && (m.isHit === false);
                 const actualScore = formatScore(
                   m.actualScore ||
                   (hG != null && aG != null ? `${hG}-${aG}` : null) ||

@@ -5,6 +5,7 @@ import { execFile } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { engine } from './engine.js';
+import { GoogleGenAI } from '@google/genai';
 import { isLeagueBlacklisted } from './src/utils/leagueUtils.js';
 import { createServer as createViteServer } from 'vite';
 
@@ -158,18 +159,18 @@ async function startServer() {
         let isPush = m.isPush;
         let isPass = m.isPass;
 
-        if (isHit === undefined || isHit === null) {
+        if (m.isPass === true || (m.smartMarket?.pick || dcProbs.smartMarket?.pick) === 'PASS') {
+          isHit = null;
+          smartHit = null;
+          isPass = true;
+          isPush = false;
+        } else if (isHit === undefined || isHit === null) {
           const evalRes = (hG != null && aG != null) ? engine.evaluateHit(m.smartMarket ? m : dcProbs, hG, aG) : null;
           if (evalRes !== null) {
             isHit = evalRes;
             smartHit = evalRes;
             isPush = false;
             isPass = false;
-          } else if ((m.smartMarket?.pick || dcProbs.smartMarket?.pick) === 'PASS') {
-            isHit = null;
-            smartHit = null;
-            isPass = true;
-            isPush = false;
           } else if (((m.smartMarket?.pick || dcProbs.smartMarket?.pick)?.includes('DNB')) && actualWinner === 'DRAW') {
             isHit = null;
             smartHit = null;
@@ -1126,6 +1127,128 @@ app.get('/api/state', (req, res) => {
       res.json({ success: true, analysis });
     } catch (error) {
       res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Server-side Gemini AI risk explainer cache (match + tier)
+  const aiRiskExplainerCache = new Map();
+
+  app.post('/api/ai-risk-summary', async (req, res) => {
+    try {
+      const { match = {}, tierKey = 'STANDARD', badge = 'Tip', reason = '', pick = '', pickProb, drawProb, confidence } = req.body;
+      const home = match.home || 'Home Team';
+      const away = match.away || 'Away Team';
+      const league = match.league || 'League';
+      const cacheKey = `${home}_${away}_${tierKey}_${badge}`;
+
+      if (aiRiskExplainerCache.has(cacheKey)) {
+        return res.json({ success: true, ...aiRiskExplainerCache.get(cacheKey), cached: true });
+      }
+
+      // Check if Gemini API is available
+      if (process.env.GEMINI_API_KEY) {
+        try {
+          const ai = new GoogleGenAI({
+            apiKey: process.env.GEMINI_API_KEY,
+            httpOptions: {
+              headers: {
+                'User-Agent': 'aistudio-build'
+              }
+            }
+          });
+
+          const prompt = `You are a helpful sports betting advisor speaking in very simple, conversational everyday English for a beginner.
+No difficult words or complicated math.
+
+Match: ${home} vs ${away} (${league})
+Tip: ${pick || 'Match Outcome'}
+Rating Badge: "${badge}"
+Win Chance: ${pickProb ? Math.round(pickProb) + '%' : 'N/A'}
+Draw Risk: ${drawProb ? Math.round(drawProb) + '%' : 'N/A'}
+Model Confidence: ${confidence ? Math.round(confidence) + '%' : 'N/A'}
+Internal Reason: ${reason || 'Statistical model evaluation'}
+
+Please answer in JSON with two fields:
+1. "definition": 1 short, crystal-clear sentence in everyday English explaining what the "${badge}" badge means in general.
+2. "explanation": 2 short sentences in everyday English explaining specifically why THIS match (${home} vs ${away}) got the "${badge}" badge.
+
+Output ONLY valid JSON like:
+{"definition": "...", "explanation": "..."}`;
+
+          const aiResponse = await ai.models.generateContent({
+            model: 'gemini-3.8-flash',
+            contents: prompt,
+            config: {
+              responseMimeType: 'application/json'
+            }
+          });
+
+          const rawText = aiResponse.text?.trim() || '';
+          let parsed = null;
+          try {
+            parsed = JSON.parse(rawText);
+          } catch (pe) {
+            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) parsed = JSON.parse(jsonMatch[0]);
+          }
+
+          if (parsed && (parsed.definition || parsed.explanation)) {
+            const result = {
+              definition: parsed.definition || '',
+              explanation: parsed.explanation || '',
+              isAiGenerated: true
+            };
+            aiRiskExplainerCache.set(cacheKey, result);
+            return res.json({ success: true, ...result });
+          }
+        } catch (geminiErr) {
+          console.warn('[Gemini AI Risk Summary] Notice:', geminiErr.message);
+        }
+      }
+
+      // High-quality deterministic fallback in simple English
+      let fallbackDef = `This badge shows the safety level of this prediction.`;
+      const bLower = String(badge).toLowerCase();
+      if (bLower.includes('safest') || tierKey === 'ELITE') {
+        fallbackDef = `A 'Safest' bet means the computer is very confident. This team has a huge chance to win (>68%), the chance of a tie is low, and stats show this is the most reliable pick.`;
+      } else if (bLower.includes('risky') || bLower.includes('trap') || tierKey === 'TRAP') {
+        fallbackDef = `A 'Risky' bet means there is a big danger of losing. The win chance is low, there is a strong chance of a tie, or the bookmaker odds look tricky.`;
+      } else if (bLower.includes('confident') || tierKey === 'HIGH') {
+        fallbackDef = `A 'Confident' bet means the team has a solid chance to win (>60%) with low tie danger. A strong pick without taking wild risks.`;
+      } else if (bLower.includes('draw = refund') || tierKey === 'DNB') {
+        fallbackDef = `'Draw = refund' means Draw No Bet. If your team wins, you win. If it finishes in a tie, you get 100% of your bet money back.`;
+      } else if (bLower.includes('covers the draw') || tierKey === 'PROTECTED') {
+        fallbackDef = `'Covers the draw' means Double Chance (Win or Draw). You win your bet if your team wins OR if the game ends in a tie.`;
+      } else if (bLower.includes('close game') || tierKey === 'CONTESTED') {
+        fallbackDef = `A 'Close game' means both teams are evenly matched. Picking an outright winner is dangerous because either side could easily win or tie.`;
+      }
+
+      let fallbackExp = `${home} vs ${away} was evaluated by the prediction model.`;
+      if (bLower.includes('safest') || tierKey === 'ELITE') {
+        fallbackExp = `${home} has a strong ${pickProb ? Math.round(pickProb) + '%' : 'dominant'} chance to win and the chance of a tie is low (${drawProb ? Math.round(drawProb) + '%' : 'under 22%'}). Because they dominate attacking form, this game meets our strictest safety criteria.`;
+      } else if (bLower.includes('risky') || tierKey === 'TRAP') {
+        if (drawProb && drawProb >= 28) {
+          fallbackExp = `This game is flagged as Risky because the tie chance is high (${Math.round(drawProb)}%) and the favorite's win chance is only ${pickProb ? Math.round(pickProb) + '%' : 'low'}. Games with high tie rates often lead to surprise losses.`;
+        } else {
+          fallbackExp = `This game is flagged as Risky because the computer detected high uncertainty. Either the win chance is low (${pickProb ? Math.round(pickProb) + '%' : 'sub-50%'}) or the bookmaker odds disagree with the true match statistics.`;
+        }
+      } else if (bLower.includes('confident') || tierKey === 'HIGH') {
+        fallbackExp = `The model projects a solid ${pickProb ? Math.round(pickProb) + '%' : '60%+'} win likelihood with low tie risk (${drawProb ? Math.round(drawProb) + '%' : 'under 24%'}). A reliable pick for regular slips.`;
+      } else if (bLower.includes('draw = refund') || tierKey === 'DNB') {
+        fallbackExp = `The favorite has the edge, but tie danger is elevated at ${drawProb ? Math.round(drawProb) + '%' : 'above 24%'}. Draw No Bet protects your money if the match ends in a draw.`;
+      } else if (bLower.includes('close game') || tierKey === 'CONTESTED') {
+        fallbackExp = `Both teams have similar strength (${pickProb ? Math.round(pickProb) + '%' : 'near 40%'} win chance vs ${drawProb ? Math.round(drawProb) + '%' : 'high'} tie chance). Outright winner betting is not safe here.`;
+      }
+
+      const fallbackResult = {
+        definition: fallbackDef,
+        explanation: fallbackExp,
+        isAiGenerated: false
+      };
+      aiRiskExplainerCache.set(cacheKey, fallbackResult);
+      return res.json({ success: true, ...fallbackResult });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
     }
   });
 

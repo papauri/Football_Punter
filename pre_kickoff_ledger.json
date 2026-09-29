@@ -62,8 +62,16 @@
       "temperature": 1.3,
       "maxScorelineSim": 10
     },
-    "isHit": null,
-    "resolvedAt": null
+    "isHit": true,
+    "resolvedAt": "2026-09-28T10:37:39.600Z",
+    "actualScore": "2-0",
+    "actualWinner": "HOME",
+    "hit1X2": true,
+    "marketHit1X2": true,
+    "beatTheMarket": null,
+    "smartHit": true,
+    "isPush": false,
+    "isPass": false
   },
   {
     "id": "401861069",
@@ -128,8 +136,16 @@
       "temperature": 1.3,
       "maxScorelineSim": 10
     },
-    "isHit": null,
-    "resolvedAt": null
+    "isHit": true,
+    "resolvedAt": "2026-09-28T10:37:39.600Z",
+    "actualScore": "0-0",
+    "actualWinner": "DRAW",
+    "hit1X2": false,
+    "marketHit1X2": false,
+    "beatTheMarket": null,
+    "smartHit": true,
+    "isPush": false,
+    "isPass": false
   },
   {
     "id": "401861068",
@@ -194,8 +210,16 @@
       "temperature": 1.3,
       "maxScorelineSim": 10
     },
-    "isHit": null,
-    "resolvedAt": null
+    "isHit": true,
+    "resolvedAt": "2026-09-28T10:37:39.600Z",
+    "actualScore": "1-2",
+    "actualWinner": "AWAY",
+    "hit1X2": true,
+    "marketHit1X2": true,
+    "beatTheMarket": null,
+    "smartHit": true,
+    "isPush": false,
+    "isPass": false
   },
   {
     "id": "401918762",
@@ -230,8 +254,16 @@
       "temperature": 1.3,
       "maxScorelineSim": 10
     },
-    "isHit": null,
-    "resolvedAt": null
+    "isHit": false,
+    "resolvedAt": "2026-09-28T10:37:39.600Z",
+    "actualScore": "1-2",
+    "actualWinner": "AWAY",
+    "hit1X2": false,
+    "marketHit1X2": null,
+    "beatTheMarket": null,
+    "smartHit": false,
+    "isPush": false,
+    "isPass": false
   },
   {
     "id": "401918766",
@@ -266,8 +298,16 @@
       "temperature": 1.3,
       "maxScorelineSim": 10
     },
-    "isHit": null,
-    "resolvedAt": null
+    "isHit": true,
+    "resolvedAt": "2026-09-28T10:37:39.600Z",
+    "actualScore": "1-1",
+    "actualWinner": "DRAW",
+    "hit1X2": false,
+    "marketHit1X2": null,
+    "beatTheMarket": null,
+    "smartHit": true,
+    "isPush": false,
+    "isPass": false
   },
   {
     "id": "401916343",
@@ -368,8 +408,16 @@
       "temperature": 1.3,
       "maxScorelineSim": 10
     },
-    "isHit": null,
-    "resolvedAt": null
+    "isHit": true,
+    "resolvedAt": "2026-09-28T10:37:39.600Z",
+    "actualScore": "3-1",
+    "actualWinner": "HOME",
+    "hit1X2": true,
+    "marketHit1X2": true,
+    "beatTheMarket": null,
+    "smartHit": true,
+    "isPush": false,
+    "isPass": false
   },
   {
     "id": "401916344",

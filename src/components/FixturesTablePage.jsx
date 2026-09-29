@@ -50,6 +50,7 @@ import { resolveMatchOdds, resolveMatchProb, getOddsProviderLabel, calculatePote
 import ConfidenceGauge from './ConfidenceGauge';
 import KellyTooltip from './KellyTooltip';
 import InfoTooltip from './InfoTooltip';
+import RiskBadgeWithAiHover from './RiskBadgeWithAiHover';
 import MobileViewSwitcher from './MobileViewSwitcher';
 import { useMobileViewMode } from '../utils/useMobileViewMode';
 import { compactKickoff } from './MobileFold';
@@ -1843,7 +1844,12 @@ export default function FixturesTablePage({
                                       Draw = refund
                                     </span>
                                   )}
-                                  <span className={`text-[8.5px] border px-1 rounded font-bold ${riskProfile.badgeClass}`} title={riskProfile.reason}>{riskProfile.badge}</span>
+                                  <RiskBadgeWithAiHover
+                                    riskProfile={riskProfile}
+                                    match={m}
+                                    pick={slipPick}
+                                    className="text-[8.5px] border px-1 py-0.2 rounded font-bold"
+                                  />
                                   {isDerivative && <span className="text-[8.5px] bg-emerald-100 text-emerald-800 border border-emerald-300 px-1 rounded font-bold">🛡️ {m.smartMarket?.pick}</span>}
                                 </div>
                                 <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
@@ -1981,9 +1987,12 @@ export default function FixturesTablePage({
                                 Top pick
                               </span>
                             ) : (isTrap || riskProfile.riskLevel === 'LOW') ? (
-                              <span className={`inline-flex items-center text-[8.5px] font-bold px-1 py-0.2 rounded border shrink-0 ${riskProfile.badgeClass}`} title={riskProfile.reason}>
-                                {riskProfile.badge}
-                              </span>
+                              <RiskBadgeWithAiHover
+                                riskProfile={riskProfile}
+                                match={m}
+                                pick={slipPick}
+                                className="text-[8.5px] font-bold px-1 py-0.2 rounded border shrink-0"
+                              />
                             ) : isDnbAdvised ? (
                               <span className="inline-flex items-center text-[8.5px] font-bold bg-indigo-50 text-indigo-700 px-1 py-0.2 rounded border border-indigo-200 shrink-0" title="Money back if it ends in a draw">
                                 Draw = refund

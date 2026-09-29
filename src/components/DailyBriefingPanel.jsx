@@ -6,7 +6,8 @@ import { useWatchList } from '../utils/useWatchList';
 import { MobileFoldCell, FoldSummary, FoldBadge, compactKickoff } from './MobileFold';
 import { ChevronDown, ChevronUp, Plus, Check, BarChart2 } from 'lucide-react';
 import { safeParseFloat, safeToFixed } from '../utils/numberUtils';
-import { isTrapMatch, normalizePick, getSlipPick, plainPickLabel } from '../utils/riskUtils';
+import { isTrapMatch, normalizePick, getSlipPick, plainPickLabel, getMatchRiskProfile } from '../utils/riskUtils';
+import RiskBadgeWithAiHover from './RiskBadgeWithAiHover';
 import { isLeagueBlacklisted } from '../utils/leagueUtils';
 import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey, getLocalizedTodayKey } from '../utils/dateUtils';
 import { resolveMatchOdds, calculatePotentialReturn } from '../utils/oddsUtils';
@@ -291,7 +292,16 @@ export default function DailyBriefingPanel({
                           <span className={`font-semibold ${r.isPass ? 'text-slate-500' : 'text-slate-900'}`}>{r.isPass ? 'No bet · too close to call' : tip}</span>
                           {!r.isPass && <span className="font-mono text-slate-700">{Math.round(r.conf)}% · {safeToFixed(r.odds, 2)}</span>}
                         </div>
-                        {r.isRisky && !r.isPass && <div className="text-[10.5px] text-amber-700 mb-2">Risky: the model and the odds disagree on this one.</div>}
+                        {r.isRisky && !r.isPass && (
+                          <div className="mb-2">
+                            <RiskBadgeWithAiHover
+                              riskProfile={getMatchRiskProfile(m, r.pick)}
+                              match={m}
+                              pick={r.pick}
+                              className="text-[10px] font-bold text-rose-800 bg-rose-50 border border-rose-300 rounded px-1.5 py-0.5"
+                            />
+                          </div>
+                        )}
                         <div className="flex items-center gap-1.5">
                           <WatchButton matchId={m.id} />
                           {detailsButton(r)}
@@ -310,7 +320,16 @@ export default function DailyBriefingPanel({
                         <span className="text-slate-400 mx-1">v</span>
                         <span className="font-semibold text-slate-900">{m.away}</span>
                         {score && <span className="ml-2 font-mono font-bold text-rose-700">{score}</span>}
-                        {r.isRisky && !r.isPass && <span className="ml-2 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded px-1" title="The model and the odds disagree">Risky</span>}
+                        {r.isRisky && !r.isPass && (
+                          <span className="ml-2 inline-block">
+                            <RiskBadgeWithAiHover
+                              riskProfile={getMatchRiskProfile(m, r.pick)}
+                              match={m}
+                              pick={r.pick}
+                              className="text-[9.5px] font-bold text-rose-800 bg-rose-50 border border-rose-300 rounded px-1.5 py-0.2"
+                            />
+                          </span>
+                        )}
                       </td>
                       <td className="hidden md:table-cell px-2 py-1.5 text-slate-500 text-[11px] truncate max-w-[160px]">{m.league}</td>
                       <td className={`hidden md:table-cell px-2 py-1.5 font-semibold ${r.isPass ? 'text-slate-400' : 'text-slate-900'}`}>{r.isPass ? 'No bet' : tip}</td>
