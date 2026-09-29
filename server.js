@@ -152,7 +152,7 @@ async function startServer() {
               prob: m.prob,
               smartMarket: m.smartMarket
             }
-          : engine.computeDixonColesProbabilities(m.home, m.away, { league: m.league });
+          : engine.computeDixonColesProbabilities(m.home, m.away, { ignoreMarketGoals: true, league: m.league });
 
         let isHit = m.isHit;
         let smartHit = m.smartHit;

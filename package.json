@@ -24,7 +24,8 @@
     "products": "node scripts/two-products.mjs",
     "hypotheses": "node scripts/hypothesis-test.mjs",
     "goals:fit": "node scripts/fit-goals-model.mjs",
-    "stats:fit": "node scripts/fit-match-stats.mjs"
+    "stats:fit": "node scripts/fit-match-stats.mjs",
+    "goals:fit-market": "node scripts/fit-market-goals.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.19.0",

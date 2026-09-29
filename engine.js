@@ -16,6 +16,7 @@ import { SOLID_LEAGUES, BLACKLISTED_LEAGUES, isLeagueBlacklisted, isLeagueSolid,
 import { fitTeamStrengths, matchScale } from './src/model/strengthFit.js';
 import { calibrateTriple } from './src/model/calibration.js';
 import { goalsProbabilities } from './src/model/goalsModel.js';
+import { impliedGoals, fairProbs, scoreGrid, MarketMemory } from './src/model/marketGoals.js';
 import { getCurrentCoach, peekCoach } from './src/services/coaches.js';
 import { predictMatchStats, matchStatsSummary } from './src/services/matchStatsLookup.js';
 import { fairProbabilities } from './src/model/devig.js';
@@ -138,6 +139,17 @@ function factorial(n) {
 }
 
 // Helper: Standard Poisson PMF P(X = k; lambda) = (lambda^k * e^-lambda) / k!
+// Over/under prices from an ESPN odds entry: either flat overOdds/underOdds (American) or the newer
+// total.over / total.under objects. Returns the line and the margin-free chance of going over.
+function overUnderPrices(raw, toDecimal) {
+  const line = Number(raw?.overUnder ?? raw?.total?.over?.close?.line?.replace?.(/[ou]/i, '') ?? NaN);
+  const over = toDecimal(raw?.overOdds ?? raw?.total?.over?.close?.odds ?? raw?.total?.over?.open?.odds);
+  const under = toDecimal(raw?.underOdds ?? raw?.total?.under?.close?.odds ?? raw?.total?.under?.open?.odds);
+  if (!Number.isFinite(line) || !(over > 1) || !(under > 1)) return {};
+  const pOver = (1 / over) / (1 / over + 1 / under);
+  return { overOdds: over, underOdds: under, overLine: line, overProb: parseFloat((pOver * 100).toFixed(1)), ...(line === 2.5 ? { overProb25: parseFloat((pOver * 100).toFixed(1)) } : {}) };
+}
+
 function poissonPmf(k, lambda) {
   if (lambda <= 0) return k === 0 ? 1 : 0;
   return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k);
@@ -1163,6 +1175,7 @@ class SoccerEngine {
     let drawDecimal = toDecimal(drawOddsStr);
 
     if (!homeDecimal || !awayDecimal) return null;
+    const drawEstimated = !drawDecimal;
     if (!drawDecimal) {
       const invMargin = Math.max(0.1, 1.08 - (1 / homeDecimal) - (1 / awayDecimal));
       drawDecimal = parseFloat((1 / invMargin).toFixed(2));
@@ -1187,6 +1200,8 @@ class SoccerEngine {
       drawProb,
       marketFav: homeProb >= awayProb ? 'HOME' : 'AWAY',
       overUnder: raw.overUnder || null,
+      ...overUnderPrices(raw, toDecimal),
+      drawEstimated,
       details: raw.details || ''
     };
   }
@@ -1431,16 +1446,23 @@ class SoccerEngine {
       ? Math.min(this.hyperparameters.homeAdvantage, 1.08)
       : this.hyperparameters.homeAdvantage;
     const homeIntensity = (this.hyperparameters.homeGoalIntensity ?? 1.30) * paceFactor * lineupHomeIntensityMultiplier;
-    const lambda = Math.max(0.4, (home.attack * away.defense * (effectiveHomeAdvantage / 1.18) * homeIntensity * homeTacticalBoost * refereeMultiplierHome * h2hHomeIntensityMultiplier) + lineupOpponentHomeBoost);
+    const modelLambda = Math.max(0.4, (home.attack * away.defense * (effectiveHomeAdvantage / 1.18) * homeIntensity * homeTacticalBoost * refereeMultiplierHome * h2hHomeIntensityMultiplier) + lineupOpponentHomeBoost);
 
     // 2. Calculate Poisson Intensity Parameter mu (Away expected goals)
     // mu = alpha_away * beta_home * awayIntensity * awayTacticalBoost * h2hAwayIntensityMultiplier
     const awayIntensity = (this.hyperparameters.awayGoalIntensity ?? 1.10) * paceFactor * lineupAwayIntensityMultiplier;
-    const mu = Math.max(0.3, (away.attack * home.defense * awayIntensity * awayTacticalBoost * refereeMultiplierAway * h2hAwayIntensityMultiplier) + lineupOpponentAwayBoost);
+    const modelMu = Math.max(0.3, (away.attack * home.defense * awayIntensity * awayTacticalBoost * refereeMultiplierAway * h2hAwayIntensityMultiplier) + lineupOpponentAwayBoost);
+
+    // 2b. Expected goals from bookmaker prices when there are any (today's prices, or failing that
+    // ratings learned from past prices). Both beat the model's own figures out of sample; see
+    // src/model/marketGoals.js. The model's figures are kept only when neither is available.
+    const marketGoals = options.ignoreMarketGoals ? null : this.resolveMarketGoals(homeTeam, awayTeam, options);
+    const lambda = marketGoals ? marketGoals.lambda : modelLambda;
+    const mu = marketGoals ? marketGoals.mu : modelMu;
 
     // 3. Expected Goals (xG) integration incorporating form factor
-    const xG_Home = (lambda * 0.65) + (home.xGForm * 0.35);
-    const xG_Away = (mu * 0.65) + (away.xGForm * 0.35);
+    const xG_Home = marketGoals ? lambda : (lambda * 0.65) + (home.xGForm * 0.35);
+    const xG_Away = marketGoals ? mu : (mu * 0.65) + (away.xGForm * 0.35);
 
     // 4. Elo Win Expectancy: E_home = 1 / (1 + 10^((Elo_away - (Elo_home + boost + h2hEloAdjustment))/400))
     const eloDelta = (home.elo + homeEloBoost + h2hEloAdjustment + lineupEloAdjustmentHome) - (away.elo + lineupEloAdjustmentAway);
@@ -1455,15 +1477,21 @@ class SoccerEngine {
     let scorelineMatrix = [];
     const rOverdisp = this.hyperparameters.goalOverdispersionR ?? 4.5;
 
+    // Market expected goals were solved against this exact grid, so they use it unchanged.
+    const marketGrid = marketGoals ? scoreGrid(lambda, mu, marketGoals.rho) : null;
     for (let x = 0; x <= maxGoals; x++) {
       for (let y = 0; y <= maxGoals; y++) {
-        // Marginal probabilities blending 75% statistical and 25% Negative Binomial for goal overdispersion
-        const pX = (poissonPmf(x, lambda) * 0.75) + (negativeBinomialPmf(x, lambda, rOverdisp) * 0.25);
-        const pY = (poissonPmf(y, mu) * 0.75) + (negativeBinomialPmf(y, mu, rOverdisp) * 0.25);
-
-        // Dixon-Coles tau dependency adjustment for low scorelines
-        const tau = dixonColesTau(x, y, lambda, mu, this.hyperparameters.dixonColesRho ?? -0.09);
-        const jointProb = pX * pY * tau;
+        let jointProb;
+        if (marketGrid) {
+          jointProb = marketGrid[x]?.[y] ?? 0;
+        } else {
+          // Marginal probabilities blending 75% statistical and 25% Negative Binomial for goal overdispersion
+          const pX = (poissonPmf(x, lambda) * 0.75) + (negativeBinomialPmf(x, lambda, rOverdisp) * 0.25);
+          const pY = (poissonPmf(y, mu) * 0.75) + (negativeBinomialPmf(y, mu, rOverdisp) * 0.25);
+          // Dixon-Coles tau dependency adjustment for low scorelines
+          const tau = dixonColesTau(x, y, lambda, mu, this.hyperparameters.dixonColesRho ?? -0.09);
+          jointProb = pX * pY * tau;
+        }
 
         scorelineMatrix.push({ homeGoals: x, awayGoals: y, prob: jointProb });
 
@@ -1484,9 +1512,11 @@ class SoccerEngine {
     let normAway = pAwayWin / totalP;
 
     // 6. Optimal Hybrid Ensemble: 50% Elo / 50% Dixon-Coles Probability Blend (Calibrated from 4,303 Match Benchmark)
-    const eloWeight = this.hyperparameters.eloRatio ?? 0.50;
+    // With market expected goals the grid already carries the market's view, so Elo and the
+    // temperature flattening (both tuned for the model's own grid) are not applied.
+    const eloWeight = marketGoals ? 0 : (this.hyperparameters.eloRatio ?? 0.50);
     const dcWeight = 1.0 - eloWeight;
-    const T = this.hyperparameters.temperature ?? 1.30;
+    const T = marketGoals ? 1 : (this.hyperparameters.temperature ?? 1.30);
     const preHome = Math.pow(normHome, dcWeight) * Math.pow(eloExpectancyHome, eloWeight);
     const preAway = Math.pow(normAway, dcWeight) * Math.pow(1 - eloExpectancyHome, eloWeight);
     const preDraw = normDraw;
@@ -1696,7 +1726,7 @@ class SoccerEngine {
     // expected ~3.2 goals a game against 2.8 scored, so its over and BTTS figures ran high, and the
     // hand-set venue and mismatch adjustments above were never validated. The fitted model was
     // scored on later fixtures it never saw: see data/goals-model.json (heldOut).
-    const fittedGoals = goalsProbabilities(lambda, mu, this.getGoalsModel());
+    const fittedGoals = goalsProbabilities(lambda, mu, marketGoals ? this.getGoalsModel('market') : this.getGoalsModel());
     if (fittedGoals) {
       pOver15 = fittedGoals.o15;
       finalPOver25 = fittedGoals.o25;
@@ -2439,7 +2469,7 @@ class SoccerEngine {
 
     for (const m of this.trainingSet) {
        // Run base model probabilities
-       const p = this.computeDixonColesProbabilities(m.home, m.away, { skipPredictabilityBoost: true });
+       const p = this.computeDixonColesProbabilities(m.home, m.away, { ignoreMarketGoals: true, skipPredictabilityBoost: true });
        const actualWinner = m.homeScore > m.awayScore ? 'HOME' : m.homeScore < m.awayScore ? 'AWAY' : 'DRAW';
 
        // We only evaluate teams when the model picks them as the favorite
@@ -4778,16 +4808,91 @@ class SoccerEngine {
   // out-of-sample behaviour.
   // Goals-market model (data/goals-model.json, fitted by scripts/fit-goals-model.mjs). Read once;
   // without it the goals figures fall back to the raw scoreline grid, which overstates goals.
-  getGoalsModel() {
-    if (this._goalsModel !== undefined) return this._goalsModel;
+  // 'model': fitted on the engine's own expected goals (data/goals-model.json).
+  // 'market': fitted on expected goals implied by bookmaker prices (data/goals-model-market.json).
+  getGoalsModel(kind = 'model') {
+    this._goalsModels ||= {};
+    if (this._goalsModels[kind] !== undefined) return this._goalsModels[kind];
     try {
-      const filePath = path.join(ENGINE_DIR, 'data', 'goals-model.json');
-      this._goalsModel = fs.existsSync(filePath) ? JSON.parse(fs.readFileSync(filePath, 'utf8')) : null;
+      const filePath = path.join(ENGINE_DIR, 'data', kind === 'market' ? 'goals-model-market.json' : 'goals-model.json');
+      this._goalsModels[kind] = fs.existsSync(filePath) ? JSON.parse(fs.readFileSync(filePath, 'utf8')) : null;
     } catch (e) {
-      this.log('TrainingEngine', `Could not load goals model, using the raw scoreline grid: ${e.message}`);
-      this._goalsModel = null;
+      this.log('TrainingEngine', `Could not load goals model (${kind}), using the raw scoreline grid: ${e.message}`);
+      this._goalsModels[kind] = null;
     }
-    return this._goalsModel;
+    return this._goalsModels[kind];
+  }
+
+  /**
+   * Expected goals from the market for a fixture: from its own prices when supplied (with the
+   * over/under 2.5 chance when known), otherwise from ratings learned from past prices, otherwise null.
+   */
+  resolveMarketGoals(homeTeam, awayTeam, options = {}) {
+    const o = options.odds || options.marketOdds;
+    const h = Number(o?.homeOdds), d = Number(o?.drawOdds), a = Number(o?.awayOdds);
+    const over = Number(o?.overProb), line = Number(o?.overLine);
+    const hasLine = Number.isFinite(over) && Number.isFinite(line);
+    if (h > 1 && d > 1 && a > 1 && !(o.drawEstimated && !hasLine)) {
+      const key = `${h}|${d}|${a}|${hasLine ? `${over}@${line}` : ''}`;
+      this._impliedCache ||= new Map();
+      let g = this._impliedCache.get(key);
+      if (g === undefined) {
+        const [ph, pd, pa] = fairProbs([h, d, a]);
+        g = impliedGoals({ h: ph, d: pd, a: pa, ...(hasLine ? { over: over / 100, line } : {}) });
+        if (this._impliedCache.size > 5000) this._impliedCache.clear();
+        this._impliedCache.set(key, g);
+      }
+      if (g) return { ...g, rho: hasLine ? -0.1 : -0.05, source: 'PRICES' };
+    }
+    const remembered = this.marketMemory?.predict(options.league, homeTeam, awayTeam);
+    return remembered ? { ...remembered, rho: -0.05, source: 'MARKET_MEMORY' } : null;
+  }
+
+  /**
+   * Rebuild the market memory from past fixtures in date order. Uses closing prices of the loaded
+   * corpus (data/historical_odds.json) and the prices the app itself recorded before kick-off
+   * (data/odds_history.json). Only fixtures in the loaded corpus contribute, so a backtest that
+   * holds fixtures back never learns from their prices.
+   */
+  buildMarketMemory(corpus = this.historicalMatches || []) {
+    try {
+      if (this._historicalOddsById === undefined) {
+        const f = path.join(ENGINE_DIR, 'data', 'historical_odds.json');
+        this._historicalOddsById = fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')).odds || {} : {};
+      }
+      let recorded = {};
+      try {
+        const f = path.join(ENGINE_DIR, 'data', 'odds_history.json');
+        if (fs.existsSync(f)) recorded = JSON.parse(fs.readFileSync(f, 'utf8')) || {};
+      } catch { /* no recorded prices */ }
+      const memory = new MarketMemory();
+      const sorted = [...corpus].sort((x, y) => (x.timestamp || 0) - (y.timestamp || 0));
+      let used = 0;
+      for (const m of sorted) {
+        const hist = this._historicalOddsById[m.id];
+        const seen = Array.isArray(recorded[m.id]) ? recorded[m.id][recorded[m.id].length - 1] : null;
+        const trio = hist && hist.h > 1 ? [hist.h, hist.d, hist.a] : (seen && seen.home > 1 ? [seen.home, seen.draw, seen.away] : null);
+        if (!trio || !trio.every(x => x > 1)) continue;
+        this._impliedById ||= new Map();
+        const key = `${m.id}|${trio.join('|')}`;
+        let g = this._impliedById.get(key);
+        if (g === undefined) {
+          const [ph, pd, pa] = fairProbs(trio);
+          g = impliedGoals({ h: ph, d: pd, a: pa });
+          this._impliedById.set(key, g);
+        }
+        if (!g) continue;
+        memory.update(m.league, m.home, m.away, g.lambda, g.mu);
+        used++;
+      }
+      this.marketMemory = memory;
+      this.log('TrainingEngine', `Market memory built from ${used} priced fixtures (${Object.keys(memory.teams).length} teams).`);
+      return memory;
+    } catch (e) {
+      this.log('TrainingEngine', `Market memory unavailable: ${e.message}`);
+      this.marketMemory = null;
+      return null;
+    }
   }
 
   loadProbabilityCalibration() {
@@ -5032,6 +5137,7 @@ class SoccerEngine {
       // loads a restricted corpus gets strengths fitted only on that corpus, so the evaluation
       // cannot leak the fixtures it is about to score.
       this.applyFittedTeamStrengths();
+      this.buildMarketMemory();
 
       // 2c. Load the map from stated probability to observed strike rate, so displayed confidence
       // is something you can stake against.
@@ -5165,7 +5271,7 @@ class SoccerEngine {
     let totalGoalDiscrepancy = 0;
 
     matchesToEvaluate.forEach(m => {
-      const pred = this.computeDixonColesProbabilities(m.home, m.away);
+      const pred = this.computeDixonColesProbabilities(m.home, m.away, { ignoreMarketGoals: true });
       const actualScore = `${m.homeScore}-${m.awayScore}`;
       const actualTotal = m.homeScore + m.awayScore;
       const actualOu25 = actualTotal > 2.5 ? 'OVER' : 'UNDER';
@@ -5355,7 +5461,7 @@ class SoccerEngine {
     let filteredCorrect = 0, filteredTotal = 0, trapsAvoided = 0;
 
     this.yesterdayMatches = this.yesterdayMatches.map(m => {
-      const probs = this.computeDixonColesProbabilities(m.home, m.away, { league: m.league });
+      const probs = this.computeDixonColesProbabilities(m.home, m.away, { ignoreMarketGoals: true, league: m.league });
       const hG = m.goals?.home ?? 0;
       const aG = m.goals?.away ?? 0;
       const actual = m.actualWinner || (hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW');
@@ -5682,7 +5788,7 @@ class SoccerEngine {
             const isYesterdayMatch = formatYMD(evDate) === yestStr;
             const isTodayMatch = formatYMD(evDate) === todayStr;
 
-            const dcProbs = this.computeDixonColesProbabilities(home.team.displayName, away.team.displayName, { league });
+            const dcProbs = this.computeDixonColesProbabilities(home.team.displayName, away.team.displayName, { ignoreMarketGoals: true, league });
             const actualWinner = hScore > aScore ? 'HOME' : aScore > hScore ? 'AWAY' : 'DRAW';
             const smartHit = this.evaluateHit(dcProbs, hScore, aScore);
             const isHit = smartHit !== null ? smartHit : (dcProbs.predictedWinner === actualWinner);
@@ -6224,7 +6330,7 @@ class SoccerEngine {
       let activeUnanimousHits = 0;
 
       this.trainingSet = this.trainingSet.map(sample => {
-        const probs = this.computeDixonColesProbabilities(sample.home, sample.away, { league: sample.league });
+        const probs = this.computeDixonColesProbabilities(sample.home, sample.away, { ignoreMarketGoals: true, league: sample.league });
         const hScore = sample.homeScore ?? sample.goals?.home;
         const aScore = sample.awayScore ?? sample.goals?.away;
         const actual = sample.actualWinner || (hScore > aScore ? 'HOME' : aScore > hScore ? 'AWAY' : 'DRAW');
@@ -7150,7 +7256,7 @@ Output ONLY these 3 clean, high-density markdown sections with zero conversation
     const totalExpectedVariance = homeVariance + awayVariance;
 
     // 6. Pre-match Dixon-Coles probabilities and Low-score tau factor
-    const dcProbs = this.computeDixonColesProbabilities(homeTeam, awayTeam, { league });
+    const dcProbs = this.computeDixonColesProbabilities(homeTeam, awayTeam, { ignoreMarketGoals: true, league });
     const pHome = dcProbs.home;
     const pDraw = dcProbs.draw;
     const pAway = dcProbs.away;
@@ -7458,14 +7564,14 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
     };
 
     // 2. Pre-Patch Probabilities for target fixture
-    const preProb = this.computeDixonColesProbabilities(homeTeam, awayTeam, { league });
+    const preProb = this.computeDixonColesProbabilities(homeTeam, awayTeam, { ignoreMarketGoals: true, league });
 
     // 3. Fast Validation Backtest against Benchmark Corpus Sample
     const valSample = (this.trainingSet && this.trainingSet.length > 0) ? this.trainingSet.slice(0, 30) : [];
     let baseBrierSum = 0;
     let baseHits = 0;
     for (const m of valSample) {
-      const dc = this.computeDixonColesProbabilities(m.home, m.away, { league: m.league });
+      const dc = this.computeDixonColesProbabilities(m.home, m.away, { ignoreMarketGoals: true, league: m.league });
       const hG = m.homeScore ?? m.goals?.home ?? 0;
       const aG = m.awayScore ?? m.goals?.away ?? 0;
       const actual = hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW';
@@ -7502,13 +7608,13 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
     this.hyperparameters.drawEquilibriumDelta = Math.max(4.0, Math.min(13.0, originalDrawDelta + clampedDeltas.deltaDrawEquilibrium));
 
     // Post-patch counterfactual probabilities for target fixture
-    const postProb = this.computeDixonColesProbabilities(homeTeam, awayTeam, { league });
+    const postProb = this.computeDixonColesProbabilities(homeTeam, awayTeam, { ignoreMarketGoals: true, league });
 
     // Evaluate candidate Brier & hit rate on validation sample
     let candBrierSum = 0;
     let candHits = 0;
     for (const m of valSample) {
-      const dc = this.computeDixonColesProbabilities(m.home, m.away, { league: m.league });
+      const dc = this.computeDixonColesProbabilities(m.home, m.away, { ignoreMarketGoals: true, league: m.league });
       const hG = m.homeScore ?? m.goals?.home ?? 0;
       const aG = m.awayScore ?? m.goals?.away ?? 0;
       const actual = hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW';
@@ -8178,7 +8284,7 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
     // 3. Training corpus recent fixtures
     if (this.trainingSet && this.trainingSet.length > 0) {
       this.trainingSet.slice(0, 15).forEach(m => {
-        const dc = this.computeDixonColesProbabilities(m.home, m.away, { league: m.league });
+        const dc = this.computeDixonColesProbabilities(m.home, m.away, { ignoreMarketGoals: true, league: m.league });
         const hG = m.homeScore ?? m.goals?.home ?? 0;
         const aG = m.awayScore ?? m.goals?.away ?? 0;
         const actual = hG > aG ? 'HOME' : aG > hG ? 'AWAY' : 'DRAW';
@@ -8470,7 +8576,7 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
       if (rows.length < minSamples) continue;
       let predictedHome = 0;
       for (const { m } of rows) {
-        predictedHome += this.computeDixonColesProbabilities(m.home, m.away, { league, skipPredictabilityBoost: true }).home;
+        predictedHome += this.computeDixonColesProbabilities(m.home, m.away, { ignoreMarketGoals: true, league, skipPredictabilityBoost: true }).home;
       }
       const predictedRate = predictedHome / rows.length;
       const empiricalRate = (rows.filter(r => r.homeWon).length / rows.length) * 100;
@@ -8564,7 +8670,7 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
                   sequenceWeight = Math.exp(-timeDecayXi * daysSince);
                 }
 
-                const probs = this.computeDixonColesProbabilities(m.home, m.away);
+                const probs = this.computeDixonColesProbabilities(m.home, m.away, { ignoreMarketGoals: true });
                 if (probs.predictedWinner === actualWinner) {
                   correct++;
                 }
@@ -8793,7 +8899,7 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
       );
       if (histForDate.length > 0) {
         histForDate.forEach(m => {
-          const dcProbs = this.computeDixonColesProbabilities(m.home, m.away, { league: m.league });
+          const dcProbs = this.computeDixonColesProbabilities(m.home, m.away, { ignoreMarketGoals: true, league: m.league });
           const actualWinner = m.homeScore > m.awayScore ? 'HOME' : m.awayScore > m.homeScore ? 'AWAY' : 'DRAW';
           const smartHit = this.evaluateHit(dcProbs, m.homeScore, m.awayScore);
           const isHit = smartHit !== null ? smartHit : (dcProbs.predictedWinner ? dcProbs.predictedWinner === actualWinner : null);

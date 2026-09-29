@@ -701,3 +701,58 @@ read a field ESPN does not send. They now come from Wikidata's current head coac
 national team (`src/services/coaches.js`), cached for a week. A manager set on the Match research
 page overrides it and is kept in `data/manager-overrides.json`. The invented team news for about 36
 clubs was removed.
+
+## Expected goals from bookmaker prices
+
+A lab over the 29,899 matches in the football-data.co.uk files (goals, shots, corners, cards and
+opening, closing and over/under prices) tested every source of expected goals against results on
+2024-25 onwards, 10,348 matches none of the fitting saw.
+
+**Today's prices beat our own goals model on every goals market.** The expected goals that reproduce
+the opening match-result prices (`impliedGoals` in `src/model/marketGoals.js`), run through the same
+small calibration as the goals model (`data/goals-model-market.json`, `npm run goals:fit-market`):
+
+| Market | Our model | From prices | Confident (60%+) picks |
+|---|---|---|---|
+| Over/under 2.5 | ~53.6% | **57.3%** | 3,020 at 64.8% (was 891 at 64.2%) |
+| Both teams score | 54.0% | **55.7%** | 1,504 at 61.5% |
+| Over/under 3.5 | 69.8% | 70.1% | |
+| Exact score | 12.2% | **13.3%** | top three 34.1% (was 30.5%) |
+
+Adding our model's expected goals on top of the price-implied ones changed nothing measurable, so
+when a price exists the app uses it. ESPN's over/under price, on whatever line it is quoted, is used
+too when present.
+
+**Past prices beat results for matches with no price.** `MarketMemory` learns each team's attack
+and defence from the expected goals implied by its past prices, not from its scorelines. Prices
+carry far less noise than results. For a match with no odds:
+
+| Team ratings learned from | Hit | Log loss |
+|---|---|---|
+| The match's own opening price (for reference) | 51.9% | 0.985 |
+| Past prices (market memory) | 51.3% | 0.989 |
+| Shots on target | 50.6% | 1.005 |
+| Results | 49.9% | 1.008 |
+
+It is used only when both teams have at least five priced matches in the fixture's league, and it
+is switched off wherever the app replays or grades past matches (`ignoreMarketGoals`), since it
+has learned from those matches' own prices.
+
+**Walk-forward on the app itself** (April 2025 onwards, 5,183 fixtures, engine rebuilt from history
+at every step):
+
+| | Before | After |
+|---|---|---|
+| Hit rate with no price supplied | 50.1% | **51.3%** (market 52.6%) |
+| Hit rate of what the app shows | 52.5% | 52.7% |
+| Brier of what the app shows | 0.1956 | **0.1947** (market 0.1947) |
+| ROI at best price | -0.6% | -0.1% |
+| Over/under 2.5 hit | 54.4% | **57.1%** |
+| Both teams score hit | 53.9% | **56.2%** |
+| Exact score / top three | 12.2% / 30.5% | **13.0% / 33.1%** |
+
+**What did not work.** Nothing tested beat the opening match-result price itself: stacking it with
+market memory, results-based or shots-on-target ratings left log loss at 0.9837 against 0.9837 for
+the recalibrated price alone. For corners and cards, fouls and shots added nothing; the market's
+view of the match (expected total and how one-sided it is) improved cards slightly (Brier 0.2257 to
+0.2234 on the 3.5 line) and corners hardly at all.

@@ -1,0 +1,71 @@
+{
+  "fittedAt": "2026-09-29T00:47:14.944Z",
+  "source": "expected goals implied by opening match-result prices (src/model/marketGoals.js)",
+  "features": "lambda + mu - 3, |lambda - mu|, min(lambda, mu) - 1",
+  "weights": {
+    "o15": [
+      1.3349231705779814,
+      0.7803863237438309,
+      0.14877456256746419,
+      0.6535316267271176
+    ],
+    "o25": [
+      0.29600887749722615,
+      0.8321999610201843,
+      0.07788279694311866,
+      0.4543155246226596
+    ],
+    "o35": [
+      -0.5562617172779547,
+      0.9731781916177548,
+      -0.047427278936432754,
+      0.37773178939400875
+    ],
+    "btts": [
+      0.47918450700309684,
+      0.5092819325233964,
+      -0.30159643155983085,
+      0.5279785860242215
+    ]
+  },
+  "samples": 29899,
+  "heldOut": {
+    "testFrom": "2425",
+    "trainSamples": 19551,
+    "testSamples": 10348,
+    "markets": {
+      "o15": {
+        "alwaysPick": 76.3,
+        "hit": 76.3,
+        "brier": 0.1759,
+        "brierBaseline": 0.1807,
+        "confidentPicks": 10280,
+        "confidentHit": 76.4
+      },
+      "o25": {
+        "alwaysPick": 53.1,
+        "hit": 57.3,
+        "brier": 0.2413,
+        "brierBaseline": 0.2495,
+        "confidentPicks": 3020,
+        "confidentHit": 64.8
+      },
+      "o35": {
+        "alwaysPick": 69.9,
+        "hit": 70.1,
+        "brier": 0.2032,
+        "brierBaseline": 0.2106,
+        "confidentPicks": 9038,
+        "confidentHit": 72.4
+      },
+      "btts": {
+        "alwaysPick": 54.4,
+        "hit": 55.7,
+        "brier": 0.2457,
+        "brierBaseline": 0.2485,
+        "confidentPicks": 1504,
+        "confidentHit": 61.5
+      }
+    }
+  }
+}
