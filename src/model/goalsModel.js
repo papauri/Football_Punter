@@ -27,7 +27,8 @@ const outcome = {
   btts: (h, a) => h > 0 && a > 0
 };
 
-function fitLogistic(xs, ys, { iterations = 2500, rate = 0.3, l2 = 1e-3 } = {}) {
+/** Plain logistic regression by gradient descent; weights[0] is the intercept. */
+export function fitLogistic(xs, ys, { iterations = 2500, rate = 0.3, l2 = 1e-3 } = {}) {
   let w = new Array(xs[0].length + 1).fill(0);
   for (let it = 0; it < iterations; it++) {
     const g = new Array(w.length).fill(0);

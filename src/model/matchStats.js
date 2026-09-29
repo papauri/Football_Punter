@@ -118,20 +118,38 @@ export function linesFor(mean, lines, shape) {
   return out;
 }
 
+const logit = (p) => Math.log(clamp(p, 1e-4, 1 - 1e-4) / (1 - clamp(p, 1e-4, 1 - 1e-4)));
+
+/**
+ * Inputs for the market adjustment of one line: the model's own chance, plus the market's expected
+ * total goals and how one-sided it expects the match to be. Tight matches draw more cards.
+ */
+export function lineFeatures(p, goals) {
+  return [logit(p), goals.lambda + goals.mu - 2.7, Math.abs(goals.lambda - goals.mu), goals.lambda - goals.mu];
+}
+
+function adjusted(p, goals, w) {
+  if (!goals || !Array.isArray(w)) return p;
+  const x = lineFeatures(p, goals);
+  let z = w[0];
+  for (let i = 0; i < x.length; i++) z += w[i + 1] * x[i];
+  return 1 / (1 + Math.exp(-z));
+}
+
 /**
  * Every corners and cards line with the side the model favours, most likely first.
  * These are the only markets that have been scored against real results (see heldOut in the data file).
+ * With `goals` (expected goals from bookmaker prices) and fitted `calibration`, each chance is
+ * adjusted by the market's view of the match.
  */
-export function statPicks(exp, params = DEFAULT_PARAMS) {
+export function statPicks(exp, params = DEFAULT_PARAMS, goals = null, calibration = null) {
   const corners = exp.homeCorners + exp.awayCorners, cards = exp.homeCards + exp.awayCards;
   const out = [];
-  for (const line of CORNER_LINES) {
-    const p = probOver(corners, line, params.cornersShape);
-    out.push({ market: 'CORNERS', line, side: p >= 0.5 ? 'OVER' : 'UNDER', prob: Math.max(p, 1 - p), expected: corners });
-  }
-  for (const line of CARD_LINES) {
-    const p = probOver(cards, line, params.cardsShape);
-    out.push({ market: 'CARDS', line, side: p >= 0.5 ? 'OVER' : 'UNDER', prob: Math.max(p, 1 - p), expected: cards });
+  for (const [market, lines, mean, shape] of [['CORNERS', CORNER_LINES, corners, params.cornersShape], ['CARDS', CARD_LINES, cards, params.cardsShape]]) {
+    for (const line of lines) {
+      const p = adjusted(probOver(mean, line, shape), goals, calibration?.[market]?.[line]);
+      out.push({ market, line, side: p >= 0.5 ? 'OVER' : 'UNDER', prob: Math.max(p, 1 - p), expected: mean });
+    }
   }
   return out.sort((a, b) => b.prob - a.prob);
 }

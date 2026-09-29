@@ -9,14 +9,16 @@ let loaded = null;
 let loadedAt = 0;
 
 // data/match-stats.json ships with the app; the server refreshes data/match-stats.live.json daily
-// with the latest results. Whichever holds the later ratings is used.
+// with the latest results. Whichever holds the later ratings is used (the later fit on a tie).
 function newest(dir) {
   const files = ['match-stats.live.json', 'match-stats.json'].map(f => path.join(dir, 'data', f)).filter(f => fs.existsSync(f));
-  let best = null, bestDate = '';
+  let best = null, bestKey = '';
   for (const f of files) {
     try {
-      const last = (fs.readFileSync(f, 'utf8').match(/"lastMatch":"([\d-]+)"/) || [])[1] || '';
-      if (last > bestDate) { best = f; bestDate = last; }
+      const text = fs.readFileSync(f, 'utf8');
+      // Latest ratings first; on a tie, the more recent fit (it may carry a newer model).
+      const key = `${(text.match(/"lastMatch":"([\d-]+)"/) || [])[1] || ''}|${(text.match(/"fittedAt":"([^"]+)"/) || [])[1] || ''}`;
+      if (key > bestKey) { best = f; bestKey = key; }
     } catch { /* skip unreadable */ }
   }
   return best;
@@ -44,9 +46,10 @@ export function matchStatsSummary(dir) {
 
 /**
  * Expected corners and cards for a fixture, or null when either team is not in the 14 leagues
- * the model covers, or the two play in different leagues (cup and European ties).
+ * the model covers, or the two play in different leagues (cup and European ties). `goals` is the
+ * market's expected goals for the match ({lambda, mu}), which sharpens each line when given.
  */
-export function predictMatchStats(dir, home, away) {
+export function predictMatchStats(dir, home, away, goals = null) {
   const d = load(dir);
   if (!d) return null;
   const h = bestTeamMatch(home, d.names), a = bestTeamMatch(away, d.names);
@@ -55,5 +58,5 @@ export function predictMatchStats(dir, home, away) {
   if (!lg || lg !== d.json.teams[a].lg) return null;
   const exp = d.model.expect(lg, h, a);
   if (!exp) return null;
-  return { ...exp, league: d.json.leagueNames?.[lg] || lg, homeName: h, awayName: a, picks: statPicks(exp, d.model.p) };
+  return { ...exp, league: d.json.leagueNames?.[lg] || lg, homeName: h, awayName: a, picks: statPicks(exp, d.model.p, goals, d.json.marketCalibration) };
 }

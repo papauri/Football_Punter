@@ -12,7 +12,9 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { MatchStatsModel, probOver, statPicks, pickHit, CORNER_LINES, CARD_LINES } from '../src/model/matchStats.js';
+import { MatchStatsModel, probOver, statPicks, pickHit, lineFeatures, CORNER_LINES, CARD_LINES } from '../src/model/matchStats.js';
+import { impliedGoals, fairProbs } from '../src/model/marketGoals.js';
+import { fitLogistic } from '../src/model/goalsModel.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CACHE_DIR = path.join(ROOT, 'data', 'odds_cache');
@@ -56,7 +58,9 @@ for (const code of Object.keys(LEAGUES)) {
       const t = parseDate(r.Date);
       const hc = num(r.HC), ac = num(r.AC), hy = num(r.HY), ay = num(r.AY);
       if (!t || !r.HomeTeam || hc == null || ac == null || hy == null || ay == null) continue;
-      matches.push({ t, season, lg: code, home: r.HomeTeam, away: r.AwayTeam, hc, ac, hk: hy + (num(r.HR) || 0), ak: ay + (num(r.AR) || 0) });
+      const odds = [r.AvgH, r.AvgD, r.AvgA].map(num).every(x => x > 1) ? [r.AvgH, r.AvgD, r.AvgA].map(num)
+        : ([r.B365H, r.B365D, r.B365A].map(num).every(x => x > 1) ? [r.B365H, r.B365D, r.B365A].map(num) : null);
+      matches.push({ t, season, lg: code, home: r.HomeTeam, away: r.AwayTeam, hc, ac, hk: hy + (num(r.HR) || 0), ak: ay + (num(r.AR) || 0), odds });
     }
   }
 }
@@ -64,21 +68,53 @@ matches.sort((a, b) => a.t - b.t);
 if (!matches.length) { console.log('No cached season files. Run `npm run odds:ingest` first.'); process.exit(1); }
 
 const model = new MatchStatsModel();
-const scored = [];
+const all = [];
 for (const m of matches) {
   const e = model.expect(m.lg, m.home, m.away);
-  if (e && m.season >= TEST_FROM) scored.push({ m, e });
+  if (e && m.season > SEASONS[0]) {
+    let goals = null;
+    if (m.odds) { const [h, d, a] = fairProbs(m.odds); goals = impliedGoals({ h, d, a }); }
+    all.push({ m, e, goals });
+  }
   model.update(m);
 }
+const scored = all.filter(r => r.m.season >= TEST_FROM);
+
+// Market adjustment: per line, a small logistic on the model's chance plus the market's view of the
+// match (expected goals from the match-result prices). Fitted on seasons before the test window for
+// the report, then on everything for the app.
+const LINES = { CORNERS: [CORNER_LINES, m => m.hc + m.ac, e => e.homeCorners + e.awayCorners, model.p.cornersShape], CARDS: [CARD_LINES, m => m.hk + m.ak, e => e.homeCards + e.awayCards, model.p.cardsShape] };
+function fitCalibration(rows) {
+  const cal = {};
+  for (const [market, [lines, total, mean, shape]] of Object.entries(LINES)) {
+    cal[market] = {};
+    for (const l of lines) {
+      const use = rows.filter(r => r.goals);
+      cal[market][l] = fitLogistic(use.map(r => lineFeatures(probOver(mean(r.e), l, shape), r.goals)), use.map(r => (total(r.m) > l ? 1 : 0)), { iterations: 800 })
+        .map(w => +w.toFixed(5));
+    }
+  }
+  return cal;
+}
+const heldOutCalibration = fitCalibration(all.filter(r => r.m.season < TEST_FROM));
+const chanceOver = (r, market, l) => {
+  const [, , mean, shape] = LINES[market];
+  const p = probOver(mean(r.e), l, shape);
+  const w = heldOutCalibration[market][l];
+  if (!r.goals) return p;
+  const x = lineFeatures(p, r.goals);
+  let z = w[0]; for (let i = 0; i < x.length; i++) z += w[i + 1] * x[i];
+  return 1 / (1 + Math.exp(-z));
+};
 
 const f = (x, d = 1) => Number(x).toFixed(d);
-function report(label, lines, total, mean, shape) {
+function report(label, market, lines, total) {
   const out = {};
   console.log(`\n${label}: line   always-pick  model hit   Brier model vs league-wide rate   ≥60% sure: picks, hit`);
   for (const l of lines) {
     const ys = scored.map(({ m }) => (total(m) > l ? 1 : 0));
     const base = ys.reduce((s, y) => s + y, 0) / ys.length;
-    const ps = scored.map(({ e }) => probOver(mean(e), l, shape));
+    const ps = scored.map(r => chanceOver(r, market, l));
     const right = (p, y) => (p >= 0.5) === (y === 1);
     const hit = ps.filter((p, i) => right(p, ys[i])).length / ps.length * 100;
     const brier = ps.reduce((s, p, i) => s + (p - ys[i]) ** 2, 0) / ps.length;
@@ -91,13 +127,13 @@ function report(label, lines, total, mean, shape) {
   return out;
 }
 console.log(`${matches.length} matches; ${scored.length} from ${TEST_FROM.slice(0, 2)}-${TEST_FROM.slice(2)} onwards scored before kick-off`);
-const corners = report('Total corners', CORNER_LINES, m => m.hc + m.ac, e => e.homeCorners + e.awayCorners, model.p.cornersShape);
-const cards = report('Total cards', CARD_LINES, m => m.hk + m.ak, e => e.homeCards + e.awayCards, model.p.cardsShape);
+const corners = report('Total corners', 'CORNERS', CORNER_LINES, m => m.hc + m.ac);
+const cards = report('Total cards', 'CARDS', CARD_LINES, m => m.hk + m.ak);
 
 // The page shows each fixture's most likely corners or cards pick, so that is the track record
 // that matters: how often the single strongest pick per match came in, overall and by how sure it was.
-const tops = scored.map(({ m, e }) => {
-  const pick = statPicks(e, model.p)[0];
+const tops = scored.map(({ m, e, goals }) => {
+  const pick = statPicks(e, model.p, goals, heldOutCalibration)[0];
   return { m, pick, hit: pickHit(pick, m.hc + m.ac, m.hk + m.ak) };
 });
 const band = (lo, hi) => {
@@ -119,6 +155,7 @@ const out = {
   lastMatch: new Date(matches[matches.length - 1].t).toISOString().slice(0, 10),
   leagueNames: LEAGUES,
   ...model.toJSON(),
+  marketCalibration: fitCalibration(all),
   heldOut: { from: TEST_FROM, matches: scored.length, corners, cards, topPick },
   recent
 };

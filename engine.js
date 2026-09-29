@@ -150,6 +150,29 @@ function overUnderPrices(raw, toDecimal) {
   return { overOdds: over, underOdds: under, overLine: line, overProb: parseFloat((pOver * 100).toFixed(1)), ...(line === 2.5 ? { overProb25: parseFloat((pOver * 100).toFixed(1)) } : {}) };
 }
 
+// Markets read from a market-based scoreline grid. First-half goals use 46% of the full-match
+// expected goals, the share that fitted best on half-time scores.
+function derivedGoalMarkets(grid, lambda, mu) {
+  const sum = (g, f) => { let t = 0; for (let i = 0; i < g.length; i++) for (let j = 0; j < g[i].length; j++) if (f(i, j)) t += g[i][j]; return t; };
+  const pct = (x) => parseFloat((x * 100).toFixed(1));
+  const fh = scoreGrid(lambda * 0.46, mu * 0.46, 0);
+  return {
+    teamGoals: {
+      homeToScore: pct(sum(grid, (i) => i > 0)),
+      awayToScore: pct(sum(grid, (i, j) => j > 0)),
+      homeOver15: pct(sum(grid, (i) => i > 1)),
+      awayOver15: pct(sum(grid, (i, j) => j > 1))
+    },
+    firstHalf: {
+      over05: pct(sum(fh, (i, j) => i + j > 0)),
+      over15: pct(sum(fh, (i, j) => i + j > 1)),
+      home: pct(sum(fh, (i, j) => i > j)),
+      draw: pct(sum(fh, (i, j) => i === j)),
+      away: pct(sum(fh, (i, j) => i < j))
+    }
+  };
+}
+
 function poissonPmf(k, lambda) {
   if (lambda <= 0) return k === 0 ? 1 : 0;
   return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k);
@@ -1843,7 +1866,12 @@ class SoccerEngine {
         band4plus: parseFloat(band4plus.toFixed(1)),
         best: bestGoalBand,
         bestProb: parseFloat(bestBandProb.toFixed(1))
-      }
+      },
+      // Team goals and first-half goals, only from market expected goals: tested on 10,345 matches
+      // from 2024-25 they come in as often as stated (see docs/MODEL_ACCURACY.md). From the model's
+      // own expected goals they were never tested, so they are left out.
+      ...(marketGrid ? derivedGoalMarkets(marketGrid, lambda, mu) : {}),
+      expectedGoalsSource: marketGoals?.source || 'MODEL'
     };
 
     // 9. Modern Binary Conviction Model: Asymmetric Kinetic Edge (AKE) with Strict Entropy Floor
@@ -7966,7 +7994,8 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
 
     for (const match of candidatePool.slice(0, Math.max(maxAnalyze * 4, 40))) {
       if (insights.length >= maxAnalyze) break;
-      const stats = predictMatchStats(ENGINE_DIR, match.home, match.away);
+      const marketGoals = this.resolveMarketGoals(match.home, match.away, { odds: match.odds, league: match.league });
+      const stats = predictMatchStats(ENGINE_DIR, match.home, match.away, marketGoals);
 
       let btts = null;
       try {

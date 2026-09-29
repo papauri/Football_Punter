@@ -678,6 +678,12 @@ The chances shown are honest: grouped by the chance given, picks shown at 60–6
 70–75% 73%, at 80–85% 82%. The strongest tip per match came in 83% of the time, but those are the
 safe lines (over 7.5 corners, over 2.5 cards) and pay little. Cards carry more signal than corners.
 
+**Market adjustment.** When a match has prices (or market memory), each line is adjusted by the
+market's expected total goals and how one-sided it expects the match to be: tight matches draw more
+cards. Fitted on seasons before 2024-25, scored after: cards 4.5 confident picks 4,778 at 69.0%
+(was 5,602 at 67.0%), Brier better on every corners and cards line, and the strongest tip per match
+83.4% (was 83.0%).
+
 Tested and left out: referees (named in the English and Scottish files) made no difference out of
 sample once each team's own record was known. Only fixtures where both teams play in one of the 14
 leagues get corners and cards figures; cup ties between leagues and other leagues get none.
@@ -756,3 +762,21 @@ market memory, results-based or shots-on-target ratings left log loss at 0.9837 
 the recalibrated price alone. For corners and cards, fouls and shots added nothing; the market's
 view of the match (expected total and how one-sided it is) improved cards slightly (Brier 0.2257 to
 0.2234 on the 3.5 line) and corners hardly at all.
+
+## Team goals and first-half goals
+
+From price-implied expected goals (not from the model's own, which were never tested), the app now
+also shows each team's chance to score and the chance of a goal in the first half. First-half goals
+use 46% of the full-match expected goals, the share that fitted half-time scores best. On 10,345
+matches from 2024-25 the raw chances were already calibrated (recalibrating moved Brier by under
+0.001). When the chance shown was 80% or more:
+
+| Tip | Picks | Came in |
+|---|---|---|
+| Home team to score | 4,175 | 87.4% |
+| Away team to score | 1,802 | 87.1% |
+| Goal in the first half | 627 | 84.5% |
+
+The Goals page filters "Home/Away team scores, 80%+" and "Goal in first half, 75%+" use these. Its
+"Over 3.5" used to be shown as the over 2.5 chance minus 28 points, and its "best value" column an
+invented edge; both now show the engine's real figures, and the best tip is the most likely one.

@@ -28,6 +28,25 @@ import { useMobileViewMode } from '../utils/useMobileViewMode';
 import InfoTooltip from './InfoTooltip';
 import { compactKickoff } from './MobileFold';
 import { safeParseFloat, safeToFixed } from '../utils/numberUtils';
+
+// Every goals tip the engine prices for a match, most likely first. Team goals and first-half goals
+// only exist when the expected goals came from bookmaker prices (tested, see docs/MODEL_ACCURACY.md).
+export function goalTips(m) {
+  const sm = m?.scoreModel || {};
+  const o25 = safeParseFloat(sm.overUnder?.over25 ?? m?.over25Prob, NaN);
+  const o35 = safeParseFloat(sm.overUnder?.over35, NaN);
+  const btts = safeParseFloat(sm.btts?.yes, NaN);
+  const tg = sm.teamGoals || {}, fh = sm.firstHalf || {};
+  const tips = [
+    ['Over 2.5 goals', o25], ['Under 2.5 goals', 100 - o25],
+    ['Under 3.5 goals', 100 - o35],
+    ['Both teams score', btts], ['Not both teams score', 100 - btts],
+    [`${m?.home} to score`, safeParseFloat(tg.homeToScore, NaN)],
+    [`${m?.away} to score`, safeParseFloat(tg.awayToScore, NaN)],
+    ['Goal in the first half', safeParseFloat(fh.over05, NaN)]
+  ].filter(([, p]) => Number.isFinite(p)).map(([label, prob]) => ({ label, prob }));
+  return tips.sort((a, b) => b.prob - a.prob);
+}
 import { formatSafeDateTime, formatRelativeDayTime, getLocalizedDateKey, formatFriendlyDateOption } from '../utils/dateUtils';
 
 export default function ScoresTablePage({
@@ -110,6 +129,9 @@ export default function ScoresTablePage({
       const over25 = safeParseFloat(m.scoreModel?.overUnder?.over25 ?? m.over25Prob, 50);
       const bttsYes = safeParseFloat(m.scoreModel?.btts?.yes, 50);
       const topScoreProb = safeParseFloat(m.scoreModel?.topScorelines?.[0]?.prob, 0);
+      const homeScores = safeParseFloat(m.scoreModel?.teamGoals?.homeToScore, 0);
+      const awayScores = safeParseFloat(m.scoreModel?.teamGoals?.awayToScore, 0);
+      const fhGoal = safeParseFloat(m.scoreModel?.firstHalf?.over05, 0);
 
       return {
         match: m,
@@ -121,7 +143,10 @@ export default function ScoresTablePage({
         timeVal,
         over25,
         bttsYes,
-        topScoreProb
+        topScoreProb,
+        homeScores,
+        awayScores,
+        fhGoal
       };
     });
   }, [matches, tzSettings]);
@@ -158,6 +183,9 @@ export default function ScoresTablePage({
       if (marketFilter === 'BTTS_YES' && item.bttsYes < 50) return false;
       if (marketFilter === 'BTTS_YES_HIGH_CONF' && item.bttsYes < 60) return false;
       if (marketFilter === 'BTTS_NO_HIGH_CONF' && item.bttsYes > 40) return false;
+      if (marketFilter === 'HOME_SCORES' && item.homeScores < 80) return false;
+      if (marketFilter === 'AWAY_SCORES' && item.awayScores < 80) return false;
+      if (marketFilter === 'FH_GOAL' && item.fhGoal < 75) return false;
     }
 
     return true;
@@ -215,6 +243,9 @@ export default function ScoresTablePage({
     let btts = 0;
     let bttsHigh = 0;
     let bttsNoHigh = 0;
+    let homeScores = 0;
+    let awayScores = 0;
+    let fhGoal = 0;
 
     rawScoresMatches.forEach(item => {
       if (!checkMatchPasses(item, 'market')) return;
@@ -226,6 +257,9 @@ export default function ScoresTablePage({
       if (item.bttsYes >= 50) btts++;
       if (item.bttsYes >= 60) bttsHigh++;
       if (item.bttsYes <= 40) bttsNoHigh++;
+      if (item.homeScores >= 80) homeScores++;
+      if (item.awayScores >= 80) awayScores++;
+      if (item.fhGoal >= 75) fhGoal++;
     });
 
     return [
@@ -236,7 +270,10 @@ export default function ScoresTablePage({
       { value: 'UNDER_25_HIGH_CONF', label: `Under 2.5, 60%+ chance (${u25High})` },
       { value: 'BTTS_YES', label: `Leans both score (${btts})` },
       { value: 'BTTS_YES_HIGH_CONF', label: `Both score, 60%+ chance (${bttsHigh})` },
-      { value: 'BTTS_NO_HIGH_CONF', label: `Not both score, 60%+ chance (${bttsNoHigh})` }
+      { value: 'BTTS_NO_HIGH_CONF', label: `Not both score, 60%+ chance (${bttsNoHigh})` },
+      { value: 'HOME_SCORES', label: `Home team scores, 80%+ chance (${homeScores})` },
+      { value: 'AWAY_SCORES', label: `Away team scores, 80%+ chance (${awayScores})` },
+      { value: 'FH_GOAL', label: `Goal in first half, 75%+ chance (${fhGoal})` }
     ];
   }, [rawScoresMatches, searchQuery, selectedLeague, selectedDate]);
 
@@ -282,17 +319,12 @@ export default function ScoresTablePage({
         return (bA - bB) * multiplier;
       }
       if (sortField === 'xg') {
-        const xgA = (a.lambda || safeParseFloat(a.xG?.home, 1.4)) + (a.mu || safeParseFloat(a.xG?.away, 1.1));
-        const xgB = (b.lambda || safeParseFloat(b.xG?.home, 1.4)) + (b.mu || safeParseFloat(b.xG?.away, 1.1));
+        const xgA = safeParseFloat(a.scoreModel?.expectedGoals?.total, 0);
+        const xgB = safeParseFloat(b.scoreModel?.expectedGoals?.total, 0);
         return (xgA - xgB) * multiplier;
       }
       if (sortField === 'best_value') {
-        const getVal = (m) => {
-          const o25 = safeParseFloat(m.scoreModel?.overUnder?.over25 ?? m.over25Prob, 52);
-          const u25 = 100 - o25;
-          const bt = safeParseFloat(m.scoreModel?.btts?.yes, 50);
-          return Math.max(o25, u25, bt);
-        };
+        const getVal = (m) => goalTips(m)[0]?.prob ?? 0;
         return (getVal(a) - getVal(b)) * multiplier;
       }
       return 0;
@@ -323,7 +355,7 @@ export default function ScoresTablePage({
   return (
     <div className="space-y-4">
       
-      {/* Top Bar with Accuracy Summary */}
+      {/* Top bar: average chances over the listed matches */}
       <div className="bg-white border border-slate-200 rounded-xl p-2.5 sm:p-3 shadow-xs flex flex-wrap items-center justify-between gap-2.5 text-xs">
         <div>
           <h2 className="text-sm font-bold text-slate-900">Goals</h2>
@@ -334,15 +366,15 @@ export default function ScoresTablePage({
           {aggregateStats ? (
             <>
               <div className="bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-md text-center">
-                <div className="text-[9.5px] text-slate-400 font-semibold">Exact score</div>
+                <div className="text-[9.5px] text-slate-400 font-semibold" title="Average chance of the most likely score, over the matches listed">Avg. top score</div>
                 <div className="font-bold text-slate-800 font-mono text-[11px]">{aggregateStats.exactScore}%</div>
               </div>
               <div className="bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-md text-center">
-                <div className="text-[9.5px] text-slate-400 font-semibold">Over/under 2.5</div>
+                <div className="text-[9.5px] text-slate-400 font-semibold" title="Average chance of over 2.5 goals, over the matches listed">Avg. over 2.5</div>
                 <div className="font-bold text-emerald-700 font-mono text-[11px]">{aggregateStats.over25}%</div>
               </div>
               <div className="bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-md text-center">
-                <div className="text-[9.5px] text-slate-400 font-semibold">Both score</div>
+                <div className="text-[9.5px] text-slate-400 font-semibold" title="Average chance both teams score, over the matches listed">Avg. both score</div>
                 <div className="font-bold text-indigo-700 font-mono text-[11px]">{aggregateStats.btts}%</div>
               </div>
             </>
@@ -619,10 +651,10 @@ export default function ScoresTablePage({
                 className={`py-1 px-2 min-w-[120px] text-left text-[10px] font-bold uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors ${
                   sortField === 'best_value' ? 'text-indigo-800 bg-indigo-50/60' : 'text-slate-500'
                 }`}
-                title="Click to sort by Best Value Edge"
+                title="The most likely goals tip for the match"
               >
                 <div className="flex items-center gap-1">
-                  <span>Best Value</span>
+                  <span>Best tip</span>
                   {sortField === 'best_value' ? (
                     sortDirection === 'asc' ? <ArrowUp className="w-2.5 h-2.5 text-indigo-600" /> : <ArrowDown className="w-2.5 h-2.5 text-indigo-600" />
                   ) : (
@@ -655,11 +687,15 @@ export default function ScoresTablePage({
                 const under25 = 100 - over25;
                 const bttsYes = safeParseFloat(m.scoreModel?.btts?.yes, 50);
                 const topScores = m.scoreModel?.topScorelines?.slice(0, 5) || [];
-                const homeLambda = safeParseFloat(m.lambda ?? m.xG?.home, 1.4);
-                const awayMu = safeParseFloat(m.mu ?? m.xG?.away, 1.1);
+                const over35 = safeParseFloat(m.scoreModel?.overUnder?.over35, NaN);
+                const homeLambda = safeParseFloat(m.scoreModel?.expectedGoals?.home ?? m.lambda, 1.4);
+                const awayMu = safeParseFloat(m.scoreModel?.expectedGoals?.away ?? m.mu, 1.1);
                 const totalXg = safeToFixed(homeLambda + awayMu, 1, '2.5');
-
-                const bestValuePick = over25 >= 58 ? 'Over 2.5 Goals' : under25 >= 58 ? 'Under 2.5 Goals' : bttsYes >= 58 ? 'BTTS - Yes' : 'Under 3.5 Goals';
+                const tips = goalTips(m);
+                const bestTip = tips[0] || { label: 'Over 2.5 goals', prob: over25 };
+                const bestValuePick = bestTip.label;
+                const teamGoals = m.scoreModel?.teamGoals;
+                const firstHalf = m.scoreModel?.firstHalf;
 
                 const relativeText = formatMatchKickoff(m);
                 const dt = formatSafeDateTime(m, null, tzSettings);
@@ -667,9 +703,10 @@ export default function ScoresTablePage({
                 const handleSlipAdd = (e) => {
                   e.stopPropagation();
                   if (!onAddToSlip) return;
-                  const pickProb = bestValuePick === 'Over 2.5 Goals' ? over25 : bestValuePick === 'Under 2.5 Goals' ? under25 : bestValuePick === 'BTTS - Yes' ? bttsYes : 50;
-                  const estOdds = (100 / Math.max(10, pickProb - 5)).toFixed(2);
-                  onAddToSlip(m, 'OVER_UNDER', bestValuePick, estOdds, pickProb);
+                  const pickProb = bestTip.prob;
+                  // Fair price for the tip; the bookmaker's own price replaces it on the slip.
+                  const fairOdds = (100 / Math.max(1, pickProb)).toFixed(2);
+                  onAddToSlip(m, 'OVER_UNDER', bestValuePick, fairOdds, pickProb);
                 };
 
                 return (
@@ -761,7 +798,7 @@ export default function ScoresTablePage({
                                   <div className="font-mono text-slate-800 font-semibold mt-0.5 space-y-0.5">
                                     <div>O 1.5: {safeToFixed(over15, 0)}%</div>
                                     <div>O 2.5: {safeToFixed(over25, 0)}%</div>
-                                    <div>O 3.5: {safeToFixed(Math.max(10, over25 - 28), 0)}%</div>
+                                    <div>O 3.5: {safeToFixed(over35, 0, '—')}%</div>
                                   </div>
                                 </div>
                                 <div className="bg-white p-1.5 rounded border border-slate-200">
@@ -773,6 +810,13 @@ export default function ScoresTablePage({
                                   </div>
                                 </div>
                               </div>
+                              {(teamGoals || firstHalf) && (
+                                <div className="bg-white p-1.5 rounded border border-slate-200 text-[10px] font-mono text-slate-800 font-semibold space-y-0.5">
+                                  {teamGoals && <div>{m.home} to score: {safeToFixed(teamGoals.homeToScore, 0)}%</div>}
+                                  {teamGoals && <div>{m.away} to score: {safeToFixed(teamGoals.awayToScore, 0)}%</div>}
+                                  {firstHalf && <div>Goal in first half: {safeToFixed(firstHalf.over05, 0)}%</div>}
+                                </div>
+                              )}
 
                               <div className="flex items-center justify-end gap-1.5 pt-1 border-t border-slate-200/60" onClick={(e) => e.stopPropagation()}>
                                 <button
@@ -946,7 +990,7 @@ export default function ScoresTablePage({
                                   <div className="font-mono text-slate-800 font-semibold mt-0.5 space-y-0.5">
                                     <div>O 1.5: {safeToFixed(over15, 0)}%</div>
                                     <div>O 2.5: {safeToFixed(over25, 0)}%</div>
-                                    <div>O 3.5: {safeToFixed(Math.max(10, over25 - 28), 0)}%</div>
+                                    <div>O 3.5: {safeToFixed(over35, 0, '—')}%</div>
                                   </div>
                                 </div>
                                 <div className="bg-white p-1.5 rounded border border-slate-200">
@@ -958,6 +1002,13 @@ export default function ScoresTablePage({
                                   </div>
                                 </div>
                               </div>
+                              {(teamGoals || firstHalf) && (
+                                <div className="bg-white p-1.5 rounded border border-slate-200 text-[10px] font-mono text-slate-800 font-semibold space-y-0.5">
+                                  {teamGoals && <div>{m.home} to score: {safeToFixed(teamGoals.homeToScore, 0)}%</div>}
+                                  {teamGoals && <div>{m.away} to score: {safeToFixed(teamGoals.awayToScore, 0)}%</div>}
+                                  {firstHalf && <div>Goal in first half: {safeToFixed(firstHalf.over05, 0)}%</div>}
+                                </div>
+                              )}
                             </div>
                           )}
                         </td>
@@ -1060,7 +1111,7 @@ export default function ScoresTablePage({
                             {bestValuePick}
                           </span>
                           <span className="text-[9px] text-emerald-700 font-semibold font-mono">
-                            +{safeToFixed(Math.abs(over25 - 50) * 0.4, 1)}%
+                            {safeToFixed(bestTip.prob, 0)}% likely
                           </span>
                         </div>
                       </td>
@@ -1173,8 +1224,26 @@ export default function ScoresTablePage({
                                   </div>
                                   <div className="flex justify-between">
                                     <span className="text-slate-600">Over 3.5 Goals:</span>
-                                    <span className="font-bold text-slate-800">{safeToFixed(Math.max(8, over25 - 28), 1)}%</span>
+                                    <span className="font-bold text-slate-800">{safeToFixed(over35, 1, '—')}%</span>
                                   </div>
+                                  {teamGoals && (
+                                    <>
+                                      <div className="flex justify-between border-t border-slate-200/60 pt-1 mt-1">
+                                        <span className="text-slate-600">{m.home} to score:</span>
+                                        <span className="font-bold text-slate-800">{safeToFixed(teamGoals.homeToScore, 1)}%</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-slate-600">{m.away} to score:</span>
+                                        <span className="font-bold text-slate-800">{safeToFixed(teamGoals.awayToScore, 1)}%</span>
+                                      </div>
+                                    </>
+                                  )}
+                                  {firstHalf && (
+                                    <div className="flex justify-between">
+                                      <span className="text-slate-600">Goal in first half:</span>
+                                      <span className="font-bold text-slate-800">{safeToFixed(firstHalf.over05, 1)}%</span>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
 
