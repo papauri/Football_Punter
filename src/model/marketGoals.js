@@ -114,13 +114,11 @@ export class MarketMemory {
   /** Learn from one past match whose prices implied these expected goals. Call in date order. */
   update(league, home, away, lambda, mu) {
     if (!league || !home || !away || !(lambda > 0) || !(mu > 0)) return;
+    // Ratings are kept per competition: they are relative to that competition's baseline, so a club's
+    // league rating is not disturbed by its cup or European ties, and a promoted club starts afresh.
     const L = (this.leagues[league] ||= { hb: Math.log(1.5), ab: Math.log(1.2), n: 0 });
-    const h = (this.teams[home] ||= { att: 0, def: 0, n: 0, league });
-    const a = (this.teams[away] ||= { att: 0, def: 0, n: 0, league });
-    // A team seen in a new league (promotion, relegation) starts again: its ratings were relative to
-    // the old league's baseline.
-    if (h.league !== league) Object.assign(h, { att: 0, def: 0, n: 0, league });
-    if (a.league !== league) Object.assign(a, { att: 0, def: 0, n: 0, league });
+    const h = (this.teams[`${league}::${home}`] ||= { att: 0, def: 0, n: 0 });
+    const a = (this.teams[`${league}::${away}`] ||= { att: 0, def: 0, n: 0 });
     const pl = Math.exp(L.hb + h.att - a.def), pm = Math.exp(L.ab + a.att - h.def);
     const gl = Math.log(lambda / pl) * pl, gm = Math.log(mu / pm) * pm;
     const r = this.rate;
@@ -132,8 +130,17 @@ export class MarketMemory {
 
   /** Expected goals for a fixture, or null unless both teams are known in this league. */
   predict(league, home, away) {
-    const L = this.leagues[league], h = this.teams[home], a = this.teams[away];
-    if (!L || !h || !a || h.league !== league || a.league !== league) return null;
+    let L = this.leagues[league], h = this.teams[`${league}::${home}`], a = this.teams[`${league}::${away}`];
+    if (!L || !h || !a || h.n < this.minMatches || a.n < this.minMatches) {
+      // A cup tie between two clubs of the same league: use that league's ratings.
+      let best = null;
+      for (const lg of Object.keys(this.leagues)) {
+        const th = this.teams[`${lg}::${home}`], ta = this.teams[`${lg}::${away}`];
+        if (th && ta && th.n >= this.minMatches && ta.n >= this.minMatches && (!best || th.n + ta.n > best.n)) best = { lg, th, ta, n: th.n + ta.n };
+      }
+      if (!best) return null;
+      L = this.leagues[best.lg]; h = best.th; a = best.ta;
+    }
     if (h.n < this.minMatches || a.n < this.minMatches) return null;
     return { lambda: Math.exp(L.hb + h.att - a.def), mu: Math.exp(L.ab + a.att - h.def) };
   }

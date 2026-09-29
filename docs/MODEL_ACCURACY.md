@@ -740,9 +740,16 @@ carry far less noise than results. For a match with no odds:
 | Shots on target | 50.6% | 1.005 |
 | Results | 49.9% | 1.008 |
 
-It is used only when both teams have at least five priced matches in the fixture's league, and it
-is switched off wherever the app replays or grades past matches (`ignoreMarketGoals`), since it
-has learned from those matches' own prices.
+It is used only when both teams have at least five priced matches in the fixture's league (or, for a
+cup tie between two clubs of the same league, in that league), and it is switched off wherever the
+app replays or grades past matches (`ignoreMarketGoals`), since it has learned from those matches'
+own prices. Ratings are kept per competition, so a club's league rating is not disturbed by its cup
+or European ties. Combining it with results or shots-on-target ratings did not improve it (log loss
+0.9887 alone, 0.9885 with both).
+
+On a live day (288 upcoming matches) 172 had today's prices, 43 used market memory and 73 fell back
+to the model: mostly Nations League (national teams have no price history) and the Saudi Pro League
+(not in the football-data files; memory fills in as the app records ESPN prices).
 
 **Walk-forward on the app itself** (April 2025 onwards, 5,183 fixtures, engine rebuilt from history
 at every step):
