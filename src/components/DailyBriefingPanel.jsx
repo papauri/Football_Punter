@@ -88,7 +88,9 @@ export default function DailyBriefingPanel({
     const build = (m) => {
       const phase = getMatchPhase(m, now);
       const smart = normalizePick(m.smartMarket?.pick || '');
-      const isPass = smart === 'PASS' || Boolean(m.disruptionModel?.isPassFlagged);
+      // Only a switched-off league has no tip. A volatile-looking game still gets its outright call; the
+      // "Risky" badge says so.
+      const isPass = smart === 'PASS';
       const pick = isPass ? 'PASS' : (smart || getSlipPick(m));
       const conf = safeParseFloat(m.confidence ?? m.binaryModel?.confidence,
         Math.max(safeParseFloat(m.prob?.home), safeParseFloat(m.prob?.draw), safeParseFloat(m.prob?.away)));

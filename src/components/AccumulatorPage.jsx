@@ -135,7 +135,7 @@ export default function AccumulatorPage({
   };
 
   // Preset Builder Controls (Max Win Rate DC/DNB or Outrights)
-  const [presetStrategy, setPresetStrategy] = useState('max_win_rate'); // 'max_win_rate' | 'unanimous' | 'antifragile' | 'value'
+  const [presetStrategy, setPresetStrategy] = useState('unanimous'); // 'unanimous' | 'antifragile' | 'value' | 'max_win_rate' (team or draw)
   const [presetLegCount, setPresetLegCount] = useState(3); // short slips win far more often
 
   // Active Bet Slip Filters
@@ -1421,10 +1421,10 @@ export default function AccumulatorPage({
                   value={presetStrategy}
                   onChange={setPresetStrategy}
                   options={[
-                    { value: 'max_win_rate', label: `Safest: team or draw (${allMaxWinRatePool.length})` },
                     { value: 'unanimous', label: `Strongest tips (${allUnanimousPool.length})` },
                     { value: 'antifragile', label: `Steady favourites (${allEliteStraightPool.length})` },
-                    { value: 'value', label: `Best value (${allValuePool.length})` }
+                    { value: 'value', label: `Best value (${allValuePool.length})` },
+                    { value: 'max_win_rate', label: `Team or draw, lower odds (${allMaxWinRatePool.length})` }
                   ]}
                 />
 

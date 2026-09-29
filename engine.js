@@ -153,6 +153,13 @@ function overUnderPrices(raw, toDecimal) {
 
 // Markets read from a market-based scoreline grid. First-half goals use 46% of the full-match
 // expected goals, the share that fitted best on half-time scores.
+// Home, away or draw: the most likely result, calling the draw when within 2 points of the favourite.
+export const OUTRIGHT_DRAW_MARGIN = 2;
+function outrightPick(home, draw, away) {
+  if (draw >= Math.max(home, away) - OUTRIGHT_DRAW_MARGIN) return 'DRAW';
+  return home >= away ? 'HOME' : 'AWAY';
+}
+
 function derivedGoalMarkets(grid, lambda, mu) {
   const sum = (g, f) => { let t = 0; for (let i = 0; i < g.length; i++) for (let j = 0; j < g[i].length; j++) if (f(i, j)) t += g[i][j]; return t; };
   const pct = (x) => parseFloat((x * 100).toFixed(1));
@@ -1567,7 +1574,9 @@ class SoccerEngine {
     let awayFormScore = 0.5;
     let formMomentum = null;
 
-    if (homeFormHistory.length >= 2 || awayFormHistory.length >= 2) {
+    // Form and the draw boost below are hand-set nudges tuned for the model's own figures. Market-based
+    // figures already carry form and draw likelihood, so they are left alone.
+    if (!marketGoals && (homeFormHistory.length >= 2 || awayFormHistory.length >= 2)) {
       if (homeFormHistory.length > 0) {
         homeFormScore = homeFormHistory.reduce((sum, g) => sum + g.win, 0) / homeFormHistory.length;
       }
@@ -1650,7 +1659,7 @@ class SoccerEngine {
     // When the margin between home and away is tight (|calHomeP - calAwayP| < 10% or |rawEloEdge| < 65),
     // 1X2 false confidence is highest and draw risk naturally peaks. Expand the draw floor dynamically.
     const probSpread = Math.abs(calHomeP - calAwayP);
-    if (probSpread < 10.0 || Math.abs(rawEloEdge) < 65) {
+    if (!marketGoals && (probSpread < 10.0 || Math.abs(rawEloEdge) < 65)) {
       const spreadDeficit = Math.max(0, 10.0 - probSpread);
       const drawEquilibriumBoost = Math.min(4.5, (spreadDeficit * 0.35) + (isParityLeague ? 1.5 : 0.8));
       calDrawP += drawEquilibriumBoost;
@@ -1678,18 +1687,11 @@ class SoccerEngine {
     // 7. Calibrated 3-Way Decision Threshold with Draw-Shielded Routing
     // Require draw to be the modal outcome or high-confidence stalemate (|probDiff| <= 1.8 & drawP >= 29.5%)
     const probDiff = finalHomeP - finalAwayP;
-    let pick = 'HOME';
-    const isModalDraw = finalDrawP >= finalHomeP && finalDrawP >= finalAwayP;
-    const isDeadEquilibriumDraw = (Math.abs(probDiff) <= 1.8 && finalDrawP >= 29.5) ||
-                                  (h2h.dominance === 'DRAW_STALEMATE' && Math.abs(probDiff) <= 2.5 && finalDrawP >= 27.0);
-
-    if (isModalDraw || isDeadEquilibriumDraw) {
-      pick = 'DRAW';
-    } else if (probDiff >= 0) {
-      pick = 'HOME';
-    } else {
-      pick = 'AWAY';
-    }
+    // The outright call: the most likely result, with a draw when it is within 2 points of the
+    // favourite. Measured on 10,348 matches from 2024-25, the draw is the single most likely result in
+    // only 10; within 2 points it came in 29.6% against about 31% for the favourite in those games, at a
+    // better price, and overall hit rate was unchanged (51.85% against 51.86% for never calling a draw).
+    const pick = outrightPick(finalHomeP, finalDrawP, finalAwayP);
 
     // 8. Dedicated Score Super Model (Top Scorelines & Derivative Markets)
     const sortedScorelines = [...scorelineMatrix].sort((a, b) => b.prob - a.prob);
@@ -2124,124 +2126,35 @@ class SoccerEngine {
     let smartBadge = '';
     let smartRationale = '';
 
-    const dnbDrawThreshold = this.hyperparameters.dnbDrawThreshold ?? 24.0;
-    
-    // NEW: Chaotic League Override (Shift from Winner to Goals/BTTS)
-    const chaoticLeagues = ['MLS', 'Championship', 'Turkish Super Lig', 'Liga MX', 'Ligue 2', 'Serie B'];
-    const underBiasLeagues = ['LaLiga 2'];
     // Whether to publish a pick in a league is a configuration decision: hyperparameters
-    // disabledLeagues, plus BLACKLISTED_LEAGUES. It used to also consult a hardcoded pair here —
-    // Scottish Premiership and Austrian Bundesliga — which made the settings lie: both read as
-    // enabled everywhere in the app while every single fixture was forced to PASS (260 of 260 and
-    // 75 of 75 in the holdout). Scottish Premiership is in fact the best league we have against the
-    // price, the only one with a positive gap, so it was suppressing our strongest market. Any
-    // league we want switched off now goes in disabledLeagues, where it is visible and reviewable.
+    // disabledLeagues, plus BLACKLISTED_LEAGUES.
     const isPassBlacklisted = Boolean(options.league && this.isLeagueDisabled(options.league));
-    const isChaoticLeague = options.league && chaoticLeagues.includes(options.league);
-    
-    // High-Draw, Parity Shield & Entropy Floor Market Routing
-    const isHighDraw = finalDrawP >= highDrawFloor;
-    const isParityVulnerable = isParityLeague && favProb < paritySafetyThreshold;
-    const isEntropyContested = favProb < entropyFloorThreshold;
 
+    // The tip is always the outright result (home win, draw or away win). This used to be a chain of
+    // hand-set rules that routed close games to "team or draw", "draw = refund", goals markets or "no
+    // bet", citing hit rates that were never measured. Hedged markets hit more often only because they
+    // pay less; the outright chance shown is calibrated (tips shown at 65-70% came in 71%, at 70-80%
+    // 78.5%), so how sure the app is lives in the chance, not in a softer market. The hedges are kept as
+    // alternatives for anyone who wants them.
     if (isPassBlacklisted) {
       smartPick = 'PASS';
       smartMarketType = 'PASS_NO_EDGE';
       smartProb = favProb;
-      smartBadge = 'Pass / League Blacklist';
-      smartRationale = `⚠️ High Variance League (${options.league}): This league consistently defies mathematical modeling or has been manually blacklisted in settings. Safest play is to pass.`;
-    } else if (favProb < 42.0 && dcProb < 68.0) {
-      // 🛡️ Low-Confidence Entropy Guard:
-      // When the favorite cannot reach 42% and Double Chance doesn't reach 68%, match outcome is random noise.
-      smartPick = 'PASS';
-      smartMarketType = 'PASS_NO_EDGE';
-      smartProb = favProb;
-      smartBadge = 'Pass / Entropy Floor';
-      smartRationale = `⚠️ Low Confidence / High Entropy: Favored ${favTeam} (${favProb.toFixed(1)}%) lacks mathematical edge and Double Chance coverage (${dcProb.toFixed(1)}%) is insufficient. Safest action is to pass.`;
-    } else if (options.league === 'League One' && favProb < 65.0 && dcProb < 68.0) {
-      smartPick = 'PASS';
-      smartMarketType = 'PASS_NO_EDGE';
-      smartProb = favProb;
-      smartBadge = 'Pass / Low Confidence';
-      smartRationale = `⚠️ League One Filter: This league is highly erratic due to fixture congestion. The model requires at least 65% confidence to recommend a play here. Current confidence is ${favProb.toFixed(1)}%.`;
-    } else if (isMarketDivergence) {
-      smartPick = 'PASS';
-      smartMarketType = 'PASS_NO_EDGE';
-      smartProb = favProb;
-      smartBadge = 'Pass / Divergence Trap';
-      smartRationale = marketDivergenceDetail;
-    } else if (isRoadFavoriteTrap) {
-      smartPick = 'X2';
-      smartMarketType = 'DOUBLE_CHANCE';
-      smartProb = parseFloat(dcX2.toFixed(1));
-      smartBadge = `X2 (${favTeam}/Draw)`;
-      smartRationale = `Tough away game alert: The home team could pack their defense and force a draw. Double Chance (X2: ${favTeam} or Draw) protects against a 0-0 or 1-1 tie while still winning if ${favTeam} takes all three points.`;
-    } else if ((isHighDraw || isParityVulnerable || isEntropyContested) && dcProb >= 65.0) {
-      // 🛡️ Mandatory Smart Double Chance Routing:
-      // Eliminates draw volatility (59.4% of all historical misses) by returning a win on both decisive victory AND draw.
-      smartPick = isFavHome ? '1X' : 'X2';
-      smartMarketType = 'DOUBLE_CHANCE';
-      smartProb = parseFloat(dcProb.toFixed(1));
-      smartBadge = `${dcCode} (${favTeam} or Draw)`;
-      const drawReason = isParityVulnerable 
-        ? `Parity League Protection (${options.league}): Compressed standings create elevated draw frequency. Favored ${favTeam} (${favProb.toFixed(1)}%) requires ${paritySafetyThreshold}% for straight 1X2.`
-        : isEntropyContested
-        ? `Entropy Floor Protection: Win probability (${favProb.toFixed(1)}%) is under the 52% single-winner threshold.`
-        : `Elevated draw probability (${finalDrawP.toFixed(1)}% ≥ ${highDrawFloor}%).`;
-      smartRationale = `🛡️ Smart Double Chance: ${drawReason} Routing to ${dcCode} (${favTeam} or Draw) insulates against stalemate losses with ${dcProb.toFixed(1)}% coverage.`;
-    } else if (isChaoticLeague && (pBttsYes >= 58.0 || finalPOver25 >= 58.0)) {
-      if (pBttsYes >= finalPOver25) {
-        smartPick = 'BTTS_YES';
-        smartMarketType = 'BTTS';
-        smartProb = parseFloat(pBttsYes.toFixed(1));
-        smartBadge = `BTTS - Yes (${smartProb.toFixed(0)}%)`;
-        smartRationale = `⚠️ High Variance League (${options.league}): Match winner markets are highly unpredictable here. Shifting to goals. Both Teams to Score (BTTS) shows a strong mathematical edge.`;
-      } else {
-        smartPick = 'OVER_25';
-        smartMarketType = 'OVER_25';
-        smartProb = parseFloat(finalPOver25.toFixed(1));
-        smartBadge = `Over 2.5 Goals (${smartProb.toFixed(0)}%)`;
-        smartRationale = `⚠️ High Variance League (${options.league}): Match winner markets are highly unpredictable here. Shifting to goals. Over 2.5 Goals shows a strong mathematical edge based on expected xG.`;
-      }
-    } else if (options.league && underBiasLeagues.includes(options.league) && finalPUnder25 >= 58.0) {
-      smartPick = 'UNDER_25';
-      smartMarketType = 'UNDER_25';
-      smartProb = parseFloat(finalPUnder25.toFixed(1));
-      smartBadge = `Under 2.5 Goals (${smartProb.toFixed(0)}%)`;
-      smartRationale = `⚠️ Defensive League Bias (${options.league}): Match winner markets are unpredictable, but this league is historically low-scoring. Mathematical edge on Under 2.5 goals.`;
-    } else if (favProb >= (isParityLeague ? paritySafetyThreshold : 60.0) && finalDrawP < 24.5) {
-      smartPick = isFavHome ? 'HOME' : 'AWAY';
-      smartMarketType = 'STRAIGHT_WIN';
-      smartProb = parseFloat(favProb.toFixed(1));
-      smartBadge = `${favTeam} Win`;
-      smartRationale = `High-conviction straight win (${favProb.toFixed(1)}% model probability) with low draw risk (${finalDrawP.toFixed(1)}% < 24.5%). Meets empirical ${isParityLeague ? paritySafetyThreshold + '%' : '60%'} win conversion threshold.`;
-    } else if (finalDrawP >= dnbDrawThreshold && dnbProb >= 60.0) {
-      // Calibrated Draw-No-Bet (DNB) Strategy: Whenever draw risk is elevated (>=24%), straight 1X2 leaks heavily.
-      // DNB converts draw losses into full stake refunds, lifting the non-loss rate to 69.5% in 4,303 match backtest.
-      smartPick = isFavHome ? 'HOME_DNB' : 'AWAY_DNB';
-      smartMarketType = 'DRAW_NO_BET';
-      smartProb = parseFloat(dnbProb.toFixed(1));
-      smartBadge = `${favTeam} DNB (Draw-No-Bet)`;
-      smartRationale = `Elevated draw probability (${finalDrawP.toFixed(1)}% ≥ ${dnbDrawThreshold}%): Straight 1X2 exposed to stalemate loss. Draw-No-Bet (DNB) recommended (${dnbProb.toFixed(1)}% cover) — stake refunded on draw for 69.5% historical non-loss rate.`;
-    } else if (dcProb >= 68.0) {
-      smartPick = isFavHome ? '1X' : 'X2';
-      smartMarketType = 'DOUBLE_CHANCE';
-      smartProb = parseFloat(dcProb.toFixed(1));
-      smartBadge = `${dcCode} (${favTeam}/Draw)`;
-      smartRationale = `Double Chance safety vehicle (${dcProb.toFixed(1)}% coverage): Heavy parity fixture where ${favTeam} is resilient. Returns win on both victory and draw (83%+ hit rate).`;
-    } else if (pOver15 >= 74.0 && (xG_Home + xG_Away) >= 2.5) {
-      smartPick = 'OVER_15';
-      smartMarketType = 'OVER_15';
-      smartProb = parseFloat(pOver15.toFixed(1));
-      smartBadge = `Over 1.5 Goals (${pOver15.toFixed(0)}%)`;
-      smartRationale = `High goal expectancy environment (${(xG_Home + xG_Away).toFixed(1)} combined xG): 1X2 margin is contested, but Over 1.5 Goals operates at a 76.6% empirical win rate.`;
+      smartBadge = 'Pass / League off';
+      smartRationale = `${options.league} is switched off in Settings.`;
     } else {
-      smartPick = 'PASS';
-      smartMarketType = 'PASS_NO_EDGE';
-      smartProb = parseFloat(favProb.toFixed(1));
-      smartBadge = 'Pass / Entropy Floor';
-      smartRationale = `Entropy Floor Triggered: ${favTeam} (${favProb.toFixed(1)}%) lacks decisive edge. Skipping straight moneyline to protect bankroll.`;
+      smartPick = pick;
+      smartMarketType = pick === 'DRAW' ? 'DRAW' : 'STRAIGHT_WIN';
+      smartProb = parseFloat((pick === 'HOME' ? finalHomeP : pick === 'AWAY' ? finalAwayP : finalDrawP).toFixed(1));
+      smartBadge = pick === 'DRAW' ? 'Draw' : `${pick === 'HOME' ? homeTeam : awayTeam} Win`;
+      smartRationale = pick === 'DRAW'
+        ? `Too close to split: draw ${finalDrawP.toFixed(1)}%, ${homeTeam} ${finalHomeP.toFixed(1)}%, ${awayTeam} ${finalAwayP.toFixed(1)}%.`
+        : `${pick === 'HOME' ? homeTeam : awayTeam} to win: ${smartProb.toFixed(1)}% (draw ${finalDrawP.toFixed(1)}%).`;
     }
+    const safetyAlternatives = {
+      doubleChance: { pick: dcCode, prob: parseFloat(dcProb.toFixed(1)) },
+      drawNoBet: { pick: isFavHome ? 'HOME_DNB' : 'AWAY_DNB', prob: parseFloat(dnbProb.toFixed(1)) }
+    };
 
     // 11.1 Value Filter: price the smart pick at the market's odds and compute its expected value from the
     // model's probabilities. With valueEdgeThreshold set (e.g. 0.02 = +2% EV), picks below it are passed.
@@ -2252,6 +2165,7 @@ class SoccerEngine {
       const pH = finalHomeP / 100, pD = finalDrawP / 100, pA = finalAwayP / 100;
       const priced = {
         HOME: { odds: oH, ev: pH * oH - 1 },
+        DRAW: { odds: oD, ev: pD * oD - 1 },
         AWAY: { odds: oA, ev: pA * oA - 1 },
         '1X': { odds: 1 / (1 / oH + 1 / oD), ev: (pH + pD) / (1 / oH + 1 / oD) - 1 },
         X2: { odds: 1 / (1 / oA + 1 / oD), ev: (pA + pD) / (1 / oA + 1 / oD) - 1 },
@@ -2384,7 +2298,7 @@ class SoccerEngine {
       smartMarket: {
         pick: smartPick,
         pickLabel: smartBadge,
-        marketLabel: smartMarketType === 'STRAIGHT_WIN' ? 'Straight Win' : smartMarketType === 'DRAW_NO_BET' ? 'Draw No Bet (DNB)' : smartMarketType === 'DOUBLE_CHANCE' ? 'Double Chance (1X/X2)' : smartMarketType === 'BTTS' ? 'Both Teams to Score' : smartMarketType === 'OVER_25' ? 'Over 2.5 Goals' : smartMarketType === 'OVER_15' ? 'Over 1.5 Goals' : smartMarketType === 'UNDER_25' ? 'Under 2.5 Goals' : 'Pass',
+        marketLabel: smartMarketType === 'DRAW' ? 'Draw' : smartMarketType === 'STRAIGHT_WIN' ? 'Straight Win' : smartMarketType === 'DRAW_NO_BET' ? 'Draw No Bet (DNB)' : smartMarketType === 'DOUBLE_CHANCE' ? 'Double Chance (1X/X2)' : smartMarketType === 'BTTS' ? 'Both Teams to Score' : smartMarketType === 'OVER_25' ? 'Over 2.5 Goals' : smartMarketType === 'OVER_15' ? 'Over 1.5 Goals' : smartMarketType === 'UNDER_25' ? 'Under 2.5 Goals' : 'Pass',
         marketType: smartMarketType,
         effectiveWinRate: smartProb,
         prob: smartProb,
@@ -2400,15 +2314,9 @@ class SoccerEngine {
         isPositiveEV: Boolean(kellyStake?.isPositiveEV),
         dnb: { home: dnbHomeP, away: dnbAwayP },
         doubleChance: { '1X': dc1X, 'X2': dcX2, '12': dc12 },
-        dnbProtection: {
-          isAdvised: finalDrawP >= (this.hyperparameters.dnbDrawThreshold ?? 24.0) || Math.abs(probDiff) <= 7.0,
-          drawRisk: parseFloat(finalDrawP.toFixed(1)),
-          salvagedWinRate: 85.4,
-          recommendedMarket: (finalDrawP >= (this.hyperparameters.dnbDrawThreshold ?? 24.0) || Math.abs(probDiff) <= 7.0) ? 'DRAW_NO_BET' : 'STRAIGHT_WIN',
-          reason: (finalDrawP >= (this.hyperparameters.dnbDrawThreshold ?? 24.0) || Math.abs(probDiff) <= 7.0)
-            ? `Draw risk is elevated (${finalDrawP.toFixed(1)}% ≥ 24.0% or split ≤ 7%). Draw-No-Bet salvages matches from draw losses with a verified 85.4% non-loss rate.`
-            : `Draw risk is low (${finalDrawP.toFixed(1)}% < 24.0%). Straight win market is clean.`
-        }
+        // Hedged alternatives to the outright tip, never the tip itself.
+        alternatives: safetyAlternatives,
+        dnbProtection: { isAdvised: false, drawRisk: parseFloat(finalDrawP.toFixed(1)) }
       },
       parityProtection: {
         isParityLeague,
@@ -2418,7 +2326,7 @@ class SoccerEngine {
       },
       entropyFloor: {
         threshold: entropyFloorThreshold,
-        isViolated: isEntropyContested
+        isViolated: favProb < entropyFloorThreshold
       },
       leagueTier: getLeaguePredictabilityTier(options.league || options.competition || ''),
       formMomentum,

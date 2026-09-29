@@ -77,7 +77,15 @@ check('DNB prob = P(win | no draw)', resolveMatchProb(dnbSynth, 'HOME_DNB') === 
 const synth = (home, draw, away, extra = {}) => ({ home: 'A', away: 'B', league: 'Premier League', prob: { home, draw, away }, confidence: extra.confidence ?? Math.max(home, away), ...extra });
 check('Taxonomy: 72/18/10 conf 75 → ELITE', getMatchRiskProfile(synth(72, 18, 10, { confidence: 75 }), 'HOME').tierKey === 'ELITE');
 check('Taxonomy: 63/22/15 → HIGH', getMatchRiskProfile(synth(63, 22, 15), 'HOME').tierKey === 'HIGH');
-check('Taxonomy: 52/27/21 → DNB advised', getMatchRiskProfile(synth(52, 27, 21), 'HOME').tierKey === 'DNB');
+check('Taxonomy: 52/27/21 → LEAN (straight pick, not pushed to draw = refund)', getMatchRiskProfile(synth(52, 27, 21), 'HOME').tierKey === 'LEAN');
+check('Taxonomy: draw pick is a close game, not a trap', getMatchRiskProfile(synth(33, 34, 33), 'DRAW').tierKey === 'CONTESTED');
+{
+  const pOdds = (h, d, a) => { const q = [1 / h, 1 / d, 1 / a], t = q[0] + q[1] + q[2]; return { homeOdds: h, drawOdds: d, awayOdds: a, homeProb: q[0] / t * 100, drawProb: q[1] / t * 100, awayProb: q[2] / t * 100, marketFav: h <= a ? 'HOME' : 'AWAY' }; };
+  const tip = (h, d, a) => engine.computeDixonColesProbabilities('Arsenal', 'Chelsea', { league: 'Premier League', odds: pOdds(h, d, a) }).smartMarket.pick;
+  check('Outright: clear favourite is a straight win', tip(1.5, 4.2, 6.5) === 'HOME');
+  check('Outright: close game with draw 7 points behind is not a draw call', tip(2.6, 3.2, 2.7) === 'HOME');
+  check('Outright: level odds call the draw', tip(2.9, 2.9, 2.9) === 'DRAW');
+}
 check('Taxonomy: 44/29/27 → CONTESTED', getMatchRiskProfile(synth(44, 29, 27, { confidence: 48 }), 'HOME').tierKey === 'CONTESTED');
 check('Taxonomy: trap flag overrides 80% → TRAP', getMatchRiskProfile(synth(80, 12, 8, { confidence: 80, isFavoriteTrap: true }), 'HOME').riskLevel === 'HIGH');
 check('Taxonomy: low odds never downgrade Elite', getMatchRiskProfile(synth(78, 15, 7, { confidence: 80, odds: { home: 1.12 } }), 'HOME').tierKey === 'ELITE');

@@ -151,7 +151,7 @@ export default function FixturesTablePage({
   // Strategic Enhancements: Lineup Impact, Confidence Level, Bet Safety Mode, Major League Filter
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [convictionMode, setConvictionMode] = useState('ALL'); // 'ALL' | 'HIGH' (>=60%) | 'ELITE' (>=68% or Consensus) | 'UNANIMOUS'
-  const [marketMode, setMarketMode] = useState('SMART_ADAPTIVE'); // 'SMART_ADAPTIVE' | 'DNB' | 'DOUBLE_CHANCE' | 'STRAIGHT_1X2'
+  const [marketMode, setMarketMode] = useState('STRAIGHT_1X2'); // 'STRAIGHT_1X2' (outright: win, draw or win) | 'DOUBLE_CHANCE' | 'DNB'
   const [filterByMarketOnly, setFilterByMarketOnly] = useState(false);
   const [strictLeaguePruning, setStrictLeaguePruning] = useState(true);
   const [calibratingLineups, setCalibratingLineups] = useState(false);
@@ -620,8 +620,6 @@ export default function FixturesTablePage({
     return [
       { value: 'All', label: `Everything (${all})` },
       { value: 'NO_TRAPS', label: `No risky tips (${noTraps})` },
-      { value: 'DNB_ONLY', label: `Draw = refund tips (${dnb})` },
-      { value: 'DERIVATIVE_SAFETY', label: `Safer bet types (${safeAlt})` },
       { value: 'TIER_1_ONLY', label: `Top leagues only (${tier1})` },
       { value: 'UPSET_RISK', label: `Possible upsets (${traps})` }
     ];
@@ -795,43 +793,6 @@ export default function FixturesTablePage({
     const dcProb = Math.min(99, Math.round(favProb + drawProb));
     const dcCode = isFavHome ? '1X' : 'X2';
     const odds = matchOdds || resolveMatchOdds(m, predictedWinner);
-
-    // 1. SMART_ADAPTIVE (Auto DNB / DC when draw risk is high)
-    if (marketMode === 'SMART_ADAPTIVE') {
-      const isHighDraw = drawProb >= 24.0;
-      if (m.smartMarket?.marketType === 'DOUBLE_CHANCE' || (isHighDraw && dcProb >= 72 && favProb < 55)) {
-        const dcOdds = resolveMatchOdds(m, dcCode);
-        return (
-          <span 
-            className="inline-flex items-center px-1.5 py-0.5 rounded text-[10.5px] font-bold bg-amber-50 text-amber-800 border border-amber-300 shadow-2xs whitespace-nowrap" 
-            title={`Smart Double Chance (${dcCode}, ${dcProb}%): ${favTeam} or Draw protects against stalemate (@${safeToFixed(dcOdds, 2)})`}
-          >
-            {isFavHome ? 'Home or draw' : 'Away or draw'}
-          </span>
-        );
-      }
-
-      if (m.smartMarket?.marketType === 'DRAW_NO_BET' || isHighDraw) {
-        const dnbOdds = resolveMatchOdds(m, isFavHome ? '1' : '2');
-        return (
-          <span 
-            className="inline-flex items-center px-1.5 py-0.5 rounded text-[10.5px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 shadow-2xs whitespace-nowrap" 
-            title={`Smart Draw-No-Bet (${dnbProb}%): ${favTeam} Win, refunded if draw (@${safeToFixed(dnbOdds, 2)})`}
-          >
-            {isFavHome ? 'Home (draw = refund)' : 'Away (draw = refund)'}
-          </span>
-        );
-      }
-
-      return (
-        <span 
-          className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10.5px] font-bold border whitespace-nowrap shadow-2xs ${getWinnerBadgeClass(predictedWinner)}`}
-          title={`Outright Pick: ${predictedWinner === 'HOME' ? m.home : predictedWinner === 'AWAY' ? m.away : 'Draw'} (@${safeToFixed(odds, 2)})`}
-        >
-          {predictedWinner === 'HOME' ? 'Home win' : predictedWinner === 'AWAY' ? 'Away win' : 'Draw'}
-        </span>
-      );
-    }
 
     // 2. DNB Mode (Draw No Bet)
     if (marketMode === 'DNB') {
@@ -1040,10 +1001,9 @@ export default function FixturesTablePage({
                   value={marketMode}
                   onChange={setMarketMode}
                   options={[
-                    { value: 'SMART_ADAPTIVE', label: 'Safest bet type (auto)' },
-                    { value: 'DNB', label: 'Draw = refund' },
+                    { value: 'STRAIGHT_1X2', label: 'Result (win, draw or win)' },
                     { value: 'DOUBLE_CHANCE', label: 'Team or draw' },
-                    { value: 'STRAIGHT_1X2', label: 'Straight win' }
+                    { value: 'DNB', label: 'Draw = refund' }
                   ]}
                   selectClassName="bg-white border-slate-200 py-0.5 text-xs shadow-none"
                 />
@@ -1120,8 +1080,8 @@ export default function FixturesTablePage({
                 </button>
 
                 <InfoTooltip
-                  title="Safest bet type"
-                  content="When a draw looks likely, the tip switches to draw = refund or team or draw, so a draw does not lose the bet."
+                  title="Tips"
+                  content="Each tip is one result: home win, draw or away win. A draw is only called when it is as likely as either team winning. The chance shows how sure the tip is; tips shown at 70%+ have come in about 78% of the time."
                   align="right"
                 />
 

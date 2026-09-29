@@ -787,3 +787,31 @@ matches from 2024-25 the raw chances were already calibrated (recalibrating move
 The Goals page filters "Home/Away team scores, 80%+" and "Goal in first half, 75%+" use these. Its
 "Over 3.5" used to be shown as the over 2.5 chance minus 28 points, and its "best value" column an
 invented edge; both now show the engine's real figures, and the best tip is the most likely one.
+
+## Outright tips instead of "team or draw"
+
+The tip used to come from a chain of hand-set rules that sent close games to "team or draw", "draw =
+refund", a goals market or "no bet", quoting hit rates (69.5%, 83%+, 85.4%) that were never measured.
+Hedged tips hit more often only because they pay less. Every tip is now one result: home win, draw
+or away win, with the draw called when it is within 2 points of the favourite.
+
+On 10,348 matches from 2024-25, straight picks came in as often as their chance said:
+
+| Chance shown | Came in |
+|---|---|
+| 55-60% | 60.7% |
+| 60-65% | 61.3% |
+| 65-70% | 71.4% |
+| 70-80% | 78.5% |
+| 80%+ | 87.4% |
+
+The draw is the single most likely result in only 10 of those matches. Calling it within 2 points
+of the favourite left the hit rate unchanged (51.85% against 51.86% for never calling a draw); the
+old rule called five times as many draws and did slightly worse. A hand-set "draw equilibrium"
+boost of up to 4.5 points in close games, and a form nudge, are no longer applied to market-based
+figures, so the chances shown now equal the market's.
+
+Walk-forward on the app (April 2025 onwards): the tip agreed with the market's favourite on all but
+2 of 5,183 fixtures, hit 52.6%. By price: under 1.30 came in 82.0%, 1.30-1.50 71.4%, 1.50-1.80
+59.9%, 1.80-2.20 45.6%, 2.20-3.00 40.1%. "Team or draw" and "draw = refund" remain available as a
+bet type on the Matches page and a slip strategy, never as the default.

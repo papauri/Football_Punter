@@ -32,6 +32,7 @@ export const RISK_TIERS = {
   HIGH:      { riskLevel: 'LOW',    badge: 'Confident',             color: 'teal',    type: 'protected',  label: 'Confident' },
   PROTECTED: { riskLevel: 'LOW',    badge: 'Covers the draw',        color: 'emerald', type: 'protected',  label: 'Covers the draw' },
   DNB:       { riskLevel: 'MEDIUM', badge: 'Draw = refund',          color: 'indigo',  type: 'positive-ev', label: 'Draw = refund' },
+  LEAN:      { riskLevel: 'MEDIUM', badge: 'Lean',                   color: 'indigo',  type: 'positive-ev', label: 'Lean' },
   CONTESTED: { riskLevel: 'MEDIUM', badge: 'Close game',             color: 'amber',   type: 'warning',    label: 'Close game' },
   TRAP:      { riskLevel: 'HIGH',   badge: 'Risky',                  color: 'rose',    type: 'danger',     label: 'Risky' },
   EXCLUDED:  { riskLevel: 'HIGH',   badge: 'League off',              color: 'rose',    type: 'danger',     label: 'League off' }
@@ -119,11 +120,12 @@ export function getMatchRiskProfile(match, pickOverride = null) {
   } else if (isTrap) {
     tierKey = 'TRAP';
     reason = 'Contrarian trap, market divergence or disruption PASS flag detected.';
-  } else if (confidence < T.TRAP_CONF || pick === 'DRAW') {
+  } else if (pick === 'DRAW') {
+    tierKey = 'CONTESTED';
+    reason = `Too close to split: draw ${safeToFixed(draw, 1)}%, home ${safeToFixed(home, 1)}%, away ${safeToFixed(away, 1)}%.`;
+  } else if (confidence < T.TRAP_CONF && pickProb < T.CONTESTED_PROB) {
     tierKey = 'TRAP';
-    reason = pick === 'DRAW'
-      ? 'Straight draw selections carry the highest variance in the 1X2 market.'
-      : `Model confidence ${safeToFixed(confidence, 1)}% is below the ${T.TRAP_CONF}% safety floor.`;
+    reason = `Win chance only ${safeToFixed(pickProb, 1)}%.`;
   } else if (isProtectedMarket) {
     tierKey = pickProb >= 70 ? 'PROTECTED' : 'DNB';
     reason = pick.includes('DNB')
@@ -136,23 +138,18 @@ export function getMatchRiskProfile(match, pickOverride = null) {
     tierKey = 'HIGH';
     reason = `Win probability ${safeToFixed(pickProb, 1)}% with draw risk contained under ${T.HIGH_MAX_DRAW}%.`;
   } else if (pickProb >= T.PROTECTED_PROB) {
-    tierKey = 'DNB';
-    reason = `Draw probability ${safeToFixed(draw, 1)}% — Draw-No-Bet or Double Chance advised.`;
+    tierKey = 'LEAN';
+    reason = `Win chance ${safeToFixed(pickProb, 1)}%, draw ${safeToFixed(draw, 1)}%.`;
   } else if (pickProb >= T.CONTESTED_PROB) {
     tierKey = 'CONTESTED';
-    reason = `Win probability only ${safeToFixed(pickProb, 1)}% — contested fixture, prefer Double Chance.`;
+    reason = `Win chance only ${safeToFixed(pickProb, 1)}%: a close game.`;
   } else {
     tierKey = 'TRAP';
     reason = `Win probability ${safeToFixed(pickProb, 1)}% is below the ${T.CONTESTED_PROB}% contested floor.`;
   }
 
-  // Tier 3-style volatility (cups / parity leagues) mandates draw protection on straight wins.
-  if (isStraight && (tierKey === 'ELITE' || tierKey === 'HIGH') && (isCup || (isParity && pickProb < 66))) {
-    tierKey = 'DNB';
-    reason = isCup
-      ? 'Knockout cup tie — rotation and extra-time variance make DNB protection mandatory.'
-      : 'High-parity league — straight wins require ≥66% to avoid DNB enforcement.';
-  }
+  // Cups and high-parity leagues used to force straight wins down to "draw = refund" here. The chances
+  // are calibrated in every competition, so the badge now follows the chance alone.
 
   const tier = RISK_TIERS[tierKey];
   const riskScore = Math.round(
@@ -169,7 +166,7 @@ export function getMatchRiskProfile(match, pickOverride = null) {
     isFlaggedTrap: isTrap,
     isElite: tierKey === 'ELITE',
     isHighConfidence: tierKey === 'ELITE' || tierKey === 'HIGH',
-    isDrawVulnerable: isStraight && (draw >= T.HIGH_DRAW_RISK || tierKey === 'DNB' || tierKey === 'CONTESTED'),
+    isDrawVulnerable: isStraight && (draw >= T.HIGH_DRAW_RISK || tierKey === 'LEAN' || tierKey === 'CONTESTED'),
     dnbAdvised,
     badge: tier.badge,
     badgeType: tier.type,
@@ -189,11 +186,11 @@ export function isLowRiskPick(match, pick = null) {
   return getMatchRiskProfile(match, pick).riskLevel === 'LOW';
 }
 
-// The pick that actually lands on a slip when a match is added without an explicit selection:
-// the model's top side, with straight-draw predictions normalised to the stronger team.
+// The pick that lands on a slip when a match is added without an explicit selection: the outright
+// call (home win, draw or away win), the same one every page shows.
 export function getSlipPick(m) {
   const pick = getDefaultPick(m);
-  if (pick === 'HOME' || pick === 'AWAY' || pick === '1X' || pick === 'X2' || pick === '12') return pick;
+  if (['HOME', 'AWAY', 'DRAW', '1X', 'X2', '12'].includes(pick)) return pick;
   const home = safeParseFloat(m?.prob?.home ?? m?.homeProb, 0);
   const away = safeParseFloat(m?.prob?.away ?? m?.awayProb, 0);
   return home >= away ? 'HOME' : 'AWAY';
@@ -211,17 +208,11 @@ export function getMarketPick(m, marketMode = 'STRAIGHT_1X2') {
   const draw = safeParseFloat(m?.prob?.draw, 0);
   const away = safeParseFloat(m?.prob?.away, 0);
   const isFavHome = home >= away;
-  const favProb = isFavHome ? home : away;
   const dnbPick = isFavHome ? 'HOME_DNB' : 'AWAY_DNB';
   const dcPick = isFavHome ? '1X' : 'X2';
 
   if (marketMode === 'DNB') return dnbPick;
   if (marketMode === 'DOUBLE_CHANCE') return dcPick;
-  if (marketMode === 'SMART_ADAPTIVE') {
-    const isHighDraw = draw >= RISK_THRESHOLDS.DNB_DRAW;
-    if (m?.smartMarket?.marketType === 'DOUBLE_CHANCE' || (isHighDraw && Math.min(99, favProb + draw) >= 72 && favProb < 55)) return dcPick;
-    if (m?.smartMarket?.marketType === 'DRAW_NO_BET' || isHighDraw) return dnbPick;
-  }
   return getSlipPick(m);
 }
 
