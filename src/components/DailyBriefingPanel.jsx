@@ -5,7 +5,7 @@ import { useMobileViewMode } from '../utils/useMobileViewMode';
 import { useWatchList } from '../utils/useWatchList';
 import { MobileFoldCell, FoldSummary, FoldBadge, compactKickoff } from './MobileFold';
 import { ChevronDown, ChevronUp, Plus, Check, BarChart2 } from 'lucide-react';
-import { safeParseFloat, safeToFixed } from '../utils/numberUtils';
+import { safeParseFloat, safeToFixed, plainTipText } from '../utils/numberUtils';
 import { isTrapMatch, normalizePick, getSlipPick, plainPickLabel, getMatchRiskProfile } from '../utils/riskUtils';
 import RiskBadgeWithAiHover from './RiskBadgeWithAiHover';
 import { isLeagueBlacklisted } from '../utils/leagueUtils';
@@ -92,8 +92,10 @@ export default function DailyBriefingPanel({
       // "Risky" badge says so.
       const isPass = smart === 'PASS';
       const pick = isPass ? 'PASS' : (smart || getSlipPick(m));
-      const conf = safeParseFloat(m.confidence ?? m.binaryModel?.confidence,
+      // The chance of the call itself (a double chance covers two results, so it is higher than the win chance).
+      const conf = safeParseFloat(m.smartMarket?.prob ?? m.confidence ?? m.binaryModel?.confidence,
         Math.max(safeParseFloat(m.prob?.home), safeParseFloat(m.prob?.draw), safeParseFloat(m.prob?.away)));
+      const minOdds = safeParseFloat(m.smartMarket?.minOdds, 0);
       const odds = isPass ? null : resolveMatchOdds(m, pick);
       const kelly = m.kellyStake ?? m.binaryModel?.kellyStake;
       const units = safeParseFloat(kelly?.units ?? kelly?.fraction, 0);
@@ -101,7 +103,7 @@ export default function DailyBriefingPanel({
       const stake = rawEuro > 0 ? rawEuro : units > 0 ? (units <= 1 ? units * bankrollEuro : (units / 100) * bankrollEuro) : bankrollEuro * 0.02;
       const isRisky = isTrapMatch(m);
       return {
-        m, phase, pick, isPass, isRisky, conf, odds, stake,
+        m, phase, pick, isPass, isRisky, conf, odds, stake, minOdds,
         returns: odds ? calculatePotentialReturn(stake, odds) : null,
         isBest: phase === 'upcoming' && !isPass && !isRisky && conf >= 60
       };
@@ -334,9 +336,12 @@ export default function DailyBriefingPanel({
                         )}
                       </td>
                       <td className="hidden md:table-cell px-2 py-1.5 text-slate-500 text-[11px] truncate max-w-[160px]">{m.league}</td>
-                      <td className={`hidden md:table-cell px-2 py-1.5 font-semibold ${r.isPass ? 'text-slate-400' : 'text-slate-900'}`}>{r.isPass ? 'No bet' : tip}</td>
+                      <td className={`hidden md:table-cell px-2 py-1.5 font-semibold ${r.isPass ? 'text-slate-400' : 'text-slate-900'}`}>{r.isPass ? (plainTipText(m.smartMarket?.badge) || 'No bet') : tip}</td>
                       <td className="hidden md:table-cell px-2 py-1.5 text-center font-mono">{r.isPass ? '—' : `${Math.round(r.conf)}%`}</td>
-                      <td className="hidden md:table-cell px-2 py-1.5 text-center font-mono">{r.odds > 1 ? safeToFixed(r.odds, 2) : '—'}</td>
+                      <td className="hidden md:table-cell px-2 py-1.5 text-center font-mono" title={r.minOdds > 1 ? `Only worth betting at ${safeToFixed(r.minOdds, 2)} or better` : undefined}>
+                        {r.odds > 1 ? safeToFixed(r.odds, 2) : '—'}
+                        {!r.isPass && r.minOdds > 1 && <div className={`text-[9.5px] ${r.odds > 1 && r.odds < r.minOdds ? 'text-rose-600 font-bold' : 'text-slate-400'}`}>bet at {safeToFixed(r.minOdds, 2)}+</div>}
+                      </td>
                       <td className="hidden md:table-cell px-2 py-1.5">
                         <div className="flex items-center justify-end gap-1.5">
                           {detailsButton(r)}

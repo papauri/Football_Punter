@@ -820,7 +820,20 @@ export default function FixturesTablePage({
       );
     }
 
-    // 4. Straight 1X2
+    // 4. Our call: a straight win or double chance when the app is sure, otherwise no strong call
+    const call = String(m.smartMarket?.pick || '').toUpperCase();
+    if (call === 'PASS' || ['1X', 'X2', '12'].includes(call)) {
+      const isCall = call !== 'PASS';
+      const label = isCall ? plainTipText(m.smartMarket?.pickLabel) : 'No strong call';
+      return (
+        <span
+          className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10.5px] font-bold border whitespace-nowrap shadow-2xs ${isCall ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-slate-50 text-slate-500 border-slate-200'}`}
+          title={isCall ? `${label}: ${safeToFixed(m.smartMarket?.prob, 1)}%` : `Leans ${predictedWinner === 'HOME' ? m.home : predictedWinner === 'AWAY' ? m.away : 'draw'}, but not sure enough to call`}
+        >
+          {label}
+        </span>
+      );
+    }
     return (
       <span 
         className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10.5px] font-bold border whitespace-nowrap shadow-2xs ${getWinnerBadgeClass(predictedWinner)}`}
@@ -1001,7 +1014,7 @@ export default function FixturesTablePage({
                   value={marketMode}
                   onChange={setMarketMode}
                   options={[
-                    { value: 'STRAIGHT_1X2', label: 'Result (win, draw or win)' },
+                    { value: 'STRAIGHT_1X2', label: 'Our call' },
                     { value: 'DOUBLE_CHANCE', label: 'Team or draw' },
                     { value: 'DNB', label: 'Draw = refund' }
                   ]}
@@ -1277,7 +1290,7 @@ export default function FixturesTablePage({
                                 isMiss ? 'bg-rose-50 text-rose-800 border border-rose-200' :
                                 'bg-slate-100 text-slate-700 border border-slate-200'
                               }`}>
-                                {isPass ? 'No bet' : (plainTipText(m.smartMarket?.pickLabel) || m.predictedWinner || '—')}
+                                {isPass ? (plainTipText(m.smartMarket?.badge) || 'No bet') : (plainTipText(m.smartMarket?.pickLabel) || m.predictedWinner || '—')}
                               </span>
                               <button
                                 onClick={() => onOpenDeepResearch && onOpenDeepResearch(m)}

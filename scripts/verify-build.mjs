@@ -46,7 +46,9 @@ for (const marketMode of MARKET_MODES) {
     }
     if (tableProfile.riskLevel === 'LOW') { // TC-03
       lowRisk++;
-      if (slipProfile.isTrap || slipProfile.isFlaggedTrap || slipProfile.drawProb >= RISK_THRESHOLDS.HIGH_DRAW_RISK) lowRiskViolations++;
+      // A double chance covering the draw is not exposed to it; the draw limit applies to straight wins.
+      const straight = ['HOME', 'AWAY'].includes(slipProfile.pick);
+      if (slipProfile.isTrap || slipProfile.isFlaggedTrap || (straight && slipProfile.drawProb >= RISK_THRESHOLDS.HIGH_DRAW_RISK)) lowRiskViolations++;
     }
   }
 }
@@ -82,9 +84,10 @@ check('Taxonomy: draw pick is a close game, not a trap', getMatchRiskProfile(syn
 {
   const pOdds = (h, d, a) => { const q = [1 / h, 1 / d, 1 / a], t = q[0] + q[1] + q[2]; return { homeOdds: h, drawOdds: d, awayOdds: a, homeProb: q[0] / t * 100, drawProb: q[1] / t * 100, awayProb: q[2] / t * 100, marketFav: h <= a ? 'HOME' : 'AWAY' }; };
   const tip = (h, d, a) => engine.computeDixonColesProbabilities('Arsenal', 'Chelsea', { league: 'Premier League', odds: pOdds(h, d, a) }).smartMarket.pick;
-  check('Outright: clear favourite is a straight win', tip(1.5, 4.2, 6.5) === 'HOME');
-  check('Outright: close game with draw 7 points behind is not a draw call', tip(2.6, 3.2, 2.7) === 'HOME');
-  check('Outright: level odds call the draw', tip(2.9, 2.9, 2.9) === 'DRAW');
+  check('Call: 72% favourite is a straight win', tip(1.3, 5.5, 9) === 'HOME');
+  check('Call: 60% favourite with 80%+ cover is the double chance', tip(1.7, 3.8, 4.8) === '1X');
+  check('Call: open game gets no strong call', tip(2.6, 3.2, 2.7) === 'PASS');
+  check('Call: level odds get no strong call', tip(2.9, 2.9, 2.9) === 'PASS');
 }
 check('Taxonomy: 44/29/27 → CONTESTED', getMatchRiskProfile(synth(44, 29, 27, { confidence: 48 }), 'HOME').tierKey === 'CONTESTED');
 check('Taxonomy: trap flag overrides 80% → TRAP', getMatchRiskProfile(synth(80, 12, 8, { confidence: 80, isFavoriteTrap: true }), 'HOME').riskLevel === 'HIGH');

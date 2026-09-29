@@ -102,6 +102,8 @@ function settle(pick, price, actual) {
   switch (pick) {
     case 'HOME': return actual === 'HOME' ? price.h : 0;
     case 'AWAY': return actual === 'AWAY' ? price.a : 0;
+    case 'DRAW': return actual === 'DRAW' ? price.d : 0;
+    case '12': return actual === 'DRAW' ? 0 : dcPrice(price.h, price.a);
     case '1X': return actual === 'AWAY' ? 0 : dcPrice(price.h, price.d);
     case 'X2': return actual === 'HOME' ? 0 : dcPrice(price.a, price.d);
     case 'HOME_DNB': return actual === 'DRAW' ? 1 : actual === 'HOME' ? dnbPrice(price.h, price.a) : 0;
@@ -113,6 +115,8 @@ const stakedPrice = (pick, price) => {
   switch (pick) {
     case 'HOME': return price.h;
     case 'AWAY': return price.a;
+    case 'DRAW': return price.d;
+    case '12': return dcPrice(price.h, price.a);
     case '1X': return dcPrice(price.h, price.d);
     case 'X2': return dcPrice(price.a, price.d);
     case 'HOME_DNB': return dnbPrice(price.h, price.a);

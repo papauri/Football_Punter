@@ -35,6 +35,7 @@ const PASS_REASONS = [
 export function plainTipText(label) {
   const t = String(label || '').trim();
   if (!t) return '';
+  if (/^no strong call/i.test(t)) return 'No strong call';
   if (/^pass\b/i.test(t)) {
     const hit = PASS_REASONS.find(([re]) => re.test(t));
     return hit ? `No bet · ${hit[1]}` : 'No bet';

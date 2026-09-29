@@ -815,3 +815,28 @@ Walk-forward on the app (April 2025 onwards): the tip agreed with the market's f
 2 of 5,183 fixtures, hit 52.6%. By price: under 1.30 came in 82.0%, 1.30-1.50 71.4%, 1.50-1.80
 59.9%, 1.80-2.20 45.6%, 2.20-3.00 40.1%. "Team or draw" and "draw = refund" remain available as a
 bet type on the Matches page and a slip strategy, never as the default.
+
+## Calls: straight win or double chance, only when sure
+
+Replaces the outright-on-every-match rule above. The app now makes a call only when it is sure:
+a straight win when the favourite is 65% or more, otherwise the likeliest double chance (1X, X2 or
+12) when it is 80% or more, otherwise "No strong call" (the lean is still shown). Each call carries
+`minOdds`, the lowest price at which it is worth betting on its stated chance ("bet at 1.32+").
+
+Lab, 10,345 matches from 2024-25: 3,204 calls (31%), 81.0% came in; return -2.7% at Bet365's
+prices, +0.2% at the best price across books. Stricter thresholds (70% / 85%) hit 84.2%, -2.2% and
++0.5%. Value betting (Pinnacle's fair chance against a softer price) lost or was noise.
+
+Walk-forward on the app (April 2025 onwards, 5,183 fixtures): 1,559 calls, 80.0% came in; return
+-2.4% at the average price (95% CI -4.7 to +0.1), +0.6% at the best price (CI -1.8 to +3.1).
+
+| Call | Bets | Came in | Return at average | Return at best |
+|---|---|---|---|---|
+| Home win | 642 | 75.9% | -2.3% | +0.2% |
+| Away win | 197 | 76.6% | +2.1% | +4.8% |
+| Home or draw (1X) | 485 | 83.5% | -4.9% | -1.7% |
+| Away or draw (X2) | 231 | 86.6% | -1.3% | +2.4% |
+
+No version of these tips is reliably profitable at an ordinary bookmaker's price: the margin is about
+the size of any edge. Taking the best available price is what turns roughly -2.5% into roughly
+break-even, which is why each call shows the price to beat.

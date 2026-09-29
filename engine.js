@@ -153,6 +153,18 @@ function overUnderPrices(raw, toDecimal) {
 
 // Markets read from a market-based scoreline grid. First-half goals use 46% of the full-match
 // expected goals, the share that fitted best on half-time scores.
+// The app's call for a match, or null when it is not sure enough. See the tip notes in
+// computeDixonColesProbabilities for the test behind the thresholds.
+export const TIP_STRAIGHT_MIN = 65;
+export const TIP_DOUBLE_CHANCE_MIN = 80;
+function decideTip(home, draw, away) {
+  const fav = home >= away ? ['HOME', home] : ['AWAY', away];
+  if (fav[1] >= TIP_STRAIGHT_MIN) return { pick: fav[0], prob: fav[1] };
+  const dc = [['1X', home + draw], ['X2', away + draw], ['12', home + away]].sort((a, b) => b[1] - a[1])[0];
+  if (dc[1] >= TIP_DOUBLE_CHANCE_MIN) return { pick: dc[0], prob: Math.min(99, dc[1]) };
+  return null;
+}
+
 // Home, away or draw: the most likely result, calling the draw when within 2 points of the favourite.
 export const OUTRIGHT_DRAW_MARGIN = 2;
 function outrightPick(home, draw, away) {
@@ -2130,26 +2142,36 @@ class SoccerEngine {
     // disabledLeagues, plus BLACKLISTED_LEAGUES.
     const isPassBlacklisted = Boolean(options.league && this.isLeagueDisabled(options.league));
 
-    // The tip is always the outright result (home win, draw or away win). This used to be a chain of
-    // hand-set rules that routed close games to "team or draw", "draw = refund", goals markets or "no
-    // bet", citing hit rates that were never measured. Hedged markets hit more often only because they
-    // pay less; the outright chance shown is calibrated (tips shown at 65-70% came in 71%, at 70-80%
-    // 78.5%), so how sure the app is lives in the chance, not in a softer market. The hedges are kept as
-    // alternatives for anyone who wants them.
+    // The tip: a call only when the app is sure. Tested on 10,345 matches from 2024-25:
+    //   * a straight win when the favourite is 65% or more;
+    //   * otherwise the likeliest double chance (1X, X2 or 12) when it is 80% or more;
+    //   * otherwise no strong call (the lean, the most likely result, is still shown).
+    // Those calls covered 31% of matches and came in 81% of the time. This replaced two earlier
+    // versions: a chain of hand-set rules that hedged most games to "team or draw" or "draw = refund"
+    // citing hit rates never measured, and a straight pick on every match however close.
+    // Returns: roughly break-even at the best price across bookmakers, about -2.7% at a single
+    // bookmaker's price, so the price matters as much as the pick (see minOdds).
+    const tip = decideTip(finalHomeP, finalDrawP, finalAwayP);
     if (isPassBlacklisted) {
       smartPick = 'PASS';
       smartMarketType = 'PASS_NO_EDGE';
       smartProb = favProb;
       smartBadge = 'Pass / League off';
       smartRationale = `${options.league} is switched off in Settings.`;
+    } else if (!tip) {
+      smartPick = 'PASS';
+      smartMarketType = 'NO_STRONG_CALL';
+      smartProb = parseFloat(favProb.toFixed(1));
+      smartBadge = 'No strong call';
+      smartRationale = `Not sure enough: ${homeTeam} ${finalHomeP.toFixed(1)}%, draw ${finalDrawP.toFixed(1)}%, ${awayTeam} ${finalAwayP.toFixed(1)}%. Calls need a 65% favourite or an 80% double chance.`;
     } else {
-      smartPick = pick;
-      smartMarketType = pick === 'DRAW' ? 'DRAW' : 'STRAIGHT_WIN';
-      smartProb = parseFloat((pick === 'HOME' ? finalHomeP : pick === 'AWAY' ? finalAwayP : finalDrawP).toFixed(1));
-      smartBadge = pick === 'DRAW' ? 'Draw' : `${pick === 'HOME' ? homeTeam : awayTeam} Win`;
-      smartRationale = pick === 'DRAW'
-        ? `Too close to split: draw ${finalDrawP.toFixed(1)}%, ${homeTeam} ${finalHomeP.toFixed(1)}%, ${awayTeam} ${finalAwayP.toFixed(1)}%.`
-        : `${pick === 'HOME' ? homeTeam : awayTeam} to win: ${smartProb.toFixed(1)}% (draw ${finalDrawP.toFixed(1)}%).`;
+      smartPick = tip.pick;
+      smartMarketType = tip.pick.length === 2 ? 'DOUBLE_CHANCE' : 'STRAIGHT_WIN';
+      smartProb = parseFloat(tip.prob.toFixed(1));
+      const name = (code) => (code === '1' ? homeTeam : awayTeam);
+      smartBadge = tip.pick === 'HOME' ? `${homeTeam} Win` : tip.pick === 'AWAY' ? `${awayTeam} Win`
+        : tip.pick === '12' ? `${homeTeam} or ${awayTeam} (no draw)` : `${name(tip.pick === '1X' ? '1' : '2')} or draw`;
+      smartRationale = `${smartBadge}: ${smartProb.toFixed(1)}%.`;
     }
     const safetyAlternatives = {
       doubleChance: { pick: dcCode, prob: parseFloat(dcProb.toFixed(1)) },
@@ -2166,6 +2188,7 @@ class SoccerEngine {
       const priced = {
         HOME: { odds: oH, ev: pH * oH - 1 },
         DRAW: { odds: oD, ev: pD * oD - 1 },
+        '12': { odds: 1 / (1 / oH + 1 / oA), ev: (pH + pA) / (1 / oH + 1 / oA) - 1 },
         AWAY: { odds: oA, ev: pA * oA - 1 },
         '1X': { odds: 1 / (1 / oH + 1 / oD), ev: (pH + pD) / (1 / oH + 1 / oD) - 1 },
         X2: { odds: 1 / (1 / oA + 1 / oD), ev: (pA + pD) / (1 / oA + 1 / oD) - 1 },
@@ -2298,7 +2321,7 @@ class SoccerEngine {
       smartMarket: {
         pick: smartPick,
         pickLabel: smartBadge,
-        marketLabel: smartMarketType === 'DRAW' ? 'Draw' : smartMarketType === 'STRAIGHT_WIN' ? 'Straight Win' : smartMarketType === 'DRAW_NO_BET' ? 'Draw No Bet (DNB)' : smartMarketType === 'DOUBLE_CHANCE' ? 'Double Chance (1X/X2)' : smartMarketType === 'BTTS' ? 'Both Teams to Score' : smartMarketType === 'OVER_25' ? 'Over 2.5 Goals' : smartMarketType === 'OVER_15' ? 'Over 1.5 Goals' : smartMarketType === 'UNDER_25' ? 'Under 2.5 Goals' : 'Pass',
+        marketLabel: smartMarketType === 'NO_STRONG_CALL' ? 'No strong call' : smartMarketType === 'DRAW' ? 'Draw' : smartMarketType === 'STRAIGHT_WIN' ? 'Straight Win' : smartMarketType === 'DRAW_NO_BET' ? 'Draw No Bet (DNB)' : smartMarketType === 'DOUBLE_CHANCE' ? 'Double Chance (1X/X2)' : smartMarketType === 'BTTS' ? 'Both Teams to Score' : smartMarketType === 'OVER_25' ? 'Over 2.5 Goals' : smartMarketType === 'OVER_15' ? 'Over 1.5 Goals' : smartMarketType === 'UNDER_25' ? 'Under 2.5 Goals' : 'Pass',
         marketType: smartMarketType,
         effectiveWinRate: smartProb,
         prob: smartProb,
@@ -2316,6 +2339,8 @@ class SoccerEngine {
         doubleChance: { '1X': dc1X, 'X2': dcX2, '12': dc12 },
         // Hedged alternatives to the outright tip, never the tip itself.
         alternatives: safetyAlternatives,
+        // The lowest price worth taking: below it the bet loses money on the stated chance.
+        minOdds: smartPick !== 'PASS' && smartProb > 0 ? parseFloat((100 / smartProb).toFixed(2)) : null,
         dnbProtection: { isAdvised: false, drawRisk: parseFloat(finalDrawP.toFixed(1)) }
       },
       parityProtection: {

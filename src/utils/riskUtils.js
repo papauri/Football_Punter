@@ -56,6 +56,9 @@ export function normalizePick(pick) {
 
 export function getDefaultPick(m) {
   if (!m) return 'HOME';
+  // The app's call (straight win or double chance) when it made one; otherwise the lean.
+  const call = normalizePick(m.smartMarket?.pick || '');
+  if (['HOME', 'AWAY', 'DRAW', '1X', 'X2', '12'].includes(call)) return call;
   const explicit = typeof m.predictedWinner === 'string' ? m.predictedWinner : (m.predictedWinner?.pick || m.binaryModel?.pick);
   if (explicit) return normalizePick(explicit);
   const home = safeParseFloat(m.prob?.home, 0);
