@@ -94,6 +94,9 @@ function apiServerPlugin() {
 
 export default defineConfig({
   plugins: [react(), apiServerPlugin()],
+  // The front end reads no environment variables. Pointing Vite away from the project root stops it
+  // restarting (and reloading the page) whenever an API key is saved to .env from Settings.
+  envDir: 'src/no-env',
   server: {
     host: '0.0.0.0',
     port: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000,

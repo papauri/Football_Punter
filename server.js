@@ -2,6 +2,8 @@ import express from 'express';
 import { createServer as createHttpServer } from 'http';
 import fs from 'fs';
 import { execFile } from 'child_process';
+import { SERVICES, keyStatus, testKey, writeEnvKey, resolveKey, forgetTest } from './src/services/apiKeys.js';
+import { fillMissingPrices, oddsApiUsage } from './src/services/oddsApi.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { engine } from './engine.js';
@@ -11,6 +13,22 @@ import { createServer as createViteServer } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+let oddsFillTimer = null;
+function scheduleOddsFill(delayMs) {
+  clearTimeout(oddsFillTimer);
+  oddsFillTimer = setTimeout(async () => {
+    try {
+      const r = await fillMissingPrices(__dirname, engine.matches);
+      if (r.fetched.length) {
+        console.log(`[OddsAPI] priced ${r.fetched.join(', ')}; ${r.remaining ?? '?'} credits left`);
+        await engine.scrapeESPNData().catch(() => {}); // re-read fixtures so the new prices reach the predictions
+      }
+    } catch (e) {
+      console.warn('[OddsAPI] fill failed:', e.message);
+    }
+  }, delayMs);
+}
 
 async function startServer() {
   const app = express();
@@ -1081,6 +1099,46 @@ app.get('/api/state', (req, res) => {
     }
   });
 
+  // ---- API keys: status, save, remove, test (tests use free endpoints only) ----
+  app.get('/api/keys', (req, res) => {
+    res.json({ services: keyStatus(__dirname, engine.aiConfig), oddsUsage: oddsApiUsage(__dirname) });
+  });
+
+  app.post('/api/keys/test', async (req, res) => {
+    const { id, key } = req.body || {};
+    const result = await testKey(__dirname, id, engine.aiConfig, key ? String(key).trim() : null);
+    res.json({ ...result, services: keyStatus(__dirname, engine.aiConfig) });
+  });
+
+  app.post('/api/keys', async (req, res) => {
+    const { id, key } = req.body || {};
+    const service = SERVICES.find(s => s.id === id);
+    const value = String(key || '').trim();
+    if (!service) return res.status(400).json({ error: 'Unknown service' });
+    if (!value) return res.status(400).json({ error: 'Paste a key first' });
+    try {
+      writeEnvKey(__dirname, service.env, value);
+      if (service.ai) engine.setAiKey(id, value);
+      const result = await testKey(__dirname, id, engine.aiConfig);
+      if (id === 'odds' && result.ok) scheduleOddsFill(5000);
+      res.json({ ...result, services: keyStatus(__dirname, engine.aiConfig) });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.delete('/api/keys/:id', (req, res) => {
+    const service = SERVICES.find(s => s.id === req.params.id);
+    if (!service) return res.status(400).json({ error: 'Unknown service' });
+    if (resolveKey(__dirname, service, engine.aiConfig).source === 'server') {
+      return res.status(400).json({ error: 'This key is set on the server (environment variable), so it can only be removed there.' });
+    }
+    writeEnvKey(__dirname, service.env, '');
+    if (service.ai) engine.setAiKey(service.id, '');
+    forgetTest(__dirname, service.id);
+    res.json({ success: true, services: keyStatus(__dirname, engine.aiConfig) });
+  });
+
   app.get('/api/ai-config', (req, res) => {
     res.json(engine.getAiConfigPublic());
   });
@@ -1309,6 +1367,9 @@ Output ONLY valid JSON like:
     setTimeout(() => {
       engine.startAutonomousAgent();
     }, 1000);
+    // Odds API: fill prices ESPN lacks, within the monthly credit budget (see src/services/oddsApi.js).
+    scheduleOddsFill(2 * 60 * 1000);
+    setInterval(() => scheduleOddsFill(0), 3 * 60 * 60 * 1000);
     // Corners and cards ratings: pick up the weekend's results once a day.
     const refreshMatchStats = () => execFile(process.execPath, [path.join(__dirname, 'scripts', 'fit-match-stats.mjs'), '--out', path.join(__dirname, 'data', 'match-stats.live.json')],
       { timeout: 5 * 60 * 1000 }, (err) => { if (err) console.warn('[MatchStats] refresh failed:', err.message); });

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Clock, Lock, Check } from 'lucide-react';
 import UniformDropdown from './UniformDropdown';
+import ApiKeysCard from './ApiKeysCard';
 
-// Settings, kept to what a user actually changes: the time zone and clock, and which leagues get
-// tips. The old page also exposed the model's internal parameters (home advantage, rho, Elo K,
+// Settings, kept to what a user actually changes: the time zone and clock, API keys, and which
+// leagues get tips. The old page also exposed the model's internal parameters (home advantage, rho, Elo K,
 // entropy floors). Those are not settings a punter should move, and while the model is frozen for
 // testing the server refuses every change anyway, so the sliders did nothing but claim "Saved".
 
@@ -73,6 +74,8 @@ export default function SettingsPage({ state = {}, tzSettings = {}, onUpdateTzSe
           </div>
         </div>
       </div>
+
+      <ApiKeysCard />
 
       <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs space-y-3">
         <h2 className="text-sm font-bold text-slate-900">Leagues without tips</h2>

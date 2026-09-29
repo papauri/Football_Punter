@@ -21,3 +21,15 @@ npm run verify             # automated regression checks and calibration verific
 1. **All-Day Winner & Banker Slates**: Filters out low-separation matches to focus exclusively on high-certainty outcomes (≥65%–72%+ confidence).
 2. **Defensive Market Routing**: Automatically shields against stalemates by converting draw-threatened favorites into Double Chance and Draw-No-Bet.
 3. **Autonomous Self-Patching**: Diagnoses missed fixtures, audits tactical anomalies, and safely calibrates model parameters to continually improve hit rates.
+
+## API keys
+
+Settings → API keys shows every key the app can use, whether it is set (on the server or saved in the
+app) and a green **Working** / red **Not working** result from a free test call. Paste a key and press
+**Save & test** to add or replace one; keys saved there go to `.env`, which is not in git.
+
+- **The Odds API** (`ODDS_API_KEY`): bookmaker prices for matches ESPN has no odds for. On the free
+  plan (500 credits a month) the app fetches only competitions with upcoming matches that lack an ESPN
+  price, 1 credit per competition, at most every 12 hours each, never more than 20 a day, and keeps 40
+  credits in reserve. Testing the key costs nothing.
+- **Gemini, Mistral, OpenAI, Anthropic** (optional): AI match write-ups.

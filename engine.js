@@ -17,6 +17,7 @@ import { fitTeamStrengths, matchScale } from './src/model/strengthFit.js';
 import { calibrateTriple } from './src/model/calibration.js';
 import { goalsProbabilities } from './src/model/goalsModel.js';
 import { impliedGoals, fairProbs, scoreGrid, MarketMemory } from './src/model/marketGoals.js';
+import { pricesFor } from './src/services/oddsApi.js';
 import { getCurrentCoach, peekCoach } from './src/services/coaches.js';
 import { predictMatchStats, matchStatsSummary } from './src/services/matchStatsLookup.js';
 import { fairProbabilities } from './src/model/devig.js';
@@ -5904,8 +5905,8 @@ class SoccerEngine {
             const homeName = home.team.displayName;
             const awayName = away.team.displayName;
 
-            // Immediately parse sharp market consensus odds if published
-            const odds = this.parseEspnOdds(comp);
+            // ESPN's price when it has one, otherwise the last Odds API price for this fixture.
+            const odds = this.parseEspnOdds(comp) || pricesFor(ENGINE_DIR, homeName, awayName, evDate.getTime());
 
             // Extract broadcast channels
             let broadcast = null;
@@ -6761,6 +6762,36 @@ Output strictly JSON format:
     };
   }
 
+  /**
+   * Save or remove (empty key) one AI provider's key from the Settings page. Keeps the primary
+   * provider unless it has no key, in which case the first provider with a key becomes primary.
+   */
+  setAiKey(provider, key) {
+    const def = (this.supportedProviders || []).find(p => p.id === provider);
+    this.aiConfig ||= {};
+    const entry = (this.aiConfig[provider] ||= {});
+    if (key) {
+      entry.key = key;
+      entry.model ||= def?.defaultModel;
+    } else {
+      delete entry.key;
+    }
+    const hasKey = (id) => Boolean(this.aiConfig[id]?.key || (id === provider ? key : null));
+    if (!this.aiConfig.primaryProvider || !hasKey(this.aiConfig.primaryProvider)) {
+      const next = ['gemini', 'mistral', 'openai', 'anthropic'].find(id => this.aiConfig[id]?.key);
+      if (next) { this.aiConfig.primaryProvider = next; this.aiConfig.primaryModel = this.aiConfig[next].model; } else { delete this.aiConfig.primaryProvider; }
+    }
+    const primary = this.aiConfig.primaryProvider;
+    if (primary && this.aiConfig[primary]?.key) {
+      process.env.AI_PROVIDER = primary;
+      process.env.AI_MODEL = this.aiConfig[primary].model || '';
+      process.env.AI_API_KEY = this.aiConfig[primary].key;
+    } else {
+      delete process.env.AI_PROVIDER; delete process.env.AI_MODEL; delete process.env.AI_API_KEY;
+    }
+    try { fs.writeFileSync('ai_config.json', JSON.stringify(this.aiConfig, null, 2)); } catch { /* best effort */ }
+  }
+
   setProviderConfig(provider, key, model, isPrimary = false) {
     if (!this.aiConfig) this.aiConfig = {};
     if (!this.aiConfig[provider]) this.aiConfig[provider] = {};
@@ -6774,7 +6805,9 @@ Output strictly JSON format:
       this.aiConfig.primaryProvider = provider;
       this.aiConfig.primaryModel = model || this.aiConfig[provider].model;
     }
-    if (this.aiConfig[provider]?.key) {
+    // Only the primary provider's key is the active one; saving a second provider's key must not
+    // replace it.
+    if (this.aiConfig.primaryProvider === provider && this.aiConfig[provider]?.key) {
       process.env.AI_API_KEY = this.aiConfig[provider].key;
       process.env.AI_PROVIDER = provider;
       process.env.AI_MODEL = model || this.aiConfig[provider].model;
@@ -8850,7 +8883,7 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
                 this.recordHeadToHeadEncounter(homeName, awayName, hScore, aScore, evDate, league, ev.id);
               }
 
-              const odds = this.parseEspnOdds(comp);
+              const odds = this.parseEspnOdds(comp) || pricesFor(ENGINE_DIR, homeName, awayName, evDate.getTime());
               const dcProbs = this.computeDixonColesProbabilities(homeName, awayName, { odds, league });
 
               const probHome = typeof dcProbs.home === 'number' ? dcProbs.home.toFixed(1) : '33.3';
