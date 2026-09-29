@@ -840,3 +840,32 @@ Walk-forward on the app (April 2025 onwards, 5,183 fixtures): 1,559 calls, 80.0%
 No version of these tips is reliably profitable at an ordinary bookmaker's price: the margin is about
 the size of any edge. Taking the best available price is what turns roughly -2.5% into roughly
 break-even, which is why each call shows the price to beat.
+
+## Best bets, and what the agents are
+
+**Best bets** are straight wins the app rates 65-85% (`smartMarket.isBestBet`). On every match in the
+14 main leagues since 2021-22 (3,631 best bets, opening prices): stated 72.8%, came in 76.9%; return
++2.5% at the best price across bookmakers (95% CI +0.7 to +4.4), -0.2% at Bet365, -0.1% at the
+average price. Straight wins at 65-75% were positive at the best price in all six seasons. Double
+chances lose at ordinary prices in almost every season (you pay the margin on two results), and
+straight wins above 85% did not hold up. Walk-forward on the app since April 2025: 793 best bets,
+75.4% came in, -1.1% at average and +1.5% at best price (CI -2.3 to +5.9 on this window alone).
+
+The Matches page opens on best bets. The calibration map is no longer applied to market-based
+chances: it had been fitted on the model's own over-confident figures and capped them near 83%,
+which made 1.05 favourites read "83%" and fall into the best-bet range.
+
+**The agents.** Five of the six voting agents used to restate the app's own chances under different
+names with invented stories ("crowd acoustic index", "pitch dimensions"); the squad agent counted
+injury words in team news that no longer exists. Each now reads one independent source: today's
+prices, the app's team ratings (results and expected goals), market memory (past prices), Elo,
+recent form, and the app's call. An agent with nothing on a match abstains. Unanimous means at least
+four agents have an opinion, all back the same winner, and the match is a best bet. The agents
+re-run after every data refresh.
+
+Tested honestly, agreement adds nothing on top of the stated chance: on 3,192 calls from 2024-25,
+independent agents (prices, market memory, results ratings, shots-on-target ratings) agreed on
+3,154, and those hit exactly as often (81.0%) as all calls. Unanimity is a useful sanity check,
+not an extra edge; the edge, such as it is, is in best bets at the best price. The unanimous record
+shown in the app is now this measured best-bet record, not an in-sample recount with a made-up
+76.2% fallback.

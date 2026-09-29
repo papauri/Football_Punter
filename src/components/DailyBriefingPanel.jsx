@@ -68,7 +68,7 @@ export default function DailyBriefingPanel({
   const [mobileViewMode] = useMobileViewMode();
   const { isWatched } = useWatchList();
   const [collapsed, setCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState(null); // null: Best bets when there are any, else All
   const [expandedId, setExpandedId] = useState(null);
   const now = useNow();
 
@@ -105,7 +105,8 @@ export default function DailyBriefingPanel({
       return {
         m, phase, pick, isPass, isRisky, conf, odds, stake, minOdds,
         returns: odds ? calculatePotentialReturn(stake, odds) : null,
-        isBest: phase === 'upcoming' && !isPass && !isRisky && conf >= 60
+        // Best bets: straight wins at 65-85% (engine smartMarket.isBestBet), the calls with a measured edge at the best price.
+        isBest: phase === 'upcoming' && Boolean(m.smartMarket?.isBestBet)
       };
     };
     const byTime = (a, b) => {
@@ -123,12 +124,12 @@ export default function DailyBriefingPanel({
   if (rows.slate.length === 0 && rows.inPlay.length === 0 && rows.watched.length === 0) return null;
 
   const TABS = [
+    { id: 'best', label: 'Best bets', list: rows.best },
     { id: 'all', label: 'All', list: rows.slate },
     { id: 'inplay', label: 'In play', list: rows.inPlay, live: true },
-    { id: 'watch', label: 'Watch list', list: rows.watched },
-    { id: 'best', label: 'Best bets', list: rows.best }
+    { id: 'watch', label: 'Watch list', list: rows.watched }
   ];
-  const current = TABS.find(t => t.id === activeTab) || TABS[0];
+  const current = TABS.find(t => t.id === (activeTab ?? (rows.best.length ? 'best' : 'all'))) || TABS[1];
   const dayLabel = isToday ? 'Today' : formatSafeDateTime(targetDateKey, null, tzSettings).date;
   const emptyText = {
     all: 'No matches left on this day.',

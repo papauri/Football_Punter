@@ -100,7 +100,7 @@ export default function FixturesTablePage({
   const [selectedLeague, setSelectedLeague] = useState('All');
   const [selectedDate, setSelectedDate] = useState('All');
   const [selectedOutcome, setSelectedOutcome] = useState('ALL');
-  const [filterMode, setFilterMode] = useState('All');
+  const [filterMode, setFilterMode] = useState('BEST_BETS'); // best bets first; falls back to All when there are none
   const [sortField, setSortField] = useState('probs');
   const [sortDirection, setSortDirection] = useState('desc');
   const [sortBy, setSortBy] = useState('probs_desc');
@@ -350,13 +350,9 @@ export default function FixturesTablePage({
     const slipPick = getMarketPick(m, marketMode);
     const riskProfile = getMatchRiskProfile(m, slipPick);
     const isTrap = riskProfile.riskLevel === 'HIGH';
-    const isUnanimous = Boolean(
-      sw?.is100Unanimous || 
-      sw?.isTopValueLeg || 
-      sw?.isUnanimousDirective || 
-      sw?.consensusTier === 'UNANIMOUS_DIRECTIVE' || 
-      sw?.agreementPercentage === 100
-    );
+    // Unanimous: every agent agrees on a best bet (multiAgentSwarm.js).
+    const isUnanimous = Boolean(sw?.isUnanimousDirective || sw?.consensusTier === 'UNANIMOUS_DIRECTIVE');
+    const isBestBet = Boolean(m.smartMarket?.isBestBet);
     const isDerivative = m.smartMarket?.marketType === 'DOUBLE_CHANCE' || m.smartMarket?.marketType === 'DRAW_NO_BET' || m.smartMarket?.marketType === 'OVER_15';
     const isDnbAdvised = Boolean(m.smartMarket?.dnbProtection?.isAdvised || m.smartMarket?.marketType === 'DRAW_NO_BET' || drawProb >= 24.0);
     const favProb = Math.max(homeProb, awayProb);
@@ -381,6 +377,7 @@ export default function FixturesTablePage({
       conf,
       isTrap,
       isUnanimous,
+      isBestBet,
       isDerivative,
       isDnbAdvised,
       isDoubleChanceAdvised,
@@ -456,6 +453,7 @@ export default function FixturesTablePage({
 
     // 5. Special Filter Mode (skipped when computing qualityOptions)
     if (skipDimension !== 'quality') {
+      if (filterMode === 'BEST_BETS' && !item.isBestBet) return false;
       if (filterMode === 'NO_TRAPS' && !item.isLowRisk) return false;
       if (filterMode === 'DERIVATIVE_SAFETY' && !item.isDerivative) return false;
       if (filterMode === 'UPSET_RISK' && !item.isTrap) return false;
@@ -593,6 +591,15 @@ export default function FixturesTablePage({
   }, [evaluatedItems, searchQuery, strictLeaguePruning, selectedDate, selectedLeague, selectedOutcome, marketMode, filterByMarketOnly]);
 
   // Dynamic Special Filter Options
+  // Best bets are shown first; with none among the loaded matches, show everything instead.
+  const hasAnyBestBet = useMemo(() => evaluatedItems.some(i => i.isBestBet && !i.isCompleted), [evaluatedItems]);
+  const [bestBetsFallbackDone, setBestBetsFallbackDone] = useState(false);
+  useEffect(() => {
+    if (bestBetsFallbackDone || evaluatedItems.length === 0) return;
+    if (filterMode === 'BEST_BETS' && !hasAnyBestBet) setFilterMode('All');
+    setBestBetsFallbackDone(true);
+  }, [evaluatedItems.length, hasAnyBestBet]);
+
   const specialFilterOptions = useMemo(() => {
     let all = 0;
     let unanimous = 0;
@@ -603,6 +610,7 @@ export default function FixturesTablePage({
     let safeAlt = 0;
     let tier1 = 0;
     let traps = 0;
+    let best = 0;
 
     evaluatedItems.forEach(item => {
       if (!checkItemPasses(item, 'quality')) return;
@@ -615,9 +623,11 @@ export default function FixturesTablePage({
       if (item.isDerivative) safeAlt++;
       if (item.isTier1) tier1++;
       if (item.isTrap) traps++;
+      if (item.isBestBet) best++;
     });
 
     return [
+      { value: 'BEST_BETS', label: `Best bets (${best})` },
       { value: 'All', label: `Everything (${all})` },
       { value: 'NO_TRAPS', label: `No risky tips (${noTraps})` },
       { value: 'TIER_1_ONLY', label: `Top leagues only (${tier1})` },

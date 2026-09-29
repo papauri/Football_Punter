@@ -257,11 +257,19 @@ for (let boundary = fromTs; boundary < toTs; boundary += STEP_DAYS * DAY) {
         bucket.retAvg.push(rAvg); bucket.retMax.push(rMax);
         if (rAvg > 1) bucket.won++; else if (rAvg === 1) bucket.push++;
         acc.perPick.set(pick, bucket);
+        if (p.smartMarket?.isBestBet) {
+          const best = acc.perPick.get('BEST BETS') || { n: 0, staked: 0, returnedAvg: 0, returnedMax: 0, won: 0, push: 0, retAvg: [], retMax: [] };
+          best.n++; best.staked += 1; best.returnedAvg += rAvg; best.returnedMax += rMax;
+          best.retAvg.push(rAvg); best.retMax.push(rMax);
+          if (rAvg > 1) best.won++; else if (rAvg === 1) best.push++;
+          acc.perPick.set('BEST BETS', best);
+        }
         if (BETS_OUT) {
           betLog.push({
             id: m.id, date: day(m), league: m.league, home: m.home, away: m.away, pick, actual,
             priceAvg: stakedPrice(pick, openAvg), priceBest: stakedPrice(pick, openBest),
-            priceClose: stakedPrice(pick, closeAvg), rAvg, rMax
+            priceClose: stakedPrice(pick, closeAvg), rAvg, rMax,
+            prob: p.smartMarket?.prob ?? null, isBestBet: Boolean(p.smartMarket?.isBestBet)
           });
         }
 
