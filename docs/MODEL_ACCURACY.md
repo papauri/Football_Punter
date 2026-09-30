@@ -896,6 +896,15 @@ only if it holds up in every season, not just on the seasons it was tuned on.
   0.6088 to 0.6079 for home wins, no better for draws, and no bets worth more than Bet365's price.
   For corners and cards, head-to-head averages and home/away-specific form changed Brier by 0.0001 or
   less; the referee's recent card count by 0.0004 (and only three leagues name the referee).
+- *Missing regular defenders* (ESPN confirmed lineups, big five leagues 2021-26, 8,398 matches;
+  regulars = most frequent starters in the previous 10 games; fitted on 2021-24, tested on 2024-26):
+  no measure improved on the price. Regular defenders missing, against the kick-off price: gain
+  -0.14 to +0.20 (x1000, 95% CI) in goals-conceded log-likelihood, and 1X2 log loss 0.9682 either
+  way. Defenders already out the previous game, against the opening price (known before lineups):
+  -0.03 to +0.16, 1X2 log loss 0.9705 to 0.9704. Any regulars missing, or the back line's share of
+  recent starts: also no gain. Player-level pressure and turnover data, needed for the sharper
+  "weak replacement against a pressing side" version, is not freely available for recent seasons,
+  so that version is untested.
 
 ## Team corners and cards markets
 
