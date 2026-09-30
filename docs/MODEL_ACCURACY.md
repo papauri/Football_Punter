@@ -886,6 +886,12 @@ only if it holds up in every season, not just on the seasons it was tuned on.
 - Best bets by league or home/away: every split within its noise; none consistently positive at the
   average price.
 - Betting exchanges: +1.6% at kick-off after 2% commission (three seasons of data only).
+- *Luck regression* (goals scored and conceded against 0.3 per shot on target, last 8 or 15 games):
+  it improves log loss only in the third decimal place (0.6117 to 0.6108), and "value" bets it found
+  at Bet365 prices lost overall and swung from +29% to -19% by season. The market already prices it.
+- *Late-season motivation* (league tables rebuilt from results; relegation or title/European race
+  against nothing to play for, final quarter of the season): motivated sides came in 43.9% against
+  44.2% implied, and backing them returned -7.1% at Bet365. If anything the market overprices them.
 
 **What holds: best bets at the best price just before kick-off.** Straight wins at 65-85%, chosen
 from kick-off prices:
