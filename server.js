@@ -10,6 +10,7 @@ import { engine } from './engine.js';
 import { GoogleGenAI } from '@google/genai';
 import { isLeagueBlacklisted } from './src/utils/leagueUtils.js';
 import { settleWithCall } from './src/model/matchCall.js';
+import { MARKET_GROUPS, DEFAULT_MENUS } from './src/model/topPicks.js';
 import { createServer as createViteServer } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -846,7 +847,10 @@ app.get('/api/state', (req, res) => {
       const hours = Math.min(72, Math.max(1, Number(req.query.hours) || 24));
       const min = Math.min(95, Math.max(80, Number(req.query.min) || 80));
       const kinds = String(req.query.kinds || '').split(',').map(s => s.trim()).filter(Boolean);
-      res.json({ success: true, result: engine.getTopPicks({ hours, min, kinds }) });
+      // Market menus per tier ("main" leagues and "other" competitions), comma-separated groups.
+      const menu = (v, fallback) => (typeof v === 'string' ? v.split(',').map(s => s.trim()).filter(g => MARKET_GROUPS[g]) : fallback);
+      const menus = { main: menu(req.query.menuMain, DEFAULT_MENUS.main), other: menu(req.query.menuOther, DEFAULT_MENUS.other) };
+      res.json({ success: true, result: engine.getTopPicks({ hours, min, kinds, menus }) });
     } catch (error) {
       res.status(500).json({ success: false, error: error.message });
     }

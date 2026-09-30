@@ -55,6 +55,34 @@ export function recordFor(record, source, key, pct) {
 
 const fill = (label, home, away) => label.replace('{home}', home).replace('{away}', away);
 
+// Which bets a bookmaker actually offers for a match. Every priced fixture has a match-result price
+// and one quoted goals line (e.g. over/under 2.5); team goals, other lines, first-half, corners and
+// cards markets are on the menu for the big competitions but often not for lower leagues, cups or
+// friendlies. The page lets each viewer change these menus.
+export const MARKET_GROUPS = {
+  RESULT: 'Match result', DOUBLE_CHANCE: 'Double chance', MAIN_LINE: 'Over/under on the quoted line',
+  OTHER_LINES: 'Over/under on other lines', BTTS: 'Both teams to score', TEAM_GOALS: 'Team goals',
+  FIRST_HALF: 'First-half goals', CORNERS: 'Corners', CARDS: 'Cards'
+};
+export const DEFAULT_MENUS = {
+  main: Object.keys(MARKET_GROUPS),
+  other: ['RESULT', 'DOUBLE_CHANCE', 'MAIN_LINE']
+};
+
+/** The market group of a pick, given the goals line the bookmaker quotes for the match. */
+export function marketGroup(key, quotedLine = 2.5) {
+  if (key === 'HOME_WIN' || key === 'AWAY_WIN') return 'RESULT';
+  if (key === 'HOME_OR_DRAW' || key === 'AWAY_OR_DRAW') return 'DOUBLE_CHANCE';
+  if (key.startsWith('BTTS')) return 'BTTS';
+  if (key.startsWith('FH_')) return 'FIRST_HALF';
+  if (key.startsWith('HOME_') || key.startsWith('AWAY_')) return 'TEAM_GOALS';
+  const m = key.match(/^(OVER|UNDER)_(\d)_5$/);
+  if (m) return Number(`${m[2]}.5`) === Number(quotedLine) ? 'MAIN_LINE' : 'OTHER_LINES';
+  if (key.startsWith('CORNERS') || key.includes('corners')) return 'CORNERS';
+  if (key.startsWith('CARDS') || key.includes('cards') || key === 'both_teams_carded') return 'CARDS';
+  return 'OTHER_LINES';
+}
+
 /**
  * Candidate picks for one match.
  * @param match      the app's match ({id, home, away, league, odds, ...})
@@ -62,8 +90,10 @@ const fill = (label, home, away) => label.replace('{home}', home).replace('{away
  * @param stats      corners and cards prediction (predictMatchStats) or null
  * @param record     data/top-picks-record.json
  */
-export function matchCandidates(match, goals, stats, record, statsRecord = STATS_RECORD_DEFAULT, { recordKey = null } = {}) {
+export function matchCandidates(match, goals, stats, record, statsRecord = STATS_RECORD_DEFAULT, { recordKey = null, menu = null } = {}) {
   const out = [];
+  const quotedLine = Number(match.odds?.overLine ?? match.odds?.overUnder) || 2.5;
+  const offered = (key) => !menu || menu.includes(marketGroup(key, quotedLine));
   if (goals && (goals.source === 'PRICES' || goals.source === 'MARKET_MEMORY')) {
     const g = scoreGrid(goals.lambda, goals.mu, goals.rho ?? -0.05);
     const fh = scoreGrid(goals.lambda * 0.46, goals.mu * 0.46, 0);
@@ -73,6 +103,7 @@ export function matchCandidates(match, goals, stats, record, statsRecord = STATS
       : [sum(g, (i, j) => i > j), sum(g, (i, j) => i === j), sum(g, (i, j) => i < j)];
     for (const [key, [label, kind, pf]] of Object.entries(GOAL_MARKETS)) {
       const pct = pf(g, x, fh) * 100;
+      if (!offered(key)) continue;
       const rec = recordFor(record, recordKey || goals.source, key, pct);
       if (!rec) continue;
       out.push({ key, kind, label: fill(label, match.home, match.away), chance: pct, record: rec, source: goals.source });
@@ -81,6 +112,7 @@ export function matchCandidates(match, goals, stats, record, statsRecord = STATS
   for (const p of stats?.picks || []) {
     const pct = p.prob * 100;
     if (pct < TOP_PICK_MIN) continue;
+    if (menu && !menu.includes(p.market === 'CORNERS' ? 'CORNERS' : 'CARDS')) continue;
     const noun = p.market === 'CORNERS' ? 'corners' : 'cards';
     const label = p.def ? fill(p.label, match.home, match.away) : `${p.side === 'OVER' ? 'Over' : 'Under'} ${p.line} total ${noun}`;
     out.push({ key: p.def ? p.key : `${p.market}_${p.side}_${p.line}`, kind: p.market === 'CORNERS' ? 'Corners' : 'Cards', label, chance: pct,

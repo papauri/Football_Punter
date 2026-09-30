@@ -1024,6 +1024,14 @@ friendly, fewer than three recent games). Lineups are fetched from 90 minutes be
 every 5 minutes until confirmed, and run through the same lineup check as the main leagues. As
 there, the agents vote on results only and neither they nor the lineups change a pick's chance.
 
+**Only bets the bookmaker offers for that match.** A pick is useless if the bookmaker does not
+list that market. Every priced fixture has a match-result price and one quoted goals line; team
+goals, other lines, first-half, corners and cards markets are on the menu for the main leagues
+but often not for lower leagues, cups or friendlies. So by default, outside the scraped
+competitions Top picks uses only the match result, double chance and over/under on the line the
+bookmaker quotes for that match (`MARKET_GROUPS`, `DEFAULT_MENUS` in `src/model/topPicks.js`).
+The page's "Bookmaker bet types" panel changes both menus for the viewer.
+
 **What each pick shows it was checked against.** Picks are listed in kick-off order. Under each: where
 the chance comes from (today's odds, or past prices when there are none); for result bets, how many
 of the agents back that result; and the team news. The app fetches lineups from 90 minutes before

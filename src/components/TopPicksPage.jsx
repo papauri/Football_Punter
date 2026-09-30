@@ -2,6 +2,17 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { RefreshCw, Plus, Check, ChevronDown, ChevronUp, Target, CheckCircle2, AlertTriangle, Info } from 'lucide-react';
 import { formatSafeDateTime } from '../utils/dateUtils';
 import UniformDropdown from './UniformDropdown';
+import { MARKET_GROUPS, DEFAULT_MENUS } from '../model/topPicks.js';
+
+// Which bet types count as offered, per tier; remembered in this browser only.
+const MENU_KEY = 'topPicksMenus';
+function loadMenus() {
+  try {
+    const m = JSON.parse(localStorage.getItem(MENU_KEY) || 'null');
+    if (m && Array.isArray(m.main) && Array.isArray(m.other)) return m;
+  } catch { /* storage unavailable */ }
+  return DEFAULT_MENUS;
+}
 
 // The day's most likely bets across every match and market (src/model/topPicks.js).
 const KIND_FILTERS = [
@@ -19,12 +30,20 @@ export default function TopPicksPage({ matches = [], tzSettings, onAddToSlip, ac
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [open, setOpen] = useState(new Set());
+  const [menus, setMenus] = useState(loadMenus);
+  const [showMenus, setShowMenus] = useState(false);
+  const toggleMenu = (tier, group) => setMenus(prev => {
+    const has = prev[tier].includes(group);
+    const next = { ...prev, [tier]: has ? prev[tier].filter(g => g !== group) : [...prev[tier], group] };
+    try { localStorage.setItem(MENU_KEY, JSON.stringify(next)); } catch { /* storage unavailable */ }
+    return next;
+  });
 
   const load = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/top-picks?hours=${hours}&min=${min}&kinds=${encodeURIComponent(kinds)}`);
+      const res = await fetch(`/api/top-picks?hours=${hours}&min=${min}&kinds=${encodeURIComponent(kinds)}&menuMain=${encodeURIComponent(menus.main.join(','))}&menuOther=${encodeURIComponent(menus.other.join(','))}`);
       const json = await res.json();
       if (!res.ok || !json.success) throw new Error(json.error || 'Could not load the picks');
       setData(json.result);
@@ -35,7 +54,7 @@ export default function TopPicksPage({ matches = [], tzSettings, onAddToSlip, ac
     }
   };
 
-  useEffect(() => { load(); }, [hours, min, kinds]);
+  useEffect(() => { load(); }, [hours, min, kinds, menus]);
 
   const byId = useMemo(() => new Map(matches.map(m => [m.id, m])), [matches]);
   const picks = data?.picks || [];
@@ -115,7 +134,32 @@ export default function TopPicksPage({ matches = [], tzSettings, onAddToSlip, ac
           <UniformDropdown label="Chance" value={min} onChange={(v) => setMin(Number(v))}
             options={[{ value: 80, label: '80%+' }, { value: 85, label: '85%+' }, { value: 90, label: '90%+' }]} />
           <UniformDropdown label="Bets" value={kinds} onChange={setKinds} options={KIND_FILTERS} />
+          <button type="button" onClick={() => setShowMenus(v => !v)}
+            className="h-8 px-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold cursor-pointer">
+            Bookmaker bet types {showMenus ? '▴' : '▾'}
+          </button>
         </div>
+        {showMenus && (
+          <div className="border border-slate-200 rounded-lg p-2.5 space-y-2 text-xs">
+            <div className="text-[11px] text-slate-500">
+              Only bets your bookmaker offers for that kind of match are picked. Every priced match has a
+              result price and one quoted goals line; the rest are usually offered for the main leagues only.
+            </div>
+            {[['main', 'Main leagues (top European leagues, UEFA and big international competitions)'], ['other', 'Other competitions (lower leagues, other countries, cups, friendlies)']].map(([tier, title]) => (
+              <div key={tier}>
+                <div className="font-semibold text-slate-700 mb-1">{title}</div>
+                <div className="flex flex-wrap gap-x-3 gap-y-1">
+                  {Object.entries(MARKET_GROUPS).map(([g, label]) => (
+                    <label key={g} className="inline-flex items-center gap-1 text-slate-600 cursor-pointer">
+                      <input type="checkbox" checked={menus[tier].includes(g)} onChange={() => toggleMenu(tier, g)} />
+                      {label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         <div className="text-[11px] text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-2">
           Likely is not the same as profitable. On past seasons these bets came in as often as shown, but
           at one bookmaker's prices they still lost about 4% overall, because a likely bet pays little.

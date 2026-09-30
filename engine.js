@@ -21,7 +21,7 @@ import { pricesFor } from './src/services/oddsApi.js';
 import { getCurrentCoach, peekCoach } from './src/services/coaches.js';
 import { predictMatchStats, matchStatsSummary } from './src/services/matchStatsLookup.js';
 import { fairProbabilities } from './src/model/devig.js';
-import { matchCandidates, rankTopPicks, TOP_PICK_MIN } from './src/model/topPicks.js';
+import { matchCandidates, rankTopPicks, TOP_PICK_MIN, DEFAULT_MENUS } from './src/model/topPicks.js';
 import { strongCall, decisiveCall, gradeCall } from './src/model/matchCall.js';
 import { normalizeTeam } from './src/model/teamNames.js';
 import { agentVotesFromSummary, lineupsFromSummary } from './src/services/extraAgents.js';
@@ -7979,7 +7979,7 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
 
   // The day's top picks: every market on every upcoming match within `hours`, kept only when very
   // likely and backed by a measured record (src/model/topPicks.js, data/top-picks-record.json).
-  getTopPicks({ hours = 24, min = TOP_PICK_MIN, kinds = [] } = {}) {
+  getTopPicks({ hours = 24, min = TOP_PICK_MIN, kinds = [], menus = DEFAULT_MENUS } = {}) {
     if (!this._topPicksRecord) {
       try { this._topPicksRecord = JSON.parse(fs.readFileSync(path.join(ENGINE_DIR, 'data', 'top-picks-record.json'), 'utf8')); }
       catch { this._topPicksRecord = {}; }
@@ -8004,7 +8004,7 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
       const swarm = this.swarmOrchestrator?.getSwarmDataForMatch(match.id || match.espnEventId || `${match.home}-${match.away}`)?.synthesis || match.aiSwarm;
       return {
         match,
-        candidates: matchCandidates(match, goals, stats, record, statsRecord?.hit ? { picks: statsRecord.picks, cameIn: statsRecord.hit } : undefined),
+        candidates: matchCandidates(match, goals, stats, record, statsRecord?.hit ? { picks: statsRecord.picks, cameIn: statsRecord.hit } : undefined, { menu: menus.main }),
         context: { agentVotes: swarm?.agentVotes || [], lineupImpact: match.lineupImpact || null }
       };
     }).concat(extras.map(match => {
@@ -8012,7 +8012,7 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
       const checked = this.extraChecks?.get(match.espnEventId);
       return {
         match,
-        candidates: goals?.source === 'PRICES' ? matchCandidates(match, goals, null, record, undefined, { recordKey: 'OTHER' }) : [],
+        candidates: goals?.source === 'PRICES' ? matchCandidates(match, goals, null, record, undefined, { recordKey: 'OTHER', menu: menus.other }) : [],
         context: {
           competition: record.COMPETITIONS?.[match.leagueCode] || null, extraCompetition: true, checking: !checked,
           agentVotes: checked?.agentVotes || [], lineupImpact: checked?.lineupImpact || null
@@ -8025,6 +8025,7 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
     if (needChecks.length) this.checkExtraFixtures(needChecks).catch(err => this.log('TopPicks', `Extra checks failed: ${err.message}`));
     return {
       picks: rankTopPicks(entries, { min, kinds }),
+      menus,
       matchesScanned: upcoming.length + extras.length,
       competitionsScanned: this._extraCompetitions || 0,
       hours,
