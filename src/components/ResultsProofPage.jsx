@@ -1606,7 +1606,7 @@ export default function ResultsProofPage({
           <p className="px-4 py-2 text-[11px] text-slate-500 border-b border-amber-100 bg-amber-50/40">
             Every prediction below was <strong>frozen before kickoff</strong> — timestamped proof that tips were published before the result was known. Prediction fields are <strong>immutable</strong> and can never be changed once snapshotted.
           </p>
-          {ledgerSummary && ledgerSummary.all.count > 0 && (
+          {ledgerSummary && ledgerSummary.all?.count > 0 && (
             <div className="px-4 py-2.5 border-b border-amber-100 flex flex-wrap gap-2 text-[11px]">
               {[
                 { label: 'All resolved', stat: ledgerSummary.all },
@@ -1614,8 +1614,8 @@ export default function ResultsProofPage({
                 { label: 'Confident (fav ≥60%)', stat: ledgerSummary.confident60 },
                 { label: 'With bookmaker odds', stat: ledgerSummary.withOdds },
                 { label: 'Without odds', stat: ledgerSummary.withoutOdds },
-                { label: 'Lineup-adjusted', stat: ledgerSummary.withLineup }
-              ].filter(({ stat }) => stat.count > 0).map(({ label, stat }) => (
+                { label: 'Lineup-adjusted', stat: ledgerSummary.withLineup || ledgerSummary.withConfirmedLineup }
+              ].filter(({ stat }) => stat && typeof stat.count === 'number' && stat.count > 0).map(({ label, stat }) => (
                 <div key={label} className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white">
                   <div className="text-slate-500">{label}</div>
                   <div className="font-mono font-bold text-slate-900">
@@ -1628,7 +1628,7 @@ export default function ResultsProofPage({
                   {ledgerSummary.pending} awaiting result
                 </div>
               )}
-              {ledgerSummary.all.count < 200 && (
+              {(ledgerSummary.all?.count ?? 0) < 200 && (
                 <div className="w-full text-slate-400">
                   Small sample — treat hit rates as indicative until at least ~200 predictions have resolved.
                 </div>

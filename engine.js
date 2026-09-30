@@ -3531,6 +3531,7 @@ class SoccerEngine {
       withoutOdds: rate(resolved.filter(e => !e.inputs?.odds)),
       // A confirmed XI is the only lineup state that carries information; a projected one usually
       // runs with both squads at full strength, so it is counted separately.
+      withLineup: rate(resolved.filter(e => e.inputs?.lineup?.confirmed)),
       withConfirmedLineup: rate(resolved.filter(e => e.inputs?.lineup?.confirmed)),
       withLineupThatMovedTheModel: rate(resolved.filter(e => e.inputs?.lineup?.movedTheModel)),
       versusBookmaker: h2h,
