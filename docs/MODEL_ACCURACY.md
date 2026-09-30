@@ -869,3 +869,39 @@ independent agents (prices, market memory, results ratings, shots-on-target rati
 not an extra edge; the edge, such as it is, is in best bets at the best price. The unanimous record
 shown in the app is now this measured best-bet record, not an in-sample recount with a made-up
 76.2% fallback.
+
+## The search for an unexploited edge
+
+Every idea below was scored season by season since 2021-22 on the 14 main leagues. An idea counts
+only if it holds up in every season, not just on the seasons it was tuned on.
+
+**What failed.**
+- *Cross-market disagreement*: backing over/under 2.5 when the match-result prices imply a
+  different goal total from the over/under market's. Positive on 2021-24 (where the threshold was
+  chosen), then -5% to -11% at average prices from 2024-25. The goals market is at least as sharp.
+- *Drift toward market memory*: when past prices rate a team above its opening price, the price does
+  shorten by kick-off (positive closing-line value in all six seasons, +0.7% to +4.0%), but the move
+  is smaller than the margin and mostly on underdogs, so returns were negative.
+- Market memory as a filter on best bets: no change (+2.57% vs +2.53% at best opening price).
+- Best bets by league or home/away: every split within its noise; none consistently positive at the
+  average price.
+- Betting exchanges: +1.6% at kick-off after 2% commission (three seasons of data only).
+
+**What holds: best bets at the best price just before kick-off.** Straight wins at 65-85%, chosen
+from kick-off prices:
+
+| Price taken | Return | By season (2021-22 ... 2026-27) |
+|---|---|---|
+| Best price across bookmakers at kick-off | **+3.8%** (95% CI +2.0 to +5.7) | +4.2, +5.7, +3.4, +2.9, +3.6, +1.0 |
+| Average bookmaker price | +0.4% | about break-even |
+| Bet365 | +0.2% | about break-even |
+
+3,728 bets, 77.2% came in. The picks alone break even; the edge is the price. Bookmakers underprice
+strong favourites slightly (the favourite-longshot bias), and prices sharpen toward kick-off without
+losing it. The best price here is the highest of the 30+ bookmakers football-data surveys; with
+fewer accounts expect less.
+
+In the app: best bets starting within 3 hours get their competition re-priced through The Odds API
+(1 credit, at most every 90 minutes, ahead of every other use), and the Matches page shows the best
+price and the bookmaker offering it. Nothing here makes winning certain: about one best bet in four
+loses, and a +4% return means long losing runs are normal.

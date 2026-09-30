@@ -20,6 +20,11 @@ const RESERVE = 40;
 const DAILY_CAP = 20;
 const REFRESH_HOURS = 12;
 const WINDOW_HOURS = 72;
+// Best bets pay only at the best price near kick-off (docs/MODEL_ACCURACY.md: +3.8% at the best
+// price just before kick-off against about +0.3% at a single bookmaker). Competitions with a best
+// bet starting within this window are re-priced, at most every BEST_BET_REFRESH_MIN minutes.
+const BEST_BET_WINDOW_HOURS = 3;
+const BEST_BET_REFRESH_MIN = 90;
 const SPORTS_TTL = 24 * 60 * 60 * 1000;
 
 // ESPN competition names to The Odds API keys, for names that do not match by title.
@@ -110,19 +115,23 @@ export async function fillMissingPrices(dir, matches, key = process.env.ODDS_API
   load(dir);
   if (!key) return { spent: 0, fetched: [], skipped: 'no key', remaining: null };
   const now = Date.now();
-  const unpriced = (matches || []).filter(m => m && !m.isCompleted && !m.started && m.timestamp > now && m.timestamp - now < WINDOW_HOURS * 3600e3 && !hasEspnPrice(m));
-  if (!unpriced.length) return { spent: 0, fetched: [], skipped: 'every upcoming match has an ESPN price', remaining: state.remaining ?? null };
+  const upcoming = (matches || []).filter(m => m && !m.isCompleted && !m.started && m.timestamp > now);
+  const unpriced = upcoming.filter(m => m.timestamp - now < WINDOW_HOURS * 3600e3 && !hasEspnPrice(m));
+  const bestBetsSoon = upcoming.filter(m => m.smartMarket?.isBestBet && m.timestamp - now < BEST_BET_WINDOW_HOURS * 3600e3);
+  if (!unpriced.length && !bestBetsSoon.length) return { spent: 0, fetched: [], skipped: 'nothing needs a price', remaining: state.remaining ?? null };
 
   let sports;
   try { sports = await sportsList(key); } catch (e) { save(); return { spent: 0, fetched: [], skipped: e.message, remaining: state.remaining ?? null }; }
 
-  const bySport = new Map();
-  for (const m of unpriced) {
-    const sk = sportFor(m.league, sports);
-    if (sk) bySport.set(sk, (bySport.get(sk) || 0) + 1);
-  }
-  const queue = [...bySport.entries()].sort((a, b) => b[1] - a[1])
-    .filter(([sk]) => now - (state.fetchedAt[sk] || 0) > REFRESH_HOURS * 3600e3);
+  // Best bets about to start come first (best price near kick-off), then competitions ESPN has not priced.
+  const soon = new Map(), missing = new Map();
+  for (const m of bestBetsSoon) { const sk = sportFor(m.league, sports); if (sk) soon.set(sk, (soon.get(sk) || 0) + 1); }
+  for (const m of unpriced) { const sk = sportFor(m.league, sports); if (sk) missing.set(sk, (missing.get(sk) || 0) + 1); }
+  const age = (sk) => now - (state.fetchedAt[sk] || 0);
+  const queue = [
+    ...[...soon.entries()].sort((a, b) => b[1] - a[1]).filter(([sk]) => age(sk) > BEST_BET_REFRESH_MIN * 60e3),
+    ...[...missing.entries()].sort((a, b) => b[1] - a[1]).filter(([sk]) => !soon.has(sk) && age(sk) > REFRESH_HOURS * 3600e3)
+  ];
 
   const fetched = [];
   let spent = 0;
@@ -179,7 +188,7 @@ export function pricesFor(dir, home, away, kickoffTs) {
         homeOdds: +ref.h.toFixed(2), drawOdds: +ref.d.toFixed(2), awayOdds: +ref.a.toFixed(2),
         homeProb: +s.fairProb.home.toFixed(1), drawProb: +s.fairProb.draw.toFixed(1), awayProb: +s.fairProb.away.toFixed(1),
         marketFav: s.fairProb.home >= s.fairProb.away ? 'HOME' : 'AWAY',
-        best: { home: s.best.h, draw: s.best.d, away: s.best.a },
+        best: { home: s.best.h, draw: s.best.d, away: s.best.a, homeBook: s.best.source.h, drawBook: s.best.source.d, awayBook: s.best.source.a },
         bookCount: s.bookCount
       };
     }

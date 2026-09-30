@@ -96,6 +96,11 @@ export default function DailyBriefingPanel({
       const conf = safeParseFloat(m.smartMarket?.prob ?? m.confidence ?? m.binaryModel?.confidence,
         Math.max(safeParseFloat(m.prob?.home), safeParseFloat(m.prob?.draw), safeParseFloat(m.prob?.away)));
       const minOdds = safeParseFloat(m.smartMarket?.minOdds, 0);
+      // Best price across bookmakers for a straight-win call (Odds API), where the edge actually is.
+      const bp = m.bestPrices;
+      const bestPrice = bp && (pick === 'HOME' || pick === 'AWAY')
+        ? { odds: pick === 'HOME' ? bp.home : bp.away, book: String((pick === 'HOME' ? bp.homeBook : bp.awayBook) || '').replace(/_/g, ' ') }
+        : null;
       const odds = isPass ? null : resolveMatchOdds(m, pick);
       const kelly = m.kellyStake ?? m.binaryModel?.kellyStake;
       const units = safeParseFloat(kelly?.units ?? kelly?.fraction, 0);
@@ -103,7 +108,7 @@ export default function DailyBriefingPanel({
       const stake = rawEuro > 0 ? rawEuro : units > 0 ? (units <= 1 ? units * bankrollEuro : (units / 100) * bankrollEuro) : bankrollEuro * 0.02;
       const isRisky = isTrapMatch(m);
       return {
-        m, phase, pick, isPass, isRisky, conf, odds, stake, minOdds,
+        m, phase, pick, isPass, isRisky, conf, odds, stake, minOdds, bestPrice: bestPrice && bestPrice.odds > 1 ? bestPrice : null,
         returns: odds ? calculatePotentialReturn(stake, odds) : null,
         // Best bets: straight wins at 65-85% (engine smartMarket.isBestBet), the calls with a measured edge at the best price.
         isBest: phase === 'upcoming' && Boolean(m.smartMarket?.isBestBet)
@@ -135,7 +140,7 @@ export default function DailyBriefingPanel({
     all: 'No matches left on this day.',
     inplay: 'Nothing in play right now.',
     watch: 'Tap the star on any match to follow it here.',
-    best: 'No strong tips yet. Check back closer to kickoff.'
+    best: 'No best bets yet. Check back closer to kickoff.'
   }[current.id];
 
   const addButton = (r, inSlip) => (r.isPass || !onAddToSlip) ? (
@@ -232,6 +237,11 @@ export default function DailyBriefingPanel({
             })}
             <MobileViewSwitcher label="Display" className="ml-auto md:hidden" />
           </div>
+          {current.id === 'best' && current.list.length > 0 && (
+            <p className="px-3 py-2 text-[11px] text-slate-600 bg-emerald-50/60 border-b border-emerald-100">
+              Bet these close to kick-off at the <strong>best price</strong> you can find. In tests since 2021 that returned about +4%; at a single bookmaker's price, about break-even.
+            </p>
+          )}
 
           <table className="block md:table w-full text-left border-collapse text-xs">
             <thead className="hidden md:table-header-group">
@@ -342,6 +352,7 @@ export default function DailyBriefingPanel({
                       <td className="hidden md:table-cell px-2 py-1.5 text-center font-mono" title={r.minOdds > 1 ? `Only worth betting at ${safeToFixed(r.minOdds, 2)} or better` : undefined}>
                         {r.odds > 1 ? safeToFixed(r.odds, 2) : '—'}
                         {!r.isPass && r.minOdds > 1 && <div className={`text-[9.5px] ${r.odds > 1 && r.odds < r.minOdds ? 'text-rose-600 font-bold' : 'text-slate-400'}`}>bet at {safeToFixed(r.minOdds, 2)}+</div>}
+                        {r.bestPrice && <div className="text-[9.5px] text-emerald-700 font-semibold" title={`Best price across ${m.bestPrices?.bookCount || 'several'} bookmakers`}>best {safeToFixed(r.bestPrice.odds, 2)} · {r.bestPrice.book}</div>}
                       </td>
                       <td className="hidden md:table-cell px-2 py-1.5">
                         <div className="flex items-center justify-end gap-1.5">

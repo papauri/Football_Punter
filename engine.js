@@ -5869,8 +5869,11 @@ class SoccerEngine {
             const homeName = home.team.displayName;
             const awayName = away.team.displayName;
 
-            // ESPN's price when it has one, otherwise the last Odds API price for this fixture.
-            const odds = this.parseEspnOdds(comp) || pricesFor(ENGINE_DIR, homeName, awayName, evDate.getTime());
+            // ESPN's price when it has one, otherwise the last Odds API price for this fixture. The
+            // Odds API's best price across bookmakers is kept either way: best bets only pay there.
+            const multiBook = pricesFor(ENGINE_DIR, homeName, awayName, evDate.getTime());
+            const odds = this.parseEspnOdds(comp) || multiBook;
+            const bestPrices = multiBook?.best ? { ...multiBook.best, bookCount: multiBook.bookCount } : null;
 
             // Extract broadcast channels
             let broadcast = null;
@@ -5945,6 +5948,7 @@ class SoccerEngine {
               liveMinute,
               liveScore: isLive ? `${hLiveScore}-${aLiveScore}` : null,
               inPlayPrediction,
+              bestPrices,
               broadcast,
               channels,
               goals: {
@@ -6015,6 +6019,8 @@ class SoccerEngine {
             this.matches[existingIdx].scoreModel = item.scoreModel;
             this.matches[existingIdx].smartMarket = item.smartMarket;
             this.matches[existingIdx].independentViews = item.independentViews;
+            this.matches[existingIdx].bestPrices = item.bestPrices;
+            this.matches[existingIdx].odds = item.odds;
             this.matches[existingIdx].isEliteConviction = item.isEliteConviction;
             this.matches[existingIdx].eliteDisqualificationReason = item.eliteDisqualificationReason;
             this.matches[existingIdx].leagueTier = item.leagueTier;

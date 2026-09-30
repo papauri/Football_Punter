@@ -6,16 +6,16 @@
 import { isLeagueBlacklisted, isCupCompetition } from './src/utils/leagueUtils.js';
 
 // Best bets (straight wins stated at 65-85%) on every match in the 14 main European leagues since
-// 2021-22, priced at opening odds the model never used for learning. See docs/MODEL_ACCURACY.md.
+// 2021-22, chosen from the prices just before kick-off. See docs/MODEL_ACCURACY.md.
 export const BEST_BET_RECORD = {
-  matches: 3631,
-  statedChance: 72.8,
-  hitRate: 76.9,
+  matches: 3728,
+  statedChance: 73.0,
+  hitRate: 77.2,
   allMatchesHitRate: 51.9,
-  roiBestPrice: 2.5,
-  roiSingleBook: -0.2,
+  roiBestPrice: 3.8,
+  roiSingleBook: 0.2,
   measured: '2026-09-30',
-  source: 'Best bets since 2021-22: 3,631 matches, 76.9% came in (72.8% stated); +2.5% at the best price across bookmakers, -0.2% at Bet365.'
+  source: 'Best bets since 2021-22: 3,728 matches, 77.2% came in; +3.8% at the best price just before kick-off (positive every season), +0.2% at Bet365.'
 };
 
 // Each voting agent reads one independent source of opinion about the match, attached by the engine
