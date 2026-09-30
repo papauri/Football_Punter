@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { RefreshCw, Plus, Check, ChevronDown, ChevronUp, Target } from 'lucide-react';
+import { RefreshCw, Plus, Check, ChevronDown, ChevronUp, Target, CheckCircle2, AlertTriangle, Info } from 'lucide-react';
 import { formatSafeDateTime } from '../utils/dateUtils';
 import UniformDropdown from './UniformDropdown';
 
@@ -74,6 +74,19 @@ export default function TopPicksPage({ matches = [], tzSettings, onAddToSlip, ac
     </span>
   );
 
+  const checkList = (pick) => (pick.checks || []).length > 0 && (
+    <ul className="mt-1 space-y-0.5">
+      {pick.checks.map((c, i) => (
+        <li key={i} className={`text-[11px] flex items-start gap-1 ${c.tone === 'warn' ? 'text-amber-800 font-semibold' : c.tone === 'ok' ? 'text-slate-600' : 'text-slate-500'}`}>
+          {c.tone === 'warn' ? <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0 text-amber-600" />
+            : c.tone === 'ok' ? <CheckCircle2 className="w-3 h-3 mt-0.5 shrink-0 text-emerald-600" />
+              : <Info className="w-3 h-3 mt-0.5 shrink-0 text-slate-400" />}
+          <span>{c.text}</span>
+        </li>
+      ))}
+    </ul>
+  );
+
   return (
     <div className="space-y-4">
       <div className="bg-white rounded-xl shadow-xs border border-slate-200 p-3 space-y-2.5">
@@ -82,7 +95,8 @@ export default function TopPicksPage({ matches = [], tzSettings, onAddToSlip, ac
             <h1 className="text-sm font-bold text-slate-900">Top picks</h1>
             <p className="text-[11px] text-slate-500 max-w-xl">
               The most likely bets on every match, from results, goals, corners and cards. Only bets
-              at {min}%+ with a proven past record are shown, one per match, most likely first.
+              at {min}%+ with a proven past record are shown, one per match, in kick-off order. Each
+              pick lists what was checked: the odds, the agents' votes and the lineups.
             </p>
           </div>
           <button
@@ -124,11 +138,17 @@ export default function TopPicksPage({ matches = [], tzSettings, onAddToSlip, ac
             <span>{picks.length} picks from {data.matchesScanned} matches</span>
             {data.record?.matches > 0 && <span title="Corners and cards: the corners and cards model's own held-out seasons">Past record: {data.record.matches.toLocaleString()} matches in Europe's 14 main leagues, {data.record.measuredOn.replace(' to ', ' – ')}</span>}
           </div>
-          {picks.map((row) => {
+          {picks.map((row, idx) => {
             const when = formatSafeDateTime(row, null, tzSettings);
+            const prevWhen = idx > 0 ? formatSafeDateTime(picks[idx - 1], null, tzSettings) : null;
+            const newDay = !prevWhen || prevWhen.day !== when.day || prevWhen.date !== when.date;
             const isOpen = open.has(row.id);
             return (
-              <div key={row.id} className="px-3 py-2.5">
+              <React.Fragment key={row.id}>
+              {newDay && (
+                <div className="px-3 py-1.5 bg-slate-50 text-[11px] font-bold text-slate-600 uppercase tracking-wider">{when.day}, {when.date}</div>
+              )}
+              <div className="px-3 py-2.5">
                 <div className="flex items-start gap-3">
                   <div className="w-14 shrink-0 text-center">
                     <div className="text-lg font-bold text-emerald-700 font-mono leading-none">{Math.round(row.chance)}%</div>
@@ -141,13 +161,14 @@ export default function TopPicksPage({ matches = [], tzSettings, onAddToSlip, ac
                         ? <button type="button" className="hover:underline cursor-pointer" onClick={() => onOpenDeepResearch(byId.get(row.matchId))}>{row.home} vs {row.away}</button>
                         : <span>{row.home} vs {row.away}</span>}
                     </div>
-                    <div className="text-[11px] text-slate-500">{when.day} {when.time} · {row.league} · {row.kind}</div>
+                    <div className="text-[11px] text-slate-500"><strong className="text-slate-700">{when.time}</strong> · {row.league} · {row.kind}</div>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1">
                       {priceLine(row)}
                       <span className="text-[11px] text-slate-500" title="How often this bet at this chance came in on past matches the model had not seen">
                         Came in {row.pastHitRate}% of {row.pastPicks.toLocaleString()} past picks
                       </span>
                     </div>
+                    {checkList(row)}
                     {row.others.length > 0 && (
                       <button type="button" onClick={() => toggle(row.id)} className="mt-1 text-[11px] text-indigo-600 font-semibold inline-flex items-center gap-0.5 cursor-pointer">
                         {isOpen ? 'Hide' : `${row.others.length} more strong bet${row.others.length > 1 ? 's' : ''} on this match`}
@@ -161,6 +182,7 @@ export default function TopPicksPage({ matches = [], tzSettings, onAddToSlip, ac
                             <div className="min-w-0">
                               <div className="text-xs font-semibold text-slate-800">{o.label} <span className="font-mono text-emerald-700">{Math.round(o.chance)}%</span></div>
                               {priceLine(o)}
+                              {checkList(o)}
                             </div>
                             {addButton(row, o)}
                           </div>
@@ -171,6 +193,7 @@ export default function TopPicksPage({ matches = [], tzSettings, onAddToSlip, ac
                   {addButton(row, row)}
                 </div>
               </div>
+              </React.Fragment>
             );
           })}
         </div>

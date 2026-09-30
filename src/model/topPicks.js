@@ -98,7 +98,55 @@ function priceFor(key, odds) {
   return null;
 }
 
-function toPick(match, c) {
+// Which side a pick leans on: its attack, its defence (goalkeeper included), or both.
+const RELIES = {
+  HOME_WIN: [['home', 'attack'], ['home', 'defence']], AWAY_WIN: [['away', 'attack'], ['away', 'defence']],
+  HOME_OR_DRAW: [['home', 'defence']], AWAY_OR_DRAW: [['away', 'defence']],
+  HOME_SCORES: [['home', 'attack']], AWAY_SCORES: [['away', 'attack']], HOME_OVER_1_5: [['home', 'attack']], AWAY_OVER_1_5: [['away', 'attack']],
+  HOME_UNDER_1_5: [['away', 'defence']], AWAY_UNDER_1_5: [['home', 'defence']],
+  OVER_1_5: [['home', 'attack'], ['away', 'attack']], OVER_2_5: [['home', 'attack'], ['away', 'attack']], BTTS_YES: [['home', 'attack'], ['away', 'attack']], FH_OVER_0_5: [['home', 'attack'], ['away', 'attack']],
+  UNDER_2_5: [['home', 'defence'], ['away', 'defence']], UNDER_3_5: [['home', 'defence'], ['away', 'defence']], UNDER_4_5: [['home', 'defence'], ['away', 'defence']], BTTS_NO: [['home', 'defence'], ['away', 'defence']], FH_UNDER_1_5: [['home', 'defence'], ['away', 'defence']]
+};
+// Outcomes each result pick wins on, for counting the agents that back it.
+const WINS_ON = { HOME_WIN: ['HOME'], AWAY_WIN: ['AWAY'], HOME_OR_DRAW: ['HOME', 'DRAW'], AWAY_OR_DRAW: ['AWAY', 'DRAW'], HOME_OR_AWAY: ['HOME', 'AWAY'] };
+
+/**
+ * What was checked for a pick, in plain words: where the chance comes from, what the agents said
+ * (they vote on the result only), and the team news. Team news never changes the chance (missing
+ * regular players added nothing to the price when tested); it is shown as a warning.
+ */
+export function pickChecks(c, match, ctx = {}) {
+  const checks = [];
+  if (c.source === 'PRICES') checks.push({ tone: 'ok', text: `Priced from today's odds${match.odds?.provider ? ` (${match.odds.provider})` : ''}, which move with team news` });
+  else if (c.source === 'MARKET_MEMORY') checks.push({ tone: 'info', text: 'No odds for this match yet: from both teams\' past prices' });
+  else if (c.source === 'STATS') checks.push({ tone: 'ok', text: 'From both teams\' corners and cards for and against, this season and last' });
+
+  const votes = (ctx.agentVotes || []).filter(v => v.predictedWinner);
+  if (WINS_ON[c.key] && votes.length) {
+    const backing = votes.filter(v => WINS_ON[c.key].includes(v.predictedWinner)).length;
+    checks.push({ tone: backing === votes.length ? 'ok' : backing >= votes.length / 2 ? 'info' : 'warn', text: `${backing} of ${votes.length} agents back this result` });
+  }
+
+  const li = ctx.lineupImpact;
+  const confirmed = li && String(li.status).toUpperCase() === 'CONFIRMED';
+  if (!confirmed) {
+    checks.push({ tone: 'info', text: 'Lineups not out yet: checked from 90 minutes before kick-off' });
+  } else {
+    const worries = [];
+    for (const [sideKey, part] of RELIES[c.key] || []) {
+      const team = sideKey === 'home' ? match.home : match.away;
+      if (part === 'defence' && li[`${sideKey}BackupGK`]) worries.push(`${team} start their back-up goalkeeper`);
+      if (part === 'attack' && li[`${sideKey}MissingStar`]) worries.push(`${team}'s top scorer is not starting`);
+      if (li[`${sideKey}EloAdjust`] < 0 && (c.key === `${sideKey.toUpperCase()}_WIN` || c.key === `${sideKey.toUpperCase()}_OR_DRAW`)) worries.push(`${team} have rotated their team`);
+    }
+    checks.push(worries.length
+      ? { tone: 'warn', text: `Lineups confirmed: ${[...new Set(worries)].join('; ')}` }
+      : { tone: 'ok', text: 'Lineups confirmed: nothing against this bet' });
+  }
+  return checks;
+}
+
+function toPick(match, c, ctx) {
   // Break-even: the lower of the stated chance and the past record, so the price asked for never
   // leans on the record being better than the figure.
   const safe = Math.min(c.chance, c.record.cameIn);
@@ -113,23 +161,25 @@ function toPick(match, c) {
     pastPicks: c.record.picks,
     betAt: Number((100 / safe).toFixed(2)),
     priceNow: price ? Number(price.toFixed(2)) : null,
-    source: c.source
+    source: c.source,
+    checks: pickChecks(c, match, ctx)
   };
 }
 
 /**
- * The day's top picks across all matches, most likely first. One row per match (picks from one
+ * The day's top picks across all matches, in kick-off order. One row per match (picks from one
  * match win or lose together): its most likely bet at `min` or more, with the match's other bets
  * at that level under `others`. `kinds` limits the bet types considered (all when empty).
+ * Each entry may carry `context` ({agentVotes, lineupImpact}) for the checks shown with a pick.
  */
 export function rankTopPicks(entries, { min = TOP_PICK_MIN, kinds = [] } = {}) {
   const rows = [];
-  for (const { match, candidates } of entries) {
+  for (const { match, candidates, context } of entries) {
     const strong = candidates
       .filter(c => c.chance >= min && (!kinds.length || kinds.includes(c.kind)))
       .sort((a, b) => b.chance - a.chance);
     if (!strong.length) continue;
-    const [top, ...rest] = strong.map(c => toPick(match, c));
+    const [top, ...rest] = strong.map(c => toPick(match, c, context));
     rows.push({
       ...top,
       matchId: match.id,
@@ -142,5 +192,5 @@ export function rankTopPicks(entries, { min = TOP_PICK_MIN, kinds = [] } = {}) {
       others: rest
     });
   }
-  return rows.sort((a, b) => b.chance - a.chance);
+  return rows.sort((a, b) => (Number(a.timestamp) || 0) - (Number(b.timestamp) || 0) || b.chance - a.chance);
 }

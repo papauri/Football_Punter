@@ -7976,7 +7976,12 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
     const entries = upcoming.map(match => {
       const goals = this.resolveMarketGoals(match.home, match.away, { odds: match.odds, league: match.league });
       const stats = predictMatchStats(ENGINE_DIR, match.home, match.away, goals);
-      return { match, candidates: matchCandidates(match, goals, stats, record, statsRecord?.hit ? { picks: statsRecord.picks, cameIn: statsRecord.hit } : undefined) };
+      const swarm = this.swarmOrchestrator?.getSwarmDataForMatch(match.id || match.espnEventId || `${match.home}-${match.away}`)?.synthesis || match.aiSwarm;
+      return {
+        match,
+        candidates: matchCandidates(match, goals, stats, record, statsRecord?.hit ? { picks: statsRecord.picks, cameIn: statsRecord.hit } : undefined),
+        context: { agentVotes: swarm?.agentVotes || [], lineupImpact: match.lineupImpact || null }
+      };
     });
     return {
       picks: rankTopPicks(entries, { min, kinds }),
@@ -9860,9 +9865,11 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
         const preConfidence = effectiveMatch.confidence || 75;
         const preKelly = effectiveMatch.kellyStake ? { ...effectiveMatch.kellyStake } : null;
 
+        // Today's prices stay in: without them the re-run fell back to past prices or the model.
         const options = {
           league: effectiveMatch.league,
           referee: effectiveMatch.referee,
+          odds: effectiveMatch.odds,
           lineupImpact
         };
 

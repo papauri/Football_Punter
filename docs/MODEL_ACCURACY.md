@@ -951,6 +951,15 @@ when Bet365 paid more than the break-even price never happened; at the best pric
 (+1.6%). So each pick carries a "bet at" price, 100 divided by the lower of its chance and its
 record, and the page says to skip it below that.
 
+**What each pick shows it was checked against.** Picks are listed in kick-off order. Under each: where
+the chance comes from (today's odds, or past prices when there are none); for result bets, how many
+of the agents back that result; and the team news. The app fetches lineups from 90 minutes before
+kick-off; once they are confirmed, a pick is flagged when the side it leans on starts a back-up
+goalkeeper, leaves out its top scorer, or rotates. The flag does not change the chance: missing
+regular players added nothing to the price when tested (see the edge search above), and the odds
+the chance comes from already move with team news. Re-running the model on a lineup now keeps
+today's odds; it used to drop them and fall back to past prices.
+
 ## Learning from new results
 
 Finished matches are added to the training data as they come in (every scrape, about 2 minutes).
