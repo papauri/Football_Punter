@@ -1,5 +1,5 @@
 {
-  "homeAdvantage": 1.2490673452942072,
+  "homeAdvantage": 1.2382570151069654,
   "homeEloBoost": 65,
   "entropyFloorThreshold": 52,
   "paritySafetyThreshold": 70,
@@ -10,7 +10,7 @@
   "homeGoalIntensity": 1.26,
   "awayGoalIntensity": 1.08,
   "goalOverdispersionR": 4.5,
-  "dixonColesRho": -0.034,
+  "dixonColesRho": -0.022,
   "temperature": 1.3,
   "maxScorelineSim": 10,
   "drawEquilibriumDelta": 13,
