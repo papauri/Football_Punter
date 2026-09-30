@@ -23,7 +23,6 @@ const GOAL_MARKETS = {
   AWAY_WIN: ['{away} to win', 'Result', (g, x) => x[2]],
   HOME_OR_DRAW: ['{home} or draw (1X)', 'Double chance', (g, x) => x[0] + x[1]],
   AWAY_OR_DRAW: ['{away} or draw (X2)', 'Double chance', (g, x) => x[2] + x[1]],
-  HOME_OR_AWAY: ['Either team to win (12)', 'Double chance', (g, x) => x[0] + x[2]],
   OVER_1_5: ['Over 1.5 goals', 'Goals', g => sum(g, (i, j) => i + j > 1)],
   OVER_2_5: ['Over 2.5 goals', 'Goals', g => sum(g, (i, j) => i + j > 2)],
   UNDER_2_5: ['Under 2.5 goals', 'Goals', g => sum(g, (i, j) => i + j < 3)],
@@ -108,7 +107,7 @@ const RELIES = {
   UNDER_2_5: [['home', 'defence'], ['away', 'defence']], UNDER_3_5: [['home', 'defence'], ['away', 'defence']], UNDER_4_5: [['home', 'defence'], ['away', 'defence']], BTTS_NO: [['home', 'defence'], ['away', 'defence']], FH_UNDER_1_5: [['home', 'defence'], ['away', 'defence']]
 };
 // Outcomes each result pick wins on, for counting the agents that back it.
-const WINS_ON = { HOME_WIN: ['HOME'], AWAY_WIN: ['AWAY'], HOME_OR_DRAW: ['HOME', 'DRAW'], AWAY_OR_DRAW: ['AWAY', 'DRAW'], HOME_OR_AWAY: ['HOME', 'AWAY'] };
+const WINS_ON = { HOME_WIN: ['HOME'], AWAY_WIN: ['AWAY'], HOME_OR_DRAW: ['HOME', 'DRAW'], AWAY_OR_DRAW: ['AWAY', 'DRAW'] };
 
 /**
  * What was checked for a pick, in plain words: where the chance comes from, what the agents said

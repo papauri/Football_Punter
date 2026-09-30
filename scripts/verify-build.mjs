@@ -90,6 +90,8 @@ check('Taxonomy: draw pick is a close game, not a trap', getMatchRiskProfile(syn
   const open = full(2.6, 3.2, 2.7), level = full(2.9, 2.9, 2.9);
   check('Call: open game still gets a call (its likeliest goals bet), never a pass', open.pick !== 'PASS' && open.marketType === 'GOALS_CALL' && open.tier !== 'STRONG', `got ${open.pick} ${open.tier}`);
   check('Call: level odds still get a call', level.pick !== 'PASS', `got ${level.pick}`);
+  const lowDraw = full(2.3, 4.6, 2.6);
+  check('Call: a low-draw open game never gets 12 (either team to win)', lowDraw.pick !== '12' && lowDraw.pick !== 'PASS', `got ${lowDraw.pick}`);
   check('Call: a goals call is graded from the score', engine.evaluateHit({ smartMarket: { pick: 'UNDER_35' } }, 2, 1) === true && engine.evaluateHit({ smartMarket: { pick: 'HOME_SCORES' } }, 0, 1) === false);
   check('Call: 12 is graded as no draw', engine.evaluateHit({ smartMarket: { pick: '12' } }, 1, 1) === false && engine.evaluateHit({ smartMarket: { pick: '12' } }, 0, 2) === true);
 }

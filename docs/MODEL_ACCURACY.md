@@ -843,28 +843,34 @@ break-even, which is why each call shows the price to beat.
 
 ## A call on every match
 
-"No strong call" is gone: every match now gets a call (`src/model/matchCall.js`). The strong result
-call is unchanged. Otherwise a double chance (1X, X2 or 12) is called when it is 75%+; failing
-that, the likeliest full-time goals bet (team to score, over 1.5, under 3.5, both teams to score,
-...). Under 4.5 goals is left out (nearly always the likeliest and pays almost nothing), and
-first-half markets too (they cannot be graded from a full-time score).
+"No strong call" is gone: every match now gets a call (`src/model/matchCall.js`), and "12" (either
+team to win) is never the call, since it says nothing about who wins. The order is:
+
+1. A straight win when the favourite is 65%+ (strong).
+2. The favourite's double chance (1X or X2): strong at 80%+, a call at 72.5%+.
+3. Otherwise the likeliest full-time goals bet (team to score, over 1.5, under 3.5, ...): a call at
+   75%+, a lean below.
+
+Under 4.5 goals is left out (nearly always the likeliest and pays almost nothing), and first-half
+markets too (they cannot be graded from a full-time score).
 
 Lab, 10,358 matches from 2024-25, from the opening match-result prices only:
 
-| Call | Matches | Said | Came in |
-|---|---|---|---|
-| Strong (65% favourite or 80% double chance) | 3,206 (31%) | 78.2% | 81.0% |
-| Call: double chance 75-80%, or likeliest goals bet 75%+ | 6,867 (66%) | 78.5% | 78.9% |
-| Lean (likeliest bet under 75%) | 285 (3%) | 74.5% | 74.0% |
-| All | 10,358 | | 79.4% |
+| Call | Share of matches | Came in |
+|---|---|---|
+| Home win | 11% | 78.4% |
+| Away win | 4% | 73.8% |
+| Home or draw (1X) | 34% | 79.4% |
+| Away or draw (X2) | 12% | 81.7% |
+| Under 3.5 goals | 22% | 77.2% |
+| Over 1.5 goals | 7% | 82.6% |
+| Home / away team to score | 10% | 79.5% |
+| All | 100% | 79.1% |
 
-Double chances at 75-80% (2,319 matches) came in 78.6%. Calling the likeliest goals bet on those
-matches instead would have come in 83.2%, so preferring the result bet costs about a point
-overall; it is kept because a result call is what the app is for. At 70% the double chance came in
-74.9% and cost four points, so 75% is the line.
-
-Each held in every season (calls 79.1%, 79.2%, 76.0% on the part-season 2026-27). Forcing a straight win on those same
-matches instead would have come in 44.4%, which is why the call there is not a result.
+By tier: strong 81.0% (31% of matches), call 78.4% (66%), lean 74.0% (3%), and each held in every
+season. The earlier version allowed 12 and called it on over half the matches (79.4% overall);
+without it the favourite's double chance takes its place at almost the same hit rate. Forcing a
+straight win on the matches with no strong call would have come in 44.4%.
 
 Results recorded as "no bet" under the old rule are graded on the call this rule makes from the
 chances recorded before kick-off (`settleWithCall`); the result never feeds the call. The Results
