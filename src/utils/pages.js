@@ -4,6 +4,7 @@ export const PAGE_SECTIONS = [
   {
     title: 'Bet',
     pages: [
+      { id: 'top-picks', label: 'Top picks' },
       { id: 'fixtures', label: 'Matches' },
       { id: 'binary', label: 'Value bets' },
       { id: 'scores', label: 'Goals' },

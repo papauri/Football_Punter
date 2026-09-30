@@ -21,6 +21,7 @@ import { pricesFor } from './src/services/oddsApi.js';
 import { getCurrentCoach, peekCoach } from './src/services/coaches.js';
 import { predictMatchStats, matchStatsSummary } from './src/services/matchStatsLookup.js';
 import { fairProbabilities } from './src/model/devig.js';
+import { matchCandidates, rankTopPicks, TOP_PICK_MIN } from './src/model/topPicks.js';
 
 const HYPERPARAMETERS_FILE = path.join(process.cwd(), 'hyperparameters.json');
 // The repository root, independent of the working directory. Backtest scripts chdir into a temporary
@@ -7958,6 +7959,32 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
     });
 
     return list.slice(0, limit);
+  }
+
+  // The day's top picks: every market on every upcoming match within `hours`, kept only when very
+  // likely and backed by a measured record (src/model/topPicks.js, data/top-picks-record.json).
+  getTopPicks({ hours = 24, min = TOP_PICK_MIN, kinds = [] } = {}) {
+    if (!this._topPicksRecord) {
+      try { this._topPicksRecord = JSON.parse(fs.readFileSync(path.join(ENGINE_DIR, 'data', 'top-picks-record.json'), 'utf8')); }
+      catch { this._topPicksRecord = {}; }
+    }
+    const record = this._topPicksRecord;
+    const statsRecord = matchStatsSummary(ENGINE_DIR)?.heldOut?.topPick?.bands?.find(b => b.from === 80);
+    const now = Date.now(), until = now + hours * 3600e3;
+    const upcoming = (this.matches || []).filter(m => !m.finished && !m.started && !m.isLive
+      && Number(m.timestamp) > now && Number(m.timestamp) <= until);
+    const entries = upcoming.map(match => {
+      const goals = this.resolveMarketGoals(match.home, match.away, { odds: match.odds, league: match.league });
+      const stats = predictMatchStats(ENGINE_DIR, match.home, match.away, goals);
+      return { match, candidates: matchCandidates(match, goals, stats, record, statsRecord?.hit ? { picks: statsRecord.picks, cameIn: statsRecord.hit } : undefined) };
+    });
+    return {
+      picks: rankTopPicks(entries, { min, kinds }),
+      matchesScanned: upcoming.length,
+      hours,
+      min,
+      record: { matches: record.matches || 0, measuredOn: record.measuredOn || null }
+    };
   }
 
   // -------------------------------------------------------------

@@ -1,0 +1,301 @@
+{
+ "measuredOn": "2024-07-26 to 2026-09-27",
+ "matches": 10355,
+ "PRICES": {
+  "HOME_OR_DRAW": {
+   "80": {
+    "picks": 1087,
+    "said": 82.3,
+    "cameIn": 84
+   },
+   "85": {
+    "picks": 708,
+    "said": 87.4,
+    "cameIn": 90
+   },
+   "90": {
+    "picks": 585,
+    "said": 92.6,
+    "cameIn": 96.2
+   }
+  },
+  "HOME_OR_AWAY": {
+   "80": {
+    "picks": 929,
+    "said": 82.1,
+    "cameIn": 82.1
+   },
+   "85": {
+    "picks": 394,
+    "said": 87,
+    "cameIn": 88.6
+   }
+  },
+  "OVER_1_5": {
+   "80": {
+    "picks": 2156,
+    "said": 82.2,
+    "cameIn": 82.9
+   },
+   "85": {
+    "picks": 769,
+    "said": 86.9,
+    "cameIn": 88.3
+   }
+  },
+  "UNDER_4_5": {
+   "80": {
+    "picks": 2673,
+    "said": 82.8,
+    "cameIn": 84
+   },
+   "85": {
+    "picks": 3758,
+    "said": 87.5,
+    "cameIn": 88.4
+   },
+   "90": {
+    "picks": 1852,
+    "said": 91.7,
+    "cameIn": 92.5
+   }
+  },
+  "HOME_SCORES": {
+   "80": {
+    "picks": 1869,
+    "said": 82.3,
+    "cameIn": 84
+   },
+   "85": {
+    "picks": 1130,
+    "said": 87.3,
+    "cameIn": 89.5
+   },
+   "90": {
+    "picks": 786,
+    "said": 92.7,
+    "cameIn": 96.6
+   }
+  },
+  "AWAY_OR_DRAW": {
+   "80": {
+    "picks": 403,
+    "said": 82.3,
+    "cameIn": 86.4
+   },
+   "85": {
+    "picks": 289,
+    "said": 87.3,
+    "cameIn": 88.9
+   }
+  },
+  "AWAY_SCORES": {
+   "80": {
+    "picks": 882,
+    "said": 82.3,
+    "cameIn": 83.8
+   },
+   "85": {
+    "picks": 521,
+    "said": 87.2,
+    "cameIn": 91
+   },
+   "90": {
+    "picks": 226,
+    "said": 92.1,
+    "cameIn": 93.8
+   }
+  },
+  "HOME_WIN": {
+   "80": {
+    "picks": 159,
+    "said": 82.2,
+    "cameIn": 88.7
+   }
+  },
+  "AWAY_UNDER_1_5": {
+   "80": {
+    "picks": 746,
+    "said": 82.2,
+    "cameIn": 81.6
+   },
+   "85": {
+    "picks": 325,
+    "said": 87.1,
+    "cameIn": 86.5
+   }
+  },
+  "FH_OVER_0_5": {
+   "80": {
+    "picks": 422,
+    "said": 81.7,
+    "cameIn": 83.9
+   }
+  },
+  "UNDER_3_5": {
+   "80": {
+    "picks": 753,
+    "said": 81.9,
+    "cameIn": 80.5
+   }
+  },
+  "HOME_UNDER_1_5": {
+   "80": {
+    "picks": 262,
+    "said": 82.3,
+    "cameIn": 83.2
+   }
+  }
+ },
+ "MARKET_MEMORY": {
+  "HOME_OR_DRAW": {
+   "80": {
+    "picks": 1040,
+    "said": 82.3,
+    "cameIn": 81.7
+   },
+   "85": {
+    "picks": 730,
+    "said": 87.3,
+    "cameIn": 88.4
+   },
+   "90": {
+    "picks": 655,
+    "said": 93.3,
+    "cameIn": 95.4
+   }
+  },
+  "HOME_OR_AWAY": {
+   "80": {
+    "picks": 790,
+    "said": 82.1,
+    "cameIn": 82.7
+   },
+   "85": {
+    "picks": 359,
+    "said": 87.1,
+    "cameIn": 87.5
+   }
+  },
+  "OVER_1_5": {
+   "80": {
+    "picks": 1300,
+    "said": 82.2,
+    "cameIn": 83.2
+   },
+   "85": {
+    "picks": 564,
+    "said": 87,
+    "cameIn": 86.3
+   }
+  },
+  "HOME_SCORES": {
+   "80": {
+    "picks": 1440,
+    "said": 82.3,
+    "cameIn": 85.6
+   },
+   "85": {
+    "picks": 917,
+    "said": 87.2,
+    "cameIn": 90.5
+   },
+   "90": {
+    "picks": 725,
+    "said": 93.2,
+    "cameIn": 95.2
+   }
+  },
+  "UNDER_4_5": {
+   "80": {
+    "picks": 1930,
+    "said": 82.9,
+    "cameIn": 82.4
+   },
+   "85": {
+    "picks": 3680,
+    "said": 87.7,
+    "cameIn": 86.4
+   },
+   "90": {
+    "picks": 3284,
+    "said": 92.3,
+    "cameIn": 91
+   }
+  },
+  "AWAY_SCORES": {
+   "80": {
+    "picks": 657,
+    "said": 82.4,
+    "cameIn": 84.8
+   },
+   "85": {
+    "picks": 411,
+    "said": 87.3,
+    "cameIn": 91.2
+   },
+   "90": {
+    "picks": 211,
+    "said": 92.5,
+    "cameIn": 94.3
+   }
+  },
+  "AWAY_OR_DRAW": {
+   "80": {
+    "picks": 404,
+    "said": 82.4,
+    "cameIn": 86.1
+   },
+   "85": {
+    "picks": 269,
+    "said": 87.5,
+    "cameIn": 90.3
+   }
+  },
+  "FH_OVER_0_5": {
+   "80": {
+    "picks": 396,
+    "said": 81.7,
+    "cameIn": 82.6
+   }
+  },
+  "HOME_WIN": {
+   "80": {
+    "picks": 171,
+    "said": 82.2,
+    "cameIn": 88.3
+   }
+  },
+  "AWAY_UNDER_1_5": {
+   "80": {
+    "picks": 1093,
+    "said": 82.2,
+    "cameIn": 77.1
+   },
+   "85": {
+    "picks": 464,
+    "said": 87.1,
+    "cameIn": 83.4
+   }
+  },
+  "UNDER_3_5": {
+   "80": {
+    "picks": 1538,
+    "said": 82.1,
+    "cameIn": 78.8
+   },
+   "85": {
+    "picks": 409,
+    "said": 86.8,
+    "cameIn": 83.1
+   }
+  },
+  "HOME_UNDER_1_5": {
+   "80": {
+    "picks": 285,
+    "said": 82.3,
+    "cameIn": 83.9
+   }
+  }
+ }
+}

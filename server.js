@@ -840,6 +840,17 @@ app.get('/api/state', (req, res) => {
     }
   });
 
+  app.get('/api/top-picks', (req, res) => {
+    try {
+      const hours = Math.min(72, Math.max(1, Number(req.query.hours) || 24));
+      const min = Math.min(95, Math.max(80, Number(req.query.min) || 80));
+      const kinds = String(req.query.kinds || '').split(',').map(s => s.trim()).filter(Boolean);
+      res.json({ success: true, result: engine.getTopPicks({ hours, min, kinds }) });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   app.post('/api/props-specials', async (req, res) => {
     try {
       const forceRefresh = req.body?.forceRefresh === true;

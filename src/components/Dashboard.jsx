@@ -17,6 +17,7 @@ import LeagueProfilesPage from './LeagueProfilesPage';
 import SettingsPage from './SettingsPage';
 import ErrorBoundary from './ErrorBoundary';
 import PropsSpecialsPage from './PropsSpecialsPage';
+import TopPicksPage from './TopPicksPage';
 import StrategyProofModal from './StrategyProofModal';
 import DailyBriefingPanel from './DailyBriefingPanel';
 import LiveMatchPlayerModal from './LiveMatchPlayerModal';
@@ -836,6 +837,16 @@ export default function Dashboard() {
                 onOpenWatchLive={(m) => setActivePlayerMatch(m)}
                 scoreTrainingStats={state.scoreTrainingStats || state.trainingStats}
                 onSelectMarketMode={goToPage}
+              />
+            )}
+
+            {activePage === 'top-picks' && (
+              <TopPicksPage
+                matches={matches}
+                tzSettings={tzSettings}
+                onAddToSlip={handleToggleAccaPick}
+                accaMatchIds={new Set(accaPicks.map(p => p.id))}
+                onOpenDeepResearch={handleOpenDeepResearch}
               />
             )}
 

@@ -920,6 +920,37 @@ corners or cards tip per match now came in 84.5% (was 83.4%).
 There are no historical bookmaker prices for these markets, so whether they beat LiveScore Bet's
 prices can only be found out by recording its prices against the app's chances from now on.
 
+## Top picks: the most likely bets on every market
+
+The Top picks page (`src/model/topPicks.js`, `GET /api/top-picks`) prices 20 result, goals,
+team-goals and first-half markets on every upcoming match from the market's expected goals (today's
+prices, or market memory when there are none), adds the corners and cards model's picks, and shows
+each match's most likely bet at 80%+ (85%+ or 90%+ on request), most likely first.
+
+A market is shown only in a chance band where it has a record: at least 150 past picks on 10,355
+matches from 2024-25 onwards that no fitting saw (`data/top-picks-record.json`). Over all markets:
+
+| Chance shown | Picks | Said | Came in |
+|---|---|---|---|
+| 80%+ | 24,366 | 85.5% | 86.9% |
+| 85%+ | 11,905 | 88.8% | 90.5% |
+| 90%+ | 3,773 | 92.1% | 94.0% |
+
+From market memory (no price for the match) the figures held too (80%+: 86.2% said, 86.1% came in),
+except the unders: "away team under 1.5" came in 77.1% at a stated 82.2%, and "under 3.5" 78.8% at
+82.1%. The page shows each market's own record, not the stated chance, for that reason.
+
+**A second opinion did not help.** Splitting 80%+ picks by whether a results-based team rating
+agreed changed the hit rate only as far as the stated chance already did (agreeing picks were
+simply more likely to begin with), so it is not used as a filter.
+
+**Likely is not profitable at one bookmaker.** Where real prices exist (straight wins, double chance
+by backing both outcomes, over/under 2.5), 80%+ picks won 87.4% and returned -3.9% at Bet365's
+opening prices, -3.7% at the average and -0.6% at the best price across bookmakers. Betting only
+when Bet365 paid more than the break-even price never happened; at the best price it did 919 times
+(+1.6%). So each pick carries a "bet at" price, 100 divided by the lower of its chance and its
+record, and the page says to skip it below that.
+
 ## Learning from new results
 
 Finished matches are added to the training data as they come in (every scrape, about 2 minutes).
