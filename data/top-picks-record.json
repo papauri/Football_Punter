@@ -297,5 +297,545 @@
     "cameIn": 83.9
    }
   }
- }
+ },
+ "OTHER": {
+  "UNDER_4_5": {
+   "80": {
+    "picks": 9476,
+    "said": 82.8,
+    "cameIn": 81.4
+   },
+   "85": {
+    "picks": 16854,
+    "said": 87.6,
+    "cameIn": 87.5
+   },
+   "90": {
+    "picks": 12373,
+    "said": 92.6,
+    "cameIn": 92.3
+   }
+  },
+  "HOME_SCORES": {
+   "80": {
+    "picks": 7541,
+    "said": 82.3,
+    "cameIn": 83.8
+   },
+   "85": {
+    "picks": 4584,
+    "said": 87.2,
+    "cameIn": 90.1
+   },
+   "90": {
+    "picks": 2199,
+    "said": 93.2,
+    "cameIn": 95.5
+   }
+  },
+  "HOME_OR_DRAW": {
+   "80": {
+    "picks": 5552,
+    "said": 82.4,
+    "cameIn": 83.3
+   },
+   "85": {
+    "picks": 3233,
+    "said": 87.3,
+    "cameIn": 90
+   },
+   "90": {
+    "picks": 1614,
+    "said": 92.7,
+    "cameIn": 96.5
+   }
+  },
+  "OVER_1_5": {
+   "80": {
+    "picks": 6330,
+    "said": 81.9,
+    "cameIn": 82.5
+   },
+   "85": {
+    "picks": 1596,
+    "said": 87.1,
+    "cameIn": 85.9
+   },
+   "90": {
+    "picks": 838,
+    "said": 92.8,
+    "cameIn": 87.7
+   }
+  },
+  "AWAY_UNDER_1_5": {
+   "80": {
+    "picks": 4288,
+    "said": 82.2,
+    "cameIn": 83.2
+   },
+   "85": {
+    "picks": 1310,
+    "said": 86.9,
+    "cameIn": 87.7
+   },
+   "90": {
+    "picks": 228,
+    "said": 92.2,
+    "cameIn": 91.2
+   }
+  },
+  "UNDER_3_5": {
+   "80": {
+    "picks": 4578,
+    "said": 82,
+    "cameIn": 81.5
+   },
+   "85": {
+    "picks": 2372,
+    "said": 87.1,
+    "cameIn": 85.4
+   },
+   "90": {
+    "picks": 305,
+    "said": 91.5,
+    "cameIn": 87.2
+   }
+  },
+  "AWAY_SCORES": {
+   "80": {
+    "picks": 2711,
+    "said": 82.1,
+    "cameIn": 84.6
+   },
+   "85": {
+    "picks": 1014,
+    "said": 87,
+    "cameIn": 86.9
+   },
+   "90": {
+    "picks": 482,
+    "said": 93.8,
+    "cameIn": 95.2
+   }
+  },
+  "AWAY_OR_DRAW": {
+   "80": {
+    "picks": 1309,
+    "said": 82.2,
+    "cameIn": 85.9
+   },
+   "85": {
+    "picks": 579,
+    "said": 87.2,
+    "cameIn": 90
+   },
+   "90": {
+    "picks": 307,
+    "said": 93.5,
+    "cameIn": 96.7
+   }
+  },
+  "HOME_UNDER_1_5": {
+   "80": {
+    "picks": 895,
+    "said": 82.1,
+    "cameIn": 83.2
+   },
+   "85": {
+    "picks": 229,
+    "said": 86.9,
+    "cameIn": 87.8
+   }
+  },
+  "HOME_WIN": {
+   "80": {
+    "picks": 329,
+    "said": 82.3,
+    "cameIn": 90
+   },
+   "85": {
+    "picks": 165,
+    "said": 87.1,
+    "cameIn": 92.1
+   }
+  },
+  "HOME_OVER_1_5": {
+   "80": {
+    "picks": 306,
+    "said": 82.2,
+    "cameIn": 79.7
+   },
+   "85": {
+    "picks": 183,
+    "said": 87.2,
+    "cameIn": 84.7
+   }
+  },
+  "OVER_2_5": {
+   "80": {
+    "picks": 230,
+    "said": 82.2,
+    "cameIn": 75.7
+   }
+  }
+ },
+ "COMPETITIONS": {
+  "eng.3": {
+   "picks": 2986,
+   "said": 85.3,
+   "cameIn": 86.6
+  },
+  "eng.4": {
+   "picks": 2917,
+   "said": 85.1,
+   "cameIn": 85.9
+  },
+  "eng.5": {
+   "picks": 6299,
+   "said": 84.4,
+   "cameIn": 85.1
+  },
+  "fra.2": {
+   "picks": 1689,
+   "said": 86.5,
+   "cameIn": 86.1
+  },
+  "ita.2": {
+   "picks": 1885,
+   "said": 86.8,
+   "cameIn": 87.6
+  },
+  "sco.2": {
+   "picks": 1029,
+   "said": 85.6,
+   "cameIn": 86.3
+  },
+  "sco.3": {
+   "picks": 1166,
+   "said": 84.7,
+   "cameIn": 86.7
+  },
+  "sco.4": {
+   "picks": 950,
+   "said": 84.7,
+   "cameIn": 86.1
+  },
+  "arg.1": {
+   "picks": 5029,
+   "said": 88.2,
+   "cameIn": 88.2
+  },
+  "aut.1": {
+   "picks": 1204,
+   "said": 85.9,
+   "cameIn": 86.1
+  },
+  "bra.1": {
+   "picks": 3113,
+   "said": 86.5,
+   "cameIn": 86.4
+  },
+  "chn.1": {
+   "picks": 1942,
+   "said": 86.2,
+   "cameIn": 88
+  },
+  "den.1": {
+   "picks": 1304,
+   "said": 84.7,
+   "cameIn": 85
+  },
+  "fin.1": {
+   "picks": 1166,
+   "said": 85.1,
+   "cameIn": 86.8
+  },
+  "irl.1": {
+   "picks": 1318,
+   "said": 86.3,
+   "cameIn": 86.7
+  },
+  "jpn.1": {
+   "picks": 1750,
+   "said": 86.5,
+   "cameIn": 86.2
+  },
+  "mex.1": {
+   "picks": 2213,
+   "said": 85.4,
+   "cameIn": 84.6
+  },
+  "nor.1": {
+   "picks": 1830,
+   "said": 85.5,
+   "cameIn": 86.3
+  },
+  "pol.1": {
+   "picks": 1773,
+   "said": 86,
+   "cameIn": 85
+  },
+  "rou.1": {
+   "picks": 2298,
+   "said": 86.8,
+   "cameIn": 84.9
+  },
+  "rus.1": {
+   "picks": 1476,
+   "said": 86.3,
+   "cameIn": 86
+  },
+  "swe.1": {
+   "picks": 1620,
+   "said": 85.4,
+   "cameIn": 86
+  },
+  "sui.1": {
+   "picks": 1407,
+   "said": 84.5,
+   "cameIn": 84.7
+  },
+  "usa.1": {
+   "picks": 3432,
+   "said": 84.4,
+   "cameIn": 85.1
+  },
+  "uefa.nations": {
+   "picks": 629,
+   "said": 87,
+   "cameIn": 89.7
+  },
+  "afc.asian.cup": {
+   "picks": 150,
+   "said": 87.2,
+   "cameIn": 89.3
+  },
+  "eng.w.1": {
+   "picks": 1066,
+   "said": 87,
+   "cameIn": 84.8
+  },
+  "esp.w.1": {
+   "picks": 1498,
+   "said": 87.4,
+   "cameIn": 88.7
+  },
+  "fifa.worldq.conmebol": {
+   "picks": 206,
+   "said": 87.8,
+   "cameIn": 89.8
+  },
+  "rsa.1": {
+   "picks": 1718,
+   "said": 88,
+   "cameIn": 89.2
+  },
+  "aus.1": {
+   "picks": 938,
+   "said": 83.9,
+   "cameIn": 83.4
+  },
+  "fifa.worldq.caf": {
+   "picks": 714,
+   "said": 88.2,
+   "cameIn": 89.2
+  },
+  "fifa.worldq.afc": {
+   "picks": 574,
+   "said": 87.6,
+   "cameIn": 88.7
+  },
+  "fifa.friendly": {
+   "picks": 1564,
+   "said": 87.1,
+   "cameIn": 88
+  },
+  "caf.champions": {
+   "picks": 331,
+   "said": 87.6,
+   "cameIn": 91.8
+  },
+  "caf.nations": {
+   "picks": 344,
+   "said": 87.8,
+   "cameIn": 88.1
+  },
+  "uefa.wchampions": {
+   "picks": 615,
+   "said": 89.1,
+   "cameIn": 89.9
+  },
+  "concacaf.nations.league": {
+   "picks": 363,
+   "said": 87,
+   "cameIn": 85.4
+  },
+  "par.1": {
+   "picks": 1281,
+   "said": 87,
+   "cameIn": 86.8
+  },
+  "conmebol.america": {
+   "picks": 103,
+   "said": 87.4,
+   "cameIn": 89.3
+  },
+  "concacaf.champions": {
+   "picks": 430,
+   "said": 87.3,
+   "cameIn": 88.8
+  },
+  "club.friendly": {
+   "picks": 618,
+   "said": 85.4,
+   "cameIn": 87.2
+  },
+  "usa.usl.1": {
+   "picks": 1968,
+   "said": 84.8,
+   "cameIn": 83.9
+  },
+  "conmebol.sudamericana": {
+   "picks": 1239,
+   "said": 87.1,
+   "cameIn": 86
+  },
+  "conmebol.libertadores": {
+   "picks": 1290,
+   "said": 87.1,
+   "cameIn": 87.1
+  },
+  "crc.1": {
+   "picks": 1236,
+   "said": 85.7,
+   "cameIn": 87.8
+  },
+  "arg.copa": {
+   "picks": 510,
+   "said": 87.9,
+   "cameIn": 87.8
+  },
+  "hon.1": {
+   "picks": 869,
+   "said": 85.6,
+   "cameIn": 88
+  },
+  "mex.2": {
+   "picks": 1339,
+   "said": 84.6,
+   "cameIn": 85.4
+  },
+  "col.1": {
+   "picks": 2697,
+   "said": 87,
+   "cameIn": 87
+  },
+  "gua.1": {
+   "picks": 1593,
+   "said": 86.2,
+   "cameIn": 86.8
+  },
+  "afc.champions": {
+   "picks": 630,
+   "said": 85.6,
+   "cameIn": 87.5
+  },
+  "per.1": {
+   "picks": 1982,
+   "said": 86.1,
+   "cameIn": 87.6
+  },
+  "slv.1": {
+   "picks": 1280,
+   "said": 86.5,
+   "cameIn": 86.5
+  },
+  "chi.1": {
+   "picks": 1111,
+   "said": 85.3,
+   "cameIn": 85.6
+  },
+  "ecu.1": {
+   "picks": 1575,
+   "said": 86.4,
+   "cameIn": 88.6
+  },
+  "ind.1": {
+   "picks": 617,
+   "said": 84.4,
+   "cameIn": 83
+  },
+  "usa.nwsl": {
+   "picks": 1080,
+   "said": 84.9,
+   "cameIn": 84.4
+  },
+  "fifa.friendly.w": {
+   "picks": 428,
+   "said": 87.6,
+   "cameIn": 88.3
+  },
+  "fifa.worldq.concacaf": {
+   "picks": 225,
+   "said": 88.3,
+   "cameIn": 91.1
+  },
+  "bra.copa_do_brazil": {
+   "picks": 771,
+   "said": 87,
+   "cameIn": 88.6
+  },
+  "uru.1": {
+   "picks": 1546,
+   "said": 87,
+   "cameIn": 87.3
+  },
+  "ven.1": {
+   "picks": 973,
+   "said": 86.9,
+   "cameIn": 86.8
+  },
+  "concacaf.leagues.cup": {
+   "picks": 447,
+   "said": 83.9,
+   "cameIn": 86.4
+  },
+  "uefa.champions_qual": {
+   "picks": 507,
+   "said": 85.7,
+   "cameIn": 84.6
+  },
+  "uefa.europa.conf_qual": {
+   "picks": 1492,
+   "said": 86.1,
+   "cameIn": 85.1
+  },
+  "uefa.europa_qual": {
+   "picks": 530,
+   "said": 85.8,
+   "cameIn": 84.5
+  },
+  "fifa.cwc": {
+   "picks": 168,
+   "said": 86.1,
+   "cameIn": 85.1
+  },
+  "fifa.worldq.uefa": {
+   "picks": 804,
+   "said": 88.5,
+   "cameIn": 89.2
+  },
+  "bol.1": {
+   "picks": 724,
+   "said": 85.5,
+   "cameIn": 87.3
+  },
+  "concacaf.gold": {
+   "picks": 106,
+   "said": 86.4,
+   "cameIn": 85.8
+  }
+ },
+ "OTHER_MATCHES": 43531,
+ "OTHER_GROUPS": 74
 }

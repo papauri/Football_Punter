@@ -94,7 +94,8 @@ export default function TopPicksPage({ matches = [], tzSettings, onAddToSlip, ac
           <div>
             <h1 className="text-sm font-bold text-slate-900">Top picks</h1>
             <p className="text-[11px] text-slate-500 max-w-xl">
-              The most likely bets on every match, from results, goals, corners and cards. Only bets
+              The most likely bets on every priced match in any competition, friendlies included, from
+              results, goals, corners and cards. Only bets
               at {min}%+ with a proven past record are shown, one per match, in kick-off order. Each
               pick lists what was checked: the odds, the agents' votes and the lineups.
             </p>
@@ -135,8 +136,8 @@ export default function TopPicksPage({ matches = [], tzSettings, onAddToSlip, ac
       {picks.length > 0 && (
         <div className="bg-white border border-slate-200 rounded-xl shadow-xs divide-y divide-slate-100">
           <div className="px-3 py-2 text-[11px] text-slate-500 flex flex-wrap justify-between gap-2">
-            <span>{picks.length} picks from {data.matchesScanned} matches</span>
-            {data.record?.matches > 0 && <span title="Corners and cards: the corners and cards model's own held-out seasons">Past record: {data.record.matches.toLocaleString()} matches in Europe's 14 main leagues, {data.record.measuredOn.replace(' to ', ' – ')}</span>}
+            <span>{picks.length} picks from {data.matchesScanned} matches{data.competitionsScanned > 0 ? ` (incl. ${data.competitionsScanned} more competitions)` : ''}</span>
+            {data.record?.matches > 0 && <span title="Corners and cards: the corners and cards model's own held-out seasons">Past record: {data.record.matches.toLocaleString()} matches in Europe's 14 main leagues{data.record.otherMatches > 0 ? ` and ${data.record.otherMatches.toLocaleString()} in other leagues, cups, qualifiers and friendlies` : ''}</span>}
           </div>
           {picks.map((row, idx) => {
             const when = formatSafeDateTime(row, null, tzSettings);

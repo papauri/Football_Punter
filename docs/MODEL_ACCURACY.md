@@ -989,6 +989,35 @@ when Bet365 paid more than the break-even price never happened; at the best pric
 (+1.6%). So each pick carries a "bet at" price, 100 divided by the lower of its chance and its
 record, and the page says to skip it below that.
 
+**Every competition, friendlies included.** Top picks no longer stops at the leagues the app
+scrapes. In the background (at most every 45 minutes) it scans all 219 competitions ESPN lists for
+the next three days and keeps every fixture a bookmaker has priced (home, draw and away, margin
+between 0% and 25%). League switches and the blacklist do not apply on this page.
+
+Before that was allowed, the same test was run outside the main leagues: 43,531 matches in 74
+competition groups with their pre-match prices. Lower English, Scottish, Italian and French
+divisions and 16 more countries came from football-data.co.uk; friendlies, qualifiers, continental
+cups, women's football and 20+ more leagues came from the odds ESPN keeps for past matches. Pooled,
+80%+ picks came in 86.5% against 86.1% stated. By competition:
+
+| Competition | 80%+ picks | Said | Came in |
+|---|---|---|---|
+| International friendlies | 1,564 | 87.1% | 88.0% |
+| Club friendlies | 618 | 85.4% | 87.2% |
+| World Cup qualifiers (Europe) | 804 | 88.5% | 89.2% |
+| UEFA Nations League | 629 | 87.0% | 89.7% |
+| Copa Libertadores | 1,290 | 87.1% | 87.1% |
+| MLS | 3,432 | 84.4% | 85.1% |
+| English National League | 2,920 | 84.5% | 85.2% |
+| Weakest: English Women's Super League | 1,066 | 87.0% | 84.8% |
+| Weakest: Romania | 2,298 | 86.8% | 84.9% |
+
+No group came in significantly more than about two points short. Some markets did worse outside
+the main leagues (over 2.5 at 80%+: 75.7%; over 1.5 at 90%+: 87.7%), so a pick is kept and ranked
+on the lower of its stated chance and its record. Each pick outside the main leagues shows its
+competition's own record when it has one (71 do), or says it has none, and says plainly that no
+agents or lineups were checked there: only the odds.
+
 **What each pick shows it was checked against.** Picks are listed in kick-off order. Under each: where
 the chance comes from (today's odds, or past prices when there are none); for result bets, how many
 of the agents back that result; and the team news. The app fetches lineups from 90 minutes before

@@ -23,6 +23,7 @@ import { predictMatchStats, matchStatsSummary } from './src/services/matchStatsL
 import { fairProbabilities } from './src/model/devig.js';
 import { matchCandidates, rankTopPicks, TOP_PICK_MIN } from './src/model/topPicks.js';
 import { strongCall, decisiveCall, gradeCall } from './src/model/matchCall.js';
+import { normalizeTeam } from './src/model/teamNames.js';
 
 const HYPERPARAMETERS_FILE = path.join(process.cwd(), 'hyperparameters.json');
 // The repository root, independent of the working directory. Backtest scripts chdir into a temporary
@@ -7985,8 +7986,17 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
     const record = this._topPicksRecord;
     const statsRecord = matchStatsSummary(ENGINE_DIR)?.heldOut?.topPick?.bands?.find(b => b.from === 80);
     const now = Date.now(), until = now + hours * 3600e3;
-    const upcoming = (this.matches || []).filter(m => !m.finished && !m.started && !m.isLive
-      && Number(m.timestamp) > now && Number(m.timestamp) <= until);
+    // Every other competition ESPN lists (friendlies, lower divisions, other countries): rescanned in
+    // the background at most every 45 minutes, and used only where a bookmaker price exists.
+    if (!this._extraScanAt || now - this._extraScanAt > 45 * 60 * 1000) {
+      this._extraScanAt = now;
+      this.scanAllCompetitions().catch(err => this.log('TopPicks', `Competition scan failed: ${err.message}`));
+    }
+    const inWindow = (m) => !m.finished && !m.started && !m.isLive && Number(m.timestamp) > now && Number(m.timestamp) <= until;
+    const upcoming = (this.matches || []).filter(inWindow);
+    const key = (m) => `${normalizeTeam(m.home)}|${normalizeTeam(m.away)}|${new Date(Number(m.timestamp)).toISOString().slice(0, 10)}`;
+    const seen = new Set(upcoming.map(key));
+    const extras = (this.extraFixtures || []).filter(m => inWindow(m) && !seen.has(key(m)));
     const entries = upcoming.map(match => {
       const goals = this.resolveMarketGoals(match.home, match.away, { odds: match.odds, league: match.league });
       const stats = predictMatchStats(ENGINE_DIR, match.home, match.away, goals);
@@ -7996,14 +8006,73 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
         candidates: matchCandidates(match, goals, stats, record, statsRecord?.hit ? { picks: statsRecord.picks, cameIn: statsRecord.hit } : undefined),
         context: { agentVotes: swarm?.agentVotes || [], lineupImpact: match.lineupImpact || null }
       };
-    });
+    }).concat(extras.map(match => {
+      const goals = this.resolveMarketGoals(match.home, match.away, { odds: match.odds });
+      return {
+        match,
+        candidates: goals?.source === 'PRICES' ? matchCandidates(match, goals, null, record, undefined, { recordKey: 'OTHER' }) : [],
+        context: { competition: record.COMPETITIONS?.[match.leagueCode] || null, extraCompetition: true }
+      };
+    }));
     return {
       picks: rankTopPicks(entries, { min, kinds }),
-      matchesScanned: upcoming.length,
+      matchesScanned: upcoming.length + extras.length,
+      competitionsScanned: this._extraCompetitions || 0,
       hours,
       min,
-      record: { matches: record.matches || 0, measuredOn: record.measuredOn || null }
+      record: { matches: record.matches || 0, measuredOn: record.measuredOn || null, otherMatches: record.OTHER_MATCHES || 0 }
     };
+  }
+
+  // Upcoming fixtures in every competition ESPN lists that the main scrape does not cover, kept only
+  // when a bookmaker has priced them (home, draw and away, with a sane margin).
+  async scanAllCompetitions(days = 3) {
+    if (this._scanningAll) return;
+    this._scanningAll = true;
+    try {
+      let codes = [];
+      try { codes = JSON.parse(fs.readFileSync(path.join(ENGINE_DIR, 'data', 'espn-league-codes.json'), 'utf8')); } catch { codes = []; }
+      const main = new Set(ESPN_LEAGUES.map(l => l.code));
+      const dates = Array.from({ length: days + 1 }, (_, i) => new Date(Date.now() + i * 864e5).toISOString().slice(0, 10).replace(/-/g, ''));
+      const tasks = codes.filter(c => !main.has(c)).flatMap(c => dates.map(d => [c, d]));
+      const found = new Map();
+      const active = new Set();
+      let next = 0;
+      const worker = async () => {
+        while (next < tasks.length) {
+          const [code, d] = tasks[next++];
+          try {
+            const res = await espnFetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${code}/scoreboard?dates=${d}`);
+            if (!res?.ok) continue;
+            const j = await res.json();
+            for (const ev of j.events || []) {
+              if (ev.status?.type?.state !== 'pre') continue;
+              const comp = ev.competitions?.[0];
+              const odds = this.parseEspnOdds(comp);
+              if (!odds || odds.drawEstimated) continue;
+              const margin = 1 / odds.homeOdds + 1 / odds.drawOdds + 1 / odds.awayOdds;
+              if (!(margin >= 1 && margin <= 1.25)) continue;
+              const home = comp.competitors?.find(c => c.homeAway === 'home')?.team?.displayName;
+              const away = comp.competitors?.find(c => c.homeAway === 'away')?.team?.displayName;
+              if (!home || !away) continue;
+              active.add(code);
+              found.set(ev.id, {
+                id: `x-${ev.id}`, espnEventId: ev.id, home, away,
+                league: j.leagues?.[0]?.name || code, leagueCode: code,
+                timestamp: Date.parse(ev.date), dateIso: String(ev.date).slice(0, 10), utcDate: ev.date,
+                odds, extraCompetition: true
+              });
+            }
+          } catch { /* skip this competition and day */ }
+        }
+      };
+      await Promise.all(Array.from({ length: 6 }, worker));
+      this.extraFixtures = [...found.values()];
+      this._extraCompetitions = active.size;
+      this.log('TopPicks', `Scanned ${codes.length - main.size} more competitions: ${this.extraFixtures.length} priced fixtures in ${active.size}.`);
+    } finally {
+      this._scanningAll = false;
+    }
   }
 
   // -------------------------------------------------------------

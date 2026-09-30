@@ -4,7 +4,9 @@
 // Result, goals and team-goals markets are read from the scoreline grid of the market's expected
 // goals (today's prices, or market memory when a match has none). data/top-picks-record.json holds
 // how often each market came in, by chance band, on 10,355 matches from 2024-25 onwards that no
-// fitting saw (opening prices from the football-data.co.uk files). A market enters only in a band with at least 150
+// fitting saw (opening prices from the football-data.co.uk files); outside those leagues, from
+// 43,531 matches in 74 other competitions (lower divisions, other countries, cups, qualifiers,
+// friendlies) with their pre-match prices, under OTHER and COMPETITIONS. A market enters only in a band with at least 150
 // past picks. Corners and cards come from the match-statistics model, whose strongest pick at 80%+
 // came in 84.9% of the time on held-out seasons.
 //
@@ -60,7 +62,7 @@ const fill = (label, home, away) => label.replace('{home}', home).replace('{away
  * @param stats      corners and cards prediction (predictMatchStats) or null
  * @param record     data/top-picks-record.json
  */
-export function matchCandidates(match, goals, stats, record, statsRecord = STATS_RECORD_DEFAULT) {
+export function matchCandidates(match, goals, stats, record, statsRecord = STATS_RECORD_DEFAULT, { recordKey = null } = {}) {
   const out = [];
   if (goals && (goals.source === 'PRICES' || goals.source === 'MARKET_MEMORY')) {
     const g = scoreGrid(goals.lambda, goals.mu, goals.rho ?? -0.05);
@@ -71,7 +73,7 @@ export function matchCandidates(match, goals, stats, record, statsRecord = STATS
       : [sum(g, (i, j) => i > j), sum(g, (i, j) => i === j), sum(g, (i, j) => i < j)];
     for (const [key, [label, kind, pf]] of Object.entries(GOAL_MARKETS)) {
       const pct = pf(g, x, fh) * 100;
-      const rec = recordFor(record, goals.source, key, pct);
+      const rec = recordFor(record, recordKey || goals.source, key, pct);
       if (!rec) continue;
       out.push({ key, kind, label: fill(label, match.home, match.away), chance: pct, record: rec, source: goals.source });
     }
@@ -126,6 +128,14 @@ export function pickChecks(c, match, ctx = {}) {
     checks.push({ tone: backing === votes.length ? 'ok' : backing >= votes.length / 2 ? 'info' : 'warn', text: `${backing} of ${votes.length} agents back this result` });
   }
 
+  if (ctx.extraCompetition) {
+    const comp = ctx.competition;
+    checks.push(comp
+      ? { tone: comp.cameIn >= comp.said - 2 ? 'ok' : 'warn', text: `In this competition, 80%+ bets came in ${comp.cameIn}% of ${comp.picks.toLocaleString()} past picks (odds said ${comp.said}%)` }
+      : { tone: 'info', text: 'No past record for this competition itself: the record shown is from 70+ other competitions' });
+    checks.push({ tone: 'info', text: 'Outside the main leagues: no agents or lineup check, only the odds' });
+    return checks;
+  }
   const li = ctx.lineupImpact;
   const confirmed = li && String(li.status).toUpperCase() === 'CONFIRMED';
   if (!confirmed) {
@@ -174,9 +184,12 @@ function toPick(match, c, ctx) {
 export function rankTopPicks(entries, { min = TOP_PICK_MIN, kinds = [] } = {}) {
   const rows = [];
   for (const { match, candidates, context } of entries) {
+    // Kept and ranked on the lower of the stated chance and its past record, so a market that came
+    // in less often than stated (e.g. over 2.5 at 80%+ outside the main leagues: 75.7%) drops out.
+    const safe = (c) => Math.min(c.chance, c.record.cameIn);
     const strong = candidates
-      .filter(c => c.chance >= min && (!kinds.length || kinds.includes(c.kind)))
-      .sort((a, b) => b.chance - a.chance);
+      .filter(c => safe(c) >= min && (!kinds.length || kinds.includes(c.kind)))
+      .sort((a, b) => safe(b) - safe(a));
     if (!strong.length) continue;
     const [top, ...rest] = strong.map(c => toPick(match, c, context));
     rows.push({
