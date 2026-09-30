@@ -158,3 +158,79 @@ export const pickHit = (pick, totalCorners, totalCards) => {
   const total = pick.market === 'CORNERS' ? totalCorners : totalCards;
   return pick.side === 'OVER' ? total > pick.line : total < pick.line;
 };
+
+// ---- Team markets -----------------------------------------------------------------------------
+// Per-team counts, "most corners" and "both teams booked". One team's corners vary more than a
+// match total, so team corners use a wider spread (shape 8, fitted on 2021-24); cards keep 30. A
+// two-number correction per market (fitted by scripts/fit-match-stats.mjs) removes what bias is
+// left, e.g. "both teams booked" came in about 4 points more often than the raw figure said.
+export const TEAM_SHAPE = { corners: 8, cards: 30 };
+export const TEAM_MARKETS = [
+  ...[3.5, 4.5, 5.5, 6.5].map(line => ({ key: `home_corners_${line}`, market: 'CORNERS', kind: 'team', team: 'home', stat: 'corners', line })),
+  ...[2.5, 3.5, 4.5, 5.5].map(line => ({ key: `away_corners_${line}`, market: 'CORNERS', kind: 'team', team: 'away', stat: 'corners', line })),
+  { key: 'home_most_corners', market: 'CORNERS', kind: 'most', team: 'home', stat: 'corners' },
+  { key: 'away_most_corners', market: 'CORNERS', kind: 'most', team: 'away', stat: 'corners' },
+  // No 0.5 card lines: a team gets at least one card about 86-90% of the time, so they pay too little
+  // to be worth a tip and would crowd out every other pick.
+  ...[1.5, 2.5].map(line => ({ key: `home_cards_${line}`, market: 'CARDS', kind: 'team', team: 'home', stat: 'cards', line })),
+  ...[1.5, 2.5].map(line => ({ key: `away_cards_${line}`, market: 'CARDS', kind: 'team', team: 'away', stat: 'cards', line })),
+  { key: 'both_teams_carded', market: 'CARDS', kind: 'both', stat: 'cards' }
+];
+
+function nbDist(mean, shape, n = 30) {
+  const p = shape / (shape + mean), out = [];
+  for (let k = 0; k < n; k++) out.push(Math.exp(logGamma(k + shape) - logGamma(shape) - logGamma(k + 1) + shape * Math.log(p) + k * Math.log(1 - p)));
+  return out;
+}
+
+/** Raw chance (0..1) of the market's "yes" side: over the line, most corners, or both booked. */
+export function teamMarketRaw(exp, def) {
+  const shape = TEAM_SHAPE[def.stat];
+  const h = def.stat === 'corners' ? exp.homeCorners : exp.homeCards;
+  const a = def.stat === 'corners' ? exp.awayCorners : exp.awayCards;
+  if (def.kind === 'team') return probOver(def.team === 'home' ? h : a, def.line, shape);
+  const dh = nbDist(h, shape), da = nbDist(a, shape);
+  if (def.kind === 'both') return (1 - dh[0]) * (1 - da[0]);
+  let p = 0;
+  for (let i = 0; i < dh.length; i++) for (let j = 0; j < da.length; j++) if (def.team === 'home' ? i > j : j > i) p += dh[i] * da[j];
+  return p;
+}
+
+/** Whether the "yes" side of a team market came in, given the match's counts. */
+export function teamMarketOutcome(def, s) {
+  const h = def.stat === 'corners' ? s.hc : s.hk, a = def.stat === 'corners' ? s.ac : s.ak;
+  if (def.kind === 'team') return (def.team === 'home' ? h : a) > def.line;
+  if (def.kind === 'both') return h > 0 && a > 0;
+  return def.team === 'home' ? h > a : a > h;
+}
+
+const recalibrate = (p, w) => (Array.isArray(w) ? 1 / (1 + Math.exp(-(w[0] + w[1] * logit(p)))) : p);
+
+function teamMarketLabel(def, yes) {
+  const noun = def.stat === 'corners' ? 'corners' : 'cards';
+  if (def.kind === 'both') return yes ? 'Both teams get a card' : 'Not both teams get a card';
+  if (def.kind === 'most') return `{${def.team}} most corners`;
+  return `{${def.team}} ${yes ? 'over' : 'under'} ${def.line} ${noun}`;
+}
+
+/**
+ * Team-market picks with the side the model favours. Labels carry {home}/{away} placeholders for
+ * the caller to fill with team names. "Most corners" is offered only on its yes side (a tie loses).
+ */
+export function teamPicks(exp, calibration = null) {
+  const out = [];
+  for (const def of TEAM_MARKETS) {
+    const p = recalibrate(teamMarketRaw(exp, def), calibration?.[def.key]);
+    if (def.kind === 'most' && p < 0.5) continue;
+    const yes = p >= 0.5;
+    const mean = def.stat === 'corners' ? (def.team === 'away' ? exp.awayCorners : exp.homeCorners) : (def.team === 'away' ? exp.awayCards : exp.homeCards);
+    out.push({ market: def.market, key: def.key, line: def.line ?? null, side: yes ? (def.kind === 'team' ? 'OVER' : 'YES') : (def.kind === 'team' ? 'UNDER' : 'NO'),
+      prob: yes ? p : 1 - p, expected: def.kind === 'team' ? mean : null, label: teamMarketLabel(def, yes), def });
+  }
+  return out.sort((a, b) => b.prob - a.prob);
+}
+
+export const teamPickHit = (pick, s) => {
+  const yes = teamMarketOutcome(pick.def, s);
+  return pick.side === 'OVER' || pick.side === 'YES' ? yes : !yes;
+};

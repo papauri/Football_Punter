@@ -2,7 +2,7 @@
 // model knows (spelled the football-data.co.uk way) and returns what it expects.
 import fs from 'fs';
 import path from 'path';
-import { MatchStatsModel, statPicks } from '../model/matchStats.js';
+import { MatchStatsModel, statPicks, teamPicks } from '../model/matchStats.js';
 import { bestTeamMatch } from '../model/teamNames.js';
 
 let loaded = null;
@@ -58,5 +58,7 @@ export function predictMatchStats(dir, home, away, goals = null) {
   if (!lg || lg !== d.json.teams[a].lg) return null;
   const exp = d.model.expect(lg, h, a);
   if (!exp) return null;
-  return { ...exp, league: d.json.leagueNames?.[lg] || lg, homeName: h, awayName: a, picks: statPicks(exp, d.model.p, goals, d.json.marketCalibration) };
+  const picks = [...statPicks(exp, d.model.p, goals, d.json.marketCalibration), ...teamPicks(exp, d.json.teamCalibration)]
+    .sort((x, y) => y.prob - x.prob);
+  return { ...exp, league: d.json.leagueNames?.[lg] || lg, homeName: h, awayName: a, picks };
 }

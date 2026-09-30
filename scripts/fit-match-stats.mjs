@@ -12,7 +12,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { MatchStatsModel, probOver, statPicks, pickHit, lineFeatures, CORNER_LINES, CARD_LINES } from '../src/model/matchStats.js';
+import { MatchStatsModel, probOver, statPicks, pickHit, lineFeatures, CORNER_LINES, CARD_LINES, TEAM_MARKETS, teamMarketRaw, teamMarketOutcome, teamPicks, teamPickHit } from '../src/model/matchStats.js';
 import { impliedGoals, fairProbs } from '../src/model/marketGoals.js';
 import { fitLogistic } from '../src/model/goalsModel.js';
 
@@ -130,11 +130,39 @@ console.log(`${matches.length} matches; ${scored.length} from ${TEST_FROM.slice(
 const corners = report('Total corners', 'CORNERS', CORNER_LINES, m => m.hc + m.ac);
 const cards = report('Total cards', 'CARDS', CARD_LINES, m => m.hk + m.ak);
 
+// Team markets: a two-number correction (intercept and slope on the raw chance's log-odds) per market.
+const logit = (p) => Math.log(Math.min(0.9999, Math.max(1e-4, p)) / (1 - Math.min(0.9999, Math.max(1e-4, p))));
+function fitTeamCalibration(rows) {
+  const cal = {};
+  for (const def of TEAM_MARKETS) {
+    cal[def.key] = fitLogistic(rows.map(r => [logit(teamMarketRaw(r.e, def))]), rows.map(r => (teamMarketOutcome(def, r.m) ? 1 : 0)), { iterations: 800 })
+      .map(w => +w.toFixed(5));
+  }
+  return cal;
+}
+const heldOutTeamCalibration = fitTeamCalibration(all.filter(r => r.m.season < TEST_FROM));
+const teamMarkets = {};
+console.log('\nTeam markets: market                   always-pick  model hit   Brier model vs base   ≥70% sure: picks, hit');
+for (const def of TEAM_MARKETS) {
+  const w = heldOutTeamCalibration[def.key];
+  const ps = scored.map(r => 1 / (1 + Math.exp(-(w[0] + w[1] * logit(teamMarketRaw(r.e, def))))));
+  const ys = scored.map(r => (teamMarketOutcome(def, r.m) ? 1 : 0));
+  const base = ys.reduce((a, b) => a + b, 0) / ys.length;
+  const right = (p, y) => (p >= 0.5) === (y === 1);
+  const brier = ps.reduce((a, p, i) => a + (p - ys[i]) ** 2, 0) / ps.length;
+  const brierBase = ys.reduce((a, y) => a + (base - y) ** 2, 0) / ys.length;
+  const sure = ps.map((p, i) => [Math.max(p, 1 - p), right(p, ys[i])]).filter(([c]) => c >= 0.7);
+  const sureHit = sure.length ? sure.filter(([, ok]) => ok).length / sure.length * 100 : null;
+  teamMarkets[def.key] = { alwaysPick: +f(Math.max(base, 1 - base) * 100), hit: +f(ps.filter((p, i) => right(p, ys[i])).length / ps.length * 100), brier: +f(brier, 4), brierBaseline: +f(brierBase, 4), confidentPicks: sure.length, confidentHit: sureHit == null ? null : +f(sureHit) };
+  const t = teamMarkets[def.key];
+  console.log(`  ${def.key.padEnd(22)} ${f(t.alwaysPick).padStart(9)}%  ${f(t.hit).padStart(8)}%   ${f(brier, 4)} vs ${f(brierBase, 4)}   ${String(sure.length).padStart(5)}, ${sureHit == null ? '-' : f(sureHit) + '%'}`);
+}
+
 // The page shows each fixture's most likely corners or cards pick, so that is the track record
 // that matters: how often the single strongest pick per match came in, overall and by how sure it was.
 const tops = scored.map(({ m, e, goals }) => {
-  const pick = statPicks(e, model.p, goals, heldOutCalibration)[0];
-  return { m, pick, hit: pickHit(pick, m.hc + m.ac, m.hk + m.ak) };
+  const pick = [...statPicks(e, model.p, goals, heldOutCalibration), ...teamPicks(e, heldOutTeamCalibration)].sort((a, b) => b.prob - a.prob)[0];
+  return { m, pick, hit: pick.def ? teamPickHit(pick, m) : pickHit(pick, m.hc + m.ac, m.hk + m.ak) };
 });
 const band = (lo, hi) => {
   const b = tops.filter(t => t.pick.prob >= lo && t.pick.prob < hi);
@@ -143,10 +171,11 @@ const band = (lo, hi) => {
 const topPick = { picks: tops.length, hit: +f(tops.filter(t => t.hit).length / tops.length * 100), bands: [band(0.6, 0.7), band(0.7, 0.8), band(0.8, 1.01)] };
 console.log(`\nStrongest pick per match: ${topPick.picks} picks, ${topPick.hit}% came in`);
 for (const b of topPick.bands) console.log(`  shown ${b.from}-${Math.min(b.to, 100)}%: ${b.picks} picks, ${b.hit}% came in`);
-const label = (p) => `${p.side === 'OVER' ? 'Over' : 'Under'} ${p.line} ${p.market === 'CORNERS' ? 'corners' : 'cards'}`;
+const label = (p, m) => p.label ? p.label.replace('{home}', m.home).replace('{away}', m.away)
+  : `${p.side === 'OVER' ? 'Over' : 'Under'} ${p.line} ${p.market === 'CORNERS' ? 'corners' : 'cards'}`;
 const recent = tops.slice(-40).reverse().map(({ m, pick, hit }) => ({
   date: new Date(m.t).toISOString().slice(0, 10), league: LEAGUES[m.lg], home: m.home, away: m.away, market: pick.market,
-  pick: label(pick), chance: +f(pick.prob * 100), hit,
+  pick: label(pick, m), chance: +f(pick.prob * 100), hit,
   result: `${m.hc + m.ac} corners, ${m.hk + m.ak} cards`
 }));
 
@@ -156,7 +185,8 @@ const out = {
   leagueNames: LEAGUES,
   ...model.toJSON(),
   marketCalibration: fitCalibration(all),
-  heldOut: { from: TEST_FROM, matches: scored.length, corners, cards, topPick },
+  teamCalibration: fitTeamCalibration(all),
+  heldOut: { from: TEST_FROM, matches: scored.length, corners, cards, teamMarkets, topPick },
   recent
 };
 for (const t of Object.values(out.teams)) for (const k of ['cf', 'ca', 'kf', 'ka']) t[k] = +t[k].toFixed(4);

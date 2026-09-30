@@ -892,6 +892,31 @@ only if it holds up in every season, not just on the seasons it was tuned on.
 - *Late-season motivation* (league tables rebuilt from results; relegation or title/European race
   against nothing to play for, final quarter of the season): motivated sides came in 43.9% against
   44.2% implied, and backing them returned -7.1% at Bet365. If anything the market overprices them.
+- *Head to head* (last six meetings: points, goal difference, same-venue record, draw rate): log loss
+  0.6088 to 0.6079 for home wins, no better for draws, and no bets worth more than Bet365's price.
+  For corners and cards, head-to-head averages and home/away-specific form changed Brier by 0.0001 or
+  less; the referee's recent card count by 0.0004 (and only three leagues name the referee).
+
+## Team corners and cards markets
+
+Added from the same corners and cards ratings: each team's corners (home 3.5-6.5, away 2.5-5.5),
+most corners, each team's cards (1.5, 2.5) and both teams booked. One team's corners vary more than a
+match total, so team corners use a wider spread; a two-number correction per market is fitted on
+2021-24 (`teamCalibration` in data/match-stats.json). Scored on 10,356 matches from 2024-25: every
+market beats its base rate, and tips shown at 70%+ came in 74-80% (e.g. home over 3.5 corners 77.2%,
+away over 2.5 corners 79.4%, most corners 74.6-75.3%, both teams booked 80.1%). Lines of 0.5 cards
+were left out: a team is booked 86-90% of the time, which pays too little to be a tip. The strongest
+corners or cards tip per match now came in 84.5% (was 83.4%).
+
+There are no historical bookmaker prices for these markets, so whether they beat LiveScore Bet's
+prices can only be found out by recording its prices against the app's chances from now on.
+
+## Learning from new results
+
+Finished matches are added to the training data as they come in (every scrape, about 2 minutes).
+Team strengths and market memory were rebuilt only when the app started; they are now relearned at
+most hourly after new results arrive (about 1.3 seconds). Corners and cards ratings refit daily, and
+head-to-head records, recorded prices and the agents update continuously.
 
 **What holds: best bets at the best price just before kick-off.** Straight wins at 65-85%, chosen
 from kick-off prices:

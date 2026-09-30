@@ -5216,6 +5216,31 @@ class SoccerEngine {
     }
   }
 
+  /**
+   * Relearn from new results without a restart: refit team strengths and rebuild market memory
+   * (which picks up the prices recorded before those matches). These used to be rebuilt only when
+   * the app started, so finished matches were saved but not learned from. At most hourly (it takes
+   * about 1.3 seconds), and off the scrape's own tick so it never delays fresh fixtures.
+   */
+  refreshLearnedRatings({ minIntervalMs = 60 * 60 * 1000 } = {}) {
+    if (this._ratingsRefreshPending || Date.now() - (this._lastRatingsRefresh || 0) < minIntervalMs) return false;
+    this._ratingsRefreshPending = true;
+    setTimeout(() => {
+      try {
+        const started = Date.now();
+        this.applyFittedTeamStrengths();
+        this.buildMarketMemory();
+        this._lastRatingsRefresh = Date.now();
+        this.log('TrainingEngine', `Relearned team strengths and market memory from ${this.historicalMatches.length} matches in ${Date.now() - started} ms.`);
+      } catch (e) {
+        this.log('TrainingEngine', `Relearning skipped: ${e.message}`);
+      } finally {
+        this._ratingsRefreshPending = false;
+      }
+    }, 1000);
+    return true;
+  }
+
   saveTrainingDataToDisk() {
     try {
       if (!this.historicalMatches || this.historicalMatches.length < 1000) return;
@@ -6105,6 +6130,7 @@ class SoccerEngine {
             this.log('TrainingEngine', `Auto-ingested ${newlyAddedCount} newly finished matches into training corpus (Total: ${this.historicalMatches.length}).`);
             this.saveTrainingDataToDisk();
             this.runScoreSuperAgentTrainingCycle();
+            this.refreshLearnedRatings();
           }
         }
       }
@@ -8017,6 +8043,24 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
         for (const p of stats.picks) {
           const noun = p.market === 'CORNERS' ? 'corners' : 'cards';
           const side = p.side === 'OVER' ? 'Over' : 'Under';
+          if (p.def) {
+            // Team market: one team's corners or cards, most corners, or both teams booked.
+            const team = p.def.team === 'away' ? match.away : match.home;
+            const expected = p.expected != null ? `About ${p.expected.toFixed(1)} ${noun} expected for ${team}.` : '';
+            candidateList.push({
+              id: `${match.id}-${p.key}-${p.side}`,
+              market: p.market,
+              type: `TEAM_${p.key.toUpperCase().replace(/[.]/g, '_')}_${p.side}`,
+              label: p.label.replace('{home}', match.home).replace('{away}', match.away),
+              line: p.line,
+              side: p.side,
+              prob: p.prob,
+              expected: p.expected != null ? Number(p.expected.toFixed(1)) : '',
+              safetyMargin: '',
+              rationale: expected || `From both teams' recent ${noun} for and against.`
+            });
+            continue;
+          }
           candidateList.push({
             id: `${match.id}-${p.market}-${p.side}-${p.line}`,
             market: p.market,
