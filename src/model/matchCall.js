@@ -3,10 +3,10 @@
 //  1. Strong call: a straight win when the favourite is 65%+, otherwise the likeliest double chance
 //     (1X, X2, 12) when it is 80%+. On 10,358 matches from 2024-25 these covered 31% of matches and
 //     came in 81.0% of the time.
-//  2. Otherwise the match's likeliest bet among full-time goals and double-chance markets. At 75%+
-//     ("call") that covered 96% of the remaining matches and came in about 81% (team to score,
-//     under 3.5, over 1.5 mostly); below 75% it is a "lean". A straight win on those matches came in
-//     only 44.4%, so the result is not forced.
+//  2. Otherwise a double chance when it is 75%+ (a "call"): 2,319 matches, 78.6% came in.
+//  3. Otherwise the match's likeliest full-time goals bet (team to score, under 3.5, over 1.5
+//     mostly): a "call" at 75%+, a "lean" below. A straight win on those matches came in only
+//     44.4%, so the result is not forced. Overall every match gets a call and 79.4% came in.
 // Under 4.5 goals and first-half markets are left out: the first is nearly always the likeliest
 // and pays almost nothing, and the second cannot be graded from a full-time score.
 import { impliedGoals, scoreGrid } from './marketGoals.js';
@@ -63,6 +63,12 @@ export function decisiveCall(prob, goals = null, homeName = 'Home', awayName = '
     const g = impliedGoals({ h: x[0], d: x[1], a: x[2] });
     if (!g) return null;
     ({ lambda, mu } = g);
+  }
+  // A double chance at 75%+ is called ahead of any goals bet: on 2,319 such matches it came in
+  // 78.6% (the goals bets it displaces came in 83.2%, so this costs about 1.7 points overall).
+  const dc = [['1X', x[0] + x[1]], ['X2', x[2] + x[1]], ['12', x[0] + x[2]]].sort((p, q) => q[1] - p[1])[0];
+  if (dc[1] * 100 >= CALL_MIN) {
+    return { pick: dc[0], label: fill(FALLBACK[dc[0]][0], homeName, awayName), prob: +(dc[1] * 100).toFixed(1), tier: 'CALL', kind: 'RESULT' };
   }
   const grid = scoreGrid(lambda, mu, goals?.rho ?? -0.05);
   let best = null;

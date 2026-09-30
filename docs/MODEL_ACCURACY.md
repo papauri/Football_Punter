@@ -844,21 +844,26 @@ break-even, which is why each call shows the price to beat.
 ## A call on every match
 
 "No strong call" is gone: every match now gets a call (`src/model/matchCall.js`). The strong result
-call is unchanged; on the other matches the call is the likeliest bet among full-time goals and
-double-chance markets (team to score, over 1.5, under 3.5, both teams to score, 1X/X2/12, ...).
-Under 4.5 goals is left out (nearly always the likeliest and pays almost nothing), and first-half
-markets too (they cannot be graded from a full-time score).
+call is unchanged. Otherwise a double chance (1X, X2 or 12) is called when it is 75%+; failing
+that, the likeliest full-time goals bet (team to score, over 1.5, under 3.5, both teams to score,
+...). Under 4.5 goals is left out (nearly always the likeliest and pays almost nothing), and
+first-half markets too (they cannot be graded from a full-time score).
 
 Lab, 10,358 matches from 2024-25, from the opening match-result prices only:
 
 | Call | Matches | Said | Came in |
 |---|---|---|---|
 | Strong (65% favourite or 80% double chance) | 3,206 (31%) | 78.2% | 81.0% |
-| Call (likeliest other bet, 75%+) | 6,867 (66%) | 80.1% | 80.4% |
+| Call: double chance 75-80%, or likeliest goals bet 75%+ | 6,867 (66%) | 78.5% | 78.9% |
 | Lean (likeliest bet under 75%) | 285 (3%) | 74.5% | 74.0% |
-| All | 10,358 | | 80.4% |
+| All | 10,358 | | 79.4% |
 
-Each held in every season (calls 80.7%, 80.3%, 79.0%). Forcing a straight win on those same
+Double chances at 75-80% (2,319 matches) came in 78.6%. Calling the likeliest goals bet on those
+matches instead would have come in 83.2%, so preferring the result bet costs about a point
+overall; it is kept because a result call is what the app is for. At 70% the double chance came in
+74.9% and cost four points, so 75% is the line.
+
+Each held in every season (calls 79.1%, 79.2%, 76.0% on the part-season 2026-27). Forcing a straight win on those same
 matches instead would have come in 44.4%, which is why the call there is not a result.
 
 Results recorded as "no bet" under the old rule are graded on the call this rule makes from the
