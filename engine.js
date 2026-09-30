@@ -25,6 +25,7 @@ import { matchCandidates, rankTopPicks, TOP_PICK_MIN, DEFAULT_MENUS } from './sr
 import { strongCall, decisiveCall, gradeCall } from './src/model/matchCall.js';
 import { normalizeTeam } from './src/model/teamNames.js';
 import { agentVotesFromSummary, lineupsFromSummary } from './src/services/extraAgents.js';
+import { GoalscorerModel, eventFromSummary, SCORER_RECORD } from './src/model/goalscorer.js';
 
 const HYPERPARAMETERS_FILE = path.join(process.cwd(), 'hyperparameters.json');
 // The repository root, independent of the working directory. Backtest scripts chdir into a temporary
@@ -6158,6 +6159,7 @@ class SoccerEngine {
       this.runTrainingCycle();
       this.saveFixturesToDisk();
       this.snapshotDueMatches(); // Freeze predictions for matches ≤60 min from kickoff
+      this.refreshGoalscorers().catch(err => this.log('Goalscorers', `Refresh failed: ${err.message}`));
       this.resolveStaleLedgerEntries().catch(() => {});
 
       // Trigger self-reflection cycle on initial load
@@ -8023,8 +8025,15 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
     // have a pick (see checkExtraFixtures).
     const needChecks = entries.filter(e => e.match.extraCompetition && e.candidates.length).map(e => e.match);
     if (needChecks.length) this.checkExtraFixtures(needChecks).catch(err => this.log('TopPicks', `Extra checks failed: ${err.message}`));
+    const picks = rankTopPicks(entries, { min, kinds });
+    const byId = new Map(upcoming.map(m => [m.id, m]));
+    for (const row of picks) {
+      const m = byId.get(row.matchId);
+      if (!m) continue;
+      try { const gs = this.goalscorersFor(m); if (gs?.top && gs.top.chance >= 40) row.scorer = { ...gs.top, record: gs.topRecord, confirmed: gs.confirmed }; } catch { /* none */ }
+    }
     return {
-      picks: rankTopPicks(entries, { min, kinds }),
+      picks,
       menus,
       matchesScanned: upcoming.length + extras.length,
       competitionsScanned: this._extraCompetitions || 0,
@@ -8032,6 +8041,92 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
       min,
       record: { matches: record.matches || 0, measuredOn: record.measuredOn || null, otherMatches: record.OTHER_MATCHES || 0 }
     };
+  }
+
+  // ---- Anytime goalscorers (src/model/goalscorer.js) ----------------------------------------------
+  // The model's state ships in data/goalscorer-state.json (big five leagues since 2023-24); the
+  // server keeps data/goalscorer-state.live.json up to date with every finished league match.
+  get goalscorerModel() {
+    if (!this._goalscorers) {
+      const dir = path.join(ENGINE_DIR, 'data');
+      const files = ['goalscorer-state.live.json', 'goalscorer-state.json'].map(f => path.join(dir, f)).filter(f => fs.existsSync(f));
+      let state = null;
+      for (const f of files) {
+        try { const j = JSON.parse(fs.readFileSync(f, 'utf8')); if (!state || (j.lastMatch || '') > (state.lastMatch || '')) state = j; } catch { /* skip */ }
+      }
+      this._goalscorers = new GoalscorerModel(state);
+    }
+    return this._goalscorers;
+  }
+
+  async refreshGoalscorers({ minIntervalMs = 6 * 3600 * 1000 } = {}) {
+    if (this._gsRefreshing || Date.now() - (this._gsRefreshedAt || 0) < minIntervalMs) return;
+    this._gsRefreshing = true;
+    try {
+      const model = this.goalscorerModel;
+      const months = [...new Set([0, -12].map(d => new Date(Date.now() + d * 864e5).toISOString().slice(0, 7).replace('-', '')))];
+      const due = [];
+      for (const code of ['eng.1', 'esp.1', 'ger.1', 'ita.1', 'fra.1']) {
+        for (const mo of months) {
+          const res = await espnFetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${code}/scoreboard?dates=${mo}&limit=500`).catch(() => null);
+          if (!res?.ok) continue;
+          const j = await res.json();
+          for (const ev of j.events || []) if (ev.status?.type?.completed && !model.seen.has(String(ev.id))) due.push({ code, ev });
+        }
+      }
+      due.sort((a, b) => String(a.ev.date).localeCompare(String(b.ev.date)));
+      let added = 0;
+      for (const { code, ev } of due.slice(0, 150)) {
+        const res = await espnFetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${code}/summary?event=${ev.id}`).catch(() => null);
+        if (!res?.ok) continue;
+        const e = eventFromSummary(await res.json(), ev.id);
+        if (!e) continue;
+        e.date = ev.date;
+        const names = (ev.competitions?.[0]?.competitors || []).reduce((o, c) => ({ ...o, [String(c.team?.id)]: [c.homeAway, c.team?.displayName] }), {});
+        const home = Object.values(names).find(x => x[0] === 'home')?.[1], away = Object.values(names).find(x => x[0] === 'away')?.[1];
+        const g = home && away ? this.resolveMarketGoals(home, away, {}) : null;
+        for (const t of e.teams) t.lam = g ? (names[t.id]?.[0] === 'away' ? g.mu : g.lambda) : null;
+        model.update(e);
+        added++;
+      }
+      if (added) {
+        fs.writeFileSync(path.join(ENGINE_DIR, 'data', 'goalscorer-state.live.json'), JSON.stringify(model.toJSON()));
+        this.log('Goalscorers', `Learned from ${added} finished league matches (latest ${model.lastMatch}).`);
+      }
+      this._gsRefreshedAt = Date.now();
+    } finally {
+      this._gsRefreshing = false;
+    }
+  }
+
+  /**
+   * Likely scorers for a match: each side's top three with their chance, from the confirmed lineup
+   * when the app has it, otherwise from recent squads. Null when either team is unknown to the model
+   * or there are no expected goals from prices.
+   */
+  goalscorersFor(match) {
+    const model = this.goalscorerModel;
+    const hid = String(match?.homeTeamId || ''), aid = String(match?.awayTeamId || '');
+    if (!hid || !aid || !model.teams.has(hid) || !model.teams.has(aid)) return null;
+    const key = `${match.id}|${Math.floor(Date.now() / 600000)}`;
+    this._gsCache ||= new Map();
+    if (this._gsCache.has(key)) return this._gsCache.get(key);
+    const goals = this.resolveMarketGoals(match.home, match.away, { odds: match.odds, league: match.league });
+    let out = null;
+    if (goals && (goals.source === 'PRICES' || goals.source === 'MARKET_MEMORY')) {
+      const lu = this.lineupCache?.get(String(match.id))?.data;
+      const confirmed = Boolean(lu && String(lu.status).toUpperCase() === 'CONFIRMED' && lu.home?.starters?.length === 11 && lu.away?.starters?.length === 11);
+      const squad = (side) => confirmed ? [...side.starters.map(p => ({ id: p.id, n: p.name, starter: true })), ...(side.substitutes || []).map(p => ({ id: p.id, n: p.name, starter: false }))] : null;
+      const pick = (list, team) => list.filter(p => p.chance >= 0.1 && p.name).slice(0, 3).map(p => ({ name: p.name, team, chance: +(p.chance * 100).toFixed(1) }));
+      const home = pick(model.predict(hid, goals.lambda, confirmed ? squad(lu.home) : null), match.home);
+      const away = pick(model.predict(aid, goals.mu, confirmed ? squad(lu.away) : null), match.away);
+      const top = [...home, ...away].sort((a, b) => b.chance - a.chance)[0] || null;
+      const rec = top ? SCORER_RECORD.find(r => top.chance >= r.from) : null;
+      out = { confirmed, home, away, top, topRecord: rec || null };
+    }
+    if (this._gsCache.size > 2000) this._gsCache.clear();
+    this._gsCache.set(key, out);
+    return out;
   }
 
   // Agents and lineups for fixtures outside the scraped leagues, from ESPN's match summary. Each is
@@ -11207,10 +11302,13 @@ Output format: {"home": 45.5, "draw": 25.5, "away": 29.0, "reason": "Home team r
       matches: [...this.matches].sort((a,b) => (b.hasPrediction ? 1 : 0) - (a.hasPrediction ? 1 : 0)).map(m => {
         const sw = this.swarmOrchestrator ? this.swarmOrchestrator.getSwarmDataForMatch(m.id || m.espnEventId || `${m.home}-${m.away}`) : null;
         const synth = sw?.synthesis || m.aiSwarm || null;
+        let goalscorers = null;
+        try { goalscorers = m.finished || m.isCompleted ? null : this.goalscorersFor(m); } catch { /* none for this match */ }
         return {
           ...m,
           aiSwarm: synth,
-          imperialSwarm: synth
+          imperialSwarm: synth,
+          goalscorers
         };
       }),
       todayCompletedMatches: this.todayCompletedMatches || [],

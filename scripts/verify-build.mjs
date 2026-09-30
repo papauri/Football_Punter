@@ -93,6 +93,7 @@ check('Taxonomy: draw pick is a close game, not a trap', getMatchRiskProfile(syn
   const lowDraw = full(2.3, 4.6, 2.6);
   check('Call: a low-draw open game never gets 12 (either team to win)', lowDraw.pick !== '12' && lowDraw.pick !== 'PASS', `got ${lowDraw.pick}`);
   check('Call: a goals call is graded from the score', engine.evaluateHit({ smartMarket: { pick: 'UNDER_35' } }, 2, 1) === true && engine.evaluateHit({ smartMarket: { pick: 'HOME_SCORES' } }, 0, 1) === false);
+  check('Goalscorers: the shipped model knows the big five leagues', engine.goalscorerModel.teams.size >= 90, `teams ${engine.goalscorerModel.teams.size}`);
   check('Call: 12 is graded as no draw', engine.evaluateHit({ smartMarket: { pick: '12' } }, 1, 1) === false && engine.evaluateHit({ smartMarket: { pick: '12' } }, 0, 2) === true);
 }
 check('Taxonomy: 44/29/27 → CONTESTED', getMatchRiskProfile(synth(44, 29, 27, { confidence: 48 }), 'HOME').tierKey === 'CONTESTED');

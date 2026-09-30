@@ -696,6 +696,10 @@ export default function ScoresTablePage({
                 const bestValuePick = bestTip.label;
                 const teamGoals = m.scoreModel?.teamGoals;
                 const firstHalf = m.scoreModel?.firstHalf;
+                // Anytime goalscorers (src/model/goalscorer.js): the likeliest player, and each side's top three.
+                const gs = m.goalscorers;
+                const topScorer = gs?.top && gs.top.chance >= 25 ? gs.top : null;
+                const scorerTitle = gs ? `Anytime scorer chances${gs.confirmed ? ' (confirmed lineup)' : ' (before lineups)'}: ${[...gs.home, ...gs.away].map(p => `${p.name} ${Math.round(p.chance)}%`).join(', ')}` : '';
 
                 const relativeText = formatMatchKickoff(m);
                 const dt = formatSafeDateTime(m, null, tzSettings);
@@ -875,6 +879,11 @@ export default function ScoresTablePage({
                               {bestValuePick}
                             </span>
                           </div>
+                          {topScorer && (
+                            <div className="text-[10.5px] text-slate-600 mb-1.5" title={scorerTitle}>
+                              Likely scorer: <strong>{topScorer.name}</strong> ({topScorer.team}) {Math.round(topScorer.chance)}%
+                            </div>
+                          )}
 
                           {/* Teams & Score Projection with Favored Team Highlighted */}
                           <div className="flex justify-between items-center mb-2">
@@ -1113,6 +1122,11 @@ export default function ScoresTablePage({
                           <span className="text-[9px] text-emerald-700 font-semibold font-mono">
                             {safeToFixed(bestTip.prob, 0)}% likely
                           </span>
+                          {topScorer && (
+                            <span className="text-[9px] text-slate-600" title={scorerTitle}>
+                              Scorer: <strong>{topScorer.name}</strong> {Math.round(topScorer.chance)}%
+                            </span>
+                          )}
                         </div>
                       </td>
 
@@ -1183,6 +1197,29 @@ export default function ScoresTablePage({
                               </span>
                             </div>
 
+                            {gs && (gs.home.length > 0 || gs.away.length > 0) && (
+                              <div className="bg-slate-50/60 p-2.5 rounded-lg border border-slate-200 text-xs">
+                                <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                                  Likely goalscorers {gs.confirmed ? '(confirmed lineup)' : '(before lineups)'}
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                  {[['home', m.home], ['away', m.away]].map(([side, name]) => (
+                                    <div key={side}>
+                                      <div className="text-[10px] text-slate-500 mb-0.5">{name}</div>
+                                      {gs[side].map(p => (
+                                        <div key={p.name} className="flex items-center gap-2 text-[11px]">
+                                          <span className="font-mono font-bold text-emerald-700 w-9 text-right">{Math.round(p.chance)}%</span>
+                                          <span className="text-slate-800">{p.name}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ))}
+                                </div>
+                                <div className="text-[10px] text-slate-500 mt-1.5">
+                                  On past seasons, players given 40-50% scored 46% of the time, 50-60% 53%, 60%+ 67%.
+                                </div>
+                              </div>
+                            )}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                               {/* Top Exact Scores */}
                               <div className="bg-slate-50/60 p-2.5 rounded-lg border border-slate-200">

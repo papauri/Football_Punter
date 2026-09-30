@@ -8,5 +8,6 @@ data/odds_cache/
 data/understat_cache/
 data/coach-cache.json
 data/match-stats.live.json
+data/goalscorer-state.live.json
 data/api-key-status.json
 data/odds-api-state.json

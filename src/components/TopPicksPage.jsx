@@ -214,6 +214,13 @@ export default function TopPicksPage({ matches = [], tzSettings, onAddToSlip, ac
                       </span>
                     </div>
                     {checkList(row)}
+                    {row.scorer && (
+                      <div className="text-[11px] text-slate-700 mt-1" title="Anytime goalscorer, from the goalscorer model">
+                        Likely scorer: <strong>{row.scorer.name}</strong> ({row.scorer.team}) {Math.round(row.scorer.chance)}%
+                        {row.scorer.record && <span className="text-slate-500"> · players given {row.scorer.record.from}%+ scored {row.scorer.record.scored}% of the time</span>}
+                        <span className="text-slate-500"> · {row.scorer.confirmed ? 'confirmed lineup' : 'before lineups'}</span>
+                      </div>
+                    )}
                     {row.others.length > 0 && (
                       <button type="button" onClick={() => toggle(row.id)} className="mt-1 text-[11px] text-indigo-600 font-semibold inline-flex items-center gap-0.5 cursor-pointer">
                         {isOpen ? 'Hide' : `${row.others.length} more strong bet${row.others.length > 1 ? 's' : ''} on this match`}

@@ -1041,6 +1041,32 @@ regular players added nothing to the price when tested (see the edge search abov
 the chance comes from already move with team news. Re-running the model on a lineup now keeps
 today's odds; it used to drop them and fall back to past prices.
 
+## Anytime goalscorers
+
+`src/model/goalscorer.js`. A player's expected goals are his team's expected goals from the prices ×
+his share of the team's non-penalty goals while on the pitch (shrunk towards his position's usual
+share, recent matches weighted more) × the part of the match he is expected to play, plus his share
+of the team's penalties from who took its recent ones. The chance he scores is 1 − exp(−that).
+With the lineup confirmed the matchday squad is used; before that, the team's last six squads,
+weighted by how often each player started.
+
+Built from ESPN's big-five league matches since 2023-24 (5,505 matches with minutes, goals,
+penalties and red cards), fitted on 2023-24 and 2024-25 and tested on 2025-26 and 2026-27:
+
+| Chance given | Player-matches | Scored |
+|---|---|---|
+| 30-40% | 1,239 | 32.8% |
+| 40-50% | 269 | 45.7% |
+| 50-60% | 83 | 53.0% |
+| 60%+ | 27 | 66.7% |
+
+Log loss 0.191 against 0.217 for each player's plain goals-per-game rate. Before lineups, 40%+ picks
+scored 48.3% (240). Only a handful of players reach 60% in a season (Kane, Haaland, Mbappé and
+the like), so a scorer never reaches the 80% Top-picks bar; instead the likeliest scorer (40%+) is
+shown alongside a main-league pick, and the Goals page lists each side's top three.
+`data/goalscorer-state.json` ships the model's state; the server learns from every newly finished
+big-five match (`data/goalscorer-state.live.json`).
+
 ## Learning from new results
 
 Finished matches are added to the training data as they come in (every scrape, about 2 minutes).
