@@ -46,6 +46,9 @@ export const RISK_BADGE_CLASSES = {
   rose: 'bg-rose-100 text-rose-800 border-rose-300'
 };
 
+// Goals calls the app makes when no result is likely enough (src/model/matchCall.js).
+export const GOALS_CALLS = ['OVER_15', 'OVER_25', 'UNDER_25', 'UNDER_35', 'BTTS_YES', 'BTTS_NO', 'HOME_SCORES', 'AWAY_SCORES'];
+
 export function normalizePick(pick) {
   const p = String(pick || '').toUpperCase().trim();
   if (p === '1') return 'HOME';
@@ -56,9 +59,9 @@ export function normalizePick(pick) {
 
 export function getDefaultPick(m) {
   if (!m) return 'HOME';
-  // The app's call (straight win or double chance) when it made one; otherwise the lean.
+  // The app's call (straight win, double chance or goals bet) when it made one; otherwise the lean.
   const call = normalizePick(m.smartMarket?.pick || '');
-  if (['HOME', 'AWAY', 'DRAW', '1X', 'X2', '12'].includes(call)) return call;
+  if (['HOME', 'AWAY', 'DRAW', '1X', 'X2', '12', ...GOALS_CALLS].includes(call)) return call;
   const explicit = typeof m.predictedWinner === 'string' ? m.predictedWinner : (m.predictedWinner?.pick || m.binaryModel?.pick);
   if (explicit) return normalizePick(explicit);
   const home = safeParseFloat(m.prob?.home, 0);
@@ -104,6 +107,7 @@ export function getMatchRiskProfile(match, pickOverride = null) {
     : pick === '12' ? home + away
     : pick === 'HOME_DNB' ? home + draw
     : pick === 'AWAY_DNB' ? away + draw
+    : pick === normalizePick(m.smartMarket?.pick || '') && safeParseFloat(m.smartMarket?.prob, 0) > 0 ? safeParseFloat(m.smartMarket.prob)
     : Math.max(home, away);
 
   const tierObj = m.leagueTier?.tier ? m.leagueTier : getLeaguePredictabilityTier(m.league);
@@ -193,7 +197,7 @@ export function isLowRiskPick(match, pick = null) {
 // call (home win, draw or away win), the same one every page shows.
 export function getSlipPick(m) {
   const pick = getDefaultPick(m);
-  if (['HOME', 'AWAY', 'DRAW', '1X', 'X2', '12'].includes(pick)) return pick;
+  if (['HOME', 'AWAY', 'DRAW', '1X', 'X2', '12', ...GOALS_CALLS].includes(pick)) return pick;
   const home = safeParseFloat(m?.prob?.home ?? m?.homeProb, 0);
   const away = safeParseFloat(m?.prob?.away ?? m?.awayProb, 0);
   return home >= away ? 'HOME' : 'AWAY';
@@ -226,6 +230,8 @@ export function getPickMarketLabel(pick) {
   if (p === '1X') return 'Double Chance 1X';
   if (p === 'X2') return 'Double Chance X2';
   if (p === '12') return 'Double Chance 12';
+  if (/^(OVER|UNDER|BTTS)_/.test(p)) return 'Goals';
+  if (p === 'HOME_SCORES' || p === 'AWAY_SCORES') return 'Team to score';
   return `${p} Win (Outright)`;
 }
 
@@ -245,6 +251,14 @@ export function plainPickLabel(pick, m = {}) {
     case 'HOME_DNB': return `${home} (draw = refund)`;
     case 'AWAY_DNB': return `${away} (draw = refund)`;
     case 'PASS': case '': return 'No bet';
+    case 'OVER_15': return 'Over 1.5 goals';
+    case 'OVER_25': return 'Over 2.5 goals';
+    case 'UNDER_25': return 'Under 2.5 goals';
+    case 'UNDER_35': return 'Under 3.5 goals';
+    case 'BTTS_YES': return 'Both teams to score';
+    case 'BTTS_NO': return 'Both teams to score: No';
+    case 'HOME_SCORES': return `${home} to score`;
+    case 'AWAY_SCORES': return `${away} to score`;
     default: return String(pick || '')
       .replace(/^OVER_?/i, 'Over ').replace(/^UNDER_?/i, 'Under ')
       .replace(/^BTTS_?YES$/i, 'Both teams score').replace(/^BTTS_?NO$/i, 'Not both teams score')

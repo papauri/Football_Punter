@@ -67,6 +67,8 @@ export function resolveMatchOdds(match, pickValue, customOdds = null) {
   else if (p === '12') targetProb = homeP + awayP;
   else if (p === 'HOME_DNB' && homeP + awayP > 0) targetProb = (homeP / (homeP + awayP)) * 100;
   else if (p === 'AWAY_DNB' && homeP + awayP > 0) targetProb = (awayP / (homeP + awayP)) * 100;
+  // A goals call (e.g. UNDER_35): the call's own chance, not the result's.
+  else if (p === String(match.smartMarket?.pick || '').toUpperCase() && safeParseFloat(match.smartMarket?.prob, 0) > 0) targetProb = safeParseFloat(match.smartMarket.prob);
   else targetProb = safeParseFloat(match.confidence ?? match.binaryModel?.confidence, 55);
 
   if (targetProb > 5 && targetProb <= 98) {
@@ -116,6 +118,9 @@ export function resolveMatchProb(match, pickValue, customProb = null) {
   if (p === 'HOME_DNB' && (homeP + awayP) > 0) return Math.min(96, Math.round((homeP / (homeP + awayP)) * 100));
   if (p === 'AWAY_DNB' && (homeP + awayP) > 0) return Math.min(96, Math.round((awayP / (homeP + awayP)) * 100));
 
+  if (p === String(match.smartMarket?.pick || '').toUpperCase() && safeParseFloat(match.smartMarket?.prob, 0) > 0) {
+    return Math.min(99, Math.round(safeParseFloat(match.smartMarket.prob)));
+  }
   const baseConf = safeParseFloat(match.confidence ?? match.binaryModel?.confidence, 65);
   if (p === '1X' || p === 'X2') {
     return Math.min(94, Math.round(baseConf * 1.16));

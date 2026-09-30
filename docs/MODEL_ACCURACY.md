@@ -841,6 +841,33 @@ No version of these tips is reliably profitable at an ordinary bookmaker's price
 the size of any edge. Taking the best available price is what turns roughly -2.5% into roughly
 break-even, which is why each call shows the price to beat.
 
+## A call on every match
+
+"No strong call" is gone: every match now gets a call (`src/model/matchCall.js`). The strong result
+call is unchanged; on the other matches the call is the likeliest bet among full-time goals and
+double-chance markets (team to score, over 1.5, under 3.5, both teams to score, 1X/X2/12, ...).
+Under 4.5 goals is left out (nearly always the likeliest and pays almost nothing), and first-half
+markets too (they cannot be graded from a full-time score).
+
+Lab, 10,358 matches from 2024-25, from the opening match-result prices only:
+
+| Call | Matches | Said | Came in |
+|---|---|---|---|
+| Strong (65% favourite or 80% double chance) | 3,206 (31%) | 78.2% | 81.0% |
+| Call (likeliest other bet, 75%+) | 6,867 (66%) | 80.1% | 80.4% |
+| Lean (likeliest bet under 75%) | 285 (3%) | 74.5% | 74.0% |
+| All | 10,358 | | 80.4% |
+
+Each held in every season (calls 80.7%, 80.3%, 79.0%). Forcing a straight win on those same
+matches instead would have come in 44.4%, which is why the call there is not a result.
+
+Results recorded as "no bet" under the old rule are graded on the call this rule makes from the
+chances recorded before kick-off (`settleWithCall`); the result never feeds the call. The Results
+page shows the hit rate of strong calls, calls and leans separately. On the last 30 days of the
+app's own record: strong 92.8% (64/69), calls 77.8% (130/167), leans 2 of 3.
+
+A likely call is still not a profitable one at a single bookmaker; the "bet at" price applies.
+
 ## Best bets, and what the agents are
 
 **Best bets** are straight wins the app rates 65-85% (`smartMarket.isBestBet`). On every match in the

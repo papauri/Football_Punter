@@ -86,8 +86,12 @@ check('Taxonomy: draw pick is a close game, not a trap', getMatchRiskProfile(syn
   const tip = (h, d, a) => engine.computeDixonColesProbabilities('Arsenal', 'Chelsea', { league: 'Premier League', odds: pOdds(h, d, a) }).smartMarket.pick;
   check('Call: 72% favourite is a straight win', tip(1.3, 5.5, 9) === 'HOME');
   check('Call: 60% favourite with 80%+ cover is the double chance', tip(1.7, 3.8, 4.8) === '1X');
-  check('Call: open game gets no strong call', tip(2.6, 3.2, 2.7) === 'PASS');
-  check('Call: level odds get no strong call', tip(2.9, 2.9, 2.9) === 'PASS');
+  const full = (h, d, a) => engine.computeDixonColesProbabilities('Arsenal', 'Chelsea', { league: 'Premier League', odds: pOdds(h, d, a) }).smartMarket;
+  const open = full(2.6, 3.2, 2.7), level = full(2.9, 2.9, 2.9);
+  check('Call: open game still gets a call (its likeliest goals bet), never a pass', open.pick !== 'PASS' && open.marketType === 'GOALS_CALL' && open.tier !== 'STRONG', `got ${open.pick} ${open.tier}`);
+  check('Call: level odds still get a call', level.pick !== 'PASS', `got ${level.pick}`);
+  check('Call: a goals call is graded from the score', engine.evaluateHit({ smartMarket: { pick: 'UNDER_35' } }, 2, 1) === true && engine.evaluateHit({ smartMarket: { pick: 'HOME_SCORES' } }, 0, 1) === false);
+  check('Call: 12 is graded as no draw', engine.evaluateHit({ smartMarket: { pick: '12' } }, 1, 1) === false && engine.evaluateHit({ smartMarket: { pick: '12' } }, 0, 2) === true);
 }
 check('Taxonomy: 44/29/27 → CONTESTED', getMatchRiskProfile(synth(44, 29, 27, { confidence: 48 }), 'HOME').tierKey === 'CONTESTED');
 check('Taxonomy: trap flag overrides 80% → TRAP', getMatchRiskProfile(synth(80, 12, 8, { confidence: 80, isFavoriteTrap: true }), 'HOME').riskLevel === 'HIGH');

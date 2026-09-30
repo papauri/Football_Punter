@@ -22,6 +22,7 @@ import { getCurrentCoach, peekCoach } from './src/services/coaches.js';
 import { predictMatchStats, matchStatsSummary } from './src/services/matchStatsLookup.js';
 import { fairProbabilities } from './src/model/devig.js';
 import { matchCandidates, rankTopPicks, TOP_PICK_MIN } from './src/model/topPicks.js';
+import { strongCall, decisiveCall, gradeCall } from './src/model/matchCall.js';
 
 const HYPERPARAMETERS_FILE = path.join(process.cwd(), 'hyperparameters.json');
 // The repository root, independent of the working directory. Backtest scripts chdir into a temporary
@@ -156,15 +157,8 @@ function overUnderPrices(raw, toDecimal) {
 // expected goals, the share that fitted best on half-time scores.
 // The app's call for a match, or null when it is not sure enough. See the tip notes in
 // computeDixonColesProbabilities for the test behind the thresholds.
-export const TIP_STRAIGHT_MIN = 65;
-export const TIP_DOUBLE_CHANCE_MIN = 80;
-function decideTip(home, draw, away) {
-  const fav = home >= away ? ['HOME', home] : ['AWAY', away];
-  if (fav[1] >= TIP_STRAIGHT_MIN) return { pick: fav[0], prob: fav[1] };
-  const dc = [['1X', home + draw], ['X2', away + draw], ['12', home + away]].sort((a, b) => b[1] - a[1])[0];
-  if (dc[1] >= TIP_DOUBLE_CHANCE_MIN) return { pick: dc[0], prob: Math.min(99, dc[1]) };
-  return null;
-}
+export { TIP_STRAIGHT_MIN, TIP_DOUBLE_CHANCE_MIN } from './src/model/matchCall.js';
+const decideTip = strongCall;
 
 // Home, away or draw: the most likely result, calling the draw when within 2 points of the favourite.
 export const OUTRIGHT_DRAW_MARGIN = 2;
@@ -1263,6 +1257,8 @@ class SoccerEngine {
 
     const smartPick = dcProbs?.smartMarket?.pick;
     
+    const graded = gradeCall(smartPick, hScore, aScore);
+    if (graded !== null) return graded;
     switch(smartPick) {
       case 'HOME': return isHome;
       case 'AWAY': return isAway;
@@ -2141,6 +2137,7 @@ class SoccerEngine {
     let smartProb = favProb;
     let smartBadge = '';
     let smartRationale = '';
+    let smartTier = 'STRONG';
 
     // Whether to publish a pick in a league is a configuration decision: hyperparameters
     // disabledLeagues, plus BLACKLISTED_LEAGUES.
@@ -2163,11 +2160,24 @@ class SoccerEngine {
       smartBadge = 'Pass / League off';
       smartRationale = `${options.league} is switched off in Settings.`;
     } else if (!tip) {
-      smartPick = 'PASS';
-      smartMarketType = 'NO_STRONG_CALL';
-      smartProb = parseFloat(favProb.toFixed(1));
-      smartBadge = 'No strong call';
-      smartRationale = `Not sure enough: ${homeTeam} ${finalHomeP.toFixed(1)}%, draw ${finalDrawP.toFixed(1)}%, ${awayTeam} ${finalAwayP.toFixed(1)}%. Calls need a 65% favourite or an 80% double chance.`;
+      // No strong result call: the match's likeliest goals or double-chance bet instead
+      // (src/model/matchCall.js). A straight win on these matches came in only 44%.
+      const call = decisiveCall({ home: finalHomeP, draw: finalDrawP, away: finalAwayP },
+        marketGoals ? { lambda, mu, rho: marketGoals.rho } : null, homeTeam, awayTeam);
+      if (call) {
+        smartPick = call.pick;
+        smartMarketType = call.kind === 'RESULT' ? 'DOUBLE_CHANCE' : 'GOALS_CALL';
+        smartProb = call.prob;
+        smartBadge = call.label;
+        smartTier = call.tier;
+        smartRationale = `${call.label}: ${call.prob.toFixed(1)}%. No result is likely enough to call (${homeTeam} ${finalHomeP.toFixed(1)}%, draw ${finalDrawP.toFixed(1)}%, ${awayTeam} ${finalAwayP.toFixed(1)}%), so this is the match's likeliest bet.`;
+      } else {
+        smartPick = 'PASS';
+        smartMarketType = 'NO_STRONG_CALL';
+        smartProb = parseFloat(favProb.toFixed(1));
+        smartBadge = 'No strong call';
+        smartRationale = `No figures to call this match on.`;
+      }
     } else {
       smartPick = tip.pick;
       smartMarketType = tip.pick.length === 2 ? 'DOUBLE_CHANCE' : 'STRAIGHT_WIN';
@@ -2343,8 +2353,11 @@ class SoccerEngine {
       smartMarket: {
         pick: smartPick,
         pickLabel: smartBadge,
-        marketLabel: smartMarketType === 'NO_STRONG_CALL' ? 'No strong call' : smartMarketType === 'DRAW' ? 'Draw' : smartMarketType === 'STRAIGHT_WIN' ? 'Straight Win' : smartMarketType === 'DRAW_NO_BET' ? 'Draw No Bet (DNB)' : smartMarketType === 'DOUBLE_CHANCE' ? 'Double Chance (1X/X2)' : smartMarketType === 'BTTS' ? 'Both Teams to Score' : smartMarketType === 'OVER_25' ? 'Over 2.5 Goals' : smartMarketType === 'OVER_15' ? 'Over 1.5 Goals' : smartMarketType === 'UNDER_25' ? 'Under 2.5 Goals' : 'Pass',
+        marketLabel: smartMarketType === 'NO_STRONG_CALL' ? 'No strong call' : smartMarketType === 'GOALS_CALL' ? 'Goals' : smartMarketType === 'DRAW' ? 'Draw' : smartMarketType === 'STRAIGHT_WIN' ? 'Straight Win' : smartMarketType === 'DRAW_NO_BET' ? 'Draw No Bet (DNB)' : smartMarketType === 'DOUBLE_CHANCE' ? 'Double Chance (1X/X2)' : smartMarketType === 'BTTS' ? 'Both Teams to Score' : smartMarketType === 'OVER_25' ? 'Over 2.5 Goals' : smartMarketType === 'OVER_15' ? 'Over 1.5 Goals' : smartMarketType === 'UNDER_25' ? 'Under 2.5 Goals' : 'Pass',
         marketType: smartMarketType,
+        // STRONG: a 65% favourite or 80% double chance; CALL: the likeliest other bet at 75%+;
+        // LEAN: the likeliest bet below that.
+        tier: smartPick === 'PASS' ? null : smartTier,
         effectiveWinRate: smartProb,
         prob: smartProb,
         badge: smartBadge,

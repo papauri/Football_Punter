@@ -575,7 +575,8 @@ export class LearningPredictabilityAgent {
     const call = String(match?.smartMarket?.pick || '').toUpperCase();
     const chance = Number(match?.smartMarket?.prob);
     if (call !== 'HOME' && call !== 'AWAY') {
-      return agentResult(this, null, call === 'PASS' || !call ? 'No strong call on this match.' : `Calls ${match?.smartMarket?.pickLabel || call} (a double chance), not a straight win.`);
+      return agentResult(this, null, call === 'PASS' || !call ? 'No strong call on this match.'
+        : `Calls ${match?.smartMarket?.pickLabel || call}${['1X', 'X2', '12'].includes(call) ? ' (a double chance)' : ''}, not a straight win.`);
     }
     const vote = { pick: call, chance: Number.isFinite(chance) ? chance : 60 };
     return agentResult(this, vote, `${side(match, call)} to win, ${pct(vote.chance)}${match?.smartMarket?.isBestBet ? ' (a best bet)' : ''}.`);

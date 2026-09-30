@@ -830,14 +830,16 @@ export default function FixturesTablePage({
       );
     }
 
-    // 4. Our call: a straight win or double chance when the app is sure, otherwise no strong call
+    // 4. Our call: a straight win or double chance when the app is sure, otherwise the match's
+    // likeliest goals or double-chance bet (a lean when under 75%)
     const call = String(m.smartMarket?.pick || '').toUpperCase();
-    if (call === 'PASS' || ['1X', 'X2', '12'].includes(call)) {
+    if (call === 'PASS' || ['1X', 'X2', '12'].includes(call) || m.smartMarket?.marketType === 'GOALS_CALL') {
       const isCall = call !== 'PASS';
-      const label = isCall ? plainTipText(m.smartMarket?.pickLabel) : 'No strong call';
+      const isLean = m.smartMarket?.tier === 'LEAN';
+      const label = isCall ? `${isLean ? 'Lean: ' : ''}${plainTipText(m.smartMarket?.pickLabel)}` : 'No strong call';
       return (
         <span
-          className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10.5px] font-bold border whitespace-nowrap shadow-2xs ${isCall ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-slate-50 text-slate-500 border-slate-200'}`}
+          className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10.5px] font-bold border whitespace-nowrap shadow-2xs ${!isCall ? 'bg-slate-50 text-slate-500 border-slate-200' : isLean ? 'bg-amber-50 text-amber-800 border-amber-300' : 'bg-emerald-50 text-emerald-800 border-emerald-300'}`}
           title={isCall ? `${label}: ${safeToFixed(m.smartMarket?.prob, 1)}%` : `Leans ${predictedWinner === 'HOME' ? m.home : predictedWinner === 'AWAY' ? m.away : 'draw'}, but not sure enough to call`}
         >
           {label}

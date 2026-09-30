@@ -471,6 +471,8 @@ export default function ResultsProofPage({
     let misses = 0;
     let pushes = 0;
     let passes = 0;
+    // Won / graded per kind of call: strong result calls, other calls at 75%+, and leans.
+    const tiers = { STRONG: [0, 0], CALL: [0, 0], LEAN: [0, 0] };
 
     validMatches.forEach(m => {
       const hG = m.homeScore ?? m.goals?.home;
@@ -485,6 +487,8 @@ export default function ResultsProofPage({
         (m.isHit === null && m.smartMarket?.pick === 'PASS')
       );
 
+      const tier = tiers[m.smartMarket?.tier] ? m.smartMarket.tier : 'STRONG';
+      if (!isPass && (m.isHit === true || m.isHit === false)) { tiers[tier][1]++; if (m.isHit) tiers[tier][0]++; }
       if (isPass) {
         passes++;
       } else if (m.isHit === true) {
@@ -503,7 +507,7 @@ export default function ResultsProofPage({
     const total = validMatches.length;
     const activeTotal = hits + misses;
     const hitRate = activeTotal > 0 ? safeToFixed((hits / activeTotal) * 100, 1) : (total > 0 ? safeToFixed((hits / total) * 100, 1) : '0.0');
-    return { total, hits, misses, pushes, passes, activeTotal, hitRate };
+    return { total, hits, misses, pushes, passes, activeTotal, hitRate, tiers };
   }, [filteredResults]);
 
   return (
@@ -552,6 +556,14 @@ export default function ResultsProofPage({
                 </div>
               </div>
             </div>
+
+            {stats.tiers && (
+              <div className="text-[11px] text-slate-500 flex flex-wrap gap-x-3 gap-y-0.5" title="Strong: a 65% favourite or 80% double chance. Call: the match's likeliest other bet, 75%+. Lean: the likeliest bet below 75%.">
+                {[['STRONG', 'Strong calls'], ['CALL', 'Calls'], ['LEAN', 'Leans']].filter(([k]) => stats.tiers[k][1] > 0).map(([k, label]) => (
+                  <span key={k}>{label}: <strong className="text-slate-800">{Math.round(stats.tiers[k][0] / stats.tiers[k][1] * 100)}%</strong> ({stats.tiers[k][0]}/{stats.tiers[k][1]})</span>
+                ))}
+              </div>
+            )}
 
             {/* Action Buttons - clean mobile stack & desktop inline row */}
             <div className="grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto">

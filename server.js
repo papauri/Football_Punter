@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url';
 import { engine } from './engine.js';
 import { GoogleGenAI } from '@google/genai';
 import { isLeagueBlacklisted } from './src/utils/leagueUtils.js';
+import { settleWithCall } from './src/model/matchCall.js';
 import { createServer as createViteServer } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -226,7 +227,7 @@ async function startServer() {
         };
     });
 
-    res.json({ matches: populated });
+    res.json({ matches: populated.map(settleWithCall) });
   });
 
 app.get('/api/state', (req, res) => {
@@ -956,13 +957,13 @@ app.get('/api/state', (req, res) => {
     const isPastDate = new Date(date).getTime() < new Date().setHours(0, 0, 0, 0);
 
     if (cached && (isPastDate || (now - cached.timestamp < 300000))) {
-      return res.json({ success: true, date, count: cached.matches.length, matches: cached.matches, fromCache: true });
+      return res.json({ success: true, date, count: cached.matches.length, matches: cached.matches.map(settleWithCall), fromCache: true });
     }
 
     try {
       const matches = await engine.fetchMatchesForDate(date);
       serverDateCache.set(date, { matches, timestamp: now });
-      res.json({ success: true, date, count: matches.length, matches });
+      res.json({ success: true, date, count: matches.length, matches: matches.map(settleWithCall) });
     } catch (err) {
       console.error(`Error in /api/fetch-date for ${date}:`, err);
 
@@ -1019,7 +1020,7 @@ app.get('/api/state', (req, res) => {
         success: true,
         date,
         count: fallback.length,
-        matches: fallback,
+        matches: fallback.map(settleWithCall),
         fallback: true,
         notice: 'Served from internal historical repository with live calibrated evaluations.'
       });
