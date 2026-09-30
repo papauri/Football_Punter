@@ -24,6 +24,7 @@ import { fairProbabilities } from './src/model/devig.js';
 import { matchCandidates, rankTopPicks, TOP_PICK_MIN } from './src/model/topPicks.js';
 import { strongCall, decisiveCall, gradeCall } from './src/model/matchCall.js';
 import { normalizeTeam } from './src/model/teamNames.js';
+import { agentVotesFromSummary, lineupsFromSummary } from './src/services/extraAgents.js';
 
 const HYPERPARAMETERS_FILE = path.join(process.cwd(), 'hyperparameters.json');
 // The repository root, independent of the working directory. Backtest scripts chdir into a temporary
@@ -8008,12 +8009,20 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
       };
     }).concat(extras.map(match => {
       const goals = this.resolveMarketGoals(match.home, match.away, { odds: match.odds });
+      const checked = this.extraChecks?.get(match.espnEventId);
       return {
         match,
         candidates: goals?.source === 'PRICES' ? matchCandidates(match, goals, null, record, undefined, { recordKey: 'OTHER' }) : [],
-        context: { competition: record.COMPETITIONS?.[match.leagueCode] || null, extraCompetition: true }
+        context: {
+          competition: record.COMPETITIONS?.[match.leagueCode] || null, extraCompetition: true, checking: !checked,
+          agentVotes: checked?.agentVotes || [], lineupImpact: checked?.lineupImpact || null
+        }
       };
     }));
+    // Agents and lineups for the other competitions, fetched in the background for the fixtures that
+    // have a pick (see checkExtraFixtures).
+    const needChecks = entries.filter(e => e.match.extraCompetition && e.candidates.length).map(e => e.match);
+    if (needChecks.length) this.checkExtraFixtures(needChecks).catch(err => this.log('TopPicks', `Extra checks failed: ${err.message}`));
     return {
       picks: rankTopPicks(entries, { min, kinds }),
       matchesScanned: upcoming.length + extras.length,
@@ -8022,6 +8031,41 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
       min,
       record: { matches: record.matches || 0, measuredOn: record.measuredOn || null, otherMatches: record.OTHER_MATCHES || 0 }
     };
+  }
+
+  // Agents and lineups for fixtures outside the scraped leagues, from ESPN's match summary. Each is
+  // refreshed every 6 hours, and every 5 minutes from 90 minutes before kick-off until the lineups
+  // are confirmed, the same window the main leagues use.
+  async checkExtraFixtures(fixtures) {
+    if (this._checkingExtras) return;
+    this._checkingExtras = true;
+    this.extraChecks ||= new Map();
+    try {
+      const now = Date.now();
+      const due = fixtures.filter(fx => {
+        const c = this.extraChecks.get(fx.espnEventId);
+        if (!c) return true;
+        const soon = fx.timestamp - now < 90 * 60 * 1000;
+        return (soon && !c.confirmed && now - c.at > 5 * 60 * 1000) || now - c.at > 6 * 3600 * 1000;
+      }).slice(0, 80);
+      let next = 0;
+      const worker = async () => {
+        while (next < due.length) {
+          const fx = due[next++];
+          try {
+            const res = await espnFetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${fx.leagueCode}/summary?event=${fx.espnEventId}`);
+            if (!res?.ok) continue;
+            const summary = await res.json();
+            const lu = lineupsFromSummary(summary);
+            const lineupImpact = lu ? this.evaluateLineupImpact(lu.home, lu.away, lu.leaders, fx) : null;
+            this.extraChecks.set(fx.espnEventId, { at: Date.now(), agentVotes: agentVotesFromSummary(summary, fx), lineupImpact, confirmed: Boolean(lu) });
+          } catch { /* try again on the next pass */ }
+        }
+      };
+      await Promise.all(Array.from({ length: 4 }, worker));
+    } finally {
+      this._checkingExtras = false;
+    }
   }
 
   // Upcoming fixtures in every competition ESPN lists that the main scrape does not cover, kept only

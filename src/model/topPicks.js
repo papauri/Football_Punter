@@ -133,8 +133,10 @@ export function pickChecks(c, match, ctx = {}) {
     checks.push(comp
       ? { tone: comp.cameIn >= comp.said - 2 ? 'ok' : 'warn', text: `In this competition, 80%+ bets came in ${comp.cameIn}% of ${comp.picks.toLocaleString()} past picks (odds said ${comp.said}%)` }
       : { tone: 'info', text: 'No past record for this competition itself: the record shown is from 70+ other competitions' });
-    checks.push({ tone: 'info', text: 'Outside the main leagues: no agents or lineup check, only the odds' });
-    return checks;
+    if (ctx.checking) {
+      checks.push({ tone: 'info', text: 'Agents and lineups are being checked: refresh in a minute' });
+      return checks;
+    }
   }
   const li = ctx.lineupImpact;
   const confirmed = li && String(li.status).toUpperCase() === 'CONFIRMED';

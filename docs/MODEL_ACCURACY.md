@@ -1015,8 +1015,14 @@ cups, women's football and 20+ more leagues came from the odds ESPN keeps for pa
 No group came in significantly more than about two points short. Some markets did worse outside
 the main leagues (over 2.5 at 80%+: 75.7%; over 1.5 at 90%+: 87.7%), so a pick is kept and ranked
 on the lower of its stated chance and its record. Each pick outside the main leagues shows its
-competition's own record when it has one (71 do), or says it has none, and says plainly that no
-agents or lineups were checked there: only the odds.
+competition's own record when it has one (71 do), or says it has none.
+
+They get agents and lineup checks too, read from ESPN's match summary (`src/services/extraAgents.js`):
+today's prices, the last five results, the league table, the head-to-head record and the app's own
+call each vote home, draw or away, or abstain when their source has nothing (no table in a
+friendly, fewer than three recent games). Lineups are fetched from 90 minutes before kick-off,
+every 5 minutes until confirmed, and run through the same lineup check as the main leagues. As
+there, the agents vote on results only and neither they nor the lineups change a pick's chance.
 
 **What each pick shows it was checked against.** Picks are listed in kick-off order. Under each: where
 the chance comes from (today's odds, or past prices when there are none); for result bets, how many
