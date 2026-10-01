@@ -6,11 +6,13 @@
 // recent ones). P(scores) = 1 − exp(−expected goals). Before lineups, each player of the team's last
 // six squads counts in proportion to how often he started.
 //
-// Fitted on the big five leagues 2023-24 and 2024-25, tested on 2025-26 and 2026-27 (84,987
-// player-matches with the lineup known; nothing from those seasons was used to fit):
-//   chance 40-50%: 269 players, 45.7% scored; 50-60%: 83, 53.0%; 60-70%: 26, 65.4%.
-//   Log loss 0.191 against 0.217 for goals-per-game. Before lineups: 40%+ picks scored 48.3% (240).
-// Only a handful of players a season reach 60%, so a "very likely" scorer is rare.
+// Fitted on the big five leagues 2023-24 and 2024-25, tested on later seasons (lineup known),
+// nothing from which was used to fit. Big five, 2025-26 and 2026-27: 40-50% scored 45.7% (269),
+// 50-60% 53.0% (83), 60%+ 66.7% (27); log loss 0.191 against 0.217 for goals-per-game. With the same
+// parameters, 14 more leagues (Netherlands, Portugal, Turkey, Belgium, Scotland, Greece, English
+// Championship, German and Spanish second tiers, MLS, Brazil, Argentina, Japan, Mexico), 2025 or
+// 2025-26 onward: 40-50% 45.0% (825), 50-60% 63.0% (154), 60%+ 68.2% (22). Before lineups the
+// figures hold too. Only a handful of players a season reach 60%, so a "very likely" scorer is rare.
 
 export const PARAMS = {
   tau: 292, a: 29.6,
@@ -21,10 +23,10 @@ export const PARAMS = {
 
 // Test-season record by chance band (lineup known), for display.
 export const SCORER_RECORD = [
-  { from: 60, picks: 27, scored: 66.7 },
-  { from: 50, picks: 83, scored: 53.0 },
-  { from: 40, picks: 269, scored: 45.7 },
-  { from: 30, picks: 1239, scored: 32.8 }
+  { from: 60, picks: 51, scored: 72.5 },
+  { from: 50, picks: 239, scored: 58.2 },
+  { from: 40, picks: 1094, scored: 45.6 },
+  { from: 30, picks: 4929, scored: 35.1 }
 ];
 
 const GROUP = (pos) => {
@@ -46,8 +48,16 @@ export class GoalscorerModel {
     this.lastMatch = state?.lastMatch || null;
   }
 
+  // Players and teams with nothing in the last 400 days are dropped (transfers out, retirements).
   toJSON() {
-    return { players: Object.fromEntries(this.players), teams: Object.fromEntries(this.teams), seen: [...this.seen].slice(-4000), lastMatch: this.lastMatch };
+    const cutoff = (Date.parse(this.lastMatch || 0) || Date.now()) / 864e5 - 400;
+    const active = (ps) => [ps.sN, ps.bN, ps.expo].some(x => x && x.t >= cutoff);
+    const players = Object.fromEntries([...this.players].filter(([, ps]) => active(ps)));
+    const teams = Object.fromEntries([...this.teams].filter(([, tm]) => tm.recent.length && Object.keys(tm.recent.at(-1)).some(id => players[id])));
+    // Numbers to five significant figures keep the file small without changing a chance.
+    const round = (x) => (typeof x === 'number' ? +x.toPrecision(5) : Array.isArray(x) ? x.map(round)
+      : x && typeof x === 'object' ? Object.fromEntries(Object.entries(x).map(([k, v]) => [k, round(v)])) : x);
+    return { players: round(players), teams: round(teams), seen: [...this.seen].slice(-12000), lastMatch: this.lastMatch };
   }
 
   /**

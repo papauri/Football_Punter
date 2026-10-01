@@ -1060,7 +1060,21 @@ penalties and red cards), fitted on 2023-24 and 2024-25 and tested on 2025-26 an
 | 50-60% | 83 | 53.0% |
 | 60%+ | 27 | 66.7% |
 
-Log loss 0.191 against 0.217 for each player's plain goals-per-game rate. Before lineups, 40%+ picks
+Log loss 0.191 against 0.217 for each player's plain goals-per-game rate.
+
+**Other leagues.** With the same parameters (no refit), 14 more leagues were tested on 2025 or
+2025-26 onward: Netherlands, Portugal, Turkey, Belgium, Scotland, Greece, the English Championship,
+the German and Spanish second tiers, MLS, Brazil, Argentina, Japan and Mexico (19,000 matches, team
+expected goals from football-data.co.uk prices). Lineup known: 40-50% scored 45.0% (825), 50-60%
+63.0% (154), 60%+ 68.2% (22); before lineups 40-50% scored 43.8%. Every competition combined:
+40-50% 45.6% (1,094), 50-60% 58.2% (239), 60%+ 72.5% (51). Smallest-sample weak spot: the
+Championship, where 40%+ picks scored 24% of 38.
+
+The model follows player stats on its own in those 19 leagues plus the Champions League, Europa
+League and Conference League: every 6 hours it reads each newly finished match (lineups, minutes,
+goals, penalties, red cards) and updates every player, using the match's own price for team
+expected goals when ESPN kept it. Scorers show for any upcoming match between two teams it
+follows, including cup ties and Top-picks fixtures outside the main scrape. Before lineups, 40%+ picks
 scored 48.3% (240). Only a handful of players reach 60% in a season (Kane, Haaland, Mbappé and
 the like), so a scorer never reaches the 80% Top-picks bar; instead the likeliest scorer (40%+) is
 shown alongside a main-league pick, and the Goals page lists each side's top three.

@@ -32,6 +32,8 @@ const HYPERPARAMETERS_FILE = path.join(process.cwd(), 'hyperparameters.json');
 // directory holding a restricted training_data.json so the engine trains on a subset; reference data
 // that is keyed by fixture id and must not be restricted is resolved from here instead of cwd.
 const ENGINE_DIR = path.dirname(fileURLToPath(import.meta.url));
+const GOALSCORER_COMPETITIONS = ['eng.1', 'esp.1', 'ger.1', 'ita.1', 'fra.1', 'ned.1', 'por.1', 'tur.1', 'bel.1', 'sco.1', 'gre.1',
+  'eng.2', 'ger.2', 'esp.2', 'usa.1', 'bra.1', 'arg.1', 'jpn.1', 'mex.1', 'uefa.champions', 'uefa.europa', 'uefa.europa.conf'];
 
 export function stripDiacritics(str) {
   if (!str || typeof str !== 'string') return '';
@@ -8026,7 +8028,7 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
     const needChecks = entries.filter(e => e.match.extraCompetition && e.candidates.length).map(e => e.match);
     if (needChecks.length) this.checkExtraFixtures(needChecks).catch(err => this.log('TopPicks', `Extra checks failed: ${err.message}`));
     const picks = rankTopPicks(entries, { min, kinds });
-    const byId = new Map(upcoming.map(m => [m.id, m]));
+    const byId = new Map([...upcoming, ...extras].map(m => [m.id, m]));
     for (const row of picks) {
       const m = byId.get(row.matchId);
       if (!m) continue;
@@ -8044,6 +8046,8 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
   }
 
   // ---- Anytime goalscorers (src/model/goalscorer.js) ----------------------------------------------
+  // Competitions whose finished matches the model learns from: the leagues it was tested on, and the
+  // European club competitions those teams also play in.
   // The model's state ships in data/goalscorer-state.json (big five leagues since 2023-24); the
   // server keeps data/goalscorer-state.live.json up to date with every finished league match.
   get goalscorerModel() {
@@ -8066,7 +8070,7 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
       const model = this.goalscorerModel;
       const months = [...new Set([0, -12].map(d => new Date(Date.now() + d * 864e5).toISOString().slice(0, 7).replace('-', '')))];
       const due = [];
-      for (const code of ['eng.1', 'esp.1', 'ger.1', 'ita.1', 'fra.1']) {
+      for (const code of GOALSCORER_COMPETITIONS) {
         for (const mo of months) {
           const res = await espnFetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${code}/scoreboard?dates=${mo}&limit=500`).catch(() => null);
           if (!res?.ok) continue;
@@ -8076,7 +8080,7 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
       }
       due.sort((a, b) => String(a.ev.date).localeCompare(String(b.ev.date)));
       let added = 0;
-      for (const { code, ev } of due.slice(0, 150)) {
+      for (const { code, ev } of due.slice(0, 400)) {
         const res = await espnFetch(`https://site.api.espn.com/apis/site/v2/sports/soccer/${code}/summary?event=${ev.id}`).catch(() => null);
         if (!res?.ok) continue;
         const e = eventFromSummary(await res.json(), ev.id);
@@ -8084,14 +8088,16 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
         e.date = ev.date;
         const names = (ev.competitions?.[0]?.competitors || []).reduce((o, c) => ({ ...o, [String(c.team?.id)]: [c.homeAway, c.team?.displayName] }), {});
         const home = Object.values(names).find(x => x[0] === 'home')?.[1], away = Object.values(names).find(x => x[0] === 'away')?.[1];
-        const g = home && away ? this.resolveMarketGoals(home, away, {}) : null;
+        // Team expected goals from the match's own price when ESPN kept it, else past prices.
+        const odds = this.parseEspnOdds(ev.competitions?.[0]);
+        const g = home && away ? this.resolveMarketGoals(home, away, odds && !odds.drawEstimated ? { odds } : {}) : null;
         for (const t of e.teams) t.lam = g ? (names[t.id]?.[0] === 'away' ? g.mu : g.lambda) : null;
         model.update(e);
         added++;
       }
       if (added) {
         fs.writeFileSync(path.join(ENGINE_DIR, 'data', 'goalscorer-state.live.json'), JSON.stringify(model.toJSON()));
-        this.log('Goalscorers', `Learned from ${added} finished league matches (latest ${model.lastMatch}).`);
+        this.log('Goalscorers', `Learned from ${added} finished matches in ${GOALSCORER_COMPETITIONS.length} competitions (latest ${model.lastMatch}).`);
       }
       this._gsRefreshedAt = Date.now();
     } finally {
@@ -8114,7 +8120,7 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
     const goals = this.resolveMarketGoals(match.home, match.away, { odds: match.odds, league: match.league });
     let out = null;
     if (goals && (goals.source === 'PRICES' || goals.source === 'MARKET_MEMORY')) {
-      const lu = this.lineupCache?.get(String(match.id))?.data;
+      const lu = match.extraCompetition ? this.extraChecks?.get(match.espnEventId)?.lineups : this.lineupCache?.get(String(match.id))?.data;
       const confirmed = Boolean(lu && String(lu.status).toUpperCase() === 'CONFIRMED' && lu.home?.starters?.length === 11 && lu.away?.starters?.length === 11);
       const squad = (side) => confirmed ? [...side.starters.map(p => ({ id: p.id, n: p.name, starter: true })), ...(side.substitutes || []).map(p => ({ id: p.id, n: p.name, starter: false }))] : null;
       const pick = (list, team) => list.filter(p => p.chance >= 0.1 && p.name).slice(0, 3).map(p => ({ name: p.name, team, chance: +(p.chance * 100).toFixed(1) }));
@@ -8154,7 +8160,8 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
             const summary = await res.json();
             const lu = lineupsFromSummary(summary);
             const lineupImpact = lu ? this.evaluateLineupImpact(lu.home, lu.away, lu.leaders, fx) : null;
-            this.extraChecks.set(fx.espnEventId, { at: Date.now(), agentVotes: agentVotesFromSummary(summary, fx), lineupImpact, confirmed: Boolean(lu) });
+            this.extraChecks.set(fx.espnEventId, { at: Date.now(), agentVotes: agentVotesFromSummary(summary, fx), lineupImpact, confirmed: Boolean(lu),
+              lineups: lu ? { status: 'CONFIRMED', home: lu.home, away: lu.away } : null });
           } catch { /* try again on the next pass */ }
         }
       };
@@ -8198,6 +8205,8 @@ Reason deeply on the root cause. Return ONLY valid JSON with no markdown fences,
               active.add(code);
               found.set(ev.id, {
                 id: `x-${ev.id}`, espnEventId: ev.id, home, away,
+                homeTeamId: comp.competitors?.find(c => c.homeAway === 'home')?.team?.id,
+                awayTeamId: comp.competitors?.find(c => c.homeAway === 'away')?.team?.id,
                 league: j.leagues?.[0]?.name || code, leagueCode: code,
                 timestamp: Date.parse(ev.date), dateIso: String(ev.date).slice(0, 10), utcDate: ev.date,
                 odds, extraCompetition: true
